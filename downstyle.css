@@ -19,7 +19,7 @@
 
 .menu a {
     display: block;
-    color: white;
+    background-color: #4a4a5a;
     text-decoration: none;
     padding: 10px;
     margin: 5px 0;
@@ -27,7 +27,7 @@
 }
 
 .menu a:hover {
-    background-color: #45a049;
+    background-color: #4a4a5a;
 }
 
 /* Основное содержимое */
@@ -63,7 +63,7 @@ main {
 
 #upload-form button {
     background-color: #4CAF50;
-    color: white;
+    background-color: #4a4a5a;
     border: none;
     padding: 10px 20px;
     border-radius: 5px;
@@ -86,7 +86,7 @@ main {
 }
 
 #file-list li {
-    background-color: #f9f9f9;
+    background-color: #4a4a5a;
     padding: 10px;
     margin-bottom: 5px;
     border-radius: 5px;
