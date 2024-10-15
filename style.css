@@ -3,7 +3,7 @@
     box-sizing: border-box;
 }
 :root {
-    --background-color: #f4f4f4;
+    --background-color: #f9f9f9;
     --text-color: #333;
     --header-background: #4CAF50;
     --header-text: white;
@@ -13,6 +13,9 @@
     --table-border: #ddd;
     --button-background: #008CBA;
     --button-hover: #005f73;
+    --table-hover-background: #e0e0e0;
+    --text-container-background: #ffffff;
+    --text-container-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .darkmode {
@@ -26,6 +29,9 @@
     --table-border: #333;
     --button-background: #005f73;
     --button-hover: #2913a1;
+    --table-hover-background: #333;
+    --text-container-background: #2c2c2c;
+    --text-container-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
 }
 
 body {
@@ -84,7 +90,6 @@ main {
 }
 
 footer {
-
     background-color: var(--footer-background);
     color: var(--footer-text);
     text-align: center;
@@ -125,36 +130,58 @@ div.comment {
     margin-bottom: 20px;
     background-color: var(--table-background);
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    border-radius: 5px;
-    padding: 10px;
+    border-radius: 10px;
+    padding: 20px;
+    border: 1px solid var(--table-border);
 }
 
 table {
     border-collapse: collapse;
     width: 100%;
     min-width: 700px;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
 }
 
-.gridlines td, .gridlines th {
-    border: 1px dotted black;
-}
-
-td, th {
+th, td {
     padding: 15px;
-    vertical-align: bottom;
-    border: 1px solid var(--table-border);
+    text-align: center;
+    border-bottom: 1px solid var(--table-border);
     color: var(--text-color);
     font-family: 'Calibri';
     font-size: 11pt;
     background-color: var(--table-background);
-    padding: 10px;
-    text-align: center;
+    transition: background-color 0.3s ease;
 }
 
 th {
     background-color: var(--header-background);
     color: var(--header-text);
     font-weight: bold;
+    text-transform: uppercase;
+}
+
+tr:hover td {
+    background-color: var(--table-hover-background);
+}
+
+@media (max-width: 768px) {
+    .table-container {
+        overflow-x: scroll;
+    }
+
+    th, td {
+        padding: 10px;
+        font-size: 10pt;
+    }
+}
+
+@media (max-width: 480px) {
+    th, td {
+        padding: 8px;
+        font-size: 9pt;
+    }
 }
 
 td.style1, th.style1 {
@@ -193,18 +220,22 @@ td.style10, th.style10 {
 td.style11, th.style11 {
     background-color: #4F81BD;
 }
+
 .ps, .bot, .dz {
     margin-left: 50%;
     display: inline-block;
 }
+
 .header-controls {
     display: flex;
     align-items: center;
 }
+
 .container {
     display: flex;
     align-items: center; /* Выравнивание по вертикали */
     padding-top: 55px;
+    justify-content: center; /* Выравнивание по горизонтали */
 }
 
 .qr {
@@ -213,19 +244,38 @@ td.style11, th.style11 {
 
 .text-container {
     flex: 1; /* Чтобы текст занимал оставшееся пространство */
+    background-color: var(--text-container-background);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: var(--text-container-shadow);
+    text-align: center;
+    max-width: 600px; /* Ограничение ширины для лучшего отображения */
 }
 
 .dz {
     margin: 0; /* Убираем отступы у заголовка */
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--header-background);
 }
 
 .bot {
     display: block; /* Чтобы ссылка занимала всю строку */
     margin: 10px 0; /* Отступы для ссылки */
+    font-size: 18px;
+    color: var(--button-background);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.bot:hover {
+    color: var(--button-hover);
 }
 
 .ps {
     margin: 0; /* Убираем отступы у абзаца */
+    font-size: 14px;
+    color: var(--text-color);
 }
 
 #menu-toggle {
@@ -282,6 +332,7 @@ td.style11, th.style11 {
 .delete-button:hover {
     background-color: var(--button-hover);
 }
+
 table.sheet0 col.col0 { width: 99.63333219pt; }
 table.sheet0 col.col1 { width: 139.62222062pt; }
 table.sheet0 col.col2 { width: 166.73333142pt; }
