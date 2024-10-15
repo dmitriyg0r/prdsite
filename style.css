@@ -3,7 +3,7 @@
     box-sizing: border-box;
 }
 :root {
-    --background-color: #f9f9f9;
+    --background-color: #f0f0f0; /* Серый фон для светлой темы */
     --text-color: #333;
     --header-background: #4CAF50;
     --header-text: white;
@@ -19,18 +19,18 @@
 }
 
 .darkmode {
-    --background-color: #121212;
+    --background-color: #2c2c3a; /* Фиолетовый фон для темной темы */
     --text-color: #ffffff;
-    --header-background: #0f5739;
+    --header-background: #6a5acd; /* Фиолетовый заголовок для темной темы */
     --header-text: #ffffff;
     --footer-background: #1f1f1f;
     --footer-text: #ffffff;
-    --table-background: #1f1f1f;
-    --table-border: #333;
-    --button-background: #005f73;
-    --button-hover: #2913a1;
-    --table-hover-background: #333;
-    --text-container-background: #2c2c2c;
+    --table-background: #3c3c4a; /* Фиолетовый фон для таблицы в темной теме */
+    --table-border: #4a4a5a; /* Фиолетовый бордер для таблицы в темной теме */
+    --button-background: #4b0082; /* Темно-фиолетовый фон для кнопки в темной теме */
+    --button-hover: #8a2be2; /* Светло-фиолетовый фон для кнопки при наведении в темной теме */
+    --table-hover-background: #4a4a5a; /* Фиолетовый фон при наведении на строку таблицы в темной теме */
+    --text-container-background: #2c2c3a; /* Фиолетовый фон для текстового контейнера в темной теме */
     --text-container-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
 }
 
