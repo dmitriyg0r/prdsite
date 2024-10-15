@@ -201,6 +201,7 @@ td.style11, th.style11 {
     display: flex;
     align-items: center; /* Выравнивание по вертикали */
     padding-top: 55px;
+    padding-left: 35px;
 }
 
 .qr {
