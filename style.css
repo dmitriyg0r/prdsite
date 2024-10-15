@@ -3,6 +3,7 @@
     box-sizing: border-box;
 }
 :root {
+<<<<<<< HEAD
     --background-color: #f0f0f0; /* Серый фон для светлой темы */
     --text-color: #333;
     --header-background: #4CAF50;
@@ -32,6 +33,27 @@
     --table-hover-background: #4a4a5a; /* Фиолетовый фон при наведении на строку таблицы в темной теме */
     --text-container-background: #2c2c3a; /* Фиолетовый фон для текстового контейнера в темной теме */
     --text-container-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+=======
+    --background-color: #17B978;/* Фон */
+    --text-color: #000000 ;/* Текст */
+    --header-background: #3cc805;/* заголовок у таблицы тоже */
+    --header-text: #000000;/* текст заголовка */
+    --table-background: #FFFFFF;/*таблица */
+    --table-border: #000000;/* деление таблицы */
+    --button-background: #ff0000;/* хз */
+    --button-hover: #000000;/* хз */
+}
+
+.darkmode {
+    --background-color: #000000;
+    --text-color: #FFFFFF;
+    --header-background: #0d105cce;
+    --header-text: #FFFFFF;
+    --table-background: #000000;
+    --table-border: #FFFFFF;
+    --button-background: #FFFFFF;
+    --button-hover: #000000;
+>>>>>>> a7d4d73bd37c611c77cc30ac700f687c578291ef
 }
 
 body {
