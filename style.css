@@ -3,29 +3,25 @@
     box-sizing: border-box;
 }
 :root {
-    --background-color: #f4f4f4;
-    --text-color: #333;
-    --header-background: #4CAF50;
-    --header-text: white;
-    --footer-background: #333;
-    --footer-text: white;
-    --table-background: white;
-    --table-border: #ddd;
-    --button-background: #008CBA;
-    --button-hover: #005f73;
+    --background-color: #17B978;/* Фон */
+    --text-color: #000000 ;/* Текст */
+    --header-background: #3cc805;/* заголовок у таблицы тоже */
+    --header-text: #000000;/* текст заголовка */
+    --table-background: #FFFFFF;/*таблица */
+    --table-border: #000000;/* деление таблицы */
+    --button-background: #ff0000;/* хз */
+    --button-hover: #000000;/* хз */
 }
 
 .darkmode {
-    --background-color: #121212;
-    --text-color: #ffffff;
-    --header-background: #0f5739;
-    --header-text: #ffffff;
-    --footer-background: #1f1f1f;
-    --footer-text: #ffffff;
-    --table-background: #1f1f1f;
-    --table-border: #333;
-    --button-background: #005f73;
-    --button-hover: #2913a1;
+    --background-color: #000000;
+    --text-color: #FFFFFF;
+    --header-background: #0d105cce;
+    --header-text: #FFFFFF;
+    --table-background: #000000;
+    --table-border: #FFFFFF;
+    --button-background: #FFFFFF;
+    --button-hover: #000000;
 }
 
 body {
