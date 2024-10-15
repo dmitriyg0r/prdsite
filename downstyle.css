@@ -1,83 +1,406 @@
-/* Смотри тут css для Загрузок его как хочешь верти */
-#menu-toggle {
+/* Общие стили */
+* {
+    box-sizing: border-box;
+}
+
+:root {
+    --background-color: #f0f0f0; /* Серый фон для светлой темы */
+    --text-color: #333;
+    --header-background: #4CAF50;
+    --header-text: white;
+    --footer-background: #333;
+    --footer-text: white;
+    --table-background: white;
+    --table-border: #ddd;
+    --button-background: #008CBA;
+    --button-hover: #005f73;
+    --table-hover-background: #e0e0e0;
+    --text-container-background: #ffffff;
+    --text-container-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    --theme-toggle-background: #ffffff;
+    --theme-toggle-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    --theme-toggle-hover-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    --sun-icon-color: #ffcc00; /* Цвет солнца */
+    --moon-icon-color: #ffffff; /* Цвет луны */
+}
+
+.darkmode {
+    --background-color: #2c2c3a; /* Фиолетовый фон для темной темы */
+    --text-color: #ffffff;
+    --header-background: #6a5acd; /* Фиолетовый заголовок для темной темы */
+    --header-text: #ffffff;
+    --footer-background: #1f1f1f;
+    --footer-text: #ffffff;
+    --table-background: #3c3c4a; /* Фиолетовый фон для таблицы в темной теме */
+    --table-border: #4a4a5a; /* Фиолетовый бордер для таблицы в темной теме */
+    --button-background: #4b0082; /* Темно-фиолетовый фон для кнопки в темной теме */
+    --button-hover: #8a2be2; /* Светло-фиолетовый фон для кнопки при наведении в темной теме */
+    --table-hover-background: #4a4a5a; /* Фиолетовый фон при наведении на строку таблицы в темной теме */
+    --text-container-background: #2c2c3a; /* Фиолетовый фон для текстового контейнера в темной теме */
+    --text-container-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    --theme-toggle-background: #3c3c4a;
+    --theme-toggle-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    --theme-toggle-hover-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+    --sun-icon-color: #ffcc00; /* Цвет солнца */
+    --moon-icon-color: #ffffff; /* Цвет луны */
+}
+
+
+
+h1, h2 {
+    color: var(--header-text);
+    margin: 0;
+}
+
+main {
+    padding: 20px;
+    text-align: center;
+}
+
+.theme-toggle {
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    background-color: var(--theme-toggle-background);
+    border-radius: 50px;
+    padding: 5px;
+    box-shadow: var(--theme-toggle-shadow);
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.theme-toggle:hover {
+    box-shadow: var(--theme-toggle-hover-shadow);
+    transform: scale(1.05);
+}
+
+.theme-icon {
     width: 24px;
     height: 24px;
-    fill: white;
+    fill: var(--header-text);
+    transition: opacity 0.3s ease, fill 0.3s ease;
+}
+
+#sun-icon {
+    opacity: 1;
+    fill: var(--sun-icon-color);
+}
+
+#moon-icon {
+    opacity: 0;
+    fill: var(--moon-icon-color);
+}
+
+.darkmode #sun-icon {
+    opacity: 0;
+}
+
+.darkmode #moon-icon {
+    opacity: 1;
+}
+
+footer {
+    background-color: var(--footer-background);
+    color: var(--footer-text);
+    text-align: center;
+    padding: 10px 0;
+    position: fixed;
+    width: 100%;
+    bottom: 0;
+}
+
+html {
+    font-family: Calibri, Arial, Helvetica, sans-serif;
+    font-size: 11pt;
+    background-color: var(--background-color);
+}
+
+a.comment-indicator:hover + div.comment {
+    background: #ffd;
+    position: absolute;
+    display: block;
+    border: 1px solid black;
+    padding: 0.5em;
+}
+
+a.comment-indicator {
+    background: red;
+    display: inline-block;
+    border: 1px solid black;
+    width: 0.5em;
+    height: 0.5em;
+}
+
+div.comment {
+    display: none;
+}
+
+.table-container {
+    overflow-x: auto;
+    margin-bottom: 20px;
+    background-color: var(--table-background);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    padding: 20px;
+    border: 1px solid var(--table-border);
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 700px;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+}
+
+th, td {
+    padding: 15px;
+    text-align: center;
+    border-bottom: 1px solid var(--table-border);
+    color: var(--text-color);
+    font-family: 'Calibri';
+    font-size: 11pt;
+    background-color: var(--table-background);
+    transition: background-color 0.3s ease;
+}
+
+th {
+    background-color: var(--header-background);
+    color: var(--header-text);
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+tr:hover td {
+    background-color: var(--table-hover-background);
+}
+
+@media (max-width: 768px) {
+    .table-container {
+        overflow-x: scroll;
+    }
+
+    th, td {
+        padding: 10px;
+        font-size: 10pt;
+    }
+}
+
+@media (max-width: 480px) {
+    th, td {
+        padding: 8px;
+        font-size: 9pt;
+    }
+}
+
+td.style1, th.style1 {
+    background-color: #70AD47;
+    font-weight: bold;
+}
+
+td.style2, th.style2 {
+    background-color: #9BBB59;
+}
+
+td.style3, th.style3 {
+    background-color: #FFC000;
+}
+
+td.style4, th.style4 {
+    background-color: #FF0000;
+}
+
+td.style5, th.style5, td.style6, th.style6, td.style8, th.style8 {
+    background-color: #8064A2;
+}
+
+td.style7, th.style7 {
+    background-color: #4F81BD;
+}
+
+td.style9, th.style9 {
+    background-color: #C0504D;
+}
+
+td.style10, th.style10 {
+    background-color: #9BBB59;
+}
+
+td.style11, th.style11 {
+    background-color: #4F81BD;
+}
+
+.ps, .bot, .dz {
+    margin-left: 50%;
+    display: inline-block;
+}
+
+.header-controls {
+    display: flex;
+    align-items: center;
+}
+
+.container {
+    display: flex;
+    align-items: center; /* Выравнивание по вертикали */
+    padding-top: 55px;
+    justify-content: center; /* Выравнивание по горизонтали */
+}
+
+.qr {
+    margin-right: 20px; /* Отступ между QR-кодом и текстом */
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.qr:hover {
+    transform: scale(1.05);
+}
+
+.text-container {
+    flex: 1; /* Чтобы текст занимал оставшееся пространство */
+    background-color: var(--text-container-background);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: var(--text-container-shadow);
+    text-align: center;
+    max-width: 600px; /* Ограничение ширины для лучшего отображения */
+}
+
+.dz {
+    margin: 0; /* Убираем отступы у заголовка */
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--header-background);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.bot {
+    display: block; /* Чтобы ссылка занимала всю строку */
+    margin: 10px 0; /* Отступы для ссылки */
+    font-size: 18px;
+    color: var(--button-background);
+    text-decoration: none;
+    transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.bot:hover {
+    color: var(--button-hover);
+    transform: translateY(-2px);
+}
+
+.ps {
+    margin: 0; /* Убираем отступы у абзаца */
+    font-size: 14px;
+    color: var(--text-color);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+#menu-toggle {
+    cursor: pointer;
+    margin-left: 10px;
 }
 
 .menu {
     display: none;
     position: absolute;
     top: 60px;
-    right: 20px;
-    background-color: #4CAF50;
+    right: 10px;
+    background-color: var(--header-background);
     padding: 10px;
-    border-radius: 5px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-}
-
-.menu a {
-    display: block;
-    background-color: #4a4a5a;
-    text-decoration: none;
-    padding: 10px;
-    margin: 5px 0;
-    border-radius: 5px;
-}
-
-.menu a:hover {
-    background-color: #4a4a5a;
-}
-
-/* Основное содержимое */
-main {
-    padding: 20px;
-}
-
-.upload-section, .download-section {
-    background-color: white;
-    padding: 20px;
-    margin-bottom: 20px;
     border-radius: 5px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
+.menu a {
+    display: block;
+    color: var(--header-text);
+    text-decoration: none;
+    padding: 5px 0;
+}
+
+.menu a:hover {
+    text-decoration: underline;
+}
+
+.homework-item {
+    margin: 10px 0;
+    padding: 10px;
+    border: 1px solid var(--table-border);
+    background-color: var(--table-background);
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.homework-item strong {
+    color: var(--header-background);
+}
+
+.delete-button {
+    background-color: var(--button-background);
+    color: var(--header-text);
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.delete-button:hover {
+    background-color: var(--button-hover);
+}
+
+table.sheet0 col.col0 { width: 99.63333219pt; }
+table.sheet0 col.col1 { width: 139.62222062pt; }
+table.sheet0 col.col2 { width: 166.73333142pt; }
+table.sheet0 col.col3 { width: 152.49999825pt; }
+table.sheet0 col.col4 { width: 179.61110905pt; }
+table.sheet0 col.col5 { width: 208.07777539pt; }
+table.sheet0 col.col6 { width: 244.67777497pt; }
+table.sheet0 tr { height: 15pt; }
+
+/* Стили для страницы downloads */
+.upload-section, .download-section {
+    margin: 20px 0;
+    padding: 20px;
+    background-color: var(--table-background);
+    border-radius: 10px;
+    box-shadow: var(--text-container-shadow);
+}
+
 .upload-section h2, .download-section h2 {
-    margin-top: 0;
-    font-size: 20px;
-    color: #4CAF50;
+    margin-bottom: 20px;
 }
 
 #upload-form {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
 }
 
 #file-input {
     margin-bottom: 10px;
-    font-size: 20px;
-    color: #4CAF50;
 }
 
 #upload-form button {
-    background-color: #4CAF50;
-    background-color: #4a4a5a;
+    background-color: var(--button-background);
+    color: var(--header-text);
     border: none;
     padding: 10px 20px;
-    border-radius: 5px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
 }
 
 #upload-form button:hover {
-    background-color: #45a049;
+    background-color: var(--button-hover);
 }
 
 #upload-message {
     margin-top: 10px;
-    color: #4CAF50;
+    color: var(--header-background);
 }
 
 #file-list {
@@ -86,9 +409,10 @@ main {
 }
 
 #file-list li {
-    background-color: #4a4a5a;
+    margin: 10px 0;
     padding: 10px;
-    margin-bottom: 5px;
+    border: 1px solid var(--table-border);
+    background-color: var(--table-background);
     border-radius: 5px;
     display: flex;
     justify-content: space-between;
@@ -96,9 +420,11 @@ main {
 }
 
 #file-list li a {
-    color: #4CAF50;
+    color: var(--button-background);
     text-decoration: none;
+    transition: color 0.3s ease;
 }
+
 #file-list li a:hover {
-    text-decoration: underline;
+    color: var(--button-hover);
 }
