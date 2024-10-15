@@ -240,6 +240,13 @@ td.style11, th.style11 {
 
 .qr {
     margin-right: 20px; /* Отступ между QR-кодом и текстом */
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.qr:hover {
+    transform: scale(1.05);
 }
 
 .text-container {
@@ -257,6 +264,7 @@ td.style11, th.style11 {
     font-size: 24px;
     font-weight: bold;
     color: var(--header-background);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .bot {
@@ -265,17 +273,19 @@ td.style11, th.style11 {
     font-size: 18px;
     color: var(--button-background);
     text-decoration: none;
-    transition: color 0.3s ease;
+    transition: color 0.3s ease, transform 0.3s ease;
 }
 
 .bot:hover {
     color: var(--button-hover);
+    transform: translateY(-2px);
 }
 
 .ps {
     margin: 0; /* Убираем отступы у абзаца */
     font-size: 14px;
     color: var(--text-color);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 #menu-toggle {
