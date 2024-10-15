@@ -316,44 +316,74 @@ td.style11, th.style11 {
 
 #menu-toggle {
     cursor: pointer;
-    margin-left: 10px;
+    margin-left: 15px;
+    transition: transform 0.3s ease;
+}
+
+#menu-toggle:hover {
+    transform: scale(1.1);
 }
 
 .menu {
     display: none;
     position: absolute;
-    top: 60px;
-    right: 10px;
-    background-color: var(--header-background);
-    padding: 10px;
+    top: 74px;
+    right: 1px;
+    background: linear-gradient(135deg, var(--header-background), var(--header-background-dark));
+    padding: 15px;
     border-radius: 5px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    animation: fadeIn 0.3s ease;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    animation: fadeIn 0.3s ease, slideIn 0.3s ease;
     z-index: 1000;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .menu a {
-    display: block;
+    display: flex;
+    align-items: center;
     color: var(--header-text);
     text-decoration: none;
-    padding: 5px 10px;
-    transition: background-color 0.3s ease;
-    border-bottom: 1px solid var(--table-border); /* Добавляем разделение между кнопками */
+    padding: 10px 10px;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    border-bottom: 1px solid var(--table-border);
+    font-weight: 500;
 }
 
 .menu a:last-child {
-    border-bottom: none; /* Убираем разделение для последней кнопки */
+    border-bottom: none;
 }
 
 .menu a:hover {
-    background-color: var(--header-background-dark); /* Более тёмный оттенок для выделения */
-    color: var(--header-text); /* Цвет текста не меняется при наведении */
+    background-color: var(--header-background-dark);
+    transform: translateX(5px);
+}
+
+.menu a i {
+    margin-right: 10px;
+    font-size: 20px;
 }
 
 .darkmode .menu a:hover {
-    background-color: var(--header-background-dark); /* Более тёмный оттенок для выделения в темной теме */
+    background-color: var(--header-background-dark);
 }
 
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-10px);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
 @keyframes fadeIn {
     from {
         opacity: 0;
