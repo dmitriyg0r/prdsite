@@ -3,6 +3,8 @@
     box-sizing: border-box;
 }
 :root {
+    --header-background: #4CAF50; /* Основной цвет меню */
+    --header-background-dark: #388E3C; /* Более тёмный оттенок для выделения */    
     --background-color: #f0f0f0; /* Серый фон для светлой темы */
     --text-color: #333;
     --header-background: #4CAF50;
@@ -324,17 +326,37 @@ td.style11, th.style11 {
     padding: 10px;
     border-radius: 5px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 0.3s ease;
+    z-index: 1000;
 }
 
 .menu a {
     display: block;
     color: var(--header-text);
     text-decoration: none;
-    padding: 5px 0;
+    padding: 5px 10px;
+    transition: background-color 0.3s ease;
+    border-bottom: 1px solid var(--table-border); /* Добавляем разделение между кнопками */
+}
+
+.menu a:last-child {
+    border-bottom: none; /* Убираем разделение для последней кнопки */
 }
 
 .menu a:hover {
-    text-decoration: underline;
+    background-color: var(--header-background-dark); /* Более тёмный оттенок для выделения */
+    color: var(--header-text); /* Цвет текста не меняется при наведении */
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .homework-item {
