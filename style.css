@@ -4,10 +4,9 @@
 }
 :root {
     --header-background: #4CAF50; /* Основной цвет меню */
-    --header-background-dark: #388E3C; /* Более тёмный оттенок для выделения */    
+    --header-background-dark: #388E3C; /* Более тёмный оттенок для выделения */
     --background-color: #f0f0f0; /* Серый фон для светлой темы */
     --text-color: #333;
-    --header-background: #4CAF50;
     --header-text: white;
     --footer-background: #333;
     --footer-text: white;
@@ -44,6 +43,7 @@
     --theme-toggle-hover-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
     --sun-icon-color: #ffcc00; /* Цвет солнца */
     --moon-icon-color: #ffffff; /* Цвет луны */
+    --header-background-dark: #5c43a8; /* Более тёмный оттенок для выделения в темной теме */
 }
 
 body {
@@ -346,6 +346,10 @@ td.style11, th.style11 {
 .menu a:hover {
     background-color: var(--header-background-dark); /* Более тёмный оттенок для выделения */
     color: var(--header-text); /* Цвет текста не меняется при наведении */
+}
+
+.darkmode .menu a:hover {
+    background-color: var(--header-background-dark); /* Более тёмный оттенок для выделения в темной теме */
 }
 
 @keyframes fadeIn {
