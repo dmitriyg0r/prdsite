@@ -1,0 +1,94 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 0;
+    text-align: center;
+}
+
+.header-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+}
+
+.theme-toggle {
+    cursor: pointer;
+}
+
+.menu {
+    display: none;
+    position: absolute;
+    top: 60px;
+    right: 20px;
+    background-color: #4CAF50;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.menu a {
+    display: block;
+    padding: 10px 20px;
+    color: white;
+    text-decoration: none;
+}
+
+.menu a:hover {
+    background-color: #45a049;
+}
+
+main {
+    padding: 20px;
+}
+
+.upload-section, .download-section {
+    margin-bottom: 20px;
+}
+
+#upload-form {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+#upload-form input[type="file"] {
+    margin-bottom: 10px;
+}
+
+#upload-form button {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+#upload-form button:hover {
+    background-color: #45a049;
+}
+
+#file-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+#file-list li {
+    margin-bottom: 10px;
+}
+
+#file-list a {
+    color: #4CAF50;
+    text-decoration: none;
+}
+
+#file-list a:hover {
+    text-decoration: underline;
+}

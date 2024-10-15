@@ -49,4 +49,60 @@ document.getElementById('homework-form').addEventListener('submit', function(eve
             homeworkItem.remove();
         });
     }
+    document.addEventListener('DOMContentLoaded', () => {
+        const uploadForm = document.getElementById('upload-form');
+        const fileInput = document.getElementById('file-input');
+        const uploadMessage = document.getElementById('upload-message');
+        const fileList = document.getElementById('file-list');
+    
+        // Обработка загрузки файла
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+    
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+    
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+    
+                const result = await response.json();
+                if (response.ok) {
+                    uploadMessage.textContent = 'Файл успешно загружен!';
+                    uploadMessage.style.color = 'green';
+                    fetchFiles();
+                } else {
+                    uploadMessage.textContent = result.message;
+                    uploadMessage.style.color = 'red';
+                }
+            } catch (error) {
+                uploadMessage.textContent = 'Ошибка при загрузке файла.';
+                uploadMessage.style.color = 'red';
+            }
+        });
+    
+        // Получение списка файлов
+        async function fetchFiles() {
+            try {
+                const response = await fetch('/files');
+                const files = await response.json();
+                fileList.innerHTML = '';
+                files.forEach(file => {
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    a.href = `/download/${file}`;
+                    a.textContent = file;
+                    li.appendChild(a);
+                    fileList.appendChild(li);
+                });
+            } catch (error) {
+                console.error('Ошибка при получении списка файлов:', error);
+            }
+        }
+    
+        // Инициализация списка файлов при загрузке страницы
+        fetchFiles();
+    });
 });
