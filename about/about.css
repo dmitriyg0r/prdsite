@@ -9,12 +9,85 @@
     align-items: flex-start;
 }
 
-.developer-links a {
-    margin: 5px 0;
-    text-decoration: none;
-    color: #007bff;
+.company-name {
+    font-size: 270px;
+    font-weight: bold;
+    background: linear-gradient(45deg, #0000ff, #4b0082, #8b00ff, #007bff, #00bfff, #0000ff);
+    background-size: 400% 400%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gradient 10s ease infinite;
+    margin: 20px 0;
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.5s ease, transform 0.5s ease;
 }
 
-.developer-links a:hover {
-    text-decoration: underline;
+.company-name.hidden {
+    opacity: 0;
+    transform: translateY(-150px);
+}
+
+.developers-phrase {
+    font-size: 40px;
+    font-weight: bold;
+    background-color: #0077be; /* Океанический цвет */
+    color: white;
+    padding: 15px;
+    margin-top: 50px; /* Смещение вниз */
+    opacity: 0;
+    transform: translateX(100%);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    position: absolute;
+    right: 50px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    border-radius: 10px; /* Округлые углы */
+    border: 2px solid #005580; /* Более темный цвет рамки */
+}
+
+.developers-phrase.visible {
+    opacity: 1;
+    transform: translateX(0) translateY(-50%);
+}
+.additional-phrase {
+    font-size: 40px;
+    font-weight: bold;
+    background-color: #0077be; /* Океанический цвет */
+    color: white;
+    padding: 15px;
+    margin-top: 360px; /* Смещение вниз на 100px от developers-phrase */
+    opacity: 0;
+    transform: translateX(-100%);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    position: absolute;
+    left: 20px; /* Позиция слева */
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Выравнивание текста слева */
+    border-radius: 10px; /* Округлые углы */
+    border: 2px solid #005580; /* Более темный цвет рамки */
+}
+
+.additional-phrase.visible {
+    opacity: 1;
+    transform: translateX(0) translateY(-50%);
+}
+
+
+@keyframes gradient {
+    0% {
+        background-position: 0% 0%;
+    }
+    50% {
+        background-position: 100% 100%;
+    }
+    100% {
+        background-position: 0% 0%;
+    }
 }
