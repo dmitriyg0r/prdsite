@@ -201,6 +201,10 @@ td.style11, th.style11 {
     display: flex;
     align-items: center;
 }
+.qr{
+    padding-left: 15%;
+    padding-top: -10px;
+}
 
 #menu-toggle {
     cursor: pointer;
