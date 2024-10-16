@@ -422,6 +422,17 @@ td.style11, th.style11 {
 .delete-button:hover {
     background-color: var(--button-hover);
 }
+.news{ /* Новости */
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center; /* Выравнивание по вертикали */
+    justify-content: center; /* Выравнивание по горизонтали слева */
+    flex-direction: column; /* Расположение элементов вертикально */
+}
+.news h1{
+    margin-bottom: -5px; /* Отрицательный отступ снизу для сближения текста и заголовка */
+}
 
 table.sheet0 col.col0 { width: 99.63333219pt; }
 table.sheet0 col.col1 { width: 139.62222062pt; }
