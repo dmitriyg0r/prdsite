@@ -128,9 +128,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const firstCell = row.querySelector('td:first-child');
             if (firstCell) {
                 if (firstCell.textContent.trim() === todayName) {
-                    row.classList.add('today-highlight');
+                    firstCell.classList.add('today-highlight');
+                    firstCell.style.color = 'blue';  // Добавляем синий цвет
+                    firstCell.style.fontWeight = 'bold';  // Добавляем жирный шрифт
                 } else {
-                    row.classList.remove('today-highlight');
+                    firstCell.classList.remove('today-highlight');
+                    firstCell.style.color = '';  // Сбрасываем цвет
+                    firstCell.style.fontWeight = '';  // Сбрасываем жирность шрифта
                 }
             }
         });
