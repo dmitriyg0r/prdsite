@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Домашнее задание</title>
+    <title>Мемы</title>
     <link rel="stylesheet" href="../style.css">
 </head>
 <body>
@@ -32,7 +32,20 @@
     </header>
 
     <main>
-        
+        <div class="meme-container">
+            <h2>Мемы группы</h2>
+            <div id="meme-gallery">
+                <!-- Здесь будут отображаться мемы -->
+            </div>
+            <div class="upload-section">
+                <h3>Загрузить новый мем</h3>
+                <form id="meme-upload-form">
+                    <input type="file" id="meme-file-input" accept="image/*" required>
+                    <button type="submit">Загрузить</button>
+                </form>
+                <p id="upload-message"></p>
+            </div>
+        </div>
     </main>
 
     <script src="../main.js"></script>

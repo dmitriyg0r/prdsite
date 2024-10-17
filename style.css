@@ -53,7 +53,7 @@ body {
     transition: background-color 0.3s, color 0.3s;
     margin: 0;
     padding: 0;
-    height: 1000vw;
+    min-height: 100vh;
     background-color: var(--background-color);
     color: var(--text-color);
 }
@@ -61,12 +61,12 @@ body {
 header {
     background-color: var(--header-background);
     color: var(--header-text);
-    padding: 1em 0;
+    padding: 1em;
     text-align: center;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 20px;
+    flex-wrap: wrap;
 }
 
 main {
@@ -115,10 +115,9 @@ main {
     opacity: 1;
 }
 
-
 html {
     font-family: Calibri, Arial, Helvetica, sans-serif;
-    font-size: 11pt;
+    font-size: 16px;
     background-color: var(--background-color);
 }
 
@@ -148,26 +147,26 @@ div.comment {
     background-color: var(--table-background);
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     border-radius: 10px;
-    padding: 20px;
+    padding: 10px;
     border: 1px solid var(--table-border);
 }
 
 table {
     border-collapse: collapse;
     width: 100%;
-    min-width: 700px;
+    min-width: 300px;
     border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
 }
 
 th, td {
-    padding: 15px;
+    padding: 12px;
     text-align: center;
     border-bottom: 1px solid var(--table-border);
     color: var(--text-color);
     font-family: 'Calibri';
-    font-size: 11pt;
+    font-size: 14px;
     background-color: var(--table-background);
     transition: background-color 0.3s ease;
 }
@@ -189,15 +188,58 @@ tr:hover td {
     }
 
     th, td {
-        padding: 10px;
-        font-size: 10pt;
+        padding: 8px;
+        font-size: 12px;
+    }
+
+    header {
+        flex-direction: column;
+    }
+
+    .header-controls {
+        margin-top: 10px;
+    }
+
+    .container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .qr {
+        margin-right: 0;
+        margin-bottom: 20px;
+    }
+
+    .text-container {
+        padding: 15px;
+    }
+
+    .dz {
+        font-size: 20px;
+    }
+
+    .bot {
+        font-size: 16px;
+    }
+
+    .ps {
+        font-size: 12px;
     }
 }
 
 @media (max-width: 480px) {
     th, td {
-        padding: 8px;
-        font-size: 9pt;
+        padding: 6px;
+        font-size: 10px;
+    }
+
+    .menu {
+        width: 100%;
+        right: 0;
+    }
+
+    .menu a {
+        padding: 10px;
     }
 }
 
@@ -239,29 +281,33 @@ td.style11, th.style11 {
 }
 
 .ps, .bot, .dz {
-    margin-left: 50%;
-    display: inline-block;
+    margin-left: 0;
+    display: block;
+    text-align: center;
 }
 
 .header-controls {
     display: flex;
     align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
 }
 
 .container {
     display: flex;
-    align-items: center; /* Выравнивание по вертикали */
-    padding-top: 55px;
-    justify-content: center; /* Выравнивание по горизонтали */
+    align-items: center;
+    padding-top: 30px;
+    justify-content: center;
+    flex-wrap: wrap;
 }
 
 .qr {
-    margin-right: 20px; /* Отступ между QR-кодом и текстом */
+    margin-right: 20px;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease;
-    width: 200px;
-    height: 200px;
+    width: 150px;
+    height: 150px;
 }
 
 .qr:hover {
@@ -269,26 +315,27 @@ td.style11, th.style11 {
 }
 
 .text-container {
-    flex: 1; /* Чтобы текст занимал оставшееся пространство */
+    flex: 1;
     background-color: var(--text-container-background);
     padding: 20px;
     border-radius: 10px;
     box-shadow: var(--text-container-shadow);
     text-align: center;
-    max-width: 600px; /* Ограничение ширины для лучшего отображения */
+    max-width: 100%;
+    margin-top: 20px;
 }
 
 .dz {
-    margin: 0; /* Убираем отступы у заголовка */
-    font-size: 24px;
+    margin: 0;
+    font-size: 22px;
     font-weight: bold;
     color: var(--header-background);
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .bot {
-    display: block; /* Чтобы ссылка занимала всю строку */
-    margin: 10px 0; /* Отступы для ссылки */
+    display: inline-block;
+    margin: 10px 0;
     font-size: 18px;
     color: var(--button-background);
     text-decoration: none;
@@ -301,7 +348,7 @@ td.style11, th.style11 {
 }
 
 .ps {
-    margin: 0; /* Убираем отступы у абзаца */
+    margin: 10px 0 0;
     font-size: 14px;
     color: var(--text-color);
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
@@ -423,6 +470,7 @@ td.style11, th.style11 {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
 }
 
 .homework-item strong {
@@ -436,32 +484,47 @@ td.style11, th.style11 {
     padding: 5px 10px;
     cursor: pointer;
     border-radius: 5px;
+    margin-top: 5px;
 }
 
 .delete-button:hover {
     background-color: var(--button-hover);
 }
 .today-highlight {
-    background-color: var(--today-highlight) !important; /* Синий цвет для подсветки сегодняшнего дня */
+    background-color: var(--today-highlight) !important;
     font-weight: bold;
 }
-.news{ /* Новости */
+.news{
     margin: 0;
-    padding: 0;
+    padding: 20px;
     display: flex;
-    align-items: center; /* Выравнивание по вертикали */
-    justify-content: center; /* Выравнивание по горизонтали слева */
-    flex-direction: column; /* Расположение элементов вертикально */
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
 }
 .news h1{
-    margin-bottom: -5px; /* Отрицательный отступ снизу для сближения текста и заголовка */
+    margin-bottom: 10px;
+    font-size: 24px;
+}
+.news p {
+    font-size: 16px;
+    text-align: center;
 }
 
-table.sheet0 col.col0 { width: 99.63333219pt; }
-table.sheet0 col.col1 { width: 139.62222062pt; }
-table.sheet0 col.col2 { width: 166.73333142pt; }
-table.sheet0 col.col3 { width: 152.49999825pt; }
-table.sheet0 col.col4 { width: 179.61110905pt; }
-table.sheet0 col.col5 { width: 208.07777539pt; }
-table.sheet0 col.col6 { width: 244.67777497pt; }
-table.sheet0 tr { height: 15pt; }
+@media (max-width: 600px) {
+    .news h1 {
+        font-size: 20px;
+    }
+    .news p {
+        font-size: 14px;
+    }
+}
+
+table.sheet0 col.col0 { width: 100%; }
+table.sheet0 col.col1 { width: 100%; }
+table.sheet0 col.col2 { width: 100%; }
+table.sheet0 col.col3 { width: 100%; }
+table.sheet0 col.col4 { width: 100%; }
+table.sheet0 col.col5 { width: 100%; }
+table.sheet0 col.col6 { width: 100%; }
+table.sheet0 tr { height: auto; }
