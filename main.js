@@ -57,6 +57,32 @@ if (homeworkForm) {
     });
 }
 
+// Добавьте эту функцию в начало файла
+function getWeekNumber(d) {
+    d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+    var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    var weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    return weekNo;
+}
+
+// Добавьте эту функцию
+function showCorrectTable() {
+    const currentWeek = getWeekNumber(new Date());
+    const tables = document.querySelectorAll('.table-container');
+    
+    if (currentWeek % 2 === 0) {
+        // Четная неделя - показываем вторую таблицу
+        tables[0].style.display = 'none';
+        tables[1].style.display = 'block';
+    } else {
+        // Нечетная неделя - показываем первую таблицу
+        tables[0].style.display = 'block';
+        tables[1].style.display = 'none';
+    }
+}
+
+// Перемещаем обработчик события DOMContentLoaded на верхний уровень
 document.addEventListener('DOMContentLoaded', () => {
     const uploadForm = document.getElementById('upload-form');
     const fileInput = document.getElementById('file-input');
@@ -117,32 +143,34 @@ document.addEventListener('DOMContentLoaded', () => {
     // Инициализация списка файлов при загрузке страницы
     fetchFiles();
 
-    // Подсветка сегодняшнего дня в таблице
-    function highlightToday() {
-        const today = new Date();
-        const dayOfWeek = today.getDay();
-        const daysOfWeek = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
-        const todayName = daysOfWeek[dayOfWeek];
-
-        document.querySelectorAll('table tr').forEach(row => {
-            const firstCell = row.querySelector('td:first-child');
-            if (firstCell) {
-                if (firstCell.textContent.trim() === todayName) {
-                    firstCell.classList.add('today-highlight');
-                    firstCell.style.fontWeight = 'bold';
-                    firstCell.style.color = 'white';  // Устанавливаем белый цвет текста
-                } else {
-                    firstCell.classList.remove('today-highlight');
-                    firstCell.style.color = '';  // Сбрасываем цвет
-                    firstCell.style.fontWeight = '';  // Сбрасываем жирность шрифта
-                }
-            }
-        });
-    }
+    // Вызываем функцию для отображения правильной таблицы
+    showCorrectTable();
 
     // Вызываем функцию подсветки при загрузке страницы
     highlightToday();
 
-    // Обновляем подсветку каждую минуту
-    setInterval(highlightToday, 60000);
+    // Обновляем подсветку и таблицу каждую минуту
+    setInterval(() => {
+        highlightToday();
+        showCorrectTable();
+    }, 60000);
 });
+
+// Подсветка сегодняшнего дня в таблице
+function highlightToday() {
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    const daysOfWeek = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
+    const todayName = daysOfWeek[dayOfWeek];
+
+    document.querySelectorAll('table tr').forEach(row => {
+        const firstCell = row.querySelector('td:first-child, th:first-child');
+        if (firstCell) {
+            if (firstCell.textContent.trim() === todayName) {
+                row.classList.add('today-highlight');
+            } else {
+                row.classList.remove('today-highlight');
+            }
+        }
+    });
+}

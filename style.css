@@ -1,4 +1,4 @@
-/* Вот это не трож это основная логика css можешь только поменять цвета */
+/* Вот это не трогай, это основная логика CSS. Можешь только поменять цвета */
 * {
     box-sizing: border-box;
 }
@@ -165,7 +165,7 @@ th, td {
     text-align: center;
     border-bottom: 1px solid var(--table-border);
     color: var(--text-color);
-    font-family: 'Calibri';
+    font-family: 'Calibri', sans-serif;
     font-size: 14px;
     background-color: var(--table-background);
     transition: background-color 0.3s ease;
@@ -374,7 +374,7 @@ td.style11, th.style11 {
     padding: 15px;
     border-radius: 10px;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
-    animation: fadeIn 0.4s ease-out, slideIn 0.4s ease-out;
+    animation: fadeIn 0.4s ease-out;
     z-index: 1000;
     border: 1px solid rgba(255, 255, 255, 0.2);
     backdrop-filter: blur(5px);
@@ -436,23 +436,6 @@ td.style11, th.style11 {
 @keyframes fadeIn {
     from {
         opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
-}
-
-@keyframes slideIn {
-    from {
-        transform: translateY(-10px);
-    }
-    to {
-        transform: translateY(0);
-    }
-}
-@keyframes fadeIn {
-    from {
-        opacity: 0;
         transform: translateY(-10px);
     }
     to {
@@ -490,11 +473,13 @@ td.style11, th.style11 {
 .delete-button:hover {
     background-color: var(--button-hover);
 }
+
 .today-highlight {
     background-color: var(--today-highlight) !important;
     font-weight: bold;
 }
-.news{
+
+.news {
     margin: 0;
     padding: 20px;
     display: flex;
@@ -502,10 +487,12 @@ td.style11, th.style11 {
     justify-content: center;
     flex-direction: column;
 }
-.news h1{
+
+.news h1 {
     margin-bottom: 10px;
     font-size: 24px;
 }
+
 .news p {
     font-size: 16px;
     text-align: center;
@@ -520,11 +507,22 @@ td.style11, th.style11 {
     }
 }
 
-table.sheet0 col.col0 { width: 100%; }
-table.sheet0 col.col1 { width: 100%; }
-table.sheet0 col.col2 { width: 100%; }
-table.sheet0 col.col3 { width: 100%; }
-table.sheet0 col.col4 { width: 100%; }
-table.sheet0 col.col5 { width: 100%; }
-table.sheet0 col.col6 { width: 100%; }
-table.sheet0 tr { height: auto; }
+table.sheet0 col.col0,
+table.sheet0 col.col1,
+table.sheet0 col.col2,
+table.sheet0 col.col3,
+table.sheet0 col.col4,
+table.sheet0 col.col5,
+table.sheet0 col.col6 {
+    width: 14.28%; /* 100% / 7 columns */
+}
+
+table.sheet0 tr {
+    height: auto;
+}
+
+.today-highlight td {
+    background-color: var(--today-highlight) !important;
+    font-weight: bold;
+    color: var(--header-text) !important;
+}
