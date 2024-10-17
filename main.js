@@ -129,7 +129,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (firstCell) {
                 if (firstCell.textContent.trim() === todayName) {
                     firstCell.classList.add('today-highlight');
-                    firstCell.style.fontWeight = 'bold';  // Добавляем жирный шрифт
+                    firstCell.style.fontWeight = 'bold';
+                    firstCell.style.color = 'white';  // Устанавливаем белый цвет текста
                 } else {
                     firstCell.classList.remove('today-highlight');
                     firstCell.style.color = '';  // Сбрасываем цвет

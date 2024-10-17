@@ -22,7 +22,7 @@
     --theme-toggle-hover-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
     --sun-icon-color: #ffcc00; /* Цвет солнца */
     --moon-icon-color: #ffffff; /* Цвет луны */
-    --today-highlight: rgba(0, 123, 255, 0.3); /* Синий цвет для подсветки сегодняшнего дня */
+    --today-highlight: #04578fb0; /* Синий цвет для подсветки сегодняшнего дня */
 }
 
 .darkmode {
@@ -45,7 +45,7 @@
     --sun-icon-color: #ffcc00; /* Цвет солнца */
     --moon-icon-color: #ffffff; /* Цвет луны */
     --header-background-dark: #5c43a8; /* Более тёмный оттенок для выделения в темной теме */
-    --today-highlight: rgba(0, 123, 255, 0.5); /* Синий цвет для подсветки сегодняшнего дня в темной теме */
+    --today-highlight: #695acda5; /* Синий цвет для подсветки сегодняшнего дня в темной теме */
 }
 
 body {
