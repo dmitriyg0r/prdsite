@@ -22,6 +22,7 @@
     --theme-toggle-hover-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
     --sun-icon-color: #ffcc00; /* Цвет солнца */
     --moon-icon-color: #ffffff; /* Цвет луны */
+    --today-highlight: rgba(0, 123, 255, 0.3); /* Синий цвет для подсветки сегодняшнего дня */
 }
 
 .darkmode {
@@ -44,6 +45,7 @@
     --sun-icon-color: #ffcc00; /* Цвет солнца */
     --moon-icon-color: #ffffff; /* Цвет луны */
     --header-background-dark: #5c43a8; /* Более тёмный оттенок для выделения в темной теме */
+    --today-highlight: rgba(0, 123, 255, 0.5); /* Синий цвет для подсветки сегодняшнего дня в темной теме */
 }
 
 body {
@@ -113,15 +115,6 @@ main {
     opacity: 1;
 }
 
-footer {
-    background-color: var(--footer-background);
-    color: var(--footer-text);
-    text-align: center;
-    padding: 10px 0;
-    position: fixed;
-    width: 100%;
-    bottom: 0;
-}
 
 html {
     font-family: Calibri, Arial, Helvetica, sans-serif;
@@ -447,6 +440,10 @@ td.style11, th.style11 {
 
 .delete-button:hover {
     background-color: var(--button-hover);
+}
+.today-highlight {
+    background-color: var(--today-highlight) !important; /* Синий цвет для подсветки сегодняшнего дня */
+    font-weight: bold;
 }
 .news{ /* Новости */
     margin: 0;

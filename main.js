@@ -27,47 +27,56 @@ document.getElementById('menu-toggle').addEventListener('click', function() {
 });
 
 // Добавляем обработчик события для формы добавления задания
-document.getElementById('homework-form').addEventListener('submit', function(event) {
-    event.preventDefault();
+const homeworkForm = document.getElementById('homework-form');
+if (homeworkForm) {
+    homeworkForm.addEventListener('submit', function(event) {
+        event.preventDefault();
 
-    const subject = document.getElementById('subject').value;
-    const task = document.getElementById('task').value;
+        const subject = document.getElementById('subject').value;
+        const task = document.getElementById('task').value;
 
-    if (subject && task) {
-        const homeworkItem = document.createElement('div');
-        homeworkItem.classList.add('homework-item');
-        homeworkItem.innerHTML = `<strong>${subject}:</strong> ${task} <button class="delete-button">Удалить</button>`;
+        if (subject && task) {
+            const homeworkItem = document.createElement('div');
+            homeworkItem.classList.add('homework-item');
+            homeworkItem.innerHTML = `<strong>${subject}:</strong> ${task} <button class="delete-button">Удалить</button>`;
 
-        document.getElementById('homework-list').appendChild(homeworkItem);
+            const homeworkList = document.getElementById('homework-list');
+            if (homeworkList) {
+                homeworkList.appendChild(homeworkItem);
 
-        // Очищаем форму
-        document.getElementById('subject').value = '';
-        document.getElementById('task').value = '';
+                // Очищаем форму
+                document.getElementById('subject').value = '';
+                document.getElementById('task').value = '';
 
-        // Добавляем обработчик события для кнопки удаления
-        homeworkItem.querySelector('.delete-button').addEventListener('click', function() {
-            homeworkItem.remove();
-        });
-    }
-    document.addEventListener('DOMContentLoaded', () => {
-        const uploadForm = document.getElementById('upload-form');
-        const fileInput = document.getElementById('file-input');
-        const uploadMessage = document.getElementById('upload-message');
-        const fileList = document.getElementById('file-list');
-    
-        // Обработка загрузки файла
+                // Добавляем обработчик события для кнопки удаления
+                homeworkItem.querySelector('.delete-button').addEventListener('click', function() {
+                    homeworkItem.remove();
+                });
+            }
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const uploadForm = document.getElementById('upload-form');
+    const fileInput = document.getElementById('file-input');
+    const uploadMessage = document.getElementById('upload-message');
+    const fileList = document.getElementById('file-list');
+
+    // Обработка загрузки файла
+    if (uploadForm) {
         uploadForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-    
+
             const formData = new FormData();
             formData.append('file', fileInput.files[0]);
-    
+
             try {
                 const response = await fetch('/upload', {
                     method: 'POST',
                     body: formData
                 });
-    
+
                 const result = await response.json();
                 if (response.ok) {
                     uploadMessage.textContent = 'Файл успешно загружен!';
@@ -82,12 +91,14 @@ document.getElementById('homework-form').addEventListener('submit', function(eve
                 uploadMessage.style.color = 'red';
             }
         });
-    
-        // Получение списка файлов
-        async function fetchFiles() {
-            try {
-                const response = await fetch('/files');
-                const files = await response.json();
+    }
+
+    // Получение списка файлов
+    async function fetchFiles() {
+        try {
+            const response = await fetch('/files');
+            const files = await response.json();
+            if (fileList) {
                 fileList.innerHTML = '';
                 files.forEach(file => {
                     const li = document.createElement('li');
@@ -97,12 +108,37 @@ document.getElementById('homework-form').addEventListener('submit', function(eve
                     li.appendChild(a);
                     fileList.appendChild(li);
                 });
-            } catch (error) {
-                console.error('Ошибка при получении списка файлов:', error);
             }
+        } catch (error) {
+            console.error('Ошибка при получении списка файлов:', error);
         }
-    
-        // Инициализация списка файлов при загрузке страницы
-        fetchFiles();
-    });
+    }
+
+    // Инициализация списка файлов при загрузке страницы
+    fetchFiles();
+
+    // Подсветка сегодняшнего дня в таблице
+    function highlightToday() {
+        const today = new Date();
+        const dayOfWeek = today.getDay();
+        const daysOfWeek = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
+        const todayName = daysOfWeek[dayOfWeek];
+
+        document.querySelectorAll('table tr').forEach(row => {
+            const firstCell = row.querySelector('td:first-child');
+            if (firstCell) {
+                if (firstCell.textContent.trim() === todayName) {
+                    row.classList.add('today-highlight');
+                } else {
+                    row.classList.remove('today-highlight');
+                }
+            }
+        });
+    }
+
+    // Вызываем функцию подсветки при загрузке страницы
+    highlightToday();
+
+    // Обновляем подсветку каждую минуту
+    setInterval(highlightToday, 60000);
 });
