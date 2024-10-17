@@ -1,4 +1,4 @@
-/* что то чтрашное */
+/* Responsive styles */
 #developers {
     margin-top: 40px;
     padding: 20px;
@@ -21,6 +21,9 @@
     text-decoration: none;
     border-radius: 5px;
     transition: all 0.3s ease;
+    width: 100%;
+    max-width: 300px;
+    text-align: center;
 }
 
 .developer-links a:hover {
@@ -30,7 +33,7 @@
 }
 
 .company-name {
-    font-size: 80px;
+    font-size: 10vw;
     font-weight: bold;
     background: linear-gradient(45deg, #0000ff, #4b0082, #8b00ff, #007bff, #00bfff, #0000ff);
     background-size: 400% 400%;
@@ -65,10 +68,9 @@
     }
 }
 
-
 .developers-phrase, .additional-phrase {
     margin: 20px 0;
-    font-size: 18px;
+    font-size: 16px;
     line-height: 1.6;
 }
 
@@ -84,4 +86,38 @@
 
 #about-us a:hover {
     transform: scale(1.05);
+}
+
+@media screen and (max-width: 768px) {
+    #developers {
+        padding: 15px;
+    }
+
+    .company-name {
+        font-size: 12vw;
+        margin: 30px 0;
+    }
+
+    .developers-phrase, .additional-phrase {
+        font-size: 14px;
+    }
+
+    #about-us p {
+        margin-bottom: 10px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .company-name {
+        font-size: 14vw;
+        margin: 20px 0;
+    }
+
+    .developers-phrase, .additional-phrase {
+        font-size: 13px;
+    }
+
+    .developer-links a {
+        padding: 8px 16px;
+    }
 }
