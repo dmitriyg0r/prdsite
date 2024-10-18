@@ -1,16 +1,45 @@
-/* Responsive styles */
+/* Общий шрифт для всего */
+body, p, a, div, h1, h2, h3, h4, h5, h6 {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 400;
+}
+
+/* Шрифт для .company-name */
+.company-name {
+    font-size: 10vw;
+    font-weight: bold;
+    background: linear-gradient(45deg, #0000ff, #4b0082, #8b00ff, #007bff, #00bfff, #0000ff);
+    background-size: 400% 400%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    animation: gradient 10s ease infinite;
+    margin: 40px 0;
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    text-align: center;
+    letter-spacing: 5px;
+    line-height: 1;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700; /* Увеличиваем жирность шрифта для .company-name */
+}
+
+/* Остальные стили остаются без изменений */
 #developers {
     margin-top: 40px;
     padding: 20px;
     background-color: rgba(255, 255, 255, 0.1);
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    font-family: 'Roboto', sans-serif;
-    font-weight: 300;
-    width: 50%; /* Уменьшаем ширину элемента до 50% от доступной ширины родительского элемента */
-    max-width: 400px; /* Ограничиваем максимальную ширину элемента до 600 пикселей */
-    margin-left: auto; /* Центрируем элемент по горизонтали */
-    margin-right: auto; /* Центрируем элемент по горизонтали */
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 400;
+    width: 50%;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .developer-links {
@@ -31,7 +60,7 @@
     max-width: 300px;
     text-align: center;
     font-family: 'Montserrat', sans-serif;
-    font-weight: 300;
+    font-weight: 400;
 }
 
 .developer-links a:hover {
@@ -40,35 +69,16 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-.company-name {
-    font-size: 10vw;
-    font-weight: bold;
-    background: linear-gradient(45deg, #0000ff, #4b0082, #8b00ff, #007bff, #00bfff, #0000ff);
-    background-size: 400% 400%;
-    background-clip: text;
-    -webkit-background-clip: text;
-    color: transparent;
-    -webkit-text-fill-color: transparent;
-    animation: gradient 10s ease infinite;
-    margin: 40px 0;
-    opacity: 1;
-    transform: translateY(0);
-    transition: opacity 0.5s ease, transform 0.5s ease;
-    text-align: center;
-    letter-spacing: 5px; /* Уменьшенное расстояние между буквами */
-    line-height: 1; /* Уменьшенное расстояние между строками */
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 300;
-}
-
 body {
     background-image: url('../clennnn.png');
-    background-size: 30% auto; /* Уменьшаем изображение до 30% от ширины */
-    background-position: 40px 97.9%; /* Сдвигаем изображение на 10 пикселей влево */
+    background-size: 30% auto;
+    background-position: 40px 97.9%;
     background-repeat: no-repeat;
-    position: relative; /* Для позиционирования псевдоэлемента */
+    position: relative;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 400;
 }
+
 .company-name.hidden {
     opacity: 0;
     transform: translateY(-150px);
@@ -90,14 +100,14 @@ body {
     margin: 20px 0;
     font-size: 16px;
     line-height: 1.6;
-    font-family: 'Roboto', sans-serif;
-    font-weight: 300;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 400;
 }
 
 #about-us p {
     margin-bottom: 15px;
-    font-family: 'Roboto', sans-serif;
-    font-weight: 300;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 400;
 }
 
 #about-us a {
@@ -105,23 +115,22 @@ body {
     margin-top: 20px;
     transition: transform 0.3s ease;
     font-family: 'Montserrat', sans-serif;
-    font-weight: 300;
+    font-weight: 400;
 }
 
 #about-us a:hover {
     transform: scale(1.05);
 }
 
-/* Стили для картинки с рамкой и тенью */
 #about-us img {
-    border-radius: 20px; /* Закругление углов */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Тень */
-    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Плавный переход для эффектов */
+    border-radius: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 #about-us img:hover {
-    transform: scale(1.05); /* Увеличение картинки при наведении */
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); /* Более сильная тень при наведении */
+    transform: scale(1.05);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
 }
 
 @media screen and (max-width: 768px) {
