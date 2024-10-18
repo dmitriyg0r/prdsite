@@ -5,6 +5,12 @@
     background-color: rgba(255, 255, 255, 0.1);
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    font-family: 'Roboto', sans-serif;
+    font-weight: 300;
+    width: 50%; /* Уменьшаем ширину элемента до 50% от доступной ширины родительского элемента */
+    max-width: 400px; /* Ограничиваем максимальную ширину элемента до 600 пикселей */
+    margin-left: auto; /* Центрируем элемент по горизонтали */
+    margin-right: auto; /* Центрируем элемент по горизонтали */
 }
 
 .developer-links {
@@ -24,6 +30,8 @@
     width: 100%;
     max-width: 300px;
     text-align: center;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 300;
 }
 
 .developer-links a:hover {
@@ -47,10 +55,20 @@
     transform: translateY(0);
     transition: opacity 0.5s ease, transform 0.5s ease;
     text-align: center;
-    letter-spacing: 2px;
+    letter-spacing: 5px; /* Уменьшенное расстояние между буквами */
+    line-height: 1; /* Уменьшенное расстояние между строками */
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 300;
 }
 
+body {
+    background-image: url('../clennnn.png');
+    background-size: 30% auto; /* Уменьшаем изображение до 30% от ширины */
+    background-position: 40px 97.9%; /* Сдвигаем изображение на 10 пикселей влево */
+    background-repeat: no-repeat;
+    position: relative; /* Для позиционирования псевдоэлемента */
+}
 .company-name.hidden {
     opacity: 0;
     transform: translateY(-150px);
@@ -72,20 +90,38 @@
     margin: 20px 0;
     font-size: 16px;
     line-height: 1.6;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 300;
 }
 
 #about-us p {
     margin-bottom: 15px;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 300;
 }
 
 #about-us a {
     display: inline-block;
     margin-top: 20px;
     transition: transform 0.3s ease;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 300;
 }
 
 #about-us a:hover {
     transform: scale(1.05);
+}
+
+/* Стили для картинки с рамкой и тенью */
+#about-us img {
+    border-radius: 20px; /* Закругление углов */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Тень */
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Плавный переход для эффектов */
+}
+
+#about-us img:hover {
+    transform: scale(1.05); /* Увеличение картинки при наведении */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); /* Более сильная тень при наведении */
 }
 
 @media screen and (max-width: 768px) {
