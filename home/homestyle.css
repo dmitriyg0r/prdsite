@@ -1,88 +1,95 @@
-/* Стили для вкладки "Домашнее задание" */
-
-:root {
-    --header-background: #04578f; /* Основной цвет меню */
-    --header-background-dark: #033e63; /* Более тёмный оттенок для выделения */
-    --header-text: #FFFFFF; /* Цвет текста в меню */
-    --table-background: #F5F5F5; /* Фон для таблиц и форм */
-    --table-border: #DDDDDD; /* Цвет границ */
-    --button-background: #04578f; /* Фон для кнопок */
-    --button-hover: #033e63; /* Фон для кнопок при наведении */
-    --text-color: #333333; /* Основной цвет текста */
-}
-
-/* Форма добавления задания */
-#homework-form {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 20px;
+/* Стили для таблицы домашних заданий */
+#homework-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
     background-color: var(--table-background);
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-#homework-form label {
-    margin-bottom: 10px;
-    font-weight: bold;
-    color: var(--text-color);
+#homework-table th,
+#homework-table td {
+    border: 1px solid var(--table-border);
+    padding: 10px;
+    text-align: left;
+}
+
+#homework-table th {
+    background-color: var(--header-background);
+    color: var(--header-text);
+}
+
+/* Стили для статусов заданий */
+#homework-table .status-in-progress {
+    background-color: rgba(255, 255, 0, 0.1);
+}
+
+#homework-table .status-completed {
+    background-color: rgba(0, 255, 0, 0.1);
+}
+
+#homework-table .status-not-started {
+    background-color: rgba(255, 0, 0, 0.1);
+}
+
+/* Обновляем стиль для четных строк, чтобы он не перекрывал цвета статусов */
+#homework-table tr:nth-child(even) {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Обновляем стиль для наведения, чтобы он не перекрывал цвета статусов */
+#homework-table tr:hover {
+    filter: brightness(0.95);
+}
+
+/* Стили для формы */
+#homework-form {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
 }
 
 #homework-form input,
-#homework-form textarea {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 20px;
+#homework-form select,
+#homework-form button {
+    padding: 8px;
     border: 1px solid var(--table-border);
-    border-radius: 5px;
-    background-color: var(--background-color);
-    color: var(--text-color);
-    resize: none; /* Отключаем ручное изменение размера */
+    border-radius: 4px;
 }
 
 #homework-form button {
-    padding: 10px 20px;
     background-color: var(--button-background);
     color: var(--header-text);
-    border: none;
-    border-radius: 5px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
 }
 
 #homework-form button:hover {
     background-color: var(--button-hover);
 }
 
-/* Список заданий */
-#homework-list {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.homework-item {
+.status-select {
     width: 100%;
-    max-width: 600px;
-    margin-bottom: 20px;
-    padding: 20px;
-    background-color: var(--table-background);
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    padding: 5px;
 }
 
-
-.homework-item .delete-button {
+.file-button {
     padding: 5px 10px;
     background-color: var(--button-background);
     color: var(--header-text);
     border: none;
-    border-radius: 5px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
 }
 
+.file-button:hover {
+    background-color: var(--button-hover);
+}
+
+.file-name {
+    margin-left: 10px;
+    font-size: 0.9em;
+}
+
+#homework-table td {
+    word-wrap: break-word;
+    max-width: 200px; /* Или другое подходящее значение */
+}

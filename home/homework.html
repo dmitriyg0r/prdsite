@@ -35,22 +35,28 @@
 
     <main>
         <form id="homework-form">
-            <label for="subject">Предмет:</label>
-            <input type="text" id="subject" name="subject" required>
-            <label for="task">Задание:</label>
-            <textarea id="task" name="task" required></textarea>
+            <input type="text" id="subject" placeholder="Предмет" required>
+            <textarea id="task" placeholder="Задание" required></textarea>
             <button type="submit">Добавить задание</button>
         </form>
 
-        <div id="homework-list">
-            <!-- Здесь будут добавляться задания -->
-        </div>
+        <table id="homework-table">
+            <thead>
+                <tr>
+                    <th>Предмет</th>
+                    <th>Задание</th>
+                    <th>Состояние</th>
+                    <th>Файл</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Здесь будут строки с домашними заданиями -->
+            </tbody>
+        </table>
     </main>
 
     <script src="../theme.js"></script>
     <script src="home.js"></script>
-
     <script src="../main.js"></script>
-
 </body>
 </html>

@@ -97,10 +97,10 @@ body {
     }
 }
 
-.developers-phrase, .additional-phrase {
+.developers-phrase, .additional-phrase, .help-phrase {
     margin: 20px 0;
-    font-size: 16px;
-    line-height: 1.6;
+    font-size: 20px; /* Увеличиваем размер шрифта */
+    line-height: 1; /* Уменьшаем расстояние между строками */
     font-family: 'Montserrat', sans-serif;
     font-weight: 400;
 }
