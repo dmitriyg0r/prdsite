@@ -177,21 +177,9 @@ body {
         padding: 0 15px;
     }
 
-    .text-content {
-        margin-bottom: 30px;
-    }
-
-    .qr-code-container {
-        max-width: 200px;
-    }
-
-    .qr-code-container p {
-        font-size: 14px;
-    }
-
-    #developers {
-        margin-top: 40px;
-        padding: 15px;
+    /* Убираем фоновое изображение на мобильных устройствах */
+    body {
+        background-image: none;
     }
 }
 
@@ -212,6 +200,41 @@ body {
 
     .qr-code-container img {
         max-width: 150px;
+    }
+
+    /* Дополнительные стили для очень маленьких экранов */
+    #developers {
+        padding: 10px;
+    }
+
+    .developer-links {
+        gap: 10px;
+    }
+
+    .developer-links a {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+}
+
+/* Новый медиа-запрос для улучшения отображения на средних экранах */
+@media screen and (min-width: 481px) and (max-width: 768px) {
+    .company-name {
+        font-size: 10vw;
+    }
+
+    .content-wrapper {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-around;
+    }
+
+    .text-content, .qr-code-container {
+        width: 48%;
+    }
+
+    .qr-code-container {
+        margin-top: 0;
     }
 }
 
