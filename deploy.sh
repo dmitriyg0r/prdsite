@@ -19,7 +19,7 @@ sudo -u www-data git stash >> $LOG_FILE 2>&1
 # Удалить неотслеживаемые файлы
 sudo -u www-data git clean -f >> $LOG_FILE 2>&1
 
-sudo -u www-data git pull --force origin main >> $LOG_FILE 2>&1
+sudo -u www-data git pull origin main >> $LOG_FILE 2>&1
 
 # Проверка на конфликты слияния
 if [ $? -ne 0 ]; then
