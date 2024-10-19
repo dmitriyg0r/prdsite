@@ -1,5 +1,6 @@
 #!/bin/bash
 cd /var/www/html
+sudo chown -R www-data:www-data /var/www/html
 # Проверка, что это Git-репозиторий
 if [ ! -d ".git" ]; then
     echo "Error: Not a git repository"
