@@ -17,13 +17,10 @@ themeToggle.addEventListener('click', () => {
     }
 });
 
+// Улучшение: Используем const вместо var
 document.getElementById('menu-toggle').addEventListener('click', function() {
-    var menu = document.getElementById('menu');
-    if (menu.style.display === 'block') {
-        menu.style.display = 'none';
-    } else {
-        menu.style.display = 'block';
-    }
+    const menu = document.getElementById('menu');
+    menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
 });
 
 // Добавляем обработчик события для формы добавления задания
@@ -84,13 +81,13 @@ function showCorrectTable() {
 
 // Перемещаем обработчик события DOMContentLoaded на верхний уровень
 document.addEventListener('DOMContentLoaded', () => {
+    // Улучшение: Добавляем проверку на null перед использованием
     const uploadForm = document.getElementById('upload-form');
     const fileInput = document.getElementById('file-input');
     const uploadMessage = document.getElementById('upload-message');
     const fileList = document.getElementById('file-list');
 
-    // Обработка загрузки файла
-    if (uploadForm) {
+    if (uploadForm && fileInput && uploadMessage) {
         uploadForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
@@ -156,21 +153,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 60000);
 });
 
-// Подсветка сегодняшнего дня в таблице
+// Улучшение: Добавляем проверку на существование элемента перед его использованием
 function highlightToday() {
     const today = new Date();
     const dayOfWeek = today.getDay();
     const daysOfWeek = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
     const todayName = daysOfWeek[dayOfWeek];
 
-    document.querySelectorAll('table tr').forEach(row => {
-        const firstCell = row.querySelector('td:first-child, th:first-child');
-        if (firstCell) {
-            if (firstCell.textContent.trim() === todayName) {
-                row.classList.add('today-highlight');
-            } else {
-                row.classList.remove('today-highlight');
+    const rows = document.querySelectorAll('table tr');
+    if (rows) {
+        rows.forEach(row => {
+            const firstCell = row.querySelector('td:first-child, th:first-child');
+            if (firstCell) {
+                if (firstCell.textContent.trim() === todayName) {
+                    row.classList.add('today-highlight');
+                } else {
+                    row.classList.remove('today-highlight');
+                }
             }
-        }
-    });
+        });
+    }
 }
