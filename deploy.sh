@@ -27,33 +27,11 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# Выполнить git pull
-sudo -u www-data git pull origin main >> $LOG_FILE 2>&1
-
-# Проверка на конфликты слияния
+# Выполнить git pull с принудительным принятием изменений из удаленного репозитория
+sudo -u www-data git pull --strategy-option=theirs origin main >> $LOG_FILE 2>&1
 if [ $? -ne 0 ]; then
-    echo "$(date) - Merge conflicts detected. Attempting to resolve automatically." >> $LOG_FILE
-    
-    # Автоматическое разрешение конфликтов для всех файлов
-    sudo -u www-data git diff --name-only --diff-filter=U | while read file; do
-        echo "$(date) - Resolving conflict in $file" >> $LOG_FILE
-        sudo -u www-data git checkout --theirs "$file"
-        sudo -u www-data git add "$file"
-    done
-
-    # Завершение слияния
-    sudo -u www-data git commit -m "Merge branch 'main' of origin" >> $LOG_FILE 2>&1
-    if [ $? -ne 0 ]; then
-        echo "$(date) - Error: Failed to commit merge resolution" >> $LOG_FILE
-        exit 1
-    fi
-
-    # Повторно пытаемся выполнить git pull
-    sudo -u www-data git pull origin main >> $LOG_FILE 2>&1
-    if [ $? -ne 0 ]; then
-        echo "$(date) - Error: Failed to pull after resolving conflicts" >> $LOG_FILE
-        exit 1
-    fi
+    echo "$(date) - Error: Failed to pull with forced acceptance of remote changes" >> $LOG_FILE
+    exit 1
 fi
 
 # Применить спрятанные изменения
