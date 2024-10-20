@@ -13,6 +13,13 @@ if [ ! -d ".git" ]; then
     exit 1
 fi
 
+# Сбросить все локальные изменения и принудительно принять изменения из удаленного репозитория
+sudo -u www-data git reset --hard origin/main >> $LOG_FILE 2>&1
+if [ $? -ne 0 ]; then
+    echo "$(date) - Error: Failed to reset to origin/main" >> $LOG_FILE
+    exit 1
+fi
+
 # Выполнить git pull с принудительным принятием изменений из удаленного репозитория
 sudo -u www-data git pull origin main >> $LOG_FILE 2>&1
 if [ $? -ne 0 ]; then
