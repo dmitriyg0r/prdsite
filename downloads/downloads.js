@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         const formData = new FormData(uploadForm);
 
-        fetch('/var/www/downloads.php', {
+        fetch('/downloads/downloads.php', {
             method: 'POST',
             body: formData
         })
