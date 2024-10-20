@@ -13,31 +13,10 @@ if [ ! -d ".git" ]; then
     exit 1
 fi
 
-# Спрятать локальные изменения
-sudo -u www-data git stash >> $LOG_FILE 2>&1
-if [ $? -ne 0 ]; then
-    echo "$(date) - Error: Failed to stash local changes" >> $LOG_FILE
-    exit 1
-fi
-
-# Удалить неотслеживаемые файлы
-sudo -u www-data git clean -f >> $LOG_FILE 2>&1
-if [ $? -ne 0 ]; then
-    echo "$(date) - Error: Failed to clean untracked files" >> $LOG_FILE
-    exit 1
-fi
-
 # Выполнить git pull с принудительным принятием изменений из удаленного репозитория
 sudo -u www-data git pull origin main >> $LOG_FILE 2>&1
 if [ $? -ne 0 ]; then
     echo "$(date) - Error: Failed to pull with forced acceptance of remote changes" >> $LOG_FILE
-    exit 1
-fi
-
-# Применить спрятанные изменения
-sudo -u www-data git stash pop >> $LOG_FILE 2>&1
-if [ $? -ne 0 ]; then
-    echo "$(date) - Stash conflicts detected. Please resolve them manually." >> $LOG_FILE
     exit 1
 fi
 

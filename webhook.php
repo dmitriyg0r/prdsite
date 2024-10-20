@@ -1,20 +1,25 @@
 <?php
-$payload = file_get_contents('php://input');
-$secret = 'Gg3985502'; 
-$header = $_SERVER['HTTP_X_HUB_SIGNATURE'];
+// Логирование
+$logFile = '/var/log/webhook.log';
+$logData = date('Y-m-d H:i:s') . " - Webhook received\n";
+file_put_contents($logFile, $logData, FILE_APPEND);
 
-// Проверка подписи (если секрет указан)
-if ($secret && $header) {
-    $hash = 'sha1=' . hash_hmac('sha1', $payload, $secret);
-    if (!hash_equals($hash, $header)) {
-        die('Invalid signature');
-    }
-}
+// Получаем данные вебхука
+$input = file_get_contents('php://input');
+$data = json_decode($input, true);
 
-// Декодируем JSON, чтобы убедиться, что это push-событие
-$data = json_decode($payload, true);
-if ($data['ref'] === 'refs/heads/main') {
-    // Вызываем скрипт деплоя
-    shell_exec('sh /var/www/html/deploy.sh');
+// Логируем данные вебхука
+$logData = date('Y-m-d H:i:s') . " - Webhook data: " . print_r($data, true) . "\n";
+file_put_contents($logFile, $logData, FILE_APPEND);
+
+// Обработка данных вебхука
+if (isset($data['ref']) && $data['ref'] == 'refs/heads/main') {
+    // Выполняем скрипт деплоя
+    exec('/path/to/deploy.sh');
+    $logData = date('Y-m-d H:i:s') . " - Deployment script executed\n";
+    file_put_contents($logFile, $logData, FILE_APPEND);
+} else {
+    $logData = date('Y-m-d H:i:s') . " - Not a main branch update\n";
+    file_put_contents($logFile, $logData, FILE_APPEND);
 }
 ?>
