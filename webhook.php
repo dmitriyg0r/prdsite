@@ -17,7 +17,7 @@ if (isset($data['ref']) && $data['ref'] == 'refs/heads/main') {
     // Выполняем скрипт деплоя
     $output = [];
     $return_var = 0;
-    exec('/var/www/html/deploy.sh', $output, $return_var);
+    exec('/var/www/deploy.sh', $output, $return_var);
 
     // Логируем вывод и статус выполнения скрипта
     $logData = date('Y-m-d H:i:s') . " - Deployment script output: " . implode("\n", $output) . "\n";
