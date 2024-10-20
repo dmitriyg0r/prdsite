@@ -1,31 +1,37 @@
-#!/bin/bash
+<?php
+// Логирование
+$logFile = '/var/log/webhook.log';
+$logData = date('Y-m-d H:i:s') . " - Webhook received\n";
+file_put_contents($logFile, $logData, FILE_APPEND);
 
-# Переходим в директорию проекта
-cd /var/www/html || { echo "$(date) - Error: Directory /var/www/html does not exist" >> /var/log/deploy.log; exit 1; }
+// Получаем данные вебхука
+$input = file_get_contents('php://input');
+$data = json_decode($input, true);
 
-# Логирование
-LOG_FILE="/var/log/deploy.log"
-echo "$(date) - Starting deployment" >> $LOG_FILE
+// Логируем данные вебхука
+$logData = date('Y-m-d H:i:s') . " - Webhook data: " . print_r($data, true) . "\n";
+file_put_contents($logFile, $logData, FILE_APPEND);
 
-# Проверка, что это Git-репозиторий
-if [ ! -d ".git" ]; then
-    echo "$(date) - Error: Not a git repository" >> $LOG_FILE
-    exit 1
-fi
+// Обработка данных вебхука
+if (isset($data['ref']) && $data['ref'] == 'refs/heads/main') {
+    // Выполняем скрипт деплоя от имени пользователя www-data
+    $output = [];
+    $return_var = 0;
+    exec('sudo -u www-data /var/www/html/deploy.sh', $output, $return_var);
 
-# Сбросить все локальные изменения и принудительно принять изменения из удаленного репозитория
-sudo -u www-data git reset --hard origin/main >> $LOG_FILE 2>&1
-if [ $? -ne 0 ]; then
-    echo "$(date) - Error: Failed to reset to origin/main" >> $LOG_FILE
-    exit 1
-fi
+    // Логируем вывод и статус выполнения скрипта
+    $logData = date('Y-m-d H:i:s') . " - Deployment script output: " . implode("\n", $output) . "\n";
+    file_put_contents($logFile, $logData, FILE_APPEND);
 
-# Выполнить git pull с принудительным принятием изменений из удаленного репозитория
-sudo -u www-data git pull origin main >> $LOG_FILE 2>&1
-if [ $? -ne 0 ]; then
-    echo "$(date) - Error: Failed to pull with forced acceptance of remote changes" >> $LOG_FILE
-    exit 1
-fi
-
-# Если все в порядке, продолжаем выполнение скрипта
-echo "$(date) - Deployment successful" >> $LOG_FILE
+    if ($return_var !== 0) {
+        $logData = date('Y-m-d H:i:s') . " - Deployment script failed with return code: " . $return_var . "\n";
+        file_put_contents($logFile, $logData, FILE_APPEND);
+    } else {
+        $logData = date('Y-m-d H:i:s') . " - Deployment script executed successfully\n";
+        file_put_contents($logFile, $logData, FILE_APPEND);
+    }
+} else {
+    $logData = date('Y-m-d H:i:s') . " - Not a main branch update\n";
+    file_put_contents($logFile, $logData, FILE_APPEND);
+}
+?>
