@@ -38,6 +38,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const categoriesContainer = document.getElementById('file-categories');
     const categorySelect = document.getElementById('category-select');
+    const folderSelect = document.getElementById('folder-select');
     const uploadForm = document.getElementById('upload-form');
     const uploadMessage = document.getElementById('upload-message');
 
@@ -48,6 +49,18 @@ document.addEventListener('DOMContentLoaded', function() {
         option.textContent = `${categoryIcons[category]} ${category}`;
         categorySelect.appendChild(option);
     }
+
+    // Заполняем выпадающий список папок
+    categorySelect.addEventListener('change', function() {
+        const selectedCategory = categorySelect.value;
+        folderSelect.innerHTML = '';
+        fileCategories[selectedCategory].forEach(folder => {
+            const option = document.createElement('option');
+            option.value = folder;
+            option.textContent = folder;
+            folderSelect.appendChild(option);
+        });
+    });
 
     // Функция для отображения файлов
     function displayFiles() {
@@ -98,18 +111,25 @@ document.addEventListener('DOMContentLoaded', function() {
     uploadForm.addEventListener('submit', function(e) {
         e.preventDefault();
         const formData = new FormData(uploadForm);
-        const category = formData.get('category');
-        const folder = formData.get('folder');
-        const file = formData.get('file');
 
-        // Добавляем файл в хранилище
-        fileStorage[category][folder].push(file.name);
-
-        // Обновляем отображение файлов
-        displayFiles();
-
-        uploadMessage.textContent = `Файл "${file.name}" успешно загружен в категорию "${category}", папку "${folder}".`;
-        uploadForm.reset();
+        fetch('downloads.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                uploadMessage.textContent = data.message;
+                uploadForm.reset();
+                // Обновляем отображение файлов
+                displayFiles();
+            } else {
+                uploadMessage.textContent = data.message;
+            }
+        })
+        .catch(error => {
+            uploadMessage.textContent = 'Ошибка при загрузке файла.';
+        });
     });
 
     // Инициальное отображение файлов
