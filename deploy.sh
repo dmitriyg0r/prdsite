@@ -28,7 +28,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # Выполнить git pull с принудительным принятием изменений из удаленного репозитория
-sudo -u www-data git pull --strategy-option=ourus origin main >> $LOG_FILE 2>&1
+sudo -u www-data git pull origin main >> $LOG_FILE 2>&1
 if [ $? -ne 0 ]; then
     echo "$(date) - Error: Failed to pull with forced acceptance of remote changes" >> $LOG_FILE
     exit 1
