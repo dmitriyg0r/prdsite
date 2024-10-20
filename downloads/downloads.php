@@ -33,7 +33,7 @@ $admin_password = $_POST['admin_password'];
 if ($admin_password !== "Gg3985502") {
     echo json_encode([
         'status' => 'error',
-        'message' => 'У вас нет прав доступа.'
+        'message' => 'ха-ха-ха'
     ]);
     exit;
 }

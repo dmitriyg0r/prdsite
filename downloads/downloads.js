@@ -108,10 +108,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     uploadForm.addEventListener('submit', function(e) {
         e.preventDefault();
-        const adminPassword = prompt("Пожалуйста, введите пароль администратора:");
+        const adminPassword = prompt("Так так так... кто тут у нас?");
         
         if (adminPassword !== "Gg3985502") {
-            uploadMessage.textContent = "У вас нет прав доступа.";
+            uploadMessage.textContent = "попался саботажник БОБЭР КУРВА.";
             return;
         }
         
