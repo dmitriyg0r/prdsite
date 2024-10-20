@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function() {
         categorySelect.appendChild(option);
     }
 
-    // Заполняем выпадающий список папок
+    // Заполнем выпадающий список папок
     categorySelect.addEventListener('change', function() {
         const selectedCategory = categorySelect.value;
         folderSelect.innerHTML = '';
@@ -120,6 +120,19 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             if (data.status === 'success') {
                 uploadMessage.textContent = data.message;
+                
+                // Добавляем файл в fileStorage
+                const category = formData.get('category');
+                const folder = formData.get('folder');
+                const fileName = formData.get('file').name;
+                if (!fileStorage[category]) {
+                    fileStorage[category] = {};
+                }
+                if (!fileStorage[category][folder]) {
+                    fileStorage[category][folder] = [];
+                }
+                fileStorage[category][folder].push(fileName);
+                
                 uploadForm.reset();
                 // Обновляем отображение файлов
                 displayFiles();

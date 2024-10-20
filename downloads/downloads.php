@@ -8,8 +8,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $uploadDir = '/var/www/downloads/' . $category . '/' . $folder . '/';
 
     // Создаем директорию, если она не существует
-    if (!is_dir($uploadDir)) {
-        mkdir($uploadDir, 0777, true);
+    if (!file_exists($uploadDir)) {
+        if (!mkdir($uploadDir, 0777, true)) {
+            echo json_encode(['status' => 'error', 'message' => 'Не удалось создать директорию для загрузки.']);
+            exit;
+        }
     }
 
     // Проверяем, был ли файл успешно загружен
