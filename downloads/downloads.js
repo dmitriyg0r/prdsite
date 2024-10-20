@@ -112,12 +112,20 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         const formData = new FormData(uploadForm);
 
-        fetch('/var/www/downloads.php', {
+        fetch('var/www/downloads.php', {
             method: 'POST',
             body: formData
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                return response.text().then(text => {
+                    throw new Error(`HTTP error! status: ${response.status}, body: ${text}`);
+                });
+            }
+            return response.json();
+        })
         .then(data => {
+            console.log('Server response:', data);
             if (data.status === 'success') {
                 uploadMessage.textContent = data.message;
                 
@@ -137,11 +145,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Обновляем отображение файлов
                 displayFiles();
             } else {
-                uploadMessage.textContent = data.message;
+                uploadMessage.textContent = data.message || 'Неизвестная ошибка';
             }
         })
         .catch(error => {
-            uploadMessage.textContent = 'Ошибка при загрузке файла.';
+            console.error('Error:', error);
+            uploadMessage.textContent = `Ошибка при загрузке файла: ${error.message}`;
         });
     });
 
