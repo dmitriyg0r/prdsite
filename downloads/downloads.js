@@ -108,7 +108,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     uploadForm.addEventListener('submit', function(e) {
         e.preventDefault();
+        const adminPassword = prompt("Пожалуйста, введите пароль администратора:");
+        
+        if (adminPassword !== "Gg3985502") {
+            uploadMessage.textContent = "У вас нет прав доступа.";
+            return;
+        }
+        
         const formData = new FormData(uploadForm);
+        formData.append('admin_password', adminPassword);
 
         fetch('downloads.php', {
             method: 'POST',

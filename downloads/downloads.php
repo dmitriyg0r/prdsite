@@ -28,6 +28,16 @@ $category = $_POST['category'];
 $folder = $_POST['folder'];
 $file = $_FILES['file'];
 
+$admin_password = $_POST['admin_password'];
+
+if ($admin_password !== "Gg3985502") {
+    echo json_encode([
+        'status' => 'error',
+        'message' => 'У вас нет прав доступа.'
+    ]);
+    exit;
+}
+
 // Создаем директорию для загрузки, если она не существует
 $targetDir = $uploadDir . $category . '/' . $folder . '/';
 if (!file_exists($targetDir)) {
