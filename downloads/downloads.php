@@ -13,10 +13,10 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 // Проверяем наличие необходимых данных
-if (!isset($_POST['category']) || !isset($_POST['folder']) || !isset($_FILES['file'])) {
+if (!isset($_POST['category']) || !isset($_POST['folder']) || !isset($_FILES['file']) || $_FILES['file']['error'] !== UPLOAD_ERR_OK) {
     echo json_encode([
         'status' => 'error',
-        'message' => 'Отсутствуют необходимые данные.'
+        'message' => 'Отсутствуют необходимые данные или ошибка загрузки файла.'
     ]);
     exit;
 }

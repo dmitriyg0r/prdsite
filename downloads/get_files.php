@@ -15,7 +15,6 @@ function scanDirectory($dir) {
             if (is_dir($dir . '/' . $file)) {
                 $result[$file] = scanDirectory($dir . '/' . $file);
             } else {
-                // Здесь вы можете добавить логику для определения категории и папки
                 $result[] = $file;
             }
         }
@@ -35,3 +34,4 @@ foreach ($fileStorage as $category => $folders) {
 }
 
 echo json_encode($formattedStorage);
+?>

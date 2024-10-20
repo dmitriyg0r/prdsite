@@ -55,8 +55,9 @@ document.addEventListener('DOMContentLoaded', function() {
         categoriesContainer.innerHTML = '';
         for (const [category, folders] of Object.entries(fileStorage)) {
             const categoryDiv = document.createElement('div');
+            categoryDiv.className = 'file-category';
             const categoryTitle = document.createElement('h3');
-            categoryTitle.textContent = category;
+            categoryTitle.textContent = `${categoryIcons[category]} ${category}`;
             categoryDiv.appendChild(categoryTitle);
 
             const folderList = document.createElement('ul');
@@ -67,13 +68,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 const filesList = document.createElement('ul');
                 files.forEach(file => {
                     const fileItem = document.createElement('li');
-                    fileItem.textContent = file;
+                    const fileItemContent = document.createElement('div');
+                    fileItemContent.className = 'file-item';
+                    
+                    const fileName = document.createElement('span');
+                    fileName.textContent = file;
+                    fileItemContent.appendChild(fileName);
 
                     const downloadButton = document.createElement('a');
                     downloadButton.href = `uploads/${encodeURIComponent(category)}/${encodeURIComponent(folder)}/${encodeURIComponent(file)}`;
                     downloadButton.textContent = 'Скачать';
-                    fileItem.appendChild(downloadButton);
+                    downloadButton.className = 'download-button';
+                    fileItemContent.appendChild(downloadButton);
 
+                    fileItem.appendChild(fileItemContent);
                     filesList.appendChild(fileItem);
                 });
                 listItem.appendChild(filesList);
