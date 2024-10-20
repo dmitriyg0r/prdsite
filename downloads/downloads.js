@@ -25,16 +25,7 @@ document.addEventListener('DOMContentLoaded', function() {
         'Алгоритмизация и программ': '🖥️'
     };
 
-    // Создаем хранилище для файлов
     let fileStorage = {};
-
-    // Инициализируем хранилище для каждой категории и папки
-    for (const category in fileCategories) {
-        fileStorage[category] = {};
-        for (const folder of fileCategories[category]) {
-            fileStorage[category][folder] = [];
-        }
-    }
 
     const categoriesContainer = document.getElementById('file-categories');
     const categorySelect = document.getElementById('category-select');
@@ -42,7 +33,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const uploadForm = document.getElementById('upload-form');
     const uploadMessage = document.getElementById('upload-message');
 
-    // Заполняем выпадающий список категорий
     for (const category in fileCategories) {
         const option = document.createElement('option');
         option.value = category;
@@ -50,7 +40,6 @@ document.addEventListener('DOMContentLoaded', function() {
         categorySelect.appendChild(option);
     }
 
-    // Заполнем выпадающий список папок
     categorySelect.addEventListener('change', function() {
         const selectedCategory = categorySelect.value;
         folderSelect.innerHTML = '';
@@ -62,87 +51,75 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Функция для отображения файлов
     function displayFiles() {
         categoriesContainer.innerHTML = '';
-        for (const [category, folders] of Object.entries(fileCategories)) {
+        for (const [category, folders] of Object.entries(fileStorage)) {
             const categoryDiv = document.createElement('div');
-            categoryDiv.className = 'file-category';
-            
             const categoryTitle = document.createElement('h3');
-            categoryTitle.innerHTML = `${categoryIcons[category]} ${category}`;
+            categoryTitle.textContent = category;
             categoryDiv.appendChild(categoryTitle);
 
             const folderList = document.createElement('ul');
-            folders.forEach(folder => {
+            for (const [folder, files] of Object.entries(folders)) {
                 const listItem = document.createElement('li');
-                const link = document.createElement('a');
-                link.href = '#';
-                link.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-folder" viewBox="0 0 16 16">
-                    <path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a1.99 1.99 0 0 1 .342-1.31zM2.19 4a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4H2.19zm4.69-1.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981l.006.139C1.72 3.042 1.95 3 2.19 3h5.396l-.707-.707z"/>
-                </svg> ${folder}`;
-                listItem.appendChild(link);
+                listItem.textContent = folder;
 
-                // Отображаем файлы в папке
                 const filesList = document.createElement('ul');
-                filesList.style.display = 'none'; // Скрываем список файлов по умолчанию
-                fileStorage[category][folder].forEach(file => {
+                files.forEach(file => {
                     const fileItem = document.createElement('li');
                     fileItem.textContent = file;
+
+                    const downloadButton = document.createElement('a');
+                    downloadButton.href = `uploads/${encodeURIComponent(category)}/${encodeURIComponent(folder)}/${encodeURIComponent(file)}`;
+                    downloadButton.textContent = 'Скачать';
+                    fileItem.appendChild(downloadButton);
+
                     filesList.appendChild(fileItem);
                 });
                 listItem.appendChild(filesList);
-
-                // Добавляем обработчик события для открытия/закрытия папки
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    filesList.style.display = filesList.style.display === 'none' ? 'block' : 'none';
-                });
-
                 folderList.appendChild(listItem);
-            });
-
+            }
             categoryDiv.appendChild(folderList);
             categoriesContainer.appendChild(categoryDiv);
         }
     }
 
-    // Обработка отправки формы
+    function loadExistingFiles() {
+        fetch('get_files.php')
+            .then(response => response.json())
+            .then(data => {
+                fileStorage = data;
+                displayFiles();
+            })
+            .catch(error => {
+                console.error('Error loading existing files:', error);
+            });
+    }
+
+    loadExistingFiles();
+
     uploadForm.addEventListener('submit', function(e) {
         e.preventDefault();
         const formData = new FormData(uploadForm);
 
-        fetch('/war/www/downloads.php', {
+        fetch('downloads.php', {
             method: 'POST',
             body: formData
         })
-        .then(response => {
-            if (!response.ok) {
-                return response.text().then(text => {
-                    throw new Error(`HTTP error! status: ${response.status}, body: ${text}`);
-                });
-            }
-            return response.json();
-        })
+        .then(response => response.json())
         .then(data => {
-            console.log('Server response:', data);
             if (data.status === 'success') {
                 uploadMessage.textContent = data.message;
                 
-                // Добавляем файл в fileStorage
-                const category = formData.get('category');
-                const folder = formData.get('folder');
-                const fileName = formData.get('file').name;
-                if (!fileStorage[category]) {
-                    fileStorage[category] = {};
+                if (!fileStorage[data.category]) {
+                    fileStorage[data.category] = {};
                 }
-                if (!fileStorage[category][folder]) {
-                    fileStorage[category][folder] = [];
+                if (!fileStorage[data.category][data.folder]) {
+                    fileStorage[data.category][data.folder] = [];
                 }
-                fileStorage[category][folder].push(fileName);
+                fileStorage[data.category][data.folder].push(data.file);
                 
                 uploadForm.reset();
-                // Обновляем отображение файлов
                 displayFiles();
             } else {
                 uploadMessage.textContent = data.message || 'Неизвестная ошибка';
@@ -154,6 +131,5 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Инициальное отображение файлов
     displayFiles();
 });

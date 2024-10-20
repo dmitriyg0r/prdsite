@@ -101,3 +101,24 @@
 .file-category li a:hover {
     color: var(--button-hover);
 }
+
+.file-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+}
+
+.download-button {
+    background-color: var(--button-background);
+    color: var(--header-text);
+    padding: 5px 10px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+.download-button:hover {
+    background-color: var(--button-hover);
+}
