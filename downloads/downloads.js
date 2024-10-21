@@ -109,13 +109,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     uploadForm.addEventListener('submit', function(e) {
         e.preventDefault();
-        const adminPassword = prompt("Так так так... кто тут у нас?");
+        const adminPassword = prompt("Please enter the admin password:");
         
         if (adminPassword !== "Gg3985502") {
-            uploadMessage.textContent = "попался саботажник БОБЭР КУРВА.";
+            uploadMessage.textContent = "Invalid admin password. Access denied.";
             return;
         }
         
+        uploadMessage.textContent = "Uploading files...";
         const formData = new FormData(uploadForm);
         formData.append('admin_password', adminPassword);
 
@@ -141,7 +142,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 uploadForm.reset();
                 displayFiles();
             } else {
-                uploadMessage.textContent = data.message || 'Неизвестная ошибка';
+                uploadMessage.textContent = data.message || 'An unknown error occurred';
                 if (data.debug_output) {
                     console.error('Debug output:', data.debug_output);
                 }
@@ -149,7 +150,11 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(error => {
             console.error('Error:', error);
-            uploadMessage.textContent = `Ошибка при загрузке файла: ${error.message}`;
+            uploadMessage.textContent = `File upload failed: ${error.message}`;
+        })
+        .finally(() => {
+            // Clear the file input after upload attempt
+            fileInput.value = '';
         });
     });
 

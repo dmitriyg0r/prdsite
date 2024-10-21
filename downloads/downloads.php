@@ -32,15 +32,19 @@ $category = filter_var($_POST['category'], FILTER_SANITIZE_STRING);
 $folder = filter_var($_POST['folder'], FILTER_SANITIZE_STRING);
 $files = $_FILES['files'];
 
-$admin_password = filter_var($_POST['admin_password'], FILTER_SANITIZE_STRING);
+// Use environment variable for admin password
+$admin_password = getenv('ADMIN_PASSWORD');
 
-if ($admin_password !== "Gg3985502") {
+if ($_POST['admin_password'] !== $admin_password) {
     echo json_encode([
         'status' => 'error',
-        'message' => 'Неверный пароль администратора.'
+        'message' => 'Invalid admin password.'
     ]);
     exit;
 }
+
+// Improve file type validation
+$allowed_extensions = ['pdf', 'doc', 'docx', 'txt', 'jpg', 'png'];
 
 // Создаем директорию для загрузки, если она не существует
 $targetDir = $uploadDir . $category . '/' . $folder . '/';
@@ -53,6 +57,12 @@ $errors = [];
 
 // Обрабатываем каждый загруженный файл
 foreach ($files['name'] as $key => $name) {
+    $file_extension = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+    if (!in_array($file_extension, $allowed_extensions)) {
+        $errors[] = "File type not allowed for $name.";
+        continue;
+    }
+
     if ($files['error'][$key] === UPLOAD_ERR_OK) {
         $targetFile = $targetDir . basename(filter_var($name, FILTER_SANITIZE_STRING));
         

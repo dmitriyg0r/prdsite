@@ -19,7 +19,11 @@ function scanDirectory($dir) {
                     $result[$file] = $subDir;
                 }
             } else {
-                $result[] = $file;
+                $result[] = [
+                    'name' => $file,
+                    'size' => filesize($path),
+                    'last_modified' => filemtime($path)
+                ];
             }
         }
     }
