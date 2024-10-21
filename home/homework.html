@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Домашнее задание</title>
     <link rel="stylesheet" href="../style.css">
-    <link rel="stylesheet" href="homestyle.css">
+    <link rel="stylesheet" href="./homestyle.css">
 </head>
 <body>
     <header>
@@ -40,6 +40,14 @@
             <input type="text" id="subject" name="subject" required>
             <label for="task">Задание:</label>
             <textarea id="task" name="task" required></textarea>
+            <label for="status">Состояние:</label>
+            <select id="status" name="status" required>
+                <option value="not-started">Не начато</option>
+                <option value="in-progress">В процессе</option>
+                <option value="completed">Завершено</option>
+            </select>
+            <label for="file">Файл:</label>
+            <input type="file" id="file" name="file">
             <button type="submit">Добавить задание</button>
         </form>
         <table id="homework-table">
@@ -57,7 +65,6 @@
         </table>
     </main>
 
-    <script src="../theme.js"></script>
     <script src="home.js"></script>
     <script src="../main.js"></script>
 </body>
