@@ -1,0 +1,10 @@
+:root {
+    --header-background: #04578f; /* Основной цвет меню */
+    --header-background-dark: #033e63; /* Более тёмный оттенок для выделения */
+    --header-text: #FFFFFF; /* Цвет текста в меню */
+    --table-background: #F5F5F5; /* Фон для таблиц и форм */
+    --table-border: #DDDDDD; /* Цвет границ */
+    --button-background: #04578f; /* Фон для кнопок */
+    --button-hover: #033e63; /* Фон для кнопок при наведении */
+    --text-color: #333333; /* Основной цвет текста */
+}
