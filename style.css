@@ -5,7 +5,6 @@
 :root {
     --header-background: #04578f; /* Основной цвет меню */
     --header-background-dark: #033e63; /* Более тёмный оттенок для выделения */
-    --background-color: #f0f0f0; /* Серый фон для светлой темы */
     --text-color: #333;
     --header-text: white;
     --footer-background: #333;
