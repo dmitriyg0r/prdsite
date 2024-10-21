@@ -35,11 +35,12 @@
 
     <main>
         <form id="homework-form">
-            <input type="text" id="subject" placeholder="Предмет" required>
-            <textarea id="task" placeholder="Задание" required></textarea>
+            <label for="subject">Предмет:</label>
+            <input type="text" id="subject" name="subject" required>
+            <label for="task">Задание:</label>
+            <textarea id="task" name="task" required></textarea>
             <button type="submit">Добавить задание</button>
         </form>
-
         <table id="homework-table">
             <thead>
                 <tr>

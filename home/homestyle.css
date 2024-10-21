@@ -1,3 +1,96 @@
+/* Стили для вкладки "Домашнее задание" */
+
+:root {
+    --header-background: #04578f; /* Основной цвет меню */
+    --header-background-dark: #033e63; /* Более тёмный оттенок для выделения */
+    --header-text: #FFFFFF; /* Цвет текста в меню */
+    --table-background: #F5F5F5; /* Фон для таблиц и форм */
+    --table-border: #DDDDDD; /* Цвет границ */
+    --button-background: #04578f; /* Фон для кнопок */
+    --button-hover: #033e63; /* Фон для кнопок при наведении */
+    --text-color: #333333; /* Основной цвет текста */
+}
+
+
+
+/* Форма добавления задания */
+#homework-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+    background-color: var(--table-background);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+#homework-form label {
+    margin-bottom: 10px;
+    font-weight: bold;
+    color: var(--text-color);
+}
+
+#homework-form input,
+#homework-form textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid var(--table-border);
+    border-radius: 5px;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    resize: none; /* Отключаем ручное изменение размера */
+}
+
+#homework-form button {
+    padding: 10px 20px;
+    background-color: var(--button-background);
+    color: var(--header-text);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#homework-form button:hover {
+    background-color: var(--button-hover);
+}
+
+/* Список заданий */
+#homework-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.homework-item {
+    width: 100%;
+    max-width: 600px;
+    margin-bottom: 20px;
+    padding: 20px;
+    background-color: var(--table-background);
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+
+.homework-item .delete-button {
+    padding: 5px 10px;
+    background-color: var(--button-background);
+    color: var(--header-text);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+
+
+
 /* Стили для таблицы домашних заданий */
 #homework-table {
     width: 100%;
