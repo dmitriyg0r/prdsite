@@ -15,7 +15,6 @@
 
 .upload-section h2, .download-section h2 {
     margin-bottom: 30px;
-    color: var(--header-text);
     font-size: 28px;
     text-align: center;
     text-transform: uppercase;
