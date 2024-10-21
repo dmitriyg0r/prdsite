@@ -22,7 +22,8 @@ if ($_SERVER['HTTP_X_HUB_SIGNATURE'] !== 'sha1=' . hash_hmac('sha1', file_get_co
 $deployScript = '/var/www/deploy.php';
 logMessage("Calling deploy script: " . $deployScript);
 
-exec("php " . $deployScript . " >> " . $logFile . " 2>&1");
+// Используем полный путь к интерпретатору PHP
+exec("/usr/bin/php " . $deployScript . " >> " . $logFile . " 2>&1");
 
 logMessage("Webhook processing completed");
 ?>
