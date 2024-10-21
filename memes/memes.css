@@ -1,0 +1,24 @@
+.development-notice {
+    font-weight: bold;
+    color: #ff0000; /* Красный цвет */
+    text-align: center;
+    padding: 10px;
+    background-color: #ffe6e6; /* Светло-красный фон */
+    border: 1px solid #ff0000;
+    border-radius: 5px;
+    margin: 10px 0;
+}
+
+.development-image {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.development-image img {
+    max-width: 300px; /* Ограничиваем максимальную ширину */
+    max-height: 300px; /* Ограничиваем максимальную высоту */
+    width: auto; /* Автоматическая ширина для сохранения пропорций */
+    height: auto; /* Автоматическая высота для сохранения пропорций */
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}

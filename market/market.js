@@ -11,12 +11,7 @@ const products = [
         image: 'https://via.placeholder.com/150',
         description: 'Описание товара 2'
     },
-    {
-        name: 'Товар 3',
-        price: 3000,
-        image: 'https://via.placeholder.com/150',
-        description: 'Описание товара 3'
-    },
+    // Третий товар удален
     // Добавьте больше товаров по необходимости
 ];
 
@@ -32,18 +27,17 @@ function displayProducts() {
             <h2>${product.name}</h2>
             <p>${product.description}</p>
             <p>Цена: ${product.price} руб.</p>
-            <button onclick="addToCart('${product.name}')">Добавить в корзину</button>
+            <button onclick="buyProduct('${product.name}')">Купить</button>
         `;
         
         productsContainer.appendChild(productElement);
     });
 }
 
-function addToCart(productName) {
-    alert(`Товар "${productName}" добавлен в корзину!`);
-    // Здесь вы можете добавить логику для реального добавления товара в корзину
+function buyProduct(productName) {
+    alert(`Вы купили товар "${productName}"!`);
+    // Здесь вы можете добавить логику для реальной покупки товара
 }
 
 // Вызываем функцию отображения товаров при загрузке страницы
 window.onload = displayProducts;
-

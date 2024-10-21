@@ -8,3 +8,40 @@
     --button-hover: #033e63; /* Фон для кнопок при наведении */
     --text-color: #333333; /* Основной цвет текста */
 }
+
+/* Добавляем стили для контейнера продуктов и отдельных продуктов */
+.products-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    padding: 20px;
+}
+
+.product {
+    background-color: var(--table-background);
+    border: 1px solid var(--table-border);
+    border-radius: 5px;
+    padding: 15px;
+    margin: 10px;
+    width: 250px;
+    text-align: center;
+}
+
+.product img {
+    max-width: 100%;
+    height: auto;
+}
+
+.product button {
+    background-color: var(--button-background);
+    color: var(--header-text);
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.product button:hover {
+    background-color: var(--button-hover);
+}
