@@ -32,7 +32,8 @@
 }
 
 #homework-form input,
-#homework-form textarea {
+#homework-form textarea,
+#homework-form select {
     width: 100%;
     padding: 10px;
     margin-bottom: 20px;
@@ -40,7 +41,11 @@
     border-radius: 5px;
     background-color: var(--background-color);
     color: var(--text-color);
-    resize: none; /* Отключаем ручное изменение размера */
+}
+
+#homework-form textarea {
+    resize: vertical; /* Разрешаем вертикальное изменение размера */
+    min-height: 100px;
 }
 
 #homework-form button {
