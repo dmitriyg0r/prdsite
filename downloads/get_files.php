@@ -12,14 +12,24 @@ function scanDirectory($dir) {
     $files = scandir($dir);
     foreach ($files as $file) {
         if ($file !== '.' && $file !== '..') {
-            if (is_dir($dir . '/' . $file)) {
-                $result[$file] = scanDirectory($dir . '/' . $file);
+            $path = $dir . '/' . $file;
+            if (is_dir($path)) {
+                $subDir = scanDirectory($path);
+                if (!empty($subDir)) {
+                    $result[$file] = $subDir;
+                }
             } else {
                 $result[] = $file;
             }
         }
     }
     return $result;
+}
+
+// Проверяем существование директории
+if (!is_dir($uploadDir)) {
+    echo json_encode(['error' => 'Upload directory does not exist']);
+    exit;
 }
 
 // Получаем структуру файлов и папок
