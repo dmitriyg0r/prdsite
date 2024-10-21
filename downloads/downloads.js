@@ -32,6 +32,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const folderSelect = document.getElementById('folder-select');
     const uploadForm = document.getElementById('upload-form');
     const uploadMessage = document.getElementById('upload-message');
+    const fileInput = document.getElementById('file-input');
 
     for (const category in fileCategories) {
         const option = document.createElement('option');
@@ -42,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     categorySelect.addEventListener('change', function() {
         const selectedCategory = categorySelect.value;
-        folderSelect.innerHTML = '';
+        folderSelect.innerHTML = '<option value="">Выберите папку</option>';
         fileCategories[selectedCategory].forEach(folder => {
             const option = document.createElement('option');
             option.value = folder;
@@ -57,7 +58,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const categoryDiv = document.createElement('div');
             categoryDiv.className = 'file-category';
             const categoryTitle = document.createElement('h3');
-            categoryTitle.textContent = `${categoryIcons[category]} ${category}`;
+            categoryTitle.textContent = `${categoryIcons[category] || ''} ${category}`;
             categoryDiv.appendChild(categoryTitle);
 
             const folderList = document.createElement('ul');
@@ -133,12 +134,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!fileStorage[data.category][data.folder]) {
                     fileStorage[data.category][data.folder] = [];
                 }
-                fileStorage[data.category][data.folder].push(data.file);
+                data.files.forEach(file => {
+                    fileStorage[data.category][data.folder].push(file);
+                });
                 
                 uploadForm.reset();
                 displayFiles();
             } else {
                 uploadMessage.textContent = data.message || 'Неизвестная ошибка';
+                if (data.debug_output) {
+                    console.error('Debug output:', data.debug_output);
+                }
             }
         })
         .catch(error => {
