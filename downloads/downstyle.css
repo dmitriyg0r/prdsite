@@ -232,6 +232,45 @@ body.dark-theme .file-category li a {
     to { opacity: 1; }
 }
 
-.upload-section, .download-section, .file-category {
+.upload-section, .download-section, .file-category, .links {
     animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Стили для секции ссылок */
+.links {
+    margin: 30px 0;
+    padding: 30px;
+    background-color: var(--table-background);
+    border-radius: 15px;
+    box-shadow: var(--text-container-shadow);
+    transition: all 0.3s ease;
+}
+
+.links:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.links h2 {
+    margin-bottom: 25px;
+    color: var(--header-text);
+    font-size: 24px;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.links p {
+    margin: 15px 0;
+    color: var(--text-color);
+}
+
+.links a {
+    color: var(--button-background);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.links a:hover {
+    color: var(--button-hover);
 }
