@@ -78,20 +78,20 @@ foreach ($files['name'] as $key => $name) {
 }
 
 if (!empty($uploadedFiles)) {
-    echo json_encode([
+    $response = [
         'status' => 'success',
         'message' => 'Файлы успешно загружены.',
         'files' => $uploadedFiles,
         'category' => $category,
         'folder' => $folder,
         'errors' => $errors
-    ]);
+    ];
 } else {
-    echo json_encode([
+    $response = [
         'status' => 'error',
         'message' => 'Не удалось загрузить ни одного файла.',
         'errors' => $errors
-    ]);
+    ];
 }
 
 // Получаем буферизированный вывод
@@ -99,20 +99,9 @@ $output = ob_get_clean();
 
 // Проверяем, есть ли какой-либо вывод перед нашим JSON
 if (!empty($output)) {
-    // Если есть, добавляем его к сообщению об ошибке
-    echo json_encode([
-        'status' => 'error',
-        'message' => 'Произошла ошибка при обработке запроса.',
-        'debug_output' => $output
-    ]);
-} else {
-    // Если нет, отправляем наш оригинальный JSON-ответ
-    echo json_encode([
-        'status' => 'success',
-        'message' => 'Файлы успешно загружены.',
-        'files' => $uploadedFiles,
-        'category' => $category,
-        'folder' => $folder,
-        'errors' => $errors
-    ]);
+    // Если есть, добавляем его к ответу
+    $response['debug_output'] = $output;
 }
+
+// Отправляем JSON-ответ
+echo json_encode($response);
