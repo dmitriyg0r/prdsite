@@ -2,13 +2,13 @@ const products = [
     {
         name: 'Товар 1',
         price: 1000,
-        image: 'https://via.placeholder.com/150',
+        image: 'одетый.png',
         description: 'Описание товара 1'
     },
     {
         name: 'Товар 2',
         price: 2000,
-        image: 'https://via.placeholder.com/150',
+        image: 'голый.png',
         description: 'Описание товара 2'
     },
     // Третий товар удален
