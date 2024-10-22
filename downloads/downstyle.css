@@ -318,6 +318,16 @@ body.dark-theme .file-category li a {
     z-index: 1000;
 }
 
+.icon-button::before {
+    content: '';
+    position: absolute;
+    top: -20px;
+    left: -20px;
+    right: -20px;
+    bottom: -20px;
+    border-radius: 50%;
+}
+
 .icon-button:hover {
     transform: scale(1.1);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
@@ -326,6 +336,7 @@ body.dark-theme .file-category li a {
 .icon-button .icon {
     width: 30px;
     height: 30px;
+    pointer-events: none; /* Это предотвратит проблемы с кликом по иконке */
 }
 
 .upload-form-container {
