@@ -70,7 +70,7 @@ document.getElementById('purchaseForm').addEventListener('submit', function(even
 // Добавляем функцию для отправки данных на сервер
 function sendOrderToTelegram(orderData) {
     console.log('Отправка данных заказа:', orderData);
-    fetch('/submit-order', {  // Изменен URL на новый эндпоинт
+    fetch('/submit-order', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -78,16 +78,16 @@ function sendOrderToTelegram(orderData) {
         body: JSON.stringify(orderData),
     })
     .then(response => {
-        console.log('Ответ сервера:', response);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         return response.json();
     })
     .then(data => {
-        console.log('Данные ответа:', data);
         if (data.success) {
             alert('Заказ успешно отправлен!');
+            // Добавляем вызов функции для обновления заказов на странице администратора
+            updateAdminOrders(orderData);
         } else {
             alert('Произошла ошибка при отправке заказа. Пожалуйста, попробуйте еще раз.');
         }
@@ -96,6 +96,13 @@ function sendOrderToTelegram(orderData) {
         console.error('Ошибка:', error);
         alert('Произошла ошибка при отправке заказа. Пожалуйста, попробуйте еще раз.');
     });
+}
+
+// Добавляем новую функцию для обновления заказов на странице администратора
+function updateAdminOrders(orderData) {
+    if (window.parent && window.parent.updateOrders) {
+        window.parent.updateOrders(orderData);
+    }
 }
 
 // Вызываем функцию отображения товаров при загрузке страницы
