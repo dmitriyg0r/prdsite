@@ -65,28 +65,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 const listItem = document.createElement('li');
                 listItem.textContent = folder;
                 const filesList = document.createElement('ul');
-                if (Array.isArray(files)) {
-                    files.forEach(file => {
-                        const fileItem = document.createElement('li');
-                        const fileItemContent = document.createElement('div');
-                        fileItemContent.className = 'file-item';
+                Object.values(files).forEach(file => { // Используйте Object.values()
+                    const fileItem = document.createElement('li');
+                    const fileItemContent = document.createElement('div');
+                    fileItemContent.className = 'file-item';
     
-                        const fileName = document.createElement('span');
-                        fileName.textContent = file;
-                        fileItemContent.appendChild(fileName);
+                    const fileName = document.createElement('span');
+                    fileName.textContent = file;
+                    fileItemContent.appendChild(fileName);
     
-                        const downloadButton = document.createElement('a');
-                        downloadButton.href = `uploads/${encodeURIComponent(category)}/${encodeURIComponent(folder)}/${encodeURIComponent(file)}`;
-                        downloadButton.textContent = 'Скачать';
-                        downloadButton.className = 'download-button';
-                        fileItemContent.appendChild(downloadButton);
+                    const downloadButton = document.createElement('a');
+                    downloadButton.href = `uploads/${encodeURIComponent(category)}/${encodeURIComponent(folder)}/${encodeURIComponent(file)}`;
+                    downloadButton.textContent = 'Скачать';
+                    downloadButton.className = 'download-button';
+                    fileItemContent.appendChild(downloadButton);
     
-                        fileItem.appendChild(fileItemContent);
-                        filesList.appendChild(fileItem);
-                    });
-                } else {
-                    console.error('Expected an array, but got:', files);
-                }
+                    fileItem.appendChild(fileItemContent);
+                    filesList.appendChild(fileItem);
+                });
                 listItem.appendChild(filesList);
                 folderList.appendChild(listItem);
             }
@@ -95,24 +91,27 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    
 
     function loadExistingFiles() {
         fetch('get_files.php')
-            .then(response => response.text())
+            .then(response => response.text()) // Измените здесь на text()
             .then(text => {
+                console.log('Raw response text:', text); // Выведите сырой ответ
                 try {
                     const data = JSON.parse(text);
                     fileStorage = data;
                     displayFiles();
                 } catch (error) {
                     console.error('JSON parse error:', error);
-                    console.log('Raw response text:', text);
+                    console.log('Raw response text:', text); // Выведите сырой ответ
                 }
             })
             .catch(error => {
                 console.error('Error loading existing files:', error);
             });
     }
+    
     
     
 
