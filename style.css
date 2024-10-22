@@ -658,3 +658,6 @@ body.darkmode .menu a:hover {
     }
 }
 
+.theme-toggle.animating {
+    pointer-events: none;
+}
