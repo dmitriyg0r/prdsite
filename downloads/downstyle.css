@@ -299,3 +299,23 @@ body.dark-theme .file-category li a {
     color: var(--button-hover);
     text-decoration: underline;
 }
+
+.icon-button {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background-color: #f0f0f0;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.icon-button:hover {
+    background-color: #e0e0e0;
+}
+
+.icon-button .icon {
+    width: 24px;
+    height: 24px;
+    margin-right: 10px;
+}
