@@ -34,7 +34,6 @@ $files = $_FILES['files'];
 
 // Use environment variable for admin password
 $admin_password = getenv('ADMIN_PASSWORD');
-
 if ($_POST['admin_password'] !== $admin_password) {
     echo json_encode([
         'status' => 'error',
@@ -62,10 +61,9 @@ foreach ($files['name'] as $key => $name) {
         $errors[] = "File type not allowed for $name.";
         continue;
     }
-
     if ($files['error'][$key] === UPLOAD_ERR_OK) {
         $targetFile = $targetDir . basename(filter_var($name, FILTER_SANITIZE_STRING));
-        
+
         // Перемещаем загруженный файл в целевую директорию
         if (move_uploaded_file($files['tmp_name'][$key], $targetFile)) {
             $uploadedFiles[] = basename($name);
@@ -105,3 +103,4 @@ if (!empty($output)) {
 
 // Отправляем JSON-ответ
 echo json_encode($response);
+?>

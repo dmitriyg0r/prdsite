@@ -177,4 +177,5 @@ document.addEventListener('DOMContentLoaded', function() {
             fileInput.value = '';
         });
     });
+    
 });
