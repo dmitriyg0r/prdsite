@@ -32,8 +32,8 @@ $category = filter_var($_POST['category'], FILTER_SANITIZE_SPECIAL_CHARS);
 $folder = filter_var($_POST['folder'], FILTER_SANITIZE_SPECIAL_CHARS);
 $files = $_FILES['files'];
 
-// Use environment variable for admin password
-$admin_password = getenv('ADMIN_PASSWORD');
+// Временно установите пароль администратора
+$admin_password = 'Gg3985502';
 if ($_POST['admin_password'] !== $admin_password) {
     echo json_encode([
         'status' => 'error',
@@ -43,7 +43,7 @@ if ($_POST['admin_password'] !== $admin_password) {
 }
 
 // Improve file type validation
-$allowed_extensions = ['pdf', 'doc', 'docx', 'txt', 'jpg', 'png'];
+$allowed_extensions = ['pdf', 'doc', 'docx', 'txt', 'jpg', 'png', 'pptx'];
 
 // Создаем директорию для загрузки, если она не существует
 $targetDir = $uploadDir . $category . '/' . $folder . '/';
