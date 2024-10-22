@@ -156,7 +156,7 @@
     color: var(--button-hover);
 }
 
-/* Стили для светлой темы */
+/* Стили для св��тлой темы */
 
 body:not(.dark-theme) .container {
     background-color: #ffffff;
@@ -444,4 +444,63 @@ body.dark-theme .file-category li a {
         padding: 6px 12px;
         font-size: 13px;
     }
+}
+
+.theme-toggle, .menu-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+}
+
+.theme-icon, .menu-toggle svg {
+    width: 24px;
+    height: 24px;
+    fill: var(--text-color);
+}
+
+.menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background-color: var(--background-color);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 10px;
+    z-index: 1000;
+}
+
+.menu.show {
+    display: block;
+}
+
+.menu a {
+    display: block;
+    padding: 5px 10px;
+    color: var(--text-color);
+    text-decoration: none;
+}
+
+.menu a:hover {
+    background-color: var(--hover-color);
+}
+
+/* Dark theme specific styles */
+body.dark-theme .theme-icon,
+body.dark-theme .menu-toggle svg {
+    fill: var(--dark-text-color);
+}
+
+body.dark-theme .menu {
+    background-color: var(--dark-background-color);
+    border-color: var(--dark-border-color);
+}
+
+body.dark-theme .menu a {
+    color: var(--dark-text-color);
+}
+
+body.dark-theme .menu a:hover {
+    background-color: var(--dark-hover-color);
 }

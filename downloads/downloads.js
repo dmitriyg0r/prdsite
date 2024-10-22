@@ -193,4 +193,32 @@ document.addEventListener('DOMContentLoaded', function() {
             fileInput.value = '';
         });
     });    
+
+    const themeToggle = document.getElementById('theme-toggle');
+    const menuToggle = document.getElementById('menu-toggle');
+    const menu = document.getElementById('menu');
+    const body = document.body;
+
+    // Theme toggle
+    themeToggle.addEventListener('click', function() {
+        body.classList.toggle('dark-theme');
+        localStorage.setItem('theme', body.classList.contains('dark-theme') ? 'dark' : 'light');
+    });
+
+    // Set initial theme
+    if (localStorage.getItem('theme') === 'dark') {
+        body.classList.add('dark-theme');
+    }
+
+    // Menu toggle
+    menuToggle.addEventListener('click', function() {
+        menu.classList.toggle('show');
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener('click', function(event) {
+        if (!menu.contains(event.target) && !menuToggle.contains(event.target)) {
+            menu.classList.remove('show');
+        }
+    });
 });
