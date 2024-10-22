@@ -95,15 +95,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function loadExistingFiles() {
         fetch('get_files.php')
-            .then(response => response.json())
-            .then(data => {
-                fileStorage = data;
-                displayFiles();
+            .then(response => response.text()) // Измените здесь на text()
+            .then(text => {
+                try {
+                    const data = JSON.parse(text);
+                    fileStorage = data;
+                    displayFiles();
+                } catch (error) {
+                    console.error('JSON parse error:', error);
+                    console.log('Raw response text:', text); // Выведите сырой ответ
+                }
             })
             .catch(error => {
                 console.error('Error loading existing files:', error);
             });
     }
+    
 
     loadExistingFiles();
 
