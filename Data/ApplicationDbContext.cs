@@ -10,6 +10,7 @@ namespace Data
         {
         }
 
-        public DbSet<User> Users { get; set; }
+        // Добавьте DbSet для ваших моделей здесь
+        // public DbSet<YourModel> YourModels { get; set; }
     }
 }
