@@ -43,7 +43,7 @@ if ($_POST['admin_password'] !== $admin_password) {
 }
 
 // Improve file type validation
-$allowed_extensions = ['pdf', 'doc', 'docx', 'txt', 'jpg', 'png'];
+$allowed_extensions = ['pdf', 'doc', 'docx', 'txt', 'jpg', 'png', 'pptx'];
 
 // Создаем директорию для загрузки, если она не существует
 $targetDir = $uploadDir . $category . '/' . $folder . '/';
