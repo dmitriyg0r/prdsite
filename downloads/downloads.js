@@ -119,6 +119,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
     loadExistingFiles();
 
+    const showUploadFormButton = document.getElementById('show-upload-form');
+    const uploadFormContainer = document.getElementById('upload-form-container');
+
+    console.log('showUploadFormButton:', showUploadFormButton); // Отладка
+    console.log('uploadFormContainer:', uploadFormContainer); // Отладка
+
+    if (showUploadFormButton && uploadFormContainer) {
+        showUploadFormButton.addEventListener('click', function() {
+            console.log('Button clicked'); // Отладка
+            uploadFormContainer.classList.toggle('show');
+            console.log('Container classes:', uploadFormContainer.classList); // Отладка
+        });
+    } else {
+        console.error('Button or container not found'); // Отладка
+    }
+
     uploadForm.addEventListener('submit', function(e) {
         e.preventDefault();
         const adminPassword = prompt("Please enter the admin password:");

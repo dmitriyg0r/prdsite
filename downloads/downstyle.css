@@ -299,3 +299,36 @@ body.dark-theme .file-category li a {
     color: var(--button-hover);
     text-decoration: underline;
 }
+
+.icon-button {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background-color: #f0f0f0;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.icon-button:hover {
+    background-color: #e0e0e0;
+}
+
+.icon-button .icon {
+    width: 24px;
+    height: 24px;
+    margin-right: 10px;
+}
+
+#upload-form-container {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+    opacity: 0;
+}
+
+#upload-form-container.show {
+    max-height: 1000px; /* Adjust this value based on your form's maximum height */
+    opacity: 1;
+    transition: max-height 0.5s ease-in, opacity 0.5s ease-in;
+}
