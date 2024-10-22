@@ -60,31 +60,33 @@ document.addEventListener('DOMContentLoaded', function() {
             const categoryTitle = document.createElement('h3');
             categoryTitle.textContent = `${categoryIcons[category] || ''} ${category}`;
             categoryDiv.appendChild(categoryTitle);
-
             const folderList = document.createElement('ul');
             for (const [folder, files] of Object.entries(folders)) {
                 const listItem = document.createElement('li');
                 listItem.textContent = folder;
-
                 const filesList = document.createElement('ul');
-                files.forEach(file => {
-                    const fileItem = document.createElement('li');
-                    const fileItemContent = document.createElement('div');
-                    fileItemContent.className = 'file-item';
-                    
-                    const fileName = document.createElement('span');
-                    fileName.textContent = file;
-                    fileItemContent.appendChild(fileName);
-
-                    const downloadButton = document.createElement('a');
-                    downloadButton.href = `uploads/${encodeURIComponent(category)}/${encodeURIComponent(folder)}/${encodeURIComponent(file)}`;
-                    downloadButton.textContent = 'Скачать';
-                    downloadButton.className = 'download-button';
-                    fileItemContent.appendChild(downloadButton);
-
-                    fileItem.appendChild(fileItemContent);
-                    filesList.appendChild(fileItem);
-                });
+                if (Array.isArray(files)) {
+                    files.forEach(file => {
+                        const fileItem = document.createElement('li');
+                        const fileItemContent = document.createElement('div');
+                        fileItemContent.className = 'file-item';
+    
+                        const fileName = document.createElement('span');
+                        fileName.textContent = file;
+                        fileItemContent.appendChild(fileName);
+    
+                        const downloadButton = document.createElement('a');
+                        downloadButton.href = `uploads/${encodeURIComponent(category)}/${encodeURIComponent(folder)}/${encodeURIComponent(file)}`;
+                        downloadButton.textContent = 'Скачать';
+                        downloadButton.className = 'download-button';
+                        fileItemContent.appendChild(downloadButton);
+    
+                        fileItem.appendChild(fileItemContent);
+                        filesList.appendChild(fileItem);
+                    });
+                } else {
+                    console.error('Expected an array, but got:', files);
+                }
                 listItem.appendChild(filesList);
                 folderList.appendChild(listItem);
             }
@@ -92,10 +94,11 @@ document.addEventListener('DOMContentLoaded', function() {
             categoriesContainer.appendChild(categoryDiv);
         }
     }
+    
 
     function loadExistingFiles() {
         fetch('get_files.php')
-            .then(response => response.text()) // Измените здесь на text()
+            .then(response => response.text())
             .then(text => {
                 try {
                     const data = JSON.parse(text);
@@ -103,13 +106,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     displayFiles();
                 } catch (error) {
                     console.error('JSON parse error:', error);
-                    console.log('Raw response text:', text); // Выведите сырой ответ
+                    console.log('Raw response text:', text);
                 }
             })
             .catch(error => {
                 console.error('Error loading existing files:', error);
             });
     }
+    
     
 
     loadExistingFiles();
