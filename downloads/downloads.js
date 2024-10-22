@@ -176,6 +176,5 @@ document.addEventListener('DOMContentLoaded', function() {
             // Очистка поля ввода файлов после попытки загрузки
             fileInput.value = '';
         });
-    });
-    
+    });    
 });
