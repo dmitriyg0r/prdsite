@@ -464,11 +464,13 @@ body.dark-theme .file-category li a {
     position: absolute;
     top: 100%;
     right: 0;
-    background-color: var(--background-color);
+    background-color: var(--button-background); /* Изменено на цвет кнопки */
     border: 1px solid var(--border-color);
     border-radius: 4px;
     padding: 10px;
     z-index: 1000;
+    min-width: 200px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
 .menu.show {
@@ -477,13 +479,14 @@ body.dark-theme .file-category li a {
 
 .menu a {
     display: block;
-    padding: 5px 10px;
-    color: var(--text-color);
+    padding: 8px 10px;
+    color: white; /* Изменено на белый цвет */
     text-decoration: none;
+    transition: background-color 0.3s ease;
 }
 
 .menu a:hover {
-    background-color: var(--hover-color);
+    background-color: var(--button-hover); /* Изменено на цвет при наведении на кнопку */
 }
 
 /* Dark theme specific styles */
@@ -493,16 +496,16 @@ body.dark-theme .menu-toggle svg {
 }
 
 body.dark-theme .menu {
-    background-color: var(--dark-background-color);
+    background-color: var(--dark-button-background); /* Используйте соответствующую переменную для темной темы */
     border-color: var(--dark-border-color);
 }
 
 body.dark-theme .menu a {
-    color: var(--dark-text-color);
+    color: white; /* Оставляем белый цвет для темной темы */
 }
 
 body.dark-theme .menu a:hover {
-    background-color: var(--dark-hover-color);
+    background-color: var(--dark-button-hover); /* Используйте соответствующую переменную для темной темы */
 }
 
 .header-controls {
@@ -533,7 +536,7 @@ body.dark-theme .menu a:hover {
     position: absolute;
     top: 100%;
     right: 0;
-    background-color: var(--background-color);
+    background-color: var(--button-background); /* Изменено на цвет кнопки */
     border: 1px solid var(--border-color);
     border-radius: 4px;
     padding: 10px;
@@ -549,13 +552,13 @@ body.dark-theme .menu a:hover {
 .menu a {
     display: block;
     padding: 8px 10px;
-    color: var(--text-color);
+    color: white; /* Изменено на белый цвет */
     text-decoration: none;
     transition: background-color 0.3s ease;
 }
 
 .menu a:hover {
-    background-color: var(--hover-color);
+    background-color: var(--button-hover); /* Изменено на цвет при наведении на кнопку */
 }
 
 /* Dark theme specific styles */
@@ -565,16 +568,16 @@ body.dark-theme .menu-toggle svg {
 }
 
 body.dark-theme .menu {
-    background-color: var(--dark-background-color);
+    background-color: var(--dark-button-background); /* Используйте соответствующую переменную для темной темы */
     border-color: var(--dark-border-color);
 }
 
 body.dark-theme .menu a {
-    color: var(--dark-text-color);
+    color: white; /* Оставляем белый цвет для темной темы */
 }
 
 body.dark-theme .menu a:hover {
-    background-color: var(--dark-hover-color);
+    background-color: var(--dark-button-hover); /* Используйте соответствующую переменную для темной темы */
 }
 
 /* Медиа-запрос для мобильных устройств */
