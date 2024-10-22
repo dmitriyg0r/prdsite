@@ -60,48 +60,29 @@ document.getElementById('purchaseForm').addEventListener('submit', function(even
         date: date
     };
     
-    // Отправляем данные на сервер
-    sendOrderToTelegram(orderData);
+    // Отправляем данные на страницу администратора
+    sendOrderToAdmin(orderData);
     
     closeOrderForm();
     this.reset(); // Очищаем форму
 });
 
-// Добавляем функцию для отправки данных на сервер
-function sendOrderToTelegram(orderData) {
+// Изменяем функцию sendOrderToAdmin
+function sendOrderToAdmin(orderData) {
     console.log('Отправка данных заказа:', orderData);
-    fetch('/submit-order', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(orderData),
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-    })
-    .then(data => {
-        if (data.success) {
-            alert('Заказ успешно отправлен!');
-            // Добавляем вызов функции для обновления заказов на странице администратора
-            updateAdminOrders(orderData);
-        } else {
-            alert('Произошла ошибка при отправке заказа. Пожалуйста, попробуйте еще раз.');
-        }
-    })
-    .catch((error) => {
-        console.error('Ошибка:', error);
-        alert('Произошла ошибка при отправке заказа. Пожалуйста, попробуйте еще раз.');
-    });
-}
-
-// Добавляем новую функцию для обновления заказов на странице администратора
-function updateAdminOrders(orderData) {
-    if (window.parent && window.parent.updateOrders) {
+    
+    // Проверяем, существует ли функция updateOrders на странице администратора
+    if (window.parent && typeof window.parent.updateOrders === 'function') {
+        // Если функция существует, вызываем ее с данными заказа
         window.parent.updateOrders(orderData);
+        alert('Заказ успешно отправлен!');
+    } else {
+        // Если функция не найдена, сохраняем заказ в локальное хранилище
+        const savedOrders = JSON.parse(localStorage.getItem('orders') || '[]');
+        savedOrders.push(orderData);
+        localStorage.setItem('orders', JSON.stringify(savedOrders));
+        console.log('Заказ сохранен в локальное хранилище');
+        alert('Заказ успешно сохранен!');
     }
 }
 
