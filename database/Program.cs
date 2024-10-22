@@ -1,14 +1,23 @@
 using Microsoft.EntityFrameworkCore;
 using database.Data;
 
-var builder = WebApplication.CreateBuilder(args);
+namespace database
+{
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+            // Add services to the container.
+            builder.Services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-var app = builder.Build();
+            var app = builder.Build();
 
-app.MapGet("/", () => "Hello World!");
+            app.MapGet("/", () => "Hello World!");
 
-app.Run();
+            app.Run();
+        }
+    }
+}
