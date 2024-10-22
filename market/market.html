@@ -24,7 +24,7 @@
                 <path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z"/>
             </svg>
             <div id="menu" class="menu">
-                <a href="homework.html">Домашнее задание</a>
+                <a href="../home/homework.html">Домашнее задание</a>
                 <a href="../index.html">Расписание</a>
                 <a href="../downloads/downloads.html">Загрузки</a>
                 <a href="../memes/memes.html">Мемы</a>
@@ -37,6 +37,17 @@
     <!-- Добавляем контейнер для продуктов -->
     <main>
         <div id="products" class="products-container"></div>
+        <!-- Добавляем форму заказа -->
+        <div id="orderForm" class="order-form-container" style="display: none;">
+            <form id="purchaseForm">
+                <h2>Оформление заказа</h2>
+                <input type="text" id="orderSubject" placeholder="Тема" required>
+                <textarea id="orderDescription" placeholder="Описание" required></textarea>
+                <input type="date" id="orderDate" required>
+                <button type="submit">Отправить</button>
+                <button type="button" onclick="closeOrderForm()">Отмена</button>
+            </form>
+        </div>
     </main>
 
     <script src="../theme.js"></script>
