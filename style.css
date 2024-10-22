@@ -1,10 +1,7 @@
-/* Вот это не трогай, это основная логика CSS. Можешь только поменять цвета */
-* {
-    box-sizing: border-box;
-}
+/* Основные переменные и настройки */
 :root {
-    --header-background: #04578f; /* Основной цвет меню */
-    --header-background-dark: #033e63; /* Более тёмный оттенок для выделения */
+    --header-background: #04578f;
+    --header-background-dark: #033e63;
     --text-color: #333;
     --header-text: white;
     --footer-background: #333;
@@ -19,37 +16,41 @@
     --theme-toggle-background: #ffffff;
     --theme-toggle-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     --theme-toggle-hover-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-    --sun-icon-color: #ffcc00; /* Цвет солнца */
-    --moon-icon-color: #ffffff; /* Цвет луны */
-    --today-highlight: #04578fb0; /* Синий цвет для подсветки сегодняшнего дня */
+    --sun-icon-color: #ffcc00;
+    --moon-icon-color: #ffffff;
+    --today-highlight: #04578fb0;
+    --transition-duration: 0.3s;
 }
 
 .darkmode {
-    --background-color: #2c2c3a; /* Фиолетовый фон для темной темы */
+    --background-color: #2c2c3a;
     --text-color: #ffffff;
-    --header-background: #6a5acd; /* Фиолетовый заголовок для темной темы */
+    --header-background: #6a5acd;
     --header-text: #ffffff;
     --footer-background: #1f1f1f;
     --footer-text: #ffffff;
-    --table-background: #3c3c4a; /* Фиолетовый фон для таблицы в темной теме */
-    --table-border: #4a4a5a; /* Фиолетовый бордер для таблицы в темной теме */
-    --button-background: #4b0082; /* Темно-фиолетовый фон для кнопки в темной теме */
-    --button-hover: #8a2be2; /* Светло-фиолетовый фон для кнопки при наведении в темной теме */
-    --table-hover-background: #4a4a5a; /* Фиолетовый фон при наведении на строку таблицы в темной теме */
-    --text-container-background: #2c2c3a; /* Фиолетовый фон для текстового контейнера в темной теме */
+    --table-background: #3c3c4a;
+    --table-border: #4a4a5a;
+    --button-background: #4b0082;
+    --button-hover: #8a2be2;
+    --table-hover-background: #4a4a5a;
+    --text-container-background: #2c2c3a;
     --text-container-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
     --theme-toggle-background: #3c3c4a;
     --theme-toggle-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
     --theme-toggle-hover-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
-    --sun-icon-color: #ffcc00; /* Цвет солнца */
-    --moon-icon-color: #ffffff; /* Цвет луны */
-    --header-background-dark: #5c43a8; /* Более тёмный оттенок для выделения в темной теме */
-    --today-highlight: #695acda5; /* Синий цвет для подсветки сегодняшнего дня в темной теме */
+    --header-background-dark: #5c43a8;
+    --today-highlight: #695acda5;
+}
+
+/* Общие стили */
+* {
+    box-sizing: border-box;
 }
 
 body {
     font-family: 'Roboto', sans-serif;
-    transition: background-color 0.3s, color 0.3s;
+    transition: background-color var(--transition-duration), color var(--transition-duration);
     margin: 0;
     padding: 0;
     min-height: 100vh;
@@ -57,6 +58,7 @@ body {
     color: var(--text-color);
 }
 
+/* Стили заголовка */
 header {
     background-color: var(--header-background);
     color: var(--header-text);
@@ -68,11 +70,13 @@ header {
     flex-wrap: wrap;
 }
 
+/* Основное содержимое */
 main {
     padding: 20px;
     text-align: center;
 }
 
+/* Переключатель темы */
 .theme-toggle {
     cursor: pointer;
     display: flex;
@@ -81,7 +85,7 @@ main {
     border-radius: 50px;
     padding: 5px;
     box-shadow: var(--theme-toggle-shadow);
-    transition: box-shadow 0.3s ease, transform 0.3s ease;
+    transition: box-shadow var(--transition-duration) ease, transform var(--transition-duration) ease;
     position: relative;
     width: 60px;
     height: 30px;
@@ -100,7 +104,7 @@ main {
     top: 50%;
     left: 5px;
     transform: translateY(-50%);
-    transition: transform 0.5s ease, opacity 0.3s ease, fill 0.3s ease;
+    transition: transform 0.5s ease, opacity var(--transition-duration) ease, fill var(--transition-duration) ease;
 }
 
 #sun-icon {
@@ -126,32 +130,7 @@ main {
     transform: translateY(-50%) rotate(0);
 }
 
-html {
-    font-family: Calibri, Arial, Helvetica, sans-serif;
-    font-size: 16px;
-    background-color: var(--background-color);
-}
-
-a.comment-indicator:hover + div.comment {
-    background: #ffd;
-    position: absolute;
-    display: block;
-    border: 1px solid black;
-    padding: 0.5em;
-}
-
-a.comment-indicator {
-    background: red;
-    display: inline-block;
-    border: 1px solid black;
-    width: 0.5em;
-    height: 0.5em;
-}
-
-div.comment {
-    display: none;
-}
-
+/* Стили таблицы */
 .table-container {
     overflow-x: auto;
     margin-bottom: 30px;
@@ -177,7 +156,7 @@ th, td {
     color: var(--text-color);
     font-family: 'Roboto', sans-serif;
     font-size: 14px;
-    transition: background-color 0.3s ease, transform 0.2s ease;
+    transition: background-color var(--transition-duration) ease, transform 0.2s ease;
 }
 
 th {
@@ -196,27 +175,7 @@ tr:hover td {
     transform: scale(1.02);
 }
 
-tr:last-child td:first-child {
-    border-bottom-left-radius: 10px;
-}
-
-tr:last-child td:last-child {
-    border-bottom-right-radius: 10px;
-}
-
-td:first-child {
-    font-weight: bold;
-    background-color: var(--header-background-dark);
-    color: var(--header-text);
-}
-
-.today-highlight td {
-    background-color: var(--today-highlight) !important;
-    font-weight: bold;
-    color: var(--header-text) !important;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
+/* Медиа-запросы */
 @media (max-width: 768px) {
     .table-container {
         overflow-x: scroll;
@@ -278,56 +237,7 @@ td:first-child {
     }
 }
 
-td.style1, th.style1 {
-    background-color: #70AD47;
-    font-weight: bold;
-}
-
-td.style2, th.style2 {
-    background-color: #9BBB59;
-}
-
-td.style3, th.style3 {
-    background-color: #FFC000;
-}
-
-td.style4, th.style4 {
-    background-color: #FF0000;
-}
-
-td.style5, th.style5, td.style6, th.style6, td.style8, th.style8 {
-    background-color: #8064A2;
-}
-
-td.style7, th.style7 {
-    background-color: #4F81BD;
-}
-
-td.style9, th.style9 {
-    background-color: #C0504D;
-}
-
-td.style10, th.style10 {
-    background-color: #9BBB59;
-}
-
-td.style11, th.style11 {
-    background-color: #4F81BD;
-}
-
-.ps, .bot, .dz {
-    margin-left: 0;
-    display: block;
-    text-align: center;
-}
-
-.header-controls {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-
+/* Дополнительные стили */
 .container {
     display: flex;
     align-items: center;
@@ -340,7 +250,7 @@ td.style11, th.style11 {
     margin-right: 20px;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease;
+    transition: transform var(--transition-duration) ease;
     width: 150px;
     height: 150px;
 }
@@ -374,7 +284,7 @@ td.style11, th.style11 {
     font-size: 18px;
     color: var(--button-background);
     text-decoration: none;
-    transition: color 0.3s ease, transform 0.3s ease;
+    transition: color var(--transition-duration) ease, transform var(--transition-duration) ease;
 }
 
 .bot:hover {
@@ -389,10 +299,11 @@ td.style11, th.style11 {
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
 
+/* Стили меню */
 #menu-toggle {
     cursor: pointer;
     margin-left: 15px;
-    transition: transform 0.3s ease, color 0.3s ease;
+    transition: transform var(--transition-duration) ease, color var(--transition-duration) ease;
 }
 
 #menu-toggle:hover {
@@ -411,7 +322,6 @@ td.style11, th.style11 {
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
     animation: fadeIn 0.4s ease-out;
     z-index: 1000;
-    border: 1px solid rgba(255, 255, 255, 0.2);
     backdrop-filter: blur(5px);
 }
 
@@ -422,15 +332,11 @@ td.style11, th.style11 {
     text-decoration: none;
     padding: 12px 15px;
     margin-bottom: 5px;
-    transition: all 0.3s ease;
+    transition: all var(--transition-duration) ease;
     border-radius: 5px;
     font-weight: 500;
     position: relative;
     overflow: hidden;
-}
-
-.menu a:last-child {
-    margin-bottom: 0;
 }
 
 .menu a::before {
@@ -457,7 +363,7 @@ td.style11, th.style11 {
 .menu a i {
     margin-right: 12px;
     font-size: 20px;
-    transition: transform 0.3s ease;
+    transition: transform var(--transition-duration) ease;
 }
 
 .menu a:hover i {
@@ -479,6 +385,7 @@ td.style11, th.style11 {
     }
 }
 
+/* Стили для домашних заданий */
 .homework-item {
     margin: 10px 0;
     padding: 10px;
@@ -503,17 +410,14 @@ td.style11, th.style11 {
     cursor: pointer;
     border-radius: 5px;
     margin-top: 5px;
+    transition: background-color var(--transition-duration) ease;
 }
 
 .delete-button:hover {
     background-color: var(--button-hover);
 }
 
-.today-highlight {
-    background-color: var(--today-highlight) !important;
-    font-weight: bold;
-}
-
+/* Стили для новостей */
 .news {
     margin: 0;
     padding: 20px;
@@ -542,6 +446,7 @@ td.style11, th.style11 {
     }
 }
 
+/* Стили для таблицы */
 table.sheet0 col.col0,
 table.sheet0 col.col1,
 table.sheet0 col.col2,
@@ -549,7 +454,7 @@ table.sheet0 col.col3,
 table.sheet0 col.col4,
 table.sheet0 col.col5,
 table.sheet0 col.col6 {
-    width: 14.28%; /* 100% / 7 columns */
+    width: 14.28%;
 }
 
 table.sheet0 tr {
@@ -562,6 +467,7 @@ table.sheet0 tr {
     color: var(--header-text) !important;
 }
 
+/* Стили для кнопок темы и меню */
 .theme-toggle, .menu-toggle {
     background: none;
     border: none;
@@ -575,37 +481,7 @@ table.sheet0 tr {
     fill: var(--text-color);
 }
 
-.menu {
-    display: none;
-    position: absolute;
-    top: 100%;
-    right: 0;
-    background-color: var(--button-background);
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    padding: 10px;
-    z-index: 1000;
-    min-width: 200px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
-
-.menu.show {
-    display: block;
-}
-
-.menu a {
-    display: block;
-    padding: 8px 10px;
-    color: white;
-    text-decoration: none;
-    transition: background-color 0.3s ease;
-}
-
-.menu a:hover {
-    background-color: var(--button-hover);
-}
-
-/* Dark theme specific styles */
+/* Стили для темной темы */
 body.darkmode .theme-icon,
 body.darkmode .menu-toggle svg {
     fill: var(--dark-text-color);
@@ -613,7 +489,6 @@ body.darkmode .menu-toggle svg {
 
 body.darkmode .menu {
     background-color: var(--header-background);
-    border-color: var(--dark-border-color);
 }
 
 body.darkmode .menu a {
@@ -630,17 +505,7 @@ body.darkmode .menu a:hover {
 }
 
 .theme-toggle, .menu-toggle {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 5px;
     margin-left: 10px;
-}
-
-.theme-icon, .menu-toggle svg {
-    width: 24px;
-    height: 24px;
-    fill: var(--text-color);
 }
 
 .menu-container {
@@ -651,7 +516,7 @@ body.darkmode .menu a:hover {
 @media screen and (max-width: 768px) {
     .menu {
         position: fixed;
-        top: 60px; /* Adjust based on your header height */
+        top: 60px;
         right: 10px;
         left: 10px;
         width: auto;
