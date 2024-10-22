@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using data.Models;
 
-namespace database
+namespace data
 {
     public class ApplicationDbContext : DbContext
     {
@@ -9,6 +10,6 @@ namespace database
         {
         }
 
-        // Определите здесь ваши DbSet<T>
+        public DbSet<User> Users { get; set; }
     }
 }

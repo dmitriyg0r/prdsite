@@ -7,10 +7,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// ... остальной код ...
-
 var app = builder.Build();
 
-// ... остальной код ...
+app.MapGet("/", () => "Hello World!");
 
 app.Run();
