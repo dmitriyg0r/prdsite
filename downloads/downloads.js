@@ -211,8 +211,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Menu toggle
-    menuToggle.addEventListener('click', function() {
+    menuToggle.addEventListener('click', function(event) {
         menu.classList.toggle('show');
+        event.stopPropagation(); // Предотвращаем закрытие меню сразу после открытия
     });
 
     // Close menu when clicking outside
