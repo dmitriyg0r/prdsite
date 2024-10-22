@@ -71,19 +71,23 @@ document.getElementById('purchaseForm').addEventListener('submit', function(even
 function sendOrderToAdmin(orderData) {
     console.log('Отправка данных заказа:', orderData);
     
-    // Проверяем, существует ли функция updateOrders на странице администратора
-    if (window.parent && typeof window.parent.updateOrders === 'function') {
-        // Если функция существует, вызываем ее с данными заказа
-        window.parent.updateOrders(orderData);
+    // Отправляем данные на сервер
+    fetch('/add-order', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Заказ успешно отправлен на сервер:', data);
         alert('Заказ успешно отправлен!');
-    } else {
-        // Если функция не найдена, сохраняем заказ в локальное хранилище
-        const savedOrders = JSON.parse(localStorage.getItem('orders') || '[]');
-        savedOrders.push(orderData);
-        localStorage.setItem('orders', JSON.stringify(savedOrders));
-        console.log('Заказ сохранен в локальное хранилище');
-        alert('Заказ успешно сохранен!');
-    }
+    })
+    .catch((error) => {
+        console.error('Ошибка при отправке заказа:', error);
+        alert('Произошла ошибка при отправке заказа. Попробуйте еще раз.');
+    });
 }
 
 // Вызываем функцию отображения товаров при загрузке страницы

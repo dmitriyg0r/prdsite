@@ -1,22 +1,13 @@
 let orders = [];
 
 function fetchOrders() {
-    // Проверяем, есть ли сохраненные заказы в локальном хранилище
-    const savedOrders = localStorage.getItem('orders');
-    if (savedOrders) {
-        orders = JSON.parse(savedOrders);
-        displayOrders();
-    } else {
-        fetch('/get-orders')
-            .then(response => response.json())
-            .then(data => {
-                orders = data;
-                displayOrders();
-                // Сохраняем полученные заказы в локальное хранилище
-                localStorage.setItem('orders', JSON.stringify(orders));
-            })
-            .catch(error => console.error('Error:', error));
-    }
+    fetch('/get-orders')
+        .then(response => response.json())
+        .then(data => {
+            orders = data;
+            displayOrders();
+        })
+        .catch(error => console.error('Error:', error));
 }
 
 function displayOrders() {
@@ -37,13 +28,13 @@ function displayOrders() {
     });
 }
 
-// Добавляем новую функцию для обновления заказов
-function updateOrders(newOrder) {
-    orders.push(newOrder);
-    displayOrders();
-    // Сохраняем обновленные заказы в локальное хранилище
-    localStorage.setItem('orders', JSON.stringify(orders));
+// Добавляем функцию для периодического обновления заказов
+function startOrderUpdates() {
+    setInterval(fetchOrders, 30000); // Обновляем каждые 30 секунд
 }
 
-// Загрузка заказов при открытии страницы
-window.onload = fetchOrders;
+// Запускаем периодическое обновление при загрузке страницы
+window.onload = () => {
+    fetchOrders();
+    startOrderUpdates();
+};
