@@ -45,20 +45,50 @@ function closeOrderForm() {
     document.getElementById('orderForm').style.display = 'none';
 }
 
-// Добавляем обработчик отправки формы
+// Изменяем обработчик отправки формы
 document.getElementById('purchaseForm').addEventListener('submit', function(event) {
     event.preventDefault();
     const subject = document.getElementById('orderSubject').value;
     const description = document.getElementById('orderDescription').value;
     const date = document.getElementById('orderDate').value;
     
-    alert(`Заказ оформлен!\n\nТовар: ${window.currentProduct}\nТема: ${subject}\nОписание: ${description}\nДата выполнения: ${date}`);
+    // Создаем объект с данными заказа
+    const orderData = {
+        product: window.currentProduct,
+        subject: subject,
+        description: description,
+        date: date
+    };
     
-    // Здесь можно добавить логику отправки данных на сервер
+    // Отправляем данные на сервер
+    sendOrderToTelegram(orderData);
     
     closeOrderForm();
     this.reset(); // Очищаем форму
 });
+
+// Добавляем функцию для отправки данных на сервер
+function sendOrderToTelegram(orderData) {
+    fetch('/send-to-telegram', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderData),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Заказ успешно отправлен в Telegram!');
+        } else {
+            alert('Произошла ошибка при отправке заказа. Пожалуйста, попробуйте еще раз.');
+        }
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+        alert('Произошла ошибка при отправке заказа. Пожалуйста, попробуйте еще раз.');
+    });
+}
 
 // Вызываем функцию отображения товаров при загрузке страницы
 window.onload = displayProducts;
