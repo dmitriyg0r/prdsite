@@ -37,6 +37,17 @@
     <!-- Добавляем контейнер для продуктов -->
     <main>
         <div id="products" class="products-container"></div>
+        <!-- Добавляем форму заказа -->
+        <div id="orderForm" class="order-form-container" style="display: none;">
+            <form id="purchaseForm">
+                <h2>Оформление заказа</h2>
+                <input type="text" id="orderSubject" placeholder="Тема" required>
+                <textarea id="orderDescription" placeholder="Описание" required></textarea>
+                <input type="date" id="orderDate" required>
+                <button type="submit">Отправить</button>
+                <button type="button" onclick="closeOrderForm()">Отмена</button>
+            </form>
+        </div>
     </main>
 
     <script src="../theme.js"></script>

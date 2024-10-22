@@ -35,9 +35,30 @@ function displayProducts() {
 }
 
 function buyProduct(productName) {
-    alert(`Вы купили товар "${productName}"!`);
-    // Здесь вы можете добавить логику для реальной покупки товара
+    // Показываем форму заказа
+    document.getElementById('orderForm').style.display = 'flex';
+    // Сохраняем название продукта в глобальной переменной
+    window.currentProduct = productName;
 }
+
+function closeOrderForm() {
+    document.getElementById('orderForm').style.display = 'none';
+}
+
+// Добавляем обработчик отправки формы
+document.getElementById('purchaseForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    const subject = document.getElementById('orderSubject').value;
+    const description = document.getElementById('orderDescription').value;
+    const date = document.getElementById('orderDate').value;
+    
+    alert(`Заказ оформлен!\n\nТовар: ${window.currentProduct}\nТема: ${subject}\nОписание: ${description}\nДата выполнения: ${date}`);
+    
+    // Здесь можно добавить логику отправки данных на сервер
+    
+    closeOrderForm();
+    this.reset(); // Очищаем форму
+});
 
 // Вызываем функцию отображения товаров при загрузке страницы
 window.onload = displayProducts;
