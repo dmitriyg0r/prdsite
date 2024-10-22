@@ -82,6 +82,10 @@ main {
     padding: 5px;
     box-shadow: var(--theme-toggle-shadow);
     transition: box-shadow 0.3s ease, transform 0.3s ease;
+    position: relative;
+    width: 60px;
+    height: 30px;
+    overflow: hidden;
 }
 
 .theme-toggle:hover {
@@ -92,8 +96,11 @@ main {
 .theme-icon {
     width: 24px;
     height: 24px;
-    fill: var(--header-text);
-    transition: opacity 0.3s ease, fill 0.3s ease;
+    position: absolute;
+    top: 50%;
+    left: 5px;
+    transform: translateY(-50%);
+    transition: transform 0.5s ease, opacity 0.3s ease, fill 0.3s ease;
 }
 
 #sun-icon {
@@ -104,14 +111,19 @@ main {
 #moon-icon {
     opacity: 0;
     fill: var(--moon-icon-color);
+    transform: translateY(-50%) rotate(180deg);
+    left: auto;
+    right: 5px;
 }
 
 .darkmode #sun-icon {
     opacity: 0;
+    transform: translateY(-50%) rotate(-180deg);
 }
 
 .darkmode #moon-icon {
     opacity: 1;
+    transform: translateY(-50%) rotate(0);
 }
 
 html {
@@ -645,3 +657,4 @@ body.darkmode .menu a:hover {
         width: auto;
     }
 }
+
