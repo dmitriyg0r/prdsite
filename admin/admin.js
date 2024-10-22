@@ -1,13 +1,22 @@
 let orders = [];
 
 function fetchOrders() {
-    fetch('/get-orders')
-        .then(response => response.json())
-        .then(data => {
-            orders = data;
-            displayOrders();
-        })
-        .catch(error => console.error('Error:', error));
+    // Проверяем, есть ли сохраненные заказы в локальном хранилище
+    const savedOrders = localStorage.getItem('orders');
+    if (savedOrders) {
+        orders = JSON.parse(savedOrders);
+        displayOrders();
+    } else {
+        fetch('/get-orders')
+            .then(response => response.json())
+            .then(data => {
+                orders = data;
+                displayOrders();
+                // Сохраняем полученные заказы в локальное хранилище
+                localStorage.setItem('orders', JSON.stringify(orders));
+            })
+            .catch(error => console.error('Error:', error));
+    }
 }
 
 function displayOrders() {
@@ -32,6 +41,8 @@ function displayOrders() {
 function updateOrders(newOrder) {
     orders.push(newOrder);
     displayOrders();
+    // Сохраняем обновленные заказы в локальное хранилище
+    localStorage.setItem('orders', JSON.stringify(orders));
 }
 
 // Загрузка заказов при открытии страницы
