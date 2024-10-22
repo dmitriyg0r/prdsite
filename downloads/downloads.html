@@ -34,28 +34,23 @@
         </div>
     </header>
     <main>
-        <div class="upload-section">
-            <button id="show-upload-form" class="icon-button">
-                <img src="addbutton.png" alt="Add file" class="icon">
-                <span>Загрузить файл</span>
-            </button>
-            <div id="upload-form-container">
-                <h2>Загрузить файл</h2>
-                <form id="upload-form" enctype="multipart/form-data" action="downloads.php" method="POST">
-                    <select id="category-select" name="category" required>
-                        <option value="">Выберите категорию</option>
-                        <!-- Категории будут добавлены динамически -->
-                    </select>
-                    <select id="folder-select" name="folder" required>
-                        <option value="">Выберите папку</option>
-                        <!-- Категории будут добавлены динамически -->
-                    </select>
-                    <input type="file" name="files[]" id="file-input" multiple required>
-                    <button type="submit">Загрузить</button>
-                </form>
-                <div id="upload-message"></div>
-                <div id="upload-progress" class="progress-bar" style="display: none;"></div>
-            </div>
+        <button id="show-upload-form" class="icon-button">
+            <img src="addbutton.png" alt="Add file" class="icon">
+        </button>
+        <div id="upload-form-container" class="upload-form-container">
+            <h2>Загрузить файл</h2>
+            <form id="upload-form" enctype="multipart/form-data" action="downloads.php" method="POST">
+                <select id="category-select" name="category" required>
+                    <option value="">Выберите категорию</option>
+                    <!-- Категории будут добавлены динамически -->
+                </select>
+                <select id="folder-select" name="folder" required>
+                    <option value="">Выберите папку</option>
+                    <!-- Категории будут добавлены динамически -->
+                </select>
+                <input type="file" name="files[]" id="file-input" multiple required>
+                <button type="submit">Загрузить</button>
+            </form>
         </div>
         <div class="download-section">
             <h2>Доступные файлы</h2>
@@ -63,7 +58,6 @@
                 <!-- Категории файлов будут добавлены здесь динамически -->
             </div>
         </div>
-    </main>
     </main>
     <div class="links">
         <h2>Ссылки</h2>

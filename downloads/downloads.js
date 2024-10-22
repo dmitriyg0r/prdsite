@@ -122,17 +122,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const showUploadFormButton = document.getElementById('show-upload-form');
     const uploadFormContainer = document.getElementById('upload-form-container');
 
-    console.log('showUploadFormButton:', showUploadFormButton); // Отладка
-    console.log('uploadFormContainer:', uploadFormContainer); // Отладка
-
     if (showUploadFormButton && uploadFormContainer) {
         showUploadFormButton.addEventListener('click', function() {
-            console.log('Button clicked'); // Отладка
             uploadFormContainer.classList.toggle('show');
-            console.log('Container classes:', uploadFormContainer.classList); // Отладка
         });
-    } else {
-        console.error('Button or container not found'); // Отладка
+
+        // Закрыть форму при клике вне её
+        document.addEventListener('click', function(event) {
+            if (!uploadFormContainer.contains(event.target) && event.target !== showUploadFormButton) {
+                uploadFormContainer.classList.remove('show');
+            }
+        });
     }
 
     uploadForm.addEventListener('submit', function(e) {
