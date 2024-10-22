@@ -26,7 +26,7 @@ function displayProducts() {
             <img src="${product.image}" alt="${product.name}">
             <h2>${product.name}</h2>
             <p>${product.description}</p>
-            <p>Цена: ${product.price} руб.</p>
+            <p>Цена от: ${product.price} руб.</p>
             <button onclick="buyProduct('${product.name}')">Купить</button>
         `;
         
