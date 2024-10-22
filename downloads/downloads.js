@@ -122,42 +122,50 @@ document.addEventListener('DOMContentLoaded', function() {
     uploadForm.addEventListener('submit', function(e) {
         e.preventDefault();
         const adminPassword = prompt("Please enter the admin password:");
-        
+    
         if (adminPassword !== "Gg3985502") {
             uploadMessage.textContent = "Invalid admin password. Access denied.";
             return;
         }
-        
+    
         uploadMessage.textContent = "Uploading files...";
         const formData = new FormData(uploadForm);
         formData.append('admin_password', adminPassword);
-
+    
         fetch('downloads.php', {
             method: 'POST',
             body: formData
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                uploadMessage.textContent = data.message;
-                
-                if (!fileStorage[data.category]) {
-                    fileStorage[data.category] = {};
+        .then(response => response.text())
+        .then(text => {
+            console.log('Raw response text:', text); // Вывод сырых данных для отладки
+            try {
+                const data = JSON.parse(text);
+                if (data.status === 'success') {
+                    uploadMessage.textContent = data.message;
+                    // обновление структуры файлов
+                    if (!fileStorage[data.category]) {
+                        fileStorage[data.category] = {};
+                    }
+                    if (!fileStorage[data.category][data.folder]) {
+                        fileStorage[data.category][data.folder] = [];
+                    }
+                    data.files.forEach(file => {
+                        fileStorage[data.category][data.folder].push(file);
+                    });
+    
+                    uploadForm.reset();
+                    displayFiles();
+                } else {
+                    uploadMessage.textContent = data.message || 'An unknown error occurred';
+                    if (data.debug_output) {
+                        console.error('Debug output:', data.debug_output);
+                    }
                 }
-                if (!fileStorage[data.category][data.folder]) {
-                    fileStorage[data.category][data.folder] = [];
-                }
-                data.files.forEach(file => {
-                    fileStorage[data.category][data.folder].push(file);
-                });
-                
-                uploadForm.reset();
-                displayFiles();
-            } else {
-                uploadMessage.textContent = data.message || 'An unknown error occurred';
-                if (data.debug_output) {
-                    console.error('Debug output:', data.debug_output);
-                }
+            } catch (error) {
+                console.error('JSON parse error:', error);
+                console.log('Raw response text:', text); // Вывод сырых данных
+                uploadMessage.textContent = `File upload failed: ${error.message}`;
             }
         })
         .catch(error => {
@@ -165,10 +173,8 @@ document.addEventListener('DOMContentLoaded', function() {
             uploadMessage.textContent = `File upload failed: ${error.message}`;
         })
         .finally(() => {
-            // Clear the file input after upload attempt
+            // Очистка поля ввода файлов после попытки загрузки
             fileInput.value = '';
         });
     });
-
-    displayFiles();
-});
+    
