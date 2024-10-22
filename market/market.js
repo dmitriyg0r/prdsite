@@ -69,15 +69,23 @@ document.getElementById('purchaseForm').addEventListener('submit', function(even
 
 // Добавляем функцию для отправки данных на сервер
 function sendOrderToTelegram(orderData) {
-    fetch('/send-to-telegram', {
+    console.log('Отправка данных заказа:', orderData);
+    fetch('http://localhost:3000/send-to-telegram', {  // Измените на фактический URL вашего сервера
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify(orderData),
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('Ответ сервера:', response);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
+        console.log('Данные ответа:', data);
         if (data.success) {
             alert('Заказ успешно отправлен в Telegram!');
         } else {
@@ -85,7 +93,7 @@ function sendOrderToTelegram(orderData) {
         }
     })
     .catch((error) => {
-        console.error('Error:', error);
+        console.error('Ошибка:', error);
         alert('Произошла ошибка при отправке заказа. Пожалуйста, попробуйте еще раз.');
     });
 }

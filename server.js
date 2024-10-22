@@ -1,14 +1,12 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const axios = require('axios');
+const cors = require('cors');
 
 const app = express();
-const port = 3000; // Или любой другой порт
+const port = 3000; // Убедитесь, что это совпадает с портом в клиентском коде
 
-// Замените на ваш токен бота и ID чата
-const BOT_TOKEN = '8195841109:AAFNo-T4NKWsoIHSc85gVW0oVAMHM4x3Z4A';
-const CHAT_ID = '413262381';
-
+app.use(cors());  // Добавьте эту строку для обработки CORS
 app.use(bodyParser.json());
 app.use(express.static('.')); // Serve static files from the current directory
 
@@ -36,5 +34,5 @@ app.post('/send-to-telegram', async (req, res) => {
 });
 
 app.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}`);
+    console.log(`Сервер запущен на http://localhost:${port}`);
 });
