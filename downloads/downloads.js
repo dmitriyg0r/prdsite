@@ -119,6 +119,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     loadExistingFiles();
 
+    const showUploadFormButton = document.getElementById('show-upload-form');
+    const uploadFormContainer = document.getElementById('upload-form-container');
+
+    showUploadFormButton.addEventListener('click', function() {
+        uploadFormContainer.classList.toggle('show');
+    });
+
     uploadForm.addEventListener('submit', function(e) {
         e.preventDefault();
         const adminPassword = prompt("Please enter the admin password:");
