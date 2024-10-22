@@ -10,7 +10,6 @@ namespace Data
     {
         public ApplicationDbContext CreateDbContext(string[] args)
         {
-            // Получаем путь к проекту database
             var basePath = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "..", "database"));
             
             IConfigurationRoot configuration = new ConfigurationBuilder()
@@ -26,9 +25,7 @@ namespace Data
                 throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
             }
 
-            Console.WriteLine($"Connection string: {connectionString}"); // Добавьте эту строку для отладки
-
-            builder.UseSqlServer(connectionString);
+            builder.UseSqlite(connectionString);
 
             return new ApplicationDbContext(builder.Options);
         }
