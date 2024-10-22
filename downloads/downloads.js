@@ -65,7 +65,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 const listItem = document.createElement('li');
                 listItem.textContent = folder;
                 const filesList = document.createElement('ul');
-                Object.values(files).forEach(file => { // Используйте Object.values()
+                Object.values(files).forEach(file => {
+                    console.log(`Trying to access: uploads/${encodeURIComponent(category)}/${encodeURIComponent(folder)}/${encodeURIComponent(file)}`); // Отладка
                     const fileItem = document.createElement('li');
                     const fileItemContent = document.createElement('div');
                     fileItemContent.className = 'file-item';
@@ -90,6 +91,7 @@ document.addEventListener('DOMContentLoaded', function() {
             categoriesContainer.appendChild(categoryDiv);
         }
     }
+    
     
     
 
