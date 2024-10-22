@@ -28,6 +28,11 @@ function displayOrders() {
     });
 }
 
+// Добавляем новую функцию для обновления заказов
+function updateOrders(newOrder) {
+    orders.push(newOrder);
+    displayOrders();
+}
+
 // Загрузка заказов при открытии страницы
 window.onload = fetchOrders;
-
