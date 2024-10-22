@@ -323,10 +323,12 @@ body.dark-theme .file-category li a {
 #upload-form-container {
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.3s ease-out;
+    transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+    opacity: 0;
 }
 
 #upload-form-container.show {
     max-height: 1000px; /* Adjust this value based on your form's maximum height */
-    transition: max-height 0.5s ease-in;
+    opacity: 1;
+    transition: max-height 0.5s ease-in, opacity 0.5s ease-in;
 }
