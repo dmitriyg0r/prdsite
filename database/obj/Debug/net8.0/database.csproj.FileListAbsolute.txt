@@ -1,7 +1,0 @@
-/home/mrgodgames/Документы/GitHub/prdsite/database/obj/Debug/net8.0/database.csproj.AssemblyReference.cache
-/home/mrgodgames/Документы/GitHub/prdsite/database/obj/Debug/net8.0/database.GeneratedMSBuildEditorConfig.editorconfig
-/home/mrgodgames/Документы/GitHub/prdsite/database/obj/Debug/net8.0/database.AssemblyInfoInputs.cache
-/home/mrgodgames/Документы/GitHub/prdsite/database/obj/Debug/net8.0/database.AssemblyInfo.cs
-/home/mrgodgames/Документы/GitHub/prdsite/database/obj/Debug/net8.0/database.csproj.CoreCompileInputs.cache
-/home/mrgodgames/Документы/GitHub/prdsite/database/obj/Debug/net8.0/database.MvcApplicationPartsAssemblyInfo.cache
-/home/mrgodgames/Документы/GitHub/prdsite/database/obj/Debug/net8.0/database.sourcelink.json

@@ -10,12 +10,12 @@
 using System;
 using System.Reflection;
 
-[assembly: System.Reflection.AssemblyCompanyAttribute("database")]
+[assembly: System.Reflection.AssemblyCompanyAttribute("Data")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3c1dd4b90cfa10fdecfd114f4b7906a3dc4c6eb4")]
-[assembly: System.Reflection.AssemblyProductAttribute("database")]
-[assembly: System.Reflection.AssemblyTitleAttribute("database")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+cd4f1a06f433b3f416b61995a451d94eeae2fde3")]
+[assembly: System.Reflection.AssemblyProductAttribute("Data")]
+[assembly: System.Reflection.AssemblyTitleAttribute("Data")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
 
 // Создано классом WriteCodeFragment MSBuild.
