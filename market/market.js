@@ -70,7 +70,7 @@ document.getElementById('purchaseForm').addEventListener('submit', function(even
 // Добавляем функцию для отправки данных на сервер
 function sendOrderToTelegram(orderData) {
     console.log('Отправка данных заказа:', orderData);
-    fetch('https://adminflow.ru/send-to-telegram', {  // Убедитесь, что этот URL соответствует вашему серверу
+    fetch('/send-order', {  // Изменен URL на локальный эндпоинт
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
