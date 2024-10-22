@@ -70,7 +70,7 @@ document.getElementById('purchaseForm').addEventListener('submit', function(even
 // Добавляем функцию для отправки данных на сервер
 function sendOrderToTelegram(orderData) {
     console.log('Отправка данных заказа:', orderData);
-    fetch('/send-order', {  // Изменен URL на локальный эндпоинт
+    fetch('/submit-order', {  // Изменен URL на новый эндпоинт
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -87,7 +87,7 @@ function sendOrderToTelegram(orderData) {
     .then(data => {
         console.log('Данные ответа:', data);
         if (data.success) {
-            alert('Заказ успешно отправлен в Telegram!');
+            alert('Заказ успешно отправлен!');
         } else {
             alert('Произошла ошибка при отправке заказа. Пожалуйста, попробуйте еще раз.');
         }
