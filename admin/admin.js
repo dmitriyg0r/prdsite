@@ -1,7 +1,7 @@
 let orders = [];
 
 function fetchOrders() {
-    fetch('/get-orders')
+    fetch('/get-orders-from-file')
         .then(response => response.json())
         .then(data => {
             orders = data;
