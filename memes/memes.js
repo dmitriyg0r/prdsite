@@ -3,28 +3,22 @@ document.addEventListener('DOMContentLoaded', function() {
     const container = document.querySelector('.development-image');
 
     if (image && container) {
-        // Устанавливаем начальную позицию
         let currentX = window.innerWidth / 2;
         let currentY = window.innerHeight / 2;
         let targetX = currentX;
         let targetY = currentY;
         let isRunning = false;
+        const TRIGGER_DISTANCE = 200; // Расстояние, на котором картинка начинает реагировать
+        const RETURN_SPEED = 0.1; // Скорость возврата в исходное положение
 
-        // Сначала удаляем transform, установленный в CSS
-        image.style.top = '50%';
-        image.style.left = '50%';
-        image.style.transform = 'translate(-50%, -50%)';
-
-        // Небольшая задержка перед началом анимации
+        // Инициализация начальной позиции
         setTimeout(() => {
-            // Получаем начальную позицию после рендеринга
             const rect = image.getBoundingClientRect();
             currentX = rect.left;
             currentY = rect.top;
             targetX = currentX;
             targetY = currentY;
 
-            // Теперь можно установить абсолютное позиционирование
             image.style.top = currentY + 'px';
             image.style.left = currentX + 'px';
             image.style.transform = 'none';
@@ -42,31 +36,41 @@ document.addEventListener('DOMContentLoaded', function() {
         function animate() {
             if (!isRunning) return;
 
-            currentX += (targetX - currentX) * 0.05;
-            currentY += (targetY - currentY) * 0.05;
+            currentX += (targetX - currentX) * 0.1;
+            currentY += (targetY - currentY) * 0.1;
 
             const bounds = checkBounds(currentX, currentY);
             image.style.left = bounds.x + 'px';
             image.style.top = bounds.y + 'px';
 
-            if (Math.abs(targetX - currentX) < 0.1 && Math.abs(targetY - currentY) < 0.1) {
+            // Проверяем, нужно ли продолжать анимацию
+            if (Math.abs(targetX - currentX) < 0.5 && Math.abs(targetY - currentY) < 0.5) {
                 isRunning = false;
             } else {
                 requestAnimationFrame(animate);
             }
         }
 
+        // Начальная позиция
+        let initialX, initialY;
+
         document.addEventListener('mousemove', (e) => {
             const rect = image.getBoundingClientRect();
             const imageX = rect.left + rect.width / 2;
             const imageY = rect.top + rect.height / 2;
+
+            // Сохраняем начальную позицию при первом движении
+            if (!initialX) initialX = imageX;
+            if (!initialY) initialY = imageY;
+
             const deltaX = imageX - e.clientX;
             const deltaY = imageY - e.clientY;
             const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
-            if (distance < 300) {
+            if (distance < TRIGGER_DISTANCE) {
+                // Убегаем от курсора
                 const angle = Math.atan2(deltaY, deltaX);
-                const force = (300 - distance) * 2;
+                const force = (TRIGGER_DISTANCE - distance) * 1.5;
                 
                 targetX = imageX + Math.cos(angle) * force - rect.width / 2;
                 targetY = imageY + Math.sin(angle) * force - rect.height / 2;
@@ -75,33 +79,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     isRunning = true;
                     animate();
                 }
-            }
-        });
+            } else {
+                // Возвращаемся в исходную позицию
+                targetX = initialX - rect.width / 2;
+                targetY = initialY - rect.height / 2;
 
-        // Случайное движение каждые 3 секунды
-        setInterval(() => {
-            if (!isRunning) {
-                const rect = image.getBoundingClientRect();
-                const randomAngle = Math.random() * Math.PI * 2;
-                const randomDistance = Math.random() * 100;
-
-                targetX = rect.left + Math.cos(randomAngle) * randomDistance;
-                targetY = rect.top + Math.sin(randomAngle) * randomDistance;
-
-                isRunning = true;
-                animate();
-            }
-        }, 3000);
-
-        // Обработка клика
-        image.addEventListener('click', () => {
-            const rect = image.getBoundingClientRect();
-            targetX = Math.random() * (window.innerWidth - rect.width);
-            targetY = Math.random() * (window.innerHeight - rect.height);
-
-            if (!isRunning) {
-                isRunning = true;
-                animate();
+                if (!isRunning) {
+                    isRunning = true;
+                    animate();
+                }
             }
         });
 
@@ -114,6 +100,11 @@ document.addEventListener('DOMContentLoaded', function() {
             targetY = bounds.y;
             image.style.left = currentX + 'px';
             image.style.top = currentY + 'px';
+
+            // Обновляем начальную позицию
+            const rect = image.getBoundingClientRect();
+            initialX = rect.left + rect.width / 2;
+            initialY = rect.top + rect.height / 2;
         });
     }
 }); 
