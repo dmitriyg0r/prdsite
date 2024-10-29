@@ -39,14 +39,13 @@
         <div class="meme-container">
             <h2>Мемы группы</h2>
             <div class="memes-grid">
-                <!-- Обновляем пути в примерах -->
+                <!-- Тестовый мем для проверки пути -->
                 <div class="meme-item">
-                    <img src="../memes/memesy/талисман.png" alt="Мем 1">
+                    <img src="../memes/memesy/талисман.png" 
+                         alt="Тестовый мем"
+                         onload="console.log('Тестовое изображение загружено')"
+                         onerror="console.log('Ошибка загрузки тестового изображения')">
                 </div>
-                <div class="meme-item">
-                    <img src="../memes/memesy/талисман.png" alt="Мем 2">
-                </div>
-                <!-- Добавьте больше мемов для теста -->
             </div>
         </div>
         <button id="show-upload-form" class="icon-button">

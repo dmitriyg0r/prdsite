@@ -75,16 +75,23 @@ function createMemeItem(imageUrl) {
     memeItem.className = 'meme-item';
     
     const img = document.createElement('img');
-    img.src = imageUrl;
     img.alt = 'Мем';
     
-    // Добавляем обработку загрузки изображения
+    // Добавляем обработку загрузки и ошибок
     img.onload = function() {
-        // Плавное появление после загрузки
+        console.log('Изображение загружено:', imageUrl);
         requestAnimationFrame(() => {
             memeItem.style.opacity = '1';
         });
     };
+    
+    img.onerror = function() {
+        console.error('Ошибка загрузки изображения:', imageUrl);
+        memeItem.classList.add('error');
+    };
+    
+    // Устанавливаем src после добавления обработчиков
+    img.src = imageUrl;
     
     memeItem.appendChild(img);
     return memeItem;
@@ -93,8 +100,12 @@ function createMemeItem(imageUrl) {
 function loadMemes() {
     const memesGrid = document.querySelector('.memes-grid');
     
-    // Обновляем путь к мемам
-    const mockMemes = Array(12).fill('../memes/memesy/талисман.png'); // Обновленный путь
+    // Проверяем путь к изображению
+    const imagePath = '../memes/memesy/талисман.png';
+    console.log('Загрузка изображения:', imagePath);
+    
+    // Создаем тестовый массив
+    const mockMemes = Array(12).fill(imagePath);
     
     mockMemes.forEach((memeUrl, index) => {
         setTimeout(() => {
@@ -102,4 +113,10 @@ function loadMemes() {
             memesGrid.appendChild(memeItem);
         }, index * 100);
     });
-} 
+}
+
+// Добавляем вывод в консоль при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Страница загружена, начинаем загрузку мемов');
+    loadMemes();
+}); 
