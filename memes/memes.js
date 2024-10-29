@@ -93,13 +93,13 @@ function createMemeItem(imageUrl) {
 function loadMemes() {
     const memesGrid = document.querySelector('.memes-grid');
     
-    // Здесь будет запрос к серверу для получения мемов
-    const mockMemes = Array(12).fill('талисман.png'); // Создаем 12 тестовых мемов
+    // Обновляем путь к мемам
+    const mockMemes = Array(12).fill('../memes/memesy/талисман.png'); // Обновленный путь
     
     mockMemes.forEach((memeUrl, index) => {
         setTimeout(() => {
             const memeItem = createMemeItem(memeUrl);
             memesGrid.appendChild(memeItem);
-        }, index * 100); // Добавляем задержку для эффекта появления
+        }, index * 100);
     });
 } 
