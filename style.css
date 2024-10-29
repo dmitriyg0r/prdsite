@@ -20,6 +20,10 @@
     --moon-icon-color: #ffffff;
     --today-highlight: #04578fb0;
     --transition-duration: 0.3s;
+    --menu-background: #ffffff;
+    --menu-text: #333;
+    --menu-hover-background: #e0e0e0;
+    --menu-border: rgba(0, 0, 0, 0.1);
 }
 
 .darkmode {
@@ -41,6 +45,10 @@
     --theme-toggle-hover-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
     --header-background-dark: #5c43a8;
     --today-highlight: #695acda5;
+    --menu-background: #2c2c3a;
+    --menu-text: #ffffff;
+    --menu-hover-background: #3c3c4a;
+    --menu-border: rgba(255, 255, 255, 0.1);
 }
 
 /* Общие стили */
@@ -312,11 +320,11 @@ tr:hover td {
 }
 
 .menu {
-    background: #2f3136;
+    background: var(--menu-background);
     border-radius: 8px;
     padding: 8px;
     width: 220px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--menu-border);
 }
 
 .menu a {
@@ -325,7 +333,7 @@ tr:hover td {
     padding: 10px;
     margin-bottom: 2px;
     border-radius: 4px;
-    color: #dcddde;
+    color: var(--menu-text);
     background: transparent;
     font-size: 14px;
     font-weight: 500;
@@ -333,14 +341,14 @@ tr:hover td {
 }
 
 .menu a:hover {
-    background-color: rgba(79, 84, 92, 0.32);
-    color: #fff;
+    background-color: var(--menu-hover-background);
+    color: var(--menu-text);
     transform: none;
     box-shadow: none;
 }
 
 .menu a:active {
-    background-color: rgba(79, 84, 92, 0.48);
+    background-color: var(--menu-hover-background);
 }
 
 /* Удаляем ненужные эффекты */
@@ -368,17 +376,17 @@ tr:hover td {
 
 /* Темная тема */
 body.darkmode .menu {
-    background: #2f3136;
-    border-color: rgba(0, 0, 0, 0.3);
+    background: var(--menu-background);
+    border-color: var(--menu-border);
 }
 
 body.darkmode .menu a {
-    color: #dcddde;
+    color: var(--menu-text);
 }
 
 body.darkmode .menu a:hover {
-    background-color: rgba(79, 84, 92, 0.32);
-    color: #fff;
+    background-color: var(--menu-hover-background);
+    color: var(--menu-text);
 }
 
 .menu a i {
@@ -537,15 +545,15 @@ body.darkmode .menu-toggle svg {
 }
 
 body.darkmode .menu {
-    background-color: var(--header-background);
+    background-color: var(--menu-background);
 }
 
 body.darkmode .menu a {
-    color: white;
+    color: var(--menu-text);
 }
 
 body.darkmode .menu a:hover {
-    background-color: var(--header-background-dark);
+    background-color: var(--menu-hover-background);
 }
 
 .header-controls {
@@ -586,8 +594,8 @@ body.darkmode .menu a:hover {
 
 .developer-links a, .menu a {
     padding: 10px 20px;
-    background-color: #4b0082;
-    color: #ffffff;
+    background-color: var(--menu-background);
+    color: var(--menu-text);
     text-decoration: none;
     border-radius: 5px;
     transition: all 0.3s ease;
@@ -599,7 +607,7 @@ body.darkmode .menu a:hover {
 }
 
 .developer-links a:hover, .menu a:hover {
-    background-color: #8b00ff;
+    background-color: var(--menu-hover-background);
     transform: translateY(-3px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
@@ -614,7 +622,7 @@ body.darkmode .menu a:hover {
 
 /* Общие стили меню */
 .menu, .developer-links {
-    background: var(--table-background);
+    background: var(--menu-background);
     padding: 20px;
     border-radius: 15px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
@@ -626,13 +634,13 @@ body.darkmode .menu a:hover {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--header-text);
+    color: var(--menu-text);
     text-decoration: none;
     padding: 12px 20px;
     margin-bottom: 10px;
     border-radius: 10px;
     font-weight: 500;
-    background: var(--button-background);
+    background: var(--menu-background);
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
@@ -645,7 +653,7 @@ body.darkmode .menu a:hover {
 
 /* Эффект при наведении */
 .menu a:hover, .developer-links a:hover {
-    background: var(--button-hover);
+    background: var(--menu-hover-background);
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
@@ -688,7 +696,7 @@ body.darkmode .menu a:hover {
     width: 300px;
     display: none;
     z-index: 1000;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--menu-border);
 }
 
 /* Специфичные стили для developer-links */
