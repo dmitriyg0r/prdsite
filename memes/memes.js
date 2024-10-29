@@ -177,7 +177,9 @@ function showDeleteConfirmation(memeId, memeElement) {
         <input type="password" id="delete-password" placeholder="Введите пароль" class="delete-password-input">
         <div class="delete-modal-buttons">
             <button class="cancel-button">Отмена</button>
-            <button class="confirm-button">Удалить</button>
+            <button class="confirm-button">
+                <span class="button-text">Удалить</span>
+            </button>
         </div>
     `;
     
@@ -188,16 +190,33 @@ function showDeleteConfirmation(memeId, memeElement) {
     
     const cancelButton = modalContent.querySelector('.cancel-button');
     const confirmButton = modalContent.querySelector('.confirm-button');
+    const buttonText = confirmButton.querySelector('.button-text');
     const passwordInput = modalContent.querySelector('#delete-password');
+    
+    const setLoading = (loading) => {
+        confirmButton.disabled = loading;
+        confirmButton.classList.toggle('loading', loading);
+        if (loading) {
+            buttonText.innerHTML = `
+                <span class="loading-spinner"></span>
+                Удаление...
+            `;
+        } else {
+            buttonText.textContent = 'Удалить';
+        }
+    };
     
     cancelButton.onclick = () => modal.remove();
     
     confirmButton.onclick = () => {
         const password = passwordInput.value;
         
-        // Показываем индикатор загрузки
-        confirmButton.disabled = true;
-        confirmButton.textContent = 'Удаление...';
+        if (!password) {
+            alert('Пожалуйста, введите пароль');
+            return;
+        }
+        
+        setLoading(true);
         
         fetch('delete_meme.php', {
             method: 'POST',
@@ -211,15 +230,15 @@ function showDeleteConfirmation(memeId, memeElement) {
             })
         })
         .then(async response => {
-            const text = await response.text(); // Получаем текст ответа
+            const text = await response.text();
             try {
-                const data = JSON.parse(text); // Пробуем распарсить JSON
+                const data = JSON.parse(text);
                 if (!response.ok) {
                     throw new Error(data.message || 'Ошибка сервера');
                 }
                 return data;
             } catch (e) {
-                console.error('Server response:', text); // Логируем ответ сервера
+                console.error('Server response:', text);
                 throw new Error('Некорректный ответ сервера');
             }
         })
@@ -227,21 +246,26 @@ function showDeleteConfirmation(memeId, memeElement) {
             if (data.status === 'success') {
                 // Анимация удаления
                 memeElement.style.opacity = '0';
+                memeElement.style.transform = 'scale(0.9)';
                 setTimeout(() => {
                     memeElement.remove();
                     modal.remove();
                 }, 300);
             } else {
-                alert(data.message || 'Неверный пароль или ошибка удаления');
+                throw new Error(data.message || 'Неизвестная ошибка');
             }
         })
         .catch(error => {
-            console.error('Error:', error);
-            alert('Произошла ошибка при удалении');
+            console.error('Error details:', error);
+            alert(error.message || 'Произошла ошибка при удалении');
+            setLoading(false);
         })
         .finally(() => {
-            confirmButton.disabled = false;
-            confirmButton.textContent = 'Удалить';
+            // Сбрасываем состояние загрузки только если произошла ошибка
+            // В случае успеха модальное окно будет уже удалено
+            if (modal.parentElement) {
+                setLoading(false);
+            }
         });
     };
     
@@ -252,7 +276,7 @@ function showDeleteConfirmation(memeId, memeElement) {
     
     // Обработка клавиши Enter
     passwordInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
+        if (e.key === 'Enter' && !confirmButton.disabled) {
             confirmButton.click();
         }
     });
