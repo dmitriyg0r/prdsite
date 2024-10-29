@@ -13,7 +13,7 @@ try {
     }
 
     // Проверяем пароль
-    $correct_password = '123'; // Замените на ваш пароль
+    $correct_password = 'Gg3985502'; // Замените на ваш пароль
     if ($data['password'] !== $correct_password) {
         throw new Exception('Неверный пароль');
     }
