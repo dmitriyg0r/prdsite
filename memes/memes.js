@@ -25,6 +25,23 @@ document.addEventListener('DOMContentLoaded', function() {
     if (uploadForm) {
         uploadForm.addEventListener('submit', function(e) {
             e.preventDefault();
+            const files = this.querySelector('input[type="file"]').files;
+            const maxSize = 3 * 1024 * 1024; // 3 МБ в байтах
+            let hasLargeFiles = false;
+
+            // Проверяем размер каждого файла
+            for (let file of files) {
+                if (file.size > maxSize) {
+                    hasLargeFiles = true;
+                    console.error(`Файл ${file.name} превышает максимальный размер (3 МБ)`);
+                }
+            }
+
+            if (hasLargeFiles) {
+                alert('Один или несколько файлов превышают максимальный размер (3 МБ)');
+                return;
+            }
+
             const formData = new FormData(this);
 
             fetch('memes.php', {
@@ -41,6 +58,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     uploadFormContainer.classList.remove('show');
                     uploadForm.reset();
+
+                    // Показываем ошибки, если они есть
+                    if (data.errors && data.errors.length > 0) {
+                        alert('Некоторые файлы не были загружены:\n' + data.errors.join('\n'));
+                    }
                 } else {
                     console.error('Ошибка:', data.message);
                 }

@@ -13,6 +13,9 @@ if (!isset($_FILES['meme'])) {
     die(json_encode(['status' => 'error', 'message' => 'Файл не был получен']));
 }
 
+// Максимальный размер файла (3 МБ в байтах)
+$maxFileSize = 3 * 1024 * 1024;
+
 // Путь к папке memesy на сервере
 $uploadDir = $_SERVER['DOCUMENT_ROOT'] . '/memesy/';
 
@@ -26,6 +29,7 @@ $response = ['status' => 'error', 'message' => 'Неизвестная ошиб�
 try {
     $files = $_FILES['meme'];
     $uploadedFiles = [];
+    $errors = [];
     
     // Если загружен один файл
     if (!is_array($files['name'])) {
@@ -40,16 +44,33 @@ try {
 
     // Обрабатываем каждый файл
     foreach ($files['name'] as $key => $name) {
+        // Проверяем размер файла
+        if ($files['size'][$key] > $maxFileSize) {
+            $errors[] = "Файл '$name' превышает максимальный размер (3 МБ)";
+            continue;
+        }
+
         if ($files['error'][$key] === UPLOAD_ERR_OK) {
-            // Генерируем уникальное имя файла
+            // Проверяем тип файла
             $fileExtension = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+            $allowedTypes = ['jpg', 'jpeg', 'png', 'gif'];
+            
+            if (!in_array($fileExtension, $allowedTypes)) {
+                $errors[] = "Файл '$name' имеет неподдерживаемый формат";
+                continue;
+            }
+
+            // Генерируем уникальное имя файла
             $newFileName = uniqid() . '.' . $fileExtension;
             $targetFile = $uploadDir . $newFileName;
             
             if (move_uploaded_file($files['tmp_name'][$key], $targetFile)) {
-                // Сохраняем путь относительно корня сайта
                 $uploadedFiles[] = '/memesy/' . $newFileName;
+            } else {
+                $errors[] = "Ошибка при сохранении файла '$name'";
             }
+        } else {
+            $errors[] = "Ошибка при загрузке файла '$name'";
         }
     }
 

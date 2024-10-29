@@ -367,7 +367,7 @@ h2::after {
     background: var(--table-background);
 }
 
-/* Hover эффект для изображений */
+/* Hover эф��е��т для изображений */
 .meme-item:hover img {
     transform: scale(1.03);
 }
@@ -420,4 +420,12 @@ h2::after {
     left: 50%;
     transform: translate(-50%, -50%);
     color: var(--text-color);
+}
+
+.upload-info {
+    font-size: 0.9em;
+    color: var(--text-color);
+    opacity: 0.8;
+    margin-top: 5px;
+    text-align: center;
 }
