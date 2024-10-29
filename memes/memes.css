@@ -160,12 +160,57 @@ h2::after {
 }
 
 #upload-form input[type="file"] {
-    width: 0.1px;
-    height: 0.1px;
-    opacity: 0;
-    overflow: hidden;
-    position: absolute;
-    z-index: -1;
+    width: 100%;
+    padding: 15px;
+    border: 2px solid var(--button-background);
+    border-radius: 10px;
+    background-color: var(--table-background);
+    color: var(--text-color);
+    font-size: 16px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+#upload-form input[type="file"]:hover {
+    border-color: var(--button-hover);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+#upload-form input[type="file"]::-webkit-file-upload-button {
+    padding: 10px 20px;
+    margin-right: 15px;
+    border: none;
+    border-radius: 6px;
+    background-color: var(--button-background);
+    color: var(--button-text);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#upload-form input[type="file"]::-webkit-file-upload-button:hover {
+    background-color: var(--button-hover);
+}
+
+/* Для Firefox */
+#upload-form input[type="file"]::file-selector-button {
+    padding: 10px 20px;
+    margin-right: 15px;
+    border: none;
+    border-radius: 6px;
+    background-color: var(--button-background);
+    color: var(--button-text);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#upload-form input[type="file"]::file-selector-button:hover {
+    background-color: var(--button-hover);
 }
 
 #upload-form .file-input-label {
@@ -258,4 +303,23 @@ h2::after {
         padding: 12px;
         font-size: 14px;
     }
+
+    #upload-form input[type="file"] {
+        padding: 12px;
+        font-size: 14px;
+    }
+
+    #upload-form input[type="file"]::-webkit-file-upload-button,
+    #upload-form input[type="file"]::file-selector-button {
+        padding: 8px 16px;
+        font-size: 13px;
+    }
+}
+
+.upload-text {
+    text-align: center;
+    color: var(--text-color);
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+    opacity: 0.8;
 }
