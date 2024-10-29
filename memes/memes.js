@@ -48,4 +48,46 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('Произошла ошибка при загрузке мема');
         });
     });
+
+    // Добавляем эффект наклона для изображения
+    const image = document.querySelector('.development-image img');
+    const container = document.querySelector('.development-image');
+
+    if (image && container) {
+        let rect = container.getBoundingClientRect();
+        const maxRotate = 15; // Максимальный угол поворота
+
+        container.addEventListener('mousemove', (e) => {
+            rect = container.getBoundingClientRect();
+            
+            // Вычисляем положение курсора относительно центра изображения
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            
+            // Вычисляем расстояние от курсора до центра в процентах
+            const percentX = (e.clientX - centerX) / (rect.width / 2);
+            const percentY = (e.clientY - centerY) / (rect.height / 2);
+            
+            // Применяем поворот с ограничением максимального угла
+            const rotateX = -percentY * maxRotate;
+            const rotateY = percentX * maxRotate;
+            
+            image.style.transform = `
+                perspective(1000px)
+                rotateX(${rotateX}deg)
+                rotateY(${rotateY}deg)
+                scale3d(1.05, 1.05, 1.05)
+            `;
+        });
+
+        // Возвращаем изображение в исходное положение при уходе курсора
+        container.addEventListener('mouseleave', () => {
+            image.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)';
+        });
+
+        // Сбрасываем положение при касании на мобильных устройствах
+        container.addEventListener('touchstart', () => {
+            image.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)';
+        });
+    }
 }); 
