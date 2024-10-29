@@ -37,7 +37,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     memesGrid.insertBefore(newMemeItem, memesGrid.firstChild);
                     // Закрываем форму загрузки
                     uploadFormContainer.classList.remove('show');
+                    // Очищаем форму
+                    uploadForm.reset();
+                } else {
+                    console.error('Ошибка загрузки:', data.message);
                 }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
             });
         });
     }
@@ -50,9 +57,7 @@ function createMemeItem(imageUrl) {
     const img = document.createElement('img');
     img.alt = 'Мем';
     
-    // Добавляем обработку загрузки и ошибок
     img.onload = function() {
-        console.log('Изображение загружено:', imageUrl);
         requestAnimationFrame(() => {
             memeItem.style.opacity = '1';
         });
@@ -63,33 +68,7 @@ function createMemeItem(imageUrl) {
         memeItem.classList.add('error');
     };
     
-    // Устанавливаем src после добавления обработчиков
     img.src = imageUrl;
-    
     memeItem.appendChild(img);
     return memeItem;
 }
-
-function loadMemes() {
-    const memesGrid = document.querySelector('.memes-grid');
-    
-    // Обновляем путь к изображению
-    const imagePath = '../memesy/талисман.png';
-    console.log('Загрузка изображения:', imagePath);
-    
-    // Создаем тестовый массив
-    const mockMemes = Array(12).fill(imagePath);
-    
-    mockMemes.forEach((memeUrl, index) => {
-        setTimeout(() => {
-            const memeItem = createMemeItem(memeUrl);
-            memesGrid.appendChild(memeItem);
-        }, index * 100);
-    });
-}
-
-// Добавляем вывод в консоль при загрузке страницы
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('Страница загружена, начинаем загрузку мемов');
-    loadMemes();
-}); 
