@@ -32,10 +32,10 @@ h2::after {
 }
 
 .development-notice {
-    font-size: 1.2rem;
+    font-size: 1.8rem;
     color: #ff6b6b;
     text-align: center;
-    padding: 20px;
+    padding: 25px;
     background: rgba(255, 107, 107, 0.1);
     border: 2px dashed #ff6b6b;
     border-radius: 12px;
@@ -43,7 +43,8 @@ h2::after {
     max-width: 600px;
     backdrop-filter: blur(5px);
     transition: all 0.3s ease;
-    z-index: 2;
+    font-weight: 500;
+    letter-spacing: 1px;
 }
 
 .development-notice:hover {
@@ -81,8 +82,9 @@ h2::after {
     }
     
     .development-notice {
+        font-size: 1.4rem;
         margin: 20px 10px;
-        font-size: 1rem;
+        padding: 20px;
     }
     
     .development-image img {
