@@ -34,8 +34,63 @@
 #upload-form {
     display: flex;
     flex-direction: column;
-    align-items: stretch;
     gap: 20px;
+}
+
+#upload-form input[type="file"] {
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
+}
+
+#upload-form .file-input-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 15px;
+    background-color: var(--table-background);
+    border: 2px dashed var(--button-background);
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 16px;
+    color: var(--text-color);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+#upload-form .file-input-label:hover {
+    background-color: rgba(var(--button-background-rgb), 0.1);
+    border-color: var(--button-hover);
+    transform: translateY(-2px);
+}
+
+/* Иконка загрузки */
+#upload-form .file-input-label::before {
+    content: '📁';
+    font-size: 20px;
+    margin-right: 8px;
+}
+
+/* Текст о выбранном файле */
+#file-name {
+    margin-top: 8px;
+    font-size: 14px;
+    color: var(--text-color);
+    text-align: center;
+    font-style: italic;
+}
+
+/* Анимация при перетаскивании файла */
+#upload-form .file-input-label.dragover {
+    background-color: rgba(var(--button-background-rgb), 0.2);
+    border-style: solid;
+    transform: scale(1.02);
 }
 
 #upload-form select, 
@@ -407,7 +462,7 @@ body.dark-theme .file-category li a {
     }
 }
 
-/* Дополнительные медиа-запросы для очень маленьких экранов */
+/* Дополнительные медиа-запросы для очень малень��их экранов */
 @media screen and (max-width: 480px) {
     .icon-button {
         width: 45px;
