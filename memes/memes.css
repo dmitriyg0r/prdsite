@@ -493,3 +493,83 @@ textarea.text-input {
     min-height: 80px;
 }
 
+.delete-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: rgba(255, 59, 59, 0.9);
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.meme-image-container:hover .delete-button {
+    opacity: 1;
+}
+
+.delete-button:hover {
+    background: rgb(255, 59, 59);
+    transform: scale(1.1);
+}
+
+.delete-modal-content {
+    background: var(--table-background);
+    padding: 20px;
+    border-radius: 12px;
+    max-width: 400px;
+    width: 90%;
+}
+
+.delete-modal-content h3 {
+    margin: 0 0 20px 0;
+    color: var(--text-color);
+    text-align: center;
+}
+
+.delete-password-input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--input-background);
+    color: var(--text-color);
+}
+
+.delete-modal-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.delete-modal-buttons button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.cancel-button {
+    background: var(--button-secondary);
+    color: var(--text-color);
+}
+
+.confirm-button {
+    background: #ff3b3b;
+    color: white;
+}
+
+.delete-modal-buttons button:hover {
+    transform: translateY(-2px);
+}
+
