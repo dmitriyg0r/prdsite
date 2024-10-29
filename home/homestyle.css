@@ -552,7 +552,142 @@ body.dark-theme .file-category li a {
     border-radius: 6px;
     transition: background-color 0.3s ease;
 }
+.file-category {
+    flex: 1 1 300px;
+    max-width: 400px;
+    background-color: var(--table-background);
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: var(--text-container-shadow);
+    transition: all 0.4s ease;
+}
 
+.file-category:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+}
+
+.file-category h3 {
+    margin-bottom: 20px;
+    color: var(--header-text);
+    font-size: 22px;
+    text-align: center;
+    border-bottom: 3px solid var(--button-background);
+    padding-bottom: 15px;
+}
+
+.file-category ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.file-category li {
+    margin: 20px 0;
+    padding: 15px;
+    border: 1px solid var(--table-border);
+    background-color: var(--table-background);
+    border-radius: 10px;
+    color: var(--text-color);
+    transition: all 0.3s ease;
+}
+
+.file-category li:hover {
+    background-color: rgba(var(--button-hover-rgb), 0.1);
+    transform: translateX(5px);
+}
+
+.file-category li a {
+    color: var(--text-color);
+    text-decoration: none;
+    transition: color 0.3s ease;
+    display: block;
+}
+
+.file-category li a:hover {
+    color: var(--button-hover);
+}
+
+/* Стили для свтлой темы */
+
+body:not(.dark-theme) .container {
+    background-color: #ffffff;
+}
+
+body:not(.dark-theme) .file-category {
+    background-color: #f8f8f8;
+}
+
+body:not(.dark-theme) .file-category h3 {
+    color: #2c3e50;
+}
+
+body:not(.dark-theme) .file-category li {
+    background-color: #ffffff;
+    border-color: #e0e0e0;
+}
+
+body:not(.dark-theme) .file-category li,
+body:not(.dark-theme) .file-category li a {
+    color: #333333;
+}
+
+/* Добавляем стили для темной темы */
+
+body.dark-theme .container {
+    background-color: #1a1a1a;
+}
+
+body.dark-theme .file-category {
+    background-color: #2a2a2a;
+}
+
+body.dark-theme .file-category h3 {
+    color: #e0e0e0;
+}
+
+body.dark-theme .file-category li {
+    background-color: #3a3a3a;
+    border-color: #4a4a4a;
+}
+
+body.dark-theme .file-category li,
+body.dark-theme .file-category li a {
+    color: #e0e0e0;
+}
+
+.file-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+}
+
+.download-button,
+#upload-form button {
+    background-color: var(--button-background);
+    color: var(--button-text);
+    padding: 10px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-weight: bold;
+}
+
+.download-button:hover,
+#upload-form button:hover {
+    background-color: var(--button-hover);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Общие стили */
+.container {
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.15);
+    max-width: 1200px;
+    margin: 0 auto;
+}
 /* Анимация для стрелки */
 @keyframes rotate {
     from { transform: rotate(0deg); }
