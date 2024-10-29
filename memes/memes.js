@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-function createMemeItem(imageUrl, authorName = 'Аноним') {
+function createMemeItem(memeInfo) {
     const memeItem = document.createElement('div');
     memeItem.className = 'meme-item';
     
@@ -60,7 +60,7 @@ function createMemeItem(imageUrl, authorName = 'Аноним') {
     imageContainer.className = 'meme-image-container';
     
     const img = document.createElement('img');
-    img.src = imageUrl;
+    img.src = memeInfo.path;
     img.alt = 'Мем';
     
     // Информация о меме
@@ -70,19 +70,18 @@ function createMemeItem(imageUrl, authorName = 'Аноним') {
     const authorInfo = document.createElement('div');
     authorInfo.className = 'meme-author';
     
-    // Аватар автора (можно заменить на реальный аватар)
-    const authorAvatar = document.createElement('img');
-    authorAvatar.className = 'author-avatar';
-    authorAvatar.src = '../assets/default-avatar.png'; // Путь к дефолтному аватару
-    authorAvatar.alt = authorName;
-    
     const authorNameSpan = document.createElement('span');
-    authorNameSpan.textContent = authorName;
+    authorNameSpan.textContent = memeInfo.author;
+    
+    // Добавляем дату
+    const dateSpan = document.createElement('span');
+    dateSpan.className = 'meme-date';
+    dateSpan.textContent = new Date(memeInfo.timestamp * 1000).toLocaleDateString();
     
     // Собираем структуру
-    authorInfo.appendChild(authorAvatar);
     authorInfo.appendChild(authorNameSpan);
     memeInfo.appendChild(authorInfo);
+    memeInfo.appendChild(dateSpan);
     
     imageContainer.appendChild(img);
     memeItem.appendChild(imageContainer);
@@ -90,7 +89,7 @@ function createMemeItem(imageUrl, authorName = 'Аноним') {
     
     // Открытие модального окна при клике
     imageContainer.addEventListener('click', () => {
-        openModal(imageUrl);
+        openModal(memeInfo.path);
     });
     
     return memeItem;
@@ -140,8 +139,8 @@ function loadExistingMemes() {
                 const memesGrid = document.querySelector('.memes-grid');
                 memesGrid.innerHTML = '';
                 
-                data.memes.forEach(path => {
-                    const memeItem = createMemeItem(path);
+                data.memes.forEach(memeInfo => {
+                    const memeItem = createMemeItem(memeInfo);
                     memesGrid.appendChild(memeItem);
                 });
             }

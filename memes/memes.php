@@ -13,10 +13,7 @@ if (!isset($_FILES['meme'])) {
     die(json_encode(['status' => 'error', 'message' => 'Файл не был получен']));
 }
 
-// Максимальный размер файла (3 МБ в байтах)
-$maxFileSize = 3 * 1024 * 1024;
-
-// Путь к папке memesy на сервере
+$authorName = isset($_POST['author_name']) ? $_POST['author_name'] : 'Аноним';
 $uploadDir = $_SERVER['DOCUMENT_ROOT'] . '/memesy/';
 
 // Создаем директорию если не существует
@@ -29,7 +26,6 @@ $response = ['status' => 'error', 'message' => 'Неизвестная ошиб�
 try {
     $files = $_FILES['meme'];
     $uploadedFiles = [];
-    $errors = [];
     
     // Если загружен один файл
     if (!is_array($files['name'])) {
@@ -44,33 +40,25 @@ try {
 
     // Обрабатываем каждый файл
     foreach ($files['name'] as $key => $name) {
-        // Проверяем размер файла
-        if ($files['size'][$key] > $maxFileSize) {
-            $errors[] = "Файл '$name' превышает максимальный размер (3 МБ)";
-            continue;
-        }
-
         if ($files['error'][$key] === UPLOAD_ERR_OK) {
-            // Проверяем тип файла
             $fileExtension = strtolower(pathinfo($name, PATHINFO_EXTENSION));
-            $allowedTypes = ['jpg', 'jpeg', 'png', 'gif'];
-            
-            if (!in_array($fileExtension, $allowedTypes)) {
-                $errors[] = "Файл '$name' имеет неподдерживаемый формат";
-                continue;
-            }
-
-            // Генерируем уникальное имя файла
             $newFileName = uniqid() . '.' . $fileExtension;
             $targetFile = $uploadDir . $newFileName;
             
             if (move_uploaded_file($files['tmp_name'][$key], $targetFile)) {
-                $uploadedFiles[] = '/memesy/' . $newFileName;
-            } else {
-                $errors[] = "Ошибка при сохранении файла '$name'";
+                // Сохраняем информацию о файле
+                $fileInfo = [
+                    'path' => '/memesy/' . $newFileName,
+                    'author' => $authorName,
+                    'timestamp' => time()
+                ];
+                
+                // Сохраняем метаданные в JSON файл
+                $metaFile = $uploadDir . $newFileName . '.meta.json';
+                file_put_contents($metaFile, json_encode($fileInfo));
+                
+                $uploadedFiles[] = $fileInfo;
             }
-        } else {
-            $errors[] = "Ошибка при загрузке файла '$name'";
         }
     }
 
@@ -78,7 +66,7 @@ try {
         $response = [
             'status' => 'success',
             'message' => 'Файлы успешно загружены',
-            'filePaths' => $uploadedFiles
+            'files' => $uploadedFiles
         ];
     }
 
