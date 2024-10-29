@@ -190,10 +190,21 @@ function showDeleteConfirmation(memeId, memeElement) {
     const confirmButton = modalContent.querySelector('.confirm-button');
     const passwordInput = modalContent.querySelector('#delete-password');
     
+    // Добавляем обработчик Enter для поля пароля
+    passwordInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            confirmButton.click();
+        }
+    });
+    
     cancelButton.onclick = () => modal.remove();
     
     confirmButton.onclick = () => {
         const password = passwordInput.value;
+        
+        // Показываем индикатор загрузки или блокируем кнопку
+        confirmButton.disabled = true;
+        confirmButton.textContent = 'Удаление...';
         
         fetch('delete_meme.php', {
             method: 'POST',
@@ -208,19 +219,30 @@ function showDeleteConfirmation(memeId, memeElement) {
         .then(response => response.json())
         .then(data => {
             if (data.status === 'success') {
-                memeElement.remove();
-                modal.remove();
+                // Анимация удаления
+                memeElement.style.opacity = '0';
+                setTimeout(() => {
+                    memeElement.remove();
+                    modal.remove();
+                }, 300);
             } else {
-                alert('Неверный пароль или ошибка удаления');
+                alert(data.message || 'Неверный пароль или ошибка удаления');
+                confirmButton.disabled = false;
+                confirmButton.textContent = 'Удалить';
             }
         })
         .catch(error => {
             console.error('Ошибка:', error);
             alert('Произошла ошибка при удалении');
+            confirmButton.disabled = false;
+            confirmButton.textContent = 'Удалить';
         });
     };
     
     modal.onclick = (e) => {
         if (e.target === modal) modal.remove();
     };
+    
+    // Фокус на поле ввода пароля
+    passwordInput.focus();
 }
