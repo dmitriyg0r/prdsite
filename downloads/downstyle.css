@@ -514,19 +514,7 @@ body.dark-theme .file-category li a {
     fill: var(--text-color);
 }
 
-.menu {
-    display: none;
-    position: absolute;
-    top: 100%;
-    right: 0;
-    background-color: var(--button-background); /* Изменено на цвет кнопки */
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    padding: 10px;
-    z-index: 1000;
-    min-width: 200px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
+
 
 .menu.show {
     display: block;
