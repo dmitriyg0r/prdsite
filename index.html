@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Расписание</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="news.css">
+    <link rel="stylesheet" href="../rasp_news/news.css">
     <meta name="description" content="Расписание для группы 18ПрД4310">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
@@ -163,9 +163,24 @@
                 </tbody>
             </table>
         </div>
-        <div class = news></div>
+        <div class="news">
             <h1>Новости</h1>
             <p>Тут будут публиковаться новости группы</p>
+        </div>
+        <div id="postModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <form id="postForm">
+                    <select id="postType" required>
+                        <option value="Message">Сообщение</option>
+                        <option value="News">Новость</option>
+                        <option value="Event">Событие</option>
+                    </select>
+                    <input type="file" id="imageInput" accept="image/*" required>
+                    <textarea id="postText" placeholder="Введите текст поста..." required></textarea>
+                    <button type="submit">Опубликовать</button>
+                </form>
+            </div>
         </div>
         <button class="add-post-btn">+ Создать пост</button>
         <div class="card-grid">
@@ -218,6 +233,6 @@
         </div>
     </div>
     <script src="main.js"></script>
-    <script src="theme.js"></script>
+    <script src="../rasp_news/news.js"></script>
 </body>
 </html>
