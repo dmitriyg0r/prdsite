@@ -1,103 +1,87 @@
-document.addEventListener("DOMContentLoaded", () => {
-    const addPostBtn = document.querySelector('.add-post-btn');
+document.addEventListener('DOMContentLoaded', function() {
     const modal = document.getElementById('postModal');
+    const addPostBtn = document.querySelector('.add-post-btn');
     const closeBtn = document.querySelector('.close');
     const postForm = document.getElementById('postForm');
-    const cardGrid = document.querySelector('.card-grid');
+    const newsContainer = document.querySelector('.news');
 
-    // Загружаем существующие посты при загрузке страницы
-    loadPosts();
-
-    async function loadPosts() {
-        try {
-            const response = await fetch('../rasp_news/get_posts.php');
-            const posts = await response.json();
-            
-            // Очищаем текущие посты
-            cardGrid.innerHTML = '';
-            
-            // Добавляем посты на страницу
-            posts.forEach(post => {
-                const newCard = createPostCard(post);
-                cardGrid.appendChild(newCard);
-            });
-        } catch (error) {
-            console.error('Error loading posts:', error);
-        }
-    }
-
-    function createPostCard(post) {
-        const newCard = document.createElement('div');
-        newCard.className = 'card';
-        
-        newCard.innerHTML = `
-            <img src="../rasp_news/news/${post.image}" alt="Post Image">
-            <div class="card-info">
-                <p class="message">[${post.type}] ${post.text}</p>
-            </div>
-        `;
-        
-        return newCard;
-    }
-
-    // Открываем модальное окно при клике на кнопку
+    // Открытие модального окна
     addPostBtn.addEventListener('click', () => {
-        modal.style.display = "block";
+        modal.style.display = 'block';
     });
 
-    // Закрываем модальное окно при клике на крестик
+    // Закрытие модального окна
     closeBtn.addEventListener('click', () => {
-        modal.style.display = "none";
+        modal.style.display = 'none';
     });
 
-    // Закрываем модальное окно при клике вне его области
-    window.addEventListener('click', (event) => {
-        if (event.target === modal) {
-            modal.style.display = "none";
+    window.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.style.display = 'none';
         }
     });
 
-    // Обновляем обработчик отправки формы
+    // Обработка отправки формы
     postForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
-        const postType = document.getElementById('postType').value;
-        const imageFile = document.getElementById('imageInput').files[0];
-        const postText = document.getElementById('postText').value;
 
-        if (!imageFile) {
-            alert('Пожалуйста, выберите изображение');
-            return;
-        }
+        const formData = new FormData();
+        const postData = {
+            type: document.getElementById('postType').value,
+            text: document.getElementById('postText').value
+        };
+
+        formData.append('postData', JSON.stringify(postData));
+        formData.append('image', document.getElementById('imageInput').files[0]);
 
         try {
-            const formData = new FormData();
-            formData.append('image', imageFile);
-            formData.append('postData', JSON.stringify({
-                type: postType,
-                text: postText
-            }));
-
-            const response = await fetch('../rasp_news/upload.php', {
+            const response = await fetch('../rasp_news/newsupload.php', {
                 method: 'POST',
                 body: formData
             });
 
             const result = await response.json();
-            
             if (result.success) {
-                // Перезагружаем посты
-                await loadPosts();
-                
-                // Очищаем форму и закрываем модальное окно
+                loadPosts(); // Перезагружаем посты
+                modal.style.display = 'none';
                 postForm.reset();
-                modal.style.display = "none";
             } else {
-                throw new Error(result.error);
+                alert('Ошибка при публикации поста: ' + result.error);
             }
         } catch (error) {
-            console.error('Error creating post:', error);
-            alert('Произошла ошибка при создании поста');
+            alert('Ошибка при отправке данных: ' + error);
         }
     });
+
+    // Загрузка постов
+    async function loadPosts() {
+        try {
+            const response = await fetch('../rasp_news/get_posts.php');
+            const posts = await response.json();
+            
+            const postsHTML = posts.map(post => `
+                <div class="post ${post.type.toLowerCase()}">
+                    <img src="../rasp_news/news/${post.image}" alt="Post image">
+                    <p>${post.text}</p>
+                    <span class="timestamp">${new Date(post.timestamp * 1000).toLocaleString()}</span>
+                </div>
+            `).join('');
+
+            const newsContent = document.createElement('div');
+            newsContent.className = 'news-content';
+            newsContent.innerHTML = postsHTML;
+
+            // Очищаем предыдущие посты и добавляем новые
+            const existingContent = newsContainer.querySelector('.news-content');
+            if (existingContent) {
+                existingContent.remove();
+            }
+            newsContainer.appendChild(newsContent);
+        } catch (error) {
+            console.error('Ошибка при загрузке постов:', error);
+        }
+    }
+
+    // Загружаем посты при загрузке страницы
+    loadPosts();
 });
