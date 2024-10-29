@@ -34,14 +34,16 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-                    const memesGrid = document.querySelector('.memes-grid');
-                    data.filePaths.forEach(path => {
-                        const memeItem = createMemeItem(path);
+                    data.files.forEach(fileInfo => {
+                        const memeItem = createMemeItem(fileInfo);
+                        const memesGrid = document.querySelector('.memes-grid');
                         memesGrid.insertBefore(memeItem, memesGrid.firstChild);
                     });
                     
                     document.getElementById('upload-form-container').classList.remove('show');
                     this.reset();
+                } else {
+                    console.error('Ошибка:', data.message);
                 }
             })
             .catch(error => {
@@ -64,28 +66,18 @@ function createMemeItem(memeInfo) {
     img.alt = 'Мем';
     
     // Информация о меме
-    const memeInfo = document.createElement('div');
-    memeInfo.className = 'meme-info';
+    const memeInfoDiv = document.createElement('div');
+    memeInfoDiv.className = 'meme-info';
     
     const authorInfo = document.createElement('div');
     authorInfo.className = 'meme-author';
-    
-    const authorNameSpan = document.createElement('span');
-    authorNameSpan.textContent = memeInfo.author;
-    
-    // Добавляем дату
-    const dateSpan = document.createElement('span');
-    dateSpan.className = 'meme-date';
-    dateSpan.textContent = new Date(memeInfo.timestamp * 1000).toLocaleDateString();
+    authorInfo.textContent = memeInfo.author;
     
     // Собираем структуру
-    authorInfo.appendChild(authorNameSpan);
-    memeInfo.appendChild(authorInfo);
-    memeInfo.appendChild(dateSpan);
-    
+    memeInfoDiv.appendChild(authorInfo);
     imageContainer.appendChild(img);
     memeItem.appendChild(imageContainer);
-    memeItem.appendChild(memeInfo);
+    memeItem.appendChild(memeInfoDiv);
     
     // Открытие модального окна при клике
     imageContainer.addEventListener('click', () => {
