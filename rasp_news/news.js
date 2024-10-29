@@ -3,6 +3,42 @@ document.addEventListener("DOMContentLoaded", () => {
     const modal = document.getElementById('postModal');
     const closeBtn = document.querySelector('.close');
     const postForm = document.getElementById('postForm');
+    const cardGrid = document.querySelector('.card-grid');
+
+    // Загружаем существующие посты при загрузке страницы
+    loadPosts();
+
+    async function loadPosts() {
+        try {
+            const response = await fetch('../rasp_news/get_posts.php');
+            const posts = await response.json();
+            
+            // Очищаем текущие посты
+            cardGrid.innerHTML = '';
+            
+            // Добавляем посты на страницу
+            posts.forEach(post => {
+                const newCard = createPostCard(post);
+                cardGrid.appendChild(newCard);
+            });
+        } catch (error) {
+            console.error('Error loading posts:', error);
+        }
+    }
+
+    function createPostCard(post) {
+        const newCard = document.createElement('div');
+        newCard.className = 'card';
+        
+        newCard.innerHTML = `
+            <img src="../rasp_news/news/${post.image}" alt="Post Image">
+            <div class="card-info">
+                <p class="message">[${post.type}] ${post.text}</p>
+            </div>
+        `;
+        
+        return newCard;
+    }
 
     // Открываем модальное окно при клике на кнопку
     addPostBtn.addEventListener('click', () => {
@@ -21,44 +57,44 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // Обрабатываем отправку формы
-    postForm.addEventListener('submit', (e) => {
+    // Обновляем обработчик отправки формы
+    postForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
         const postType = document.getElementById('postType').value;
         const imageFile = document.getElementById('imageInput').files[0];
         const postText = document.getElementById('postText').value;
 
-        // Add validation
         if (!imageFile) {
             alert('Пожалуйста, выберите изображение');
             return;
         }
 
         try {
-            // Создаем новую карточку
-            const cardGrid = document.querySelector('.card-grid');
-            const newCard = document.createElement('div');
-            newCard.className = 'card';
-            
-            // Создаем превью изображения
-            const imageUrl = URL.createObjectURL(imageFile);
-            
-            newCard.innerHTML = `
-                <img src="${imageUrl}" alt="Post Image">
-                <div class="card-info">
-                    <p class="message">[${postType}] ${postText}</p>
-                </div>
-            `;
+            const formData = new FormData();
+            formData.append('image', imageFile);
+            formData.append('postData', JSON.stringify({
+                type: postType,
+                text: postText
+            }));
 
-            cardGrid.prepend(newCard);
+            const response = await fetch('../rasp_news/upload.php', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
             
-            // Clean up the object URL to prevent memory leaks
-            URL.revokeObjectURL(imageUrl);
-            
-            // Очищаем форму и закрываем модальное окно
-            postForm.reset();
-            modal.style.display = "none";
+            if (result.success) {
+                // Перезагружаем посты
+                await loadPosts();
+                
+                // Очищаем форму и закрываем модальное окно
+                postForm.reset();
+                modal.style.display = "none";
+            } else {
+                throw new Error(result.error);
+            }
         } catch (error) {
             console.error('Error creating post:', error);
             alert('Произошла ошибка при создании поста');
