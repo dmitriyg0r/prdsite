@@ -46,12 +46,14 @@
             <form id="upload-form" enctype="multipart/form-data" action="downloads.php" method="POST">
                 <select id="category-select" name="category" required>
                     <option value="">Выберите категорию</option>
-                    <!-- Категории будут добавлены динамически -->
                 </select>
                 <select id="folder-select" name="folder" required>
                     <option value="">Выберите папку</option>
-                    <!-- Категории будут добавлены динамически -->
                 </select>
+                <label for="file-input" class="file-input-label">
+                    Выберите файл или перетащите его сюда
+                </label>
+                <div id="file-name"></div>
                 <input type="file" name="files[]" id="file-input" multiple required>
                 <button type="submit">Загрузить</button>
             </form>
