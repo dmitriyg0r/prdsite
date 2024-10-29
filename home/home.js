@@ -57,9 +57,44 @@ document.addEventListener('DOMContentLoaded', function() {
             fileInput.click();
         });
 
-        fileInput.addEventListener('change', function() {
+        fileInput.addEventListener('change', async function() {
             if (this.files[0]) {
-                fileName.textContent = this.files[0].name;
+                const file = this.files[0];
+                fileName.textContent = file.name;
+                
+                try {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    
+                    const response = await fetch('/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Ошибка загрузки файла');
+                    }
+
+                    const result = await response.json();
+                    
+                    // Создаем ссылку на загруженный файл
+                    const fileLink = document.createElement('a');
+                    fileLink.href = result.fileUrl;
+                    fileLink.textContent = file.name;
+                    fileLink.target = '_blank';
+                    
+                    // Заменяем текст имени файла на ссылку
+                    fileName.textContent = '';
+                    fileName.appendChild(fileLink);
+                    
+                    // Скрываем кнопку после успешной загрузки
+                    fileButton.style.display = 'none';
+                    
+                } catch (error) {
+                    console.error('Ошибка:', error);
+                    fileName.textContent = 'Ошибка загрузки файла';
+                    fileName.style.color = 'red';
+                }
             }
         });
 
