@@ -1,29 +1,15 @@
 <?php
-// Включаем отображение всех ошибок для отладки
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
-
-// Устанавливаем заголовки
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST');
-header('Access-Control-Allow-Headers: Content-Type');
-
-// Логируем входящие данные
-$input = file_get_contents('php://input');
-error_log("Received data: " . $input);
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 try {
-    // Получаем и декодируем данные
-    $data = json_decode($input, true);
-    
-    if (json_last_error() !== JSON_ERROR_NONE) {
-        throw new Exception('Invalid JSON data: ' . json_last_error_msg());
-    }
+    // Получаем данные запроса
+    $data = json_decode(file_get_contents('php://input'), true);
 
     // Проверяем наличие необходимых данных
     if (!isset($data['meme_id']) || !isset($data['password'])) {
-        throw new Exception('Missing required fields');
+        throw new Exception('Отсутствуют необходимые данные');
     }
 
     // Проверяем пароль
@@ -32,49 +18,63 @@ try {
         throw new Exception('Неверный пароль');
     }
 
-    // Подключаемся к базе данных
-    $db = new SQLite3('../database.db');
+    // Путь к JSON файлу с данными - исправлен на правильный
+    $json_file = '../memesy/memes_data.json';
     
-    // Получаем информацию о меме
-    $stmt = $db->prepare('SELECT * FROM memes WHERE id = :id');
-    $stmt->bindValue(':id', $data['meme_id'], SQLITE3_INTEGER);
-    $result = $stmt->execute();
-    $meme = $result->fetchArray(SQLITE3_ASSOC);
-    
-    if (!$meme) {
-        throw new Exception('Мем не найден');
+    // Проверяем существование файла
+    if (!file_exists($json_file)) {
+        throw new Exception('Файл базы данных не найден: ' . $json_file);
     }
 
-    // Удаляем запись из базы данных
-    $stmt = $db->prepare('DELETE FROM memes WHERE id = :id');
-    $stmt->bindValue(':id', $data['meme_id'], SQLITE3_INTEGER);
-    $result = $stmt->execute();
-
-    if (!$result) {
-        throw new Exception('Ошибка при удалении из базы данных');
+    // Читаем данные
+    $json_content = file_get_contents($json_file);
+    if ($json_content === false) {
+        throw new Exception('Ошибка чтения файла данных');
     }
 
-    // Удаляем файл, если он существует
-    if (file_exists($meme['path'])) {
-        if (!unlink($meme['path'])) {
-            throw new Exception('Ошибка при удалении файла');
+    $memes = json_decode($json_content, true);
+    if ($memes === null) {
+        throw new Exception('Ошибка декодирования JSON: ' . json_last_error_msg());
+    }
+
+    // Ищем мем по ID
+    $meme_index = null;
+    $meme = null;
+    foreach ($memes as $index => $m) {
+        if ($m['id'] == $data['meme_id']) {
+            $meme_index = $index;
+            $meme = $m;
+            break;
         }
     }
 
-    // Закрываем соединение с базой данных
-    $db->close();
+    if ($meme === null) {
+        throw new Exception('Мем не найден');
+    }
 
-    // Возвращаем успешный ответ
+    // Удаляем файл изображения
+    $file_path = $meme['path'];
+    if (file_exists($file_path)) {
+        if (!unlink($file_path)) {
+            throw new Exception('Ошибка удаления файла изображения: ' . $file_path);
+        }
+    }
+
+    // Удаляем запись из массива
+    array_splice($memes, $meme_index, 1);
+
+    // Сохраняем обновленные данные
+    if (file_put_contents($json_file, json_encode($memes, JSON_PRETTY_PRINT)) === false) {
+        throw new Exception('Ошибка сохранения данных в файл');
+    }
+
     echo json_encode([
         'status' => 'success',
         'message' => 'Мем успешно удален'
     ]);
 
 } catch (Exception $e) {
-    // Логируем ошибку
     error_log("Delete meme error: " . $e->getMessage());
-    
-    // Возвращаем ошибку
     http_response_code(400);
     echo json_encode([
         'status' => 'error',
