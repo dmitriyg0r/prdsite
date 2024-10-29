@@ -4,6 +4,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const uploadForm = document.getElementById('upload-form');
     const memesGrid = document.querySelector('.memes-grid');
 
+    // Загружаем существующие мемы
+    loadExistingMemes();
+
     // Показываем/скрываем форму загрузки
     if (showUploadFormButton && uploadFormContainer) {
         showUploadFormButton.addEventListener('click', function() {
@@ -23,6 +26,9 @@ document.addEventListener('DOMContentLoaded', function() {
         uploadForm.addEventListener('submit', function(e) {
             e.preventDefault();
             const formData = new FormData(this);
+            
+            // Добавляем пароль администратора
+            formData.append('admin_password', 'Gg3985502');
 
             fetch('memes.php', {
                 method: 'POST',
@@ -30,17 +36,20 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(response => response.json())
             .then(data => {
-                if (data.success) {
-                    // Создаем новый элемент мема
-                    const newMemeItem = createMemeItem(data.filePath);
-                    // Добавляем его в начало сетки
-                    memesGrid.insertBefore(newMemeItem, memesGrid.firstChild);
-                    // Закрываем форму загрузки
+                if (data.status === 'success') {
+                    // Добавляем новые мемы в начало сетки
+                    data.filePaths.forEach(filePath => {
+                        const newMemeItem = createMemeItem(filePath);
+                        memesGrid.insertBefore(newMemeItem, memesGrid.firstChild);
+                    });
+                    
                     uploadFormContainer.classList.remove('show');
-                    // Очищаем форму
                     uploadForm.reset();
                 } else {
                     console.error('Ошибка загрузки:', data.message);
+                    if (data.errors) {
+                        console.error('Детали ошибок:', data.errors);
+                    }
                 }
             })
             .catch(error => {
@@ -49,6 +58,25 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+function loadExistingMemes() {
+    fetch('get_memes.php')
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                const memesGrid = document.querySelector('.memes-grid');
+                memesGrid.innerHTML = ''; // Очищаем сетку
+                
+                data.memes.forEach(memePath => {
+                    const memeItem = createMemeItem(memePath);
+                    memesGrid.appendChild(memeItem);
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Ошибка загрузки мемов:', error);
+        });
+}
 
 function createMemeItem(imageUrl) {
     const memeItem = document.createElement('div');
