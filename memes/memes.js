@@ -203,17 +203,25 @@ function showDeleteConfirmation(memeId, memeElement) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json'
             },
             body: JSON.stringify({
                 meme_id: memeId,
                 password: password
             })
         })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
+        .then(async response => {
+            const text = await response.text(); // Получаем текст ответа
+            try {
+                const data = JSON.parse(text); // Пробуем распарсить JSON
+                if (!response.ok) {
+                    throw new Error(data.message || 'Ошибка сервера');
+                }
+                return data;
+            } catch (e) {
+                console.error('Server response:', text); // Логируем ответ сервера
+                throw new Error('Некорректный ответ сервера');
             }
-            return response.json();
         })
         .then(data => {
             if (data.status === 'success') {

@@ -1,27 +1,35 @@
 <?php
-// Отключаем вывод ошибок в ответ
-ini_set('display_errors', 0);
-error_reporting(0);
+// Включаем отображение всех ошибок для отладки
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 
-// Устанавливаем заголовок JSON
+// Устанавливаем заголовки
 header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: POST');
+header('Access-Control-Allow-Headers: Content-Type');
 
-// Очищаем буфер вывода
-ob_clean();
+// Логируем входящие данные
+$input = file_get_contents('php://input');
+error_log("Received data: " . $input);
 
 try {
-    // Получаем данные запроса
-    $data = json_decode(file_get_contents('php://input'), true);
+    // Получаем и декодируем данные
+    $data = json_decode($input, true);
+    
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        throw new Exception('Invalid JSON data: ' . json_last_error_msg());
+    }
 
     // Проверяем наличие необходимых данных
     if (!isset($data['meme_id']) || !isset($data['password'])) {
-        throw new Exception('Missing required data');
+        throw new Exception('Missing required fields');
     }
 
     // Проверяем пароль
     $correct_password = '123'; // Замените на ваш пароль
     if ($data['password'] !== $correct_password) {
-        throw new Exception('Invalid password');
+        throw new Exception('Неверный пароль');
     }
 
     // Подключаемся к базе данных
@@ -34,7 +42,7 @@ try {
     $meme = $result->fetchArray(SQLITE3_ASSOC);
     
     if (!$meme) {
-        throw new Exception('Meme not found');
+        throw new Exception('Мем не найден');
     }
 
     // Удаляем запись из базы данных
@@ -42,9 +50,15 @@ try {
     $stmt->bindValue(':id', $data['meme_id'], SQLITE3_INTEGER);
     $result = $stmt->execute();
 
+    if (!$result) {
+        throw new Exception('Ошибка при удалении из базы данных');
+    }
+
     // Удаляем файл, если он существует
     if (file_exists($meme['path'])) {
-        unlink($meme['path']);
+        if (!unlink($meme['path'])) {
+            throw new Exception('Ошибка при удалении файла');
+        }
     }
 
     // Закрываем соединение с базой данных
@@ -57,7 +71,11 @@ try {
     ]);
 
 } catch (Exception $e) {
+    // Логируем ошибку
+    error_log("Delete meme error: " . $e->getMessage());
+    
     // Возвращаем ошибку
+    http_response_code(400);
     echo json_encode([
         'status' => 'error',
         'message' => $e->getMessage()
