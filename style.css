@@ -320,58 +320,96 @@ tr:hover td {
 }
 
 .menu {
+    position: absolute;
+    top: 74px;
+    right: 1px;
+    width: 280px;
     background: var(--menu-background);
-    border-radius: 8px;
-    padding: 8px;
-    width: 220px;
+    border-radius: 12px;
+    padding: 12px;
+    display: none;
+    z-index: 1000;
     border: 1px solid var(--menu-border);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(10px);
 }
 
 .menu a {
     display: flex;
     align-items: center;
-    padding: 10px;
-    margin-bottom: 2px;
-    border-radius: 4px;
+    padding: 14px 16px;
+    margin-bottom: 4px;
+    border-radius: 8px;
     color: var(--menu-text);
-    background: transparent;
-    font-size: 14px;
+    text-decoration: none;
     font-weight: 500;
-    transition: background-color 0.1s ease;
+    font-size: 15px;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.menu a:last-child {
+    margin-bottom: 0;
 }
 
 .menu a:hover {
-    background-color: var(--menu-hover-background);
-    color: var(--menu-text);
-    transform: none;
-    box-shadow: none;
+    background: var(--menu-hover-background);
+    transform: translateX(4px);
 }
 
-.menu a:active {
-    background-color: var(--menu-hover-background);
-}
-
-/* Удаляем ненужные эффекты */
-.menu a::before,
+/* Эффект ripple при клике */
 .menu a::after {
-    display: none;
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.3s ease, height 0.3s ease;
 }
 
-/* Обновляем анимацию появления */
+.menu a:active::after {
+    width: 300px;
+    height: 300px;
+}
+
+/* Анимация появления меню */
 @keyframes menuFadeIn {
     from {
         opacity: 0;
-        transform: translateY(-4px);
+        transform: translateY(-8px) scale(0.98);
     }
     to {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateY(0) scale(1);
     }
 }
 
 .menu.active {
     display: block;
-    animation: menuFadeIn 0.1s ease-out;
+    animation: menuFadeIn 0.2s ease-out forwards;
+}
+
+/* Медиа-запросы для адаптивности */
+@media screen and (max-width: 768px) {
+    .menu {
+        position: fixed;
+        top: 70px;
+        right: 10px;
+        left: 10px;
+        width: auto;
+        max-width: 400px;
+        margin: 0 auto;
+    }
+    
+    .menu a {
+        padding: 16px;
+        font-size: 16px;
+    }
 }
 
 /* Темная тема */
