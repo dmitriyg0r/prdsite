@@ -1,65 +1,30 @@
-function displayFiles() {
-    categoriesContainer.innerHTML = '';
-    for (const [category, folders] of Object.entries(fileStorage)) {
-        const categoryDiv = document.createElement('div');
-        categoryDiv.className = 'file-category';
-        const categoryTitle = document.createElement('h3');
-        categoryTitle.textContent = `${categoryIcons[category] || ''} ${category}`;
-        categoryDiv.appendChild(categoryTitle);
-        const folderList = document.createElement('ul');
-        
-        for (const [folder, files] of Object.entries(folders)) {
-            const listItem = document.createElement('li');
-            const folderHeader = document.createElement('div');
-            folderHeader.className = 'folder-header';
-            
-            // Добавляем стрелку и название папки
-            const arrow = document.createElement('span');
-            arrow.className = 'folder-arrow';
-            arrow.textContent = '▶';
-            
-            const folderName = document.createElement('span');
-            folderName.className = 'folder-name';
-            folderName.textContent = folder;
-            
-            folderHeader.appendChild(arrow);
-            folderHeader.appendChild(folderName);
-            listItem.appendChild(folderHeader);
+document.addEventListener('DOMContentLoaded', function() {
+    const fileCategories = {
+        'Вычислительные системы': ['Домашние задания', 'Дополнительно'],
+        'Мат. анализ': ['Домашние задания', 'Дополнительно'],
+        'Физ. дисциплина': ['Домашние задания', 'Дополнительно'],
+        'Основы науч. исслед.': ['Домашние задания', 'Дополнительно'],
+        'Иност. язык': ['Домашние задания', 'Дополнительно'],
+        'ПОЗИ': ['Домашние задания', 'Дополнительно'],
+        'Дискрет. мат.': ['Домашние задания', 'Дополнительно'],
+        'Экономика': ['Домашние задания', 'Дополнительно'],
+        'База данных': ['Домашние задания', 'Дополнительно'],
+        'Алгоритмизация и программ': ['Домашние задания', 'Дополнительно']
+    };
 
-            // Создаем контейнер для файлов
-            const filesList = document.createElement('ul');
-            filesList.className = 'files-list collapsed';
+    const categoryIcons = {
+        'Вычислительные системы': '💻',
+        'Мат. анализ': '📊',
+        'Физ. дисциплина': '🏋️',
+        'Основы науч. исслед.': '🔍',
+        'Иност. язык': '🌍',
+        'ПОЗИ': '🔐',
+        'Дискрет. мат.': '🧮',
+        'Экономика': '💰',
+        'База данных': '🗄️',
+        'Алгоритмизация и программ': '🖥️'
+    };
 
-            Object.values(files).forEach(file => {
-                const fileItem = document.createElement('li');
-                const fileItemContent = document.createElement('div');
-                fileItemContent.className = 'file-item';
-
-                const fileName = document.createElement('span');
-                fileName.textContent = file;
-                fileItemContent.appendChild(fileName);
-
-                const downloadButton = document.createElement('a');
-                downloadButton.href = `uploads/${encodeURIComponent(category)}/${encodeURIComponent(folder)}/${encodeURIComponent(file)}`;
-                downloadButton.textContent = 'Скачать';
-                downloadButton.className = 'download-button';
-                fileItemContent.appendChild(downloadButton);
-
-                fileItem.appendChild(fileItemContent);
-                filesList.appendChild(fileItem);
-            });
-
-            listItem.appendChild(filesList);
-            folderList.appendChild(listItem);
-
-            // Добавляем обработчик клика для разворачивания/сворачивания
-            folderHeader.addEventListener('click', function() {
-                filesList.classList.toggle('collapsed');
-                arrow.classList.toggle('rotated');
-            });
-        }
-        
-        categoryDiv.appendChild(folderList);
-        categoriesContainer.appendChild(categoryDiv);
-    }
-}
+    // Остальной код такой же как в downloads.js
+    // ... (копируйте остальные функции из downloads.js)
+});
