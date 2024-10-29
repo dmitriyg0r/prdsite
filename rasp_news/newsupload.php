@@ -7,6 +7,12 @@ try {
     }
 
     $postData = json_decode($_POST['postData'], true);
+    
+    // Проверка пароля
+    if (!isset($postData['password']) || $postData['password'] !== 'Gg3985502') {
+        throw new Exception('Неверный пароль');
+    }
+
     $image = $_FILES['image'];
     
     // Создаем директорию, если она не существует

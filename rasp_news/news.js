@@ -28,7 +28,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const formData = new FormData();
         const postData = {
             type: document.getElementById('postType').value,
-            text: document.getElementById('postText').value
+            text: document.getElementById('postText').value,
+            password: document.getElementById('postPassword').value
         };
 
         formData.append('postData', JSON.stringify(postData));

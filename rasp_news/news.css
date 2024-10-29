@@ -86,3 +86,11 @@
     max-width: 800px;
     margin: 0 auto;
 }
+
+#postForm input[type="password"] {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid var(--table-border);
+    background-color: var(--table-background);
+    color: var(--text-color);
+}
