@@ -3,6 +3,13 @@
 header('Content-Type: application/json');
 
 $uploadDir = 'uploads/';
+
+// Проверяем существование директории
+if (!file_exists($uploadDir)) {
+    echo json_encode([]);
+    exit;
+}
+
 $categories = scandir($uploadDir);
 $fileStorage = [];
 

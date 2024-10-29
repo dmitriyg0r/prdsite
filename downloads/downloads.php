@@ -28,6 +28,12 @@ if (!isset($_POST['category']) || !isset($_POST['folder']) || empty($_FILES['fil
 }
 
 $uploadDir = 'uploads/';
+
+// Создаем основную директорию uploads, если она не существует
+if (!file_exists($uploadDir)) {
+    mkdir($uploadDir, 0777, true);
+}
+
 $category = filter_var($_POST['category'], FILTER_SANITIZE_SPECIAL_CHARS);
 $folder = filter_var($_POST['folder'], FILTER_SANITIZE_SPECIAL_CHARS);
 $files = $_FILES['files'];
