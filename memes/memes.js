@@ -80,7 +80,10 @@ function createMemeItem(imageUrl) {
     
     // Добавляем обработку загрузки изображения
     img.onload = function() {
-        memeItem.style.opacity = '1';
+        // Плавное появление после загрузки
+        requestAnimationFrame(() => {
+            memeItem.style.opacity = '1';
+        });
     };
     
     memeItem.appendChild(img);
@@ -91,13 +94,7 @@ function loadMemes() {
     const memesGrid = document.querySelector('.memes-grid');
     
     // Здесь будет запрос к серверу для получения мемов
-    // Пока используем заглушку
-    const mockMemes = [
-        'талисман.png',
-        'талисман.png',
-        'талисман.png',
-        // Добавьте больше URL для теста
-    ];
+    const mockMemes = Array(12).fill('талисман.png'); // Создаем 12 тестовых мемов
     
     mockMemes.forEach((memeUrl, index) => {
         setTimeout(() => {

@@ -324,60 +324,73 @@ h2::after {
     opacity: 0.8;
 }
 
-/* Pinterest-style grid */
+/* DeviantArt-style grid */
 .memes-grid {
-    column-count: 4;
-    column-gap: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px;
     padding: 20px;
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
 }
 
 .meme-item {
-    break-inside: avoid;
-    margin-bottom: 20px;
-    border-radius: 16px;
-    overflow: hidden;
+    position: relative;
+    width: 100%;
     background: var(--table-background);
+    border-radius: 12px;
+    overflow: hidden;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
 }
 
 .meme-item:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.meme-item::before {
+    content: '';
+    display: block;
+    padding-top: 75%; /* Соотношение сторон 4:3 */
 }
 
 .meme-item img {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
-    height: auto;
-    display: block;
-    border-radius: 16px;
+    height: 100%;
+    object-fit: cover; /* Важно для сохранения пропорций */
+    transition: all 0.3s ease;
 }
 
-/* Адаптивность для разных экранов */
+/* Hover эффект для изображений */
+.meme-item:hover img {
+    transform: scale(1.03);
+}
+
+/* Адаптивность */
 @media screen and (max-width: 1200px) {
     .memes-grid {
-        column-count: 3;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
     }
 }
 
-@media screen and (max-width: 900px) {
+@media screen and (max-width: 768px) {
     .memes-grid {
-        column-count: 2;
-        column-gap: 15px;
-        padding: 15px;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 16px;
+        padding: 16px;
     }
 }
 
-@media screen and (max-width: 600px) {
+@media screen and (max-width: 480px) {
     .memes-grid {
-        column-count: 1;
-        padding: 10px;
-    }
-    
-    .meme-item {
-        margin-bottom: 15px;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 16px;
+        padding: 16px;
     }
 }
 
