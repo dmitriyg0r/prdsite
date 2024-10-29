@@ -54,4 +54,55 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-}); 
+
+    // Добавляем загрузку мемов
+    loadMemes();
+
+    // Добавляем обновление сетки после загрузки нового мема
+    uploadForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        // ... существующий код загрузки ...
+        
+        // После успешной загрузки:
+        const memesGrid = document.querySelector('.memes-grid');
+        const newMemeItem = createMemeItem(/* URL нового мема */);
+        memesGrid.insertBefore(newMemeItem, memesGrid.firstChild);
+    });
+});
+
+function createMemeItem(imageUrl) {
+    const memeItem = document.createElement('div');
+    memeItem.className = 'meme-item';
+    
+    const img = document.createElement('img');
+    img.src = imageUrl;
+    img.alt = 'Мем';
+    
+    // Добавляем обработку загрузки изображения
+    img.onload = function() {
+        memeItem.style.opacity = '1';
+    };
+    
+    memeItem.appendChild(img);
+    return memeItem;
+}
+
+function loadMemes() {
+    const memesGrid = document.querySelector('.memes-grid');
+    
+    // Здесь будет запрос к серверу для получения мемов
+    // Пока используем заглушку
+    const mockMemes = [
+        'талисман.png',
+        'талисман.png',
+        'талисман.png',
+        // Добавьте больше URL для теста
+    ];
+    
+    mockMemes.forEach((memeUrl, index) => {
+        setTimeout(() => {
+            const memeItem = createMemeItem(memeUrl);
+            memesGrid.appendChild(memeItem);
+        }, index * 100); // Добавляем задержку для эффекта появления
+    });
+} 

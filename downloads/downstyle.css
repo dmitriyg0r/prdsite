@@ -507,17 +507,6 @@ body.dark-theme .file-category li a {
     fill: var(--text-color);
 }
 
-/* Стили для группировки файлов */
-.folder-header {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    padding: 10px;
-    background-color: var(--table-background);
-    border-radius: 8px;
-    transition: background-color 0.3s ease;
-}
-
 .folder-header:hover {
     background-color: rgba(var(--button-hover-rgb), 0.1);
 }
