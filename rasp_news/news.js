@@ -29,25 +29,39 @@ document.addEventListener("DOMContentLoaded", () => {
         const imageFile = document.getElementById('imageInput').files[0];
         const postText = document.getElementById('postText').value;
 
-        // Создаем новую карточку
-        const cardGrid = document.querySelector('.card-grid');
-        const newCard = document.createElement('div');
-        newCard.className = 'card';
-        
-        // Создаем превью изображения
-        const imageUrl = URL.createObjectURL(imageFile);
-        
-        newCard.innerHTML = `
-            <img src="${imageUrl}" alt="Post Image">
-            <div class="card-info">
-                <p class="message">[${postType}] ${postText}</p>
-            </div>
-        `;
+        // Add validation
+        if (!imageFile) {
+            alert('Пожалуйста, выберите изображение');
+            return;
+        }
 
-        cardGrid.prepend(newCard); // Добавляем карточку в начало сетки
-        
-        // Очищаем форму и закрываем модальное окно
-        postForm.reset();
-        modal.style.display = "none";
+        try {
+            // Создаем новую карточку
+            const cardGrid = document.querySelector('.card-grid');
+            const newCard = document.createElement('div');
+            newCard.className = 'card';
+            
+            // Создаем превью изображения
+            const imageUrl = URL.createObjectURL(imageFile);
+            
+            newCard.innerHTML = `
+                <img src="${imageUrl}" alt="Post Image">
+                <div class="card-info">
+                    <p class="message">[${postType}] ${postText}</p>
+                </div>
+            `;
+
+            cardGrid.prepend(newCard);
+            
+            // Clean up the object URL to prevent memory leaks
+            URL.revokeObjectURL(imageUrl);
+            
+            // Очищаем форму и закрываем модальное окно
+            postForm.reset();
+            modal.style.display = "none";
+        } catch (error) {
+            console.error('Error creating post:', error);
+            alert('Произошла ошибка при создании поста');
+        }
     });
 });

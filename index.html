@@ -163,9 +163,24 @@
                 </tbody>
             </table>
         </div>
-        <div class = news></div>
+        <div class="news">
             <h1>Новости</h1>
             <p>Тут будут публиковаться новости группы</p>
+        </div>
+        <div id="postModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <form id="postForm">
+                    <select id="postType" required>
+                        <option value="Message">Сообщение</option>
+                        <option value="News">Новость</option>
+                        <option value="Event">Событие</option>
+                    </select>
+                    <input type="file" id="imageInput" accept="image/*" required>
+                    <textarea id="postText" placeholder="Введите текст поста..." required></textarea>
+                    <button type="submit">Опубликовать</button>
+                </form>
+            </div>
         </div>
         <button class="add-post-btn">+ Создать пост</button>
         <div class="card-grid">
