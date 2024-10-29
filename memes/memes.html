@@ -49,10 +49,14 @@
         </button>
         <div id="upload-form-container" class="upload-form-container">
             <h2>Загрузить мем</h2>
-            <form id="upload-form" enctype="multipart/form-data" action="memes.php" method="POST">
-                <p class="upload-text">Выберите файл или перетащите его сюда</p>
-                <p class="upload-info">Максимальный размер файла: 3 МБ</p>
-                <input type="file" name="meme[]" id="file-input" accept="image/*" ыmultiple required>
+            <form id="upload-form" enctype="multipart/form-data">
+                <div class="form-group">
+                    <p class="upload-text">Выберите файл или перетащите его сюда</p>
+                    <input type="file" name="meme[]" id="file-input" accept="image/*" multiple required>
+                </div>
+                <div class="form-group">
+                    <input type="text" name="author_name" id="author-name" placeholder="Введите ваше имя" class="text-input">
+                </div>
                 <button type="submit">Загрузить</button>
             </form>
         </div>
