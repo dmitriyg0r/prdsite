@@ -1,34 +1,20 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const image = document.querySelector('.development-image img');
-    const container = document.querySelector('.development-image');
-    const notice = document.querySelector('.development-notice');
+    const showUploadFormButton = document.getElementById('show-upload-form');
+    const uploadFormContainer = document.getElementById('upload-form-container');
+    const uploadForm = document.getElementById('upload-form');
 
-    if (image && container) {
-        // Дождёмся загрузки изображения
-        image.onload = () => {
-            // Получаем позицию уведомления
-            const noticeRect = notice.getBoundingClientRect();
-            
-            // Устанавливаем начальную позицию под уведомлением
-            let currentX = window.innerWidth / 2;
-            let currentY = noticeRect.bottom + 50; // 50px отступ от уведомления
-            let targetX = currentX;
-            let targetY = currentY;
-            let velocityX = 0;
-            let velocityY = 0;
-            let isRunning = false;
+    if (showUploadFormButton && uploadFormContainer) {
+        showUploadFormButton.addEventListener('click', function() {
+            uploadFormContainer.classList.toggle('show');
+        });
 
-            // Устанавливаем начальную позицию
-            image.style.top = currentY + 'px';
-            image.style.left = currentX + 'px';
-            image.style.transform = 'translate(-50%, 0)';
-
-            // Остальной код остается тем же
-            // ... (весь предыдущий код с границами и отскоком) ...
-
-            // Обновляем initialX и initialY
-            initialX = currentX;
-            initialY = currentY;
-        };
+        // Закрыть форму при клике вне её
+        document.addEventListener('click', function(event) {
+            if (!uploadFormContainer.contains(event.target) && event.target !== showUploadFormButton) {
+                uploadFormContainer.classList.remove('show');
+            }
+        });
     }
+
+    uploa
 }); 
