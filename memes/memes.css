@@ -324,32 +324,35 @@ h2::after {
     opacity: 0.8;
 }
 
-/* DeviantArt-style grid */
+/* Контейнер для сетки */
 .memes-grid {
-    columns: 4;
-    column-gap: 20px;
-    padding: 20px;
-    max-width: 1400px;
+    columns: 5;
+    column-gap: 16px;
+    padding: 16px;
+    max-width: 1600px;
     margin: 0 auto;
 }
 
+/* Контейнер для мема */
 .meme-item {
     break-inside: avoid;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
     background: var(--table-background);
-    border-radius: 12px;
+    border-radius: 16px;
     overflow: hidden;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
     cursor: pointer;
 }
 
-.meme-item::before {
-    content: '';
-    display: block;
-    padding-top: 0;
+/* Контейнер для изображения */
+.meme-image-container {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
 }
 
+/* Стили для изображения */
 .meme-item img {
     display: block;
     width: 100%;
@@ -358,36 +361,57 @@ h2::after {
     transition: all 0.3s ease;
 }
 
-.meme-item:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+/* Информация о меме */
+.meme-info {
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.meme-author {
+    font-size: 14px;
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.author-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
 }
 
 /* Hover эффекты */
-.meme-item:hover img {
-    transform: scale(1.03);
+.meme-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 /* Медиа-запросы для адаптивности */
-@media screen and (max-width: 1200px) {
+@media screen and (max-width: 1400px) {
+    .memes-grid {
+        columns: 4;
+    }
+}
+
+@media screen and (max-width: 1100px) {
     .memes-grid {
         columns: 3;
     }
 }
 
-@media screen and (max-width: 900px) {
+@media screen and (max-width: 800px) {
     .memes-grid {
         columns: 2;
     }
 }
 
-@media screen and (max-width: 600px) {
+@media screen and (max-width: 500px) {
     .memes-grid {
         columns: 1;
-    }
-    
-    .memes-grid {
-        padding: 10px;
     }
 }
 
