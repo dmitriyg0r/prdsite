@@ -1,87 +1,4 @@
-
-.user-info {
-    display: flex;
-    align-items: center;
-}
-
-.username {
-    font-weight: bold;
-    margin-right: 1em;
-}
-
-.level {
-    background-color: #333;
-    padding: 0.5em 1em;
-    border-radius: 5px;
-}
-
-.nav button {
-    background-color: #444;
-    color: #fff;
-    border: none;
-    padding: 0.5em 1em;
-    border-radius: 5px;
-    margin-left: 0.5em;
-    cursor: pointer;
-}
-
-.nav button:hover {
-    background-color: #666;
-}
-
-/* Card Grid Layout */
-.card-grid {
-    display: grid;
-    gap: 1em;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    width: 90%;
-    max-width: 1200px;
-    padding: 1em 0;
-}
-
-/* Card styling */
-.card {
-    background-color: #333;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    transition: transform 0.3s ease;
-}
-
-.card:hover {
-    transform: scale(1.05);
-}
-
-.card img {
-    width: 100%;
-    height: auto;
-}
-
-.card-info {
-    padding: 1em;
-}
-
-.message {
-    font-size: 0.9em;
-    color: #bbb;
-}
-
-.add-post-btn {
-    background-color: #444;
-    color: #fff;
-    border: none;
-    padding: 0.8em 1.5em;
-    border-radius: 5px;
-    margin: 1em 0;
-    cursor: pointer;
-    font-size: 1em;
-    transition: background-color 0.3s ease;
-}
-
-.add-post-btn:hover {
-    background-color: #666;
-}
-
+/* Добавьте эти стили в конец файла style.css */
 .modal {
     display: none;
     position: fixed;
@@ -89,31 +6,26 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
+    background-color: rgba(0, 0, 0, 0.5);
     z-index: 1000;
 }
 
 .modal-content {
-    background-color: #333;
+    background-color: var(--table-background);
     margin: 15% auto;
     padding: 20px;
+    border-radius: 10px;
     width: 80%;
     max-width: 500px;
-    border-radius: 10px;
     position: relative;
 }
 
 .close {
     position: absolute;
-    right: 20px;
-    top: 10px;
-    font-size: 28px;
+    right: 10px;
+    top: 5px;
+    font-size: 24px;
     cursor: pointer;
-    color: #888;
-}
-
-.close:hover {
-    color: #fff;
 }
 
 #postForm {
@@ -124,12 +36,11 @@
 
 #postForm select,
 #postForm input[type="file"],
-#postForm textarea {
+#postForm textarea,
+#postForm button {
     padding: 10px;
     border-radius: 5px;
-    border: 1px solid #444;
-    background-color: #222;
-    color: #fff;
+    border: 1px solid var(--table-border);
 }
 
 #postForm textarea {
@@ -137,16 +48,41 @@
     resize: vertical;
 }
 
-#postForm button {
-    background-color: #444;
-    color: #fff;
+.add-post-btn {
+    background-color: var(--button-background);
+    color: white;
     border: none;
-    padding: 10px;
+    padding: 10px 20px;
     border-radius: 5px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    margin: 20px 0;
 }
 
-#postForm button:hover {
-    background-color: #666;
+.add-post-btn:hover {
+    background-color: var(--button-hover);
+}
+
+.post {
+    background-color: var(--table-background);
+    border-radius: 10px;
+    padding: 15px;
+    margin: 15px 0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.post img {
+    max-width: 100%;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.post .timestamp {
+    color: var(--text-color);
+    opacity: 0.7;
+    font-size: 0.8em;
+}
+
+.news-content {
+    max-width: 800px;
+    margin: 0 auto;
 }
