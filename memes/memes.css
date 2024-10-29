@@ -326,25 +326,22 @@ h2::after {
 
 /* DeviantArt-style grid */
 .memes-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
+    columns: 4;
+    column-gap: 20px;
     padding: 20px;
     max-width: 1400px;
     margin: 0 auto;
-    justify-content: flex-start;
 }
 
 .meme-item {
-    flex: 0 0 auto;
+    break-inside: avoid;
+    margin-bottom: 20px;
     background: var(--table-background);
     border-radius: 12px;
     overflow: hidden;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
     cursor: pointer;
-    max-width: calc(33.333% - 14px);
-    min-width: 200px;
 }
 
 .meme-item::before {
@@ -356,7 +353,7 @@ h2::after {
 .meme-item img {
     display: block;
     width: 100%;
-    height: 100%;
+    height: auto;
     object-fit: cover;
     transition: all 0.3s ease;
 }
@@ -373,27 +370,24 @@ h2::after {
 
 /* Медиа-запросы для адаптивности */
 @media screen and (max-width: 1200px) {
-    .meme-item {
-        max-width: calc(50% - 10px);
+    .memes-grid {
+        columns: 3;
     }
 }
 
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 900px) {
     .memes-grid {
-        gap: 15px;
-        padding: 15px;
+        columns: 2;
+    }
+}
+
+@media screen and (max-width: 600px) {
+    .memes-grid {
+        columns: 1;
     }
     
-    .meme-item {
-        max-width: 100%;
-    }
-}
-
-@media screen and (max-width: 480px) {
     .memes-grid {
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-        gap: 12px;
-        padding: 12px;
+        padding: 10px;
     }
 }
 
@@ -446,3 +440,4 @@ h2::after {
 .meme-item {
     animation: fadeInUp 0.6s ease-out forwards;
 }
+
