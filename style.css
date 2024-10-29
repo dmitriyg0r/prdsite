@@ -20,11 +20,6 @@
     --moon-icon-color: #ffffff;
     --today-highlight: #04578fb0;
     --transition-duration: 0.3s;
-    --menu-background: rgba(255, 255, 255, 0.95);
-    --menu-item-background: #008CBA;
-    --menu-item-hover: #005f73;
-    --menu-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    --menu-border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .darkmode {
@@ -46,11 +41,6 @@
     --theme-toggle-hover-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
     --header-background-dark: #5c43a8;
     --today-highlight: #695acda5;
-    --menu-background: rgba(44, 44, 58, 0.95);
-    --menu-item-background: #4b0082;
-    --menu-item-hover: #8a2be2;
-    --menu-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-    --menu-border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Общие стили */
@@ -140,93 +130,299 @@ main {
     transform: translateY(-50%) rotate(0);
 }
 
-/* Обновленные стили меню */
+/* Стили таблицы */
+.table-container {
+    overflow-x: auto;
+    margin-bottom: 30px;
+    background-color: var(--table-background);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+    border-radius: 15px;
+    padding: 20px;
+}
+
+table {
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+    min-width: 300px;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+th, td {
+    padding: 15px;
+    text-align: center;
+    border-bottom: 1px solid var(--table-border);
+    color: var(--text-color);
+    font-family: 'Roboto', sans-serif;
+    font-size: 14px;
+    transition: background-color var(--transition-duration) ease, transform 0.2s ease;
+}
+
+th {
+    background-color: var(--header-background);
+    color: var(--header-text);
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+tr:hover td {
+    background-color: var(--table-hover-background);
+    transform: scale(1.02);
+}
+
+/* Медиа-запросы */
+@media (max-width: 768px) {
+    .table-container {
+        overflow-x: scroll;
+    }
+
+    th, td {
+        padding: 8px;
+        font-size: 12px;
+    }
+
+    header {
+        flex-direction: column;
+    }
+
+    .header-controls {
+        margin-top: 10px;
+    }
+
+    .container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .qr {
+        margin-right: 0;
+        margin-bottom: 20px;
+    }
+
+    .text-container {
+        padding: 15px;
+    }
+
+    .dz {
+        font-size: 20px;
+    }
+
+    .bot {
+        font-size: 16px;
+    }
+
+    .ps {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    th, td {
+        padding: 6px;
+        font-size: 10px;
+    }
+
+    .menu {
+        width: 100%;
+        right: 0;
+    }
+
+    .menu a {
+        padding: 10px;
+    }
+}
+
+/* Дополнительные стили */
+.container {
+    display: flex;
+    align-items: center;
+    padding-top: 30px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.qr {
+    margin-right: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform var(--transition-duration) ease;
+    width: 150px;
+    height: 150px;
+}
+
+.qr:hover {
+    transform: scale(1.05);
+}
+
+.text-container {
+    flex: 1;
+    background-color: var(--text-container-background);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: var(--text-container-shadow);
+    text-align: center;
+    max-width: 100%;
+    margin-top: 20px;
+}
+
+.dz {
+    margin: 0;
+    font-size: 22px;
+    font-weight: bold;
+    color: var(--header-background);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.bot {
+    display: inline-block;
+    margin: 10px 0;
+    font-size: 18px;
+    color: var(--button-background);
+    text-decoration: none;
+    transition: color var(--transition-duration) ease, transform var(--transition-duration) ease;
+}
+
+.bot:hover {
+    color: var(--button-hover);
+    transform: translateY(-2px);
+}
+
+.ps {
+    margin: 10px 0 0;
+    font-size: 14px;
+    color: var(--text-color);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Стили меню */
+#menu-toggle {
+    cursor: pointer;
+    margin-left: 15px;
+    transition: transform var(--transition-duration) ease, color var(--transition-duration) ease;
+}
+
+#menu-toggle:hover {
+    transform: scale(1.1);
+    color: var(--button-hover);
+}
+
 .menu {
-    display: none;
-    position: absolute;
-    top: 74px;
-    right: 1px;
-    background: var(--menu-background);
-    backdrop-filter: blur(10px);
+    background: var(--table-background);
     padding: 25px;
     border-radius: 20px;
-    box-shadow: var(--menu-shadow);
-    animation: menuSlideIn 0.4s ease-out;
-    z-index: 1000;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
     width: 320px;
-    border: var(--menu-border);
+    display: none;
+    z-index: 1000;
 }
 
 .menu a {
     display: flex;
     align-items: center;
-    justify-content: flex-start;
-    color: var(--header-text);
-    text-decoration: none;
     padding: 15px 20px;
     margin-bottom: 12px;
     border-radius: 12px;
+    background: linear-gradient(145deg, var(--button-background), var(--button-hover));
+    color: var(--header-text);
+    text-decoration: none;
     font-weight: 500;
-    background: var(--menu-item-background);
+    font-size: 16px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
-    font-size: 15px;
-    letter-spacing: 0.5px;
 }
 
 .menu a:last-child {
     margin-bottom: 0;
 }
 
-.menu a i {
-    margin-right: 15px;
-    font-size: 20px;
-    transition: transform 0.3s ease;
-}
-
-.menu a:hover {
-    background: var(--menu-item-hover);
-    transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-}
-
-.menu a:hover i {
-    transform: scale(1.2) rotate(5deg);
-}
-
-.menu a::before {
+.menu a:before {
     content: '';
     position: absolute;
     top: 0;
-    left: -100%;
+    left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(255, 255, 255, 0.2),
-        transparent
-    );
-    transition: 0.5s;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.6s;
 }
 
-.menu a:hover::before {
-    left: 100%;
+.menu a:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
 
-@keyframes menuSlideIn {
-    0% {
+.menu a:hover:before {
+    transform: translateX(100%);
+}
+
+.menu a:active {
+    transform: translateY(-1px);
+}
+
+/* Добавляем иконки для пунктов меню */
+.menu a::after {
+    content: '→';
+    margin-left: auto;
+    font-size: 20px;
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all 0.3s ease;
+}
+
+.menu a:hover::after {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Анимация появления меню */
+@keyframes menuFadeIn {
+    from {
         opacity: 0;
         transform: translateY(-20px) scale(0.95);
     }
-    100% {
+    to {
         opacity: 1;
         transform: translateY(0) scale(1);
     }
 }
 
-/* Медиа-запросы для меню */
+.menu.active {
+    display: block;
+    animation: menuFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.menu a i {
+    margin-right: 12px;
+    font-size: 18px;
+    opacity: 0.8;
+    transition: all 0.3s ease;
+}
+
+.menu a:hover i {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* Оптимизированная анимация появления */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Медиа-запросы для адаптивности */
 @media screen and (max-width: 768px) {
     .menu {
         position: fixed;
@@ -239,25 +435,327 @@ main {
     }
     
     .menu a {
-        padding: 12px 18px;
-        font-size: 14px;
+        padding: 15px 20px;
+        font-size: 16px;
     }
 }
 
 @media screen and (max-width: 480px) {
     .menu {
-        padding: 20px;
-        border-radius: 15px;
+        padding: 15px;
     }
     
     .menu a {
-        padding: 10px 15px;
-        font-size: 13px;
-        margin-bottom: 8px;
+        padding: 12px 15px;
+        font-size: 14px;
     }
-    
-    .menu a i {
-        font-size: 18px;
-        margin-right: 12px;
+}
+
+/* Стили для домашних заданий */
+.homework-item {
+    margin: 10px 0;
+    padding: 10px;
+    border: 1px solid var(--table-border);
+    background-color: var(--table-background);
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.homework-item strong {
+    color: var(--header-background);
+}
+
+.delete-button {
+    background-color: var(--button-background);
+    color: var(--header-text);
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-top: 5px;
+    transition: background-color var(--transition-duration) ease;
+}
+
+.delete-button:hover {
+    background-color: var(--button-hover);
+}
+
+/* Стили для новостей */
+.news {
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.news h1 {
+    margin-bottom: 10px;
+    font-size: 24px;
+}
+
+.news p {
+    font-size: 16px;
+    text-align: center;
+}
+
+@media (max-width: 600px) {
+    .news h1 {
+        font-size: 20px;
+    }
+    .news p {
+        font-size: 14px;
+    }
+}
+
+/* Стили для таблицы */
+table.sheet0 col.col0,
+table.sheet0 col.col1,
+table.sheet0 col.col2,
+table.sheet0 col.col3,
+table.sheet0 col.col4,
+table.sheet0 col.col5,
+table.sheet0 col.col6 {
+    width: 14.28%;
+}
+
+table.sheet0 tr {
+    height: auto;
+}
+
+.today-highlight td {
+    background-color: var(--today-highlight) !important;
+    font-weight: bold;
+    color: var(--header-text) !important;
+}
+
+/* Стили для кнопок темы и меню */
+.theme-toggle, .menu-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+}
+
+.theme-icon, .menu-toggle svg {
+    width: 24px;
+    height: 24px;
+    fill: var(--text-color);
+}
+
+/* Стили для темной темы */
+body.darkmode .theme-icon,
+body.darkmode .menu-toggle svg {
+    fill: var(--dark-text-color);
+}
+
+body.darkmode .menu {
+    background-color: var(--header-background);
+}
+
+body.darkmode .menu a {
+    color: white;
+}
+
+body.darkmode .menu a:hover {
+    background-color: var(--header-background-dark);
+}
+
+.header-controls {
+    display: flex;
+    align-items: center;
+}
+
+.theme-toggle, .menu-toggle {
+    margin-left: 10px;
+}
+
+.menu-container {
+    position: relative;
+}
+
+/* Медиа-запрос для мобильных устройств */
+@media screen and (max-width: 768px) {
+    .menu {
+        position: fixed;
+        top: 60px;
+        right: 10px;
+        left: 10px;
+        width: auto;
+    }
+}
+
+.theme-toggle.animating {
+    pointer-events: none;
+}
+
+/* Обновленные стили меню */
+.developer-links {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.developer-links a, .menu a {
+    padding: 10px 20px;
+    background-color: #4b0082;
+    color: #ffffff;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+    width: 100%;
+    max-width: 300px;
+    text-align: center;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 400;
+}
+
+.developer-links a:hover, .menu a:hover {
+    background-color: #8b00ff;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Обновляем медиа-запросы для меню */
+@media screen and (max-width: 480px) {
+    .menu a {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+}
+
+/* Общие стили меню */
+.menu, .developer-links {
+    background: var(--table-background);
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Стили для ссылок в меню */
+.menu a, .developer-links a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--header-text);
+    text-decoration: none;
+    padding: 12px 20px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    font-weight: 500;
+    background: var(--button-background);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+}
+
+.menu a:last-child, .developer-links a:last-child {
+    margin-bottom: 0;
+}
+
+/* Эффект при наведении */
+.menu a:hover, .developer-links a:hover {
+    background: var(--button-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Эффект ripple при клике */
+.menu a::after, .developer-links a::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s ease, height 0.6s ease;
+}
+
+.menu a:active::after, .developer-links a:active::after {
+    width: 200px;
+    height: 200px;
+}
+
+/* Иконки в меню */
+.menu a i, .developer-links a i {
+    margin-right: 12px;
+    font-size: 18px;
+    transition: transform 0.3s ease;
+}
+
+.menu a:hover i, .developer-links a:hover i {
+    transform: scale(1.1);
+}
+
+/* Специфичные стили для выпадающего меню */
+.menu {
+    position: absolute;
+    top: 74px;
+    right: 1px;
+    width: 300px;
+    display: none;
+    z-index: 1000;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Специфичные стили для developer-links */
+.developer-links {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+/* Медиа-запросы */
+@media screen and (max-width: 768px) {
+    .menu {
+        position: fixed;
+        top: 70px;
+        right: 10px;
+        left: 10px;
+        width: auto;
+        max-width: 400px;
+        margin: 0 auto;
+    }
+
+    .menu a, .developer-links a {
+        padding: 15px 20px;
+        font-size: 16px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .menu, .developer-links {
+        padding: 15px;
+    }
+
+    .menu a, .developer-links a {
+        padding: 12px 15px;
+        font-size: 14px;
+    }
+}
+
+/* Анимация появления */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
