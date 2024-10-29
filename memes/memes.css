@@ -45,6 +45,8 @@ h2::after {
     text-align: center;
     margin: 40px 0;
     perspective: 1000px;
+    padding: 50px;
+    overflow: hidden;
 }
 
 .development-image img {
@@ -53,9 +55,9 @@ h2::after {
     height: auto;
     border-radius: 15px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-    transition: transform 0.1s ease;
-    transform-style: preserve-3d;
-    will-change: transform;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    cursor: pointer;
+    position: relative;
 }
 
 .development-image img:hover {

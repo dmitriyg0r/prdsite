@@ -49,45 +49,52 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Добавляем эффект наклона для изображения
+    // Добавляем эффект убегания от курсора
     const image = document.querySelector('.development-image img');
     const container = document.querySelector('.development-image');
 
     if (image && container) {
-        let rect = container.getBoundingClientRect();
-        const maxRotate = 15; // Максимальный угол поворота
+        let isMoving = false;
+        const maxMove = 50; // Максимальное расстояние перемещения в пикселях
 
         container.addEventListener('mousemove', (e) => {
-            rect = container.getBoundingClientRect();
-            
-            // Вычисляем положение курсора относительно центра изображения
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
-            
-            // Вычисляем расстояние от курсора до центра в процентах
-            const percentX = (e.clientX - centerX) / (rect.width / 2);
-            const percentY = (e.clientY - centerY) / (rect.height / 2);
-            
-            // Применяем поворот с ограничением максимального угла
-            const rotateX = -percentY * maxRotate;
-            const rotateY = percentX * maxRotate;
-            
-            image.style.transform = `
-                perspective(1000px)
-                rotateX(${rotateX}deg)
-                rotateY(${rotateY}deg)
-                scale3d(1.05, 1.05, 1.05)
-            `;
+            if (isMoving) return;
+
+            const rect = image.getBoundingClientRect();
+            const imageX = rect.left + rect.width / 2;
+            const imageY = rect.top + rect.height / 2;
+
+            // Вычисляем расстояние от курсора до центра изображения
+            const distanceX = e.clientX - imageX;
+            const distanceY = e.clientY - imageY;
+
+            // Вычисляем направление "убегания" (противоположное от курсора)
+            const moveX = -Math.sign(distanceX) * Math.min(Math.abs(distanceX) * 0.1, maxMove);
+            const moveY = -Math.sign(distanceY) * Math.min(Math.abs(distanceY) * 0.1, maxMove);
+
+            // Применяем трансформацию
+            isMoving = true;
+            image.style.transform = `translate(${moveX}px, ${moveY}px)`;
+
+            // Добавляем небольшой наклон в противоположную сторону
+            const tiltX = -moveY * 0.05;
+            const tiltY = moveX * 0.05;
+            image.style.transform += ` rotate3d(${tiltX}, ${tiltY}, 0, 5deg)`;
+
+            // Возвращаем изображение в исходное положение через небольшую задержку
+            setTimeout(() => {
+                image.style.transform = 'translate(0, 0) rotate3d(0, 0, 0, 0deg)';
+                setTimeout(() => {
+                    isMoving = false;
+                }, 200);
+            }, 150);
         });
 
-        // Возвращаем изображение в исходное положение при уходе курсора
-        container.addEventListener('mouseleave', () => {
-            image.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)';
-        });
-
-        // Сбрасываем положение при касании на мобильных устройствах
-        container.addEventListener('touchstart', () => {
-            image.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)';
+        // Добавляем случайное "подрагивание" при клике
+        image.addEventListener('click', () => {
+            const randomX = (Math.random() - 0.5) * 10;
+            const randomY = (Math.random() - 0.5) * 10;
+            image.style.transform = `translate(${randomX}px, ${randomY}px)`;
         });
     }
 }); 
