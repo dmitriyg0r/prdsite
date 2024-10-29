@@ -326,173 +326,109 @@ h2::after {
 
 /* Контейнер для сетки */
 .memes-grid {
-    columns: 5;
-    column-gap: 16px;
-    padding: 16px;
-    max-width: 1600px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px;
+    padding: 20px;
+    max-width: 1400px;
     margin: 0 auto;
 }
 
 /* Контейнер для мема */
 .meme-item {
-    break-inside: avoid;
-    margin-bottom: 16px;
+    position: relative;
+    width: 100%;
     background: var(--table-background);
-    border-radius: 16px;
+    border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    transition: all 0.2s ease;
-    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
 }
 
 /* Контейнер для изображения */
 .meme-image-container {
     position: relative;
     width: 100%;
+    padding-bottom: 100%; /* Создаем квадратный контейнер */
     overflow: hidden;
 }
 
 /* Стили для изображения */
 .meme-item img {
-    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
-    height: auto;
-    object-fit: cover;
+    height: 100%;
+    object-fit: cover; /* Заполняем контейнер с сохранением пропорций */
     transition: all 0.3s ease;
 }
 
 /* Информация о меме */
 .meme-info {
     padding: 12px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    background: var(--table-background);
 }
 
 .meme-author {
+    font-weight: 500;
+    margin-bottom: 4px;
+    color: var(--text-color);
+}
+
+.meme-description {
     font-size: 14px;
     color: var(--text-color);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.author-avatar {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-/* Hover эффекты */
-.meme-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-/* Медиа-запросы для адаптивности */
-@media screen and (max-width: 1400px) {
-    .memes-grid {
-        columns: 4;
-    }
-}
-
-@media screen and (max-width: 1100px) {
-    .memes-grid {
-        columns: 3;
-    }
-}
-
-@media screen and (max-width: 800px) {
-    .memes-grid {
-        columns: 2;
-    }
-}
-
-@media screen and (max-width: 500px) {
-    .memes-grid {
-        columns: 1;
-    }
-}
-
-/* Анимация появления новых элементов */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.meme-item {
-    animation: fadeIn 0.6s ease-out forwards;
-}
-
-/* Добавляем стили для ошибки загрузки */
-.meme-item.error::after {
-    content: '❌ Ошибка загрузки';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: var(--text-color);
-}
-
-.upload-info {
-    font-size: 0.9em;
-    color: var(--text-color);
-    opacity: 0.8;
-    margin-top: 5px;
-    text-align: center;
-}
-
-/* Анимация появления */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.meme-item {
-    animation: fadeInUp 0.6s ease-out forwards;
-}
-
-/* Стили для формы */
-.form-group {
-    margin-bottom: 16px;
-}
-
-.text-input {
-    width: 100%;
-    padding: 8px 12px;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    font-size: 14px;
-}
-
-/* Стили для информации о меме */
-.meme-info {
-    padding: 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.meme-author {
-    font-size: 14px;
-    color: var(--text-color);
+    margin-bottom: 8px;
+    line-height: 1.4;
 }
 
 .meme-date {
     font-size: 12px;
     color: var(--text-secondary);
+}
+
+/* Hover эффекты */
+.meme-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* Медиа-запросы для адаптивности */
+@media screen and (max-width: 1200px) {
+    .memes-grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .memes-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 12px;
+        padding: 12px;
+    }
+}
+
+/* Модальное окно */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    z-index: 1000;
+    overflow: auto;
+    padding: 20px;
+}
+
+.modal img {
+    display: block;
+    max-width: 90%;
+    max-height: 90vh;
+    margin: auto;
+    object-fit: contain;
 }
 
