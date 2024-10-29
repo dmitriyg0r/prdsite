@@ -101,6 +101,47 @@ function createMemeItem(imageUrl) {
     img.src = imageUrl;
     img.alt = 'Мем';
     
+    memeItem.addEventListener('click', () => {
+        openModal(imageUrl);
+    });
+    
     memeItem.appendChild(img);
     return memeItem;
+}
+
+function openModal(imageUrl) {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    
+    const closeButton = document.createElement('span');
+    closeButton.className = 'modal-close';
+    closeButton.innerHTML = '×';
+    closeButton.onclick = () => {
+        modal.remove();
+    };
+    
+    const modalImg = document.createElement('img');
+    modalImg.src = imageUrl;
+    
+    modal.appendChild(closeButton);
+    modal.appendChild(modalImg);
+    
+    document.body.appendChild(modal);
+    
+    setTimeout(() => {
+        modal.classList.add('show');
+    }, 10);
+    
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    });
+    
+    document.addEventListener('keydown', function closeOnEscape(e) {
+        if (e.key === 'Escape') {
+            modal.remove();
+            document.removeEventListener('keydown', closeOnEscape);
+        }
+    });
 }
