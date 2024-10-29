@@ -16,5 +16,42 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    uploa
+    // Обработка выбора файла
+    const fileInput = document.getElementById('file-input');
+    const fileLabel = document.querySelector('.file-input-label');
+    const fileName = document.getElementById('file-name');
+
+    if (fileInput && fileLabel && fileName) {
+        fileInput.addEventListener('change', function(e) {
+            if (this.files && this.files[0]) {
+                fileName.textContent = `Выбран файл: ${this.files[0].name}`;
+                fileLabel.style.borderColor = 'var(--button-hover)';
+            } else {
+                fileName.textContent = '';
+                fileLabel.style.borderColor = 'var(--button-background)';
+            }
+        });
+
+        // Drag & Drop функционал
+        fileLabel.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('dragover');
+        });
+
+        fileLabel.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+        });
+
+        fileLabel.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+            
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                fileInput.files = e.dataTransfer.files;
+                fileName.textContent = `Выбран файл: ${e.dataTransfer.files[0].name}`;
+                fileLabel.style.borderColor = 'var(--button-hover)';
+            }
+        });
+    }
 }); 

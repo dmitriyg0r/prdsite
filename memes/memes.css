@@ -160,14 +160,56 @@ h2::after {
 }
 
 #upload-form input[type="file"] {
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
+}
+
+#upload-form .file-input-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
     width: 100%;
     padding: 15px;
-    border: 2px solid var(--table-border);
-    border-radius: 10px;
     background-color: var(--table-background);
-    color: var(--text-color);
+    border: 2px dashed var(--button-background);
+    border-radius: 10px;
+    cursor: pointer;
     font-size: 16px;
+    color: var(--text-color);
     transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+#upload-form .file-input-label:hover {
+    background-color: rgba(var(--button-background-rgb), 0.1);
+    border-color: var(--button-hover);
+    transform: translateY(-2px);
+}
+
+#upload-form .file-input-label::before {
+    content: '📁';
+    font-size: 20px;
+    margin-right: 8px;
+}
+
+#file-name {
+    margin-top: 8px;
+    font-size: 14px;
+    color: var(--text-color);
+    text-align: center;
+    font-style: italic;
+}
+
+#upload-form .file-input-label.dragover {
+    background-color: rgba(var(--button-background-rgb), 0.2);
+    border-style: solid;
+    transform: scale(1.02);
 }
 
 #upload-form button {
@@ -208,6 +250,11 @@ h2::after {
 
     #upload-form input[type="file"],
     #upload-form button {
+        padding: 12px;
+        font-size: 14px;
+    }
+
+    #upload-form .file-input-label {
         padding: 12px;
         font-size: 14px;
     }
