@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Загрузка файла
     if (uploadForm) {
-        uploadForm.addEventListener('submit', function(e) {
+        uploadForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             const files = this.querySelector('input[type="file"]').files;
             const maxSize = 3 * 1024 * 1024; // 3 МБ в байтах
@@ -44,12 +44,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const formData = new FormData(this);
 
-            fetch('memes.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
+            try {
+                const response = await fetch('memes.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+
                 if (data.status === 'success') {
                     data.filePaths.forEach(path => {
                         const memeItem = createMemeItem(path);
@@ -66,47 +67,66 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     console.error('Ошибка:', data.message);
                 }
-            })
-            .catch(error => {
+            } catch (error) {
                 console.error('Ошибка загрузки:', error);
-            });
+            }
         });
     }
 });
 
-function loadExistingMemes() {
-    fetch('get_memes.php')
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success' && data.memes.length > 0) {
-                const memesGrid = document.querySelector('.memes-grid');
-                memesGrid.innerHTML = ''; // Очищаем сетку
-                
-                data.memes.forEach(path => {
-                    const memeItem = createMemeItem(path);
-                    memesGrid.appendChild(memeItem);
-                });
-            }
-        })
-        .catch(error => {
-            console.error('Ошибка загрузки мемов:', error);
-        });
+async function loadExistingMemes() {
+    try {
+        const response = await fetch('get_memes.php');
+        const data = await response.json();
+        
+        if (data.status === 'success' && data.memes.length > 0) {
+            const memesGrid = document.querySelector('.memes-grid');
+            memesGrid.innerHTML = '';
+            
+            // Загружаем все мемы асинхронно
+            const memePromises = data.memes.map(path => createMemeItem(path));
+            const memeElements = await Promise.all(memePromises);
+            
+            // Добавляем элементы в сетку
+            memeElements.forEach(memeItem => {
+                memesGrid.appendChild(memeItem);
+            });
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки мемов:', error);
+    }
 }
 
 function createMemeItem(imageUrl) {
-    const memeItem = document.createElement('div');
-    memeItem.className = 'meme-item';
-    
-    const img = document.createElement('img');
-    img.src = imageUrl;
-    img.alt = 'Мем';
-    
-    memeItem.addEventListener('click', () => {
-        openModal(imageUrl);
+    return new Promise((resolve) => {
+        const memeItem = document.createElement('div');
+        memeItem.className = 'meme-item';
+        
+        const img = document.createElement('img');
+        
+        // Загружаем изображение, чтобы получить его размеры
+        img.onload = function() {
+            // Устанавливаем размеры контейнера на основе пропорций изображения
+            const aspectRatio = this.naturalWidth / this.naturalHeight;
+            const height = 300; // Базовая высота
+            const width = height * aspectRatio;
+            
+            memeItem.style.width = `${width}px`;
+            memeItem.style.height = `${height}px`;
+            
+            resolve(memeItem);
+        };
+        
+        img.src = imageUrl;
+        img.alt = 'Мем';
+        
+        // Добавляем обработчик клика для открытия модального окна
+        memeItem.addEventListener('click', () => {
+            openModal(imageUrl);
+        });
+        
+        memeItem.appendChild(img);
     });
-    
-    memeItem.appendChild(img);
-    return memeItem;
 }
 
 function openModal(imageUrl) {
