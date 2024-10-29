@@ -100,8 +100,8 @@ function createMemeItem(imageUrl) {
 function loadMemes() {
     const memesGrid = document.querySelector('.memes-grid');
     
-    // Проверяем путь к изображению
-    const imagePath = '../memes/memesy/талисман.png';
+    // Обновляем путь к изображению
+    const imagePath = '../memesy/талисман.png';
     console.log('Загрузка изображения:', imagePath);
     
     // Создаем тестовый массив
