@@ -326,9 +326,9 @@ h2::after {
 
 /* Контейнер для сетки */
 .memes-grid {
-    columns: 3;
-    column-gap: 20px;
-    padding: 20px;
+    columns: 4;
+    column-gap: 16px;
+    padding: 16px;
     max-width: 1800px;
     margin: 0 auto;
     width: 95%;
@@ -337,11 +337,11 @@ h2::after {
 /* Контейнер для мема */
 .meme-item {
     break-inside: avoid;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
     background: var(--table-background);
-    border-radius: 16px;
+    border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
     cursor: pointer;
     width: 100%;
@@ -360,7 +360,7 @@ h2::after {
     width: 100%;
     height: auto;
     display: block;
-    object-fit: contain;
+    object-fit: cover;
     transition: all 0.3s ease;
 }
 
@@ -396,27 +396,28 @@ h2::after {
 }
 
 /* Медиа-запросы для адаптивности */
-@media screen and (min-width: 2000px) {
-    .memes-grid {
-        columns: 4;
-    }
-}
-
-@media screen and (max-width: 1400px) {
+@media screen and (max-width: 1600px) {
     .memes-grid {
         columns: 3;
     }
 }
 
-@media screen and (max-width: 1000px) {
+@media screen and (max-width: 1200px) {
     .memes-grid {
         columns: 2;
+        column-gap: 12px;
+        padding: 12px;
     }
 }
 
-@media screen and (max-width: 700px) {
+@media screen and (max-width: 768px) {
     .memes-grid {
         columns: 1;
+        padding: 8px;
+    }
+    
+    .meme-item {
+        margin-bottom: 12px;
     }
 }
 
