@@ -104,15 +104,32 @@ function createMemeItem(imageUrl) {
         
         const img = document.createElement('img');
         
-        // Загружаем изображение, чтобы получить его размеры
         img.onload = function() {
-            // Устанавливаем размеры контейнера на основе пропорций изображения
-            const aspectRatio = this.naturalWidth / this.naturalHeight;
-            const height = 300; // Базовая высота
-            const width = height * aspectRatio;
+            // Получаем реальные размеры изображения
+            const width = this.naturalWidth;
+            const height = this.naturalHeight;
             
-            memeItem.style.width = `${width}px`;
-            memeItem.style.height = `${height}px`;
+            // Устанавливаем максимальную ширину для контейнера
+            const maxWidth = 800; // Максимальная ширина
+            const maxHeight = 600; // Максимальная высота
+            
+            // Вычисляем новые размеры с сохранением пропорций
+            let newWidth = width;
+            let newHeight = height;
+            
+            // Если изображение больше максимальных размеров, уменьшаем его
+            if (width > maxWidth) {
+                newWidth = maxWidth;
+                newHeight = (height * maxWidth) / width;
+            }
+            
+            if (newHeight > maxHeight) {
+                newHeight = maxHeight;
+                newWidth = (width * maxHeight) / height;
+            }
+            
+            // Устанавливаем размеры контейнера
+            memeItem.style.width = `${newWidth}px`;
             
             resolve(memeItem);
         };
@@ -136,21 +153,21 @@ function openModal(imageUrl) {
     const closeButton = document.createElement('span');
     closeButton.className = 'modal-close';
     closeButton.innerHTML = '×';
-    closeButton.onclick = () => {
-        modal.remove();
-    };
     
     const modalImg = document.createElement('img');
     modalImg.src = imageUrl;
     
     modal.appendChild(closeButton);
     modal.appendChild(modalImg);
-    
     document.body.appendChild(modal);
     
+    // Показываем модальное окно
     setTimeout(() => {
         modal.classList.add('show');
     }, 10);
+    
+    // Обработчики закрытия
+    closeButton.onclick = () => modal.remove();
     
     modal.addEventListener('click', (e) => {
         if (e.target === modal) {
