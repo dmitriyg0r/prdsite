@@ -65,6 +65,15 @@ function createMemeItem(memeInfo) {
     img.src = memeInfo.path;
     img.alt = 'Мем';
     
+    // Добавляем кнопку удаления
+    const deleteButton = document.createElement('button');
+    deleteButton.className = 'delete-button';
+    deleteButton.innerHTML = '×';
+    deleteButton.onclick = (e) => {
+        e.stopPropagation(); // Предотвращаем открытие модального окна
+        showDeleteConfirmation(memeInfo.id, memeItem);
+    };
+    
     // Информация о меме
     const memeInfoDiv = document.createElement('div');
     memeInfoDiv.className = 'meme-info';
@@ -89,6 +98,7 @@ function createMemeItem(memeInfo) {
     memeInfoDiv.appendChild(date);
     
     imageContainer.appendChild(img);
+    imageContainer.appendChild(deleteButton); // Добавляем кнопку удаления
     memeItem.appendChild(imageContainer);
     memeItem.appendChild(memeInfoDiv);
     
@@ -153,4 +163,64 @@ function loadExistingMemes() {
         .catch(error => {
             console.error('Ошибка загрузки мемов:', error);
         });
+}
+
+function showDeleteConfirmation(memeId, memeElement) {
+    const modal = document.createElement('div');
+    modal.className = 'modal delete-modal';
+    
+    const modalContent = document.createElement('div');
+    modalContent.className = 'delete-modal-content';
+    
+    modalContent.innerHTML = `
+        <h3>Подтверждение удаления</h3>
+        <input type="password" id="delete-password" placeholder="Введите пароль" class="delete-password-input">
+        <div class="delete-modal-buttons">
+            <button class="cancel-button">Отмена</button>
+            <button class="confirm-button">Удалить</button>
+        </div>
+    `;
+    
+    modal.appendChild(modalContent);
+    document.body.appendChild(modal);
+    
+    setTimeout(() => modal.classList.add('show'), 10);
+    
+    const cancelButton = modalContent.querySelector('.cancel-button');
+    const confirmButton = modalContent.querySelector('.confirm-button');
+    const passwordInput = modalContent.querySelector('#delete-password');
+    
+    cancelButton.onclick = () => modal.remove();
+    
+    confirmButton.onclick = () => {
+        const password = passwordInput.value;
+        
+        fetch('delete_meme.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                meme_id: memeId,
+                password: password
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                memeElement.remove();
+                modal.remove();
+            } else {
+                alert('Неверный пароль или ошибка удаления');
+            }
+        })
+        .catch(error => {
+            console.error('Ошибка:', error);
+            alert('Произошла ошибка при удалении');
+        });
+    };
+    
+    modal.onclick = (e) => {
+        if (e.target === modal) modal.remove();
+    };
 }
