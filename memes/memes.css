@@ -1,24 +1,81 @@
-.development-notice {
-    font-weight: bold;
-    color: #ff0000; /* Красный цвет */
+.meme-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+h2 {
+    font-size: 2.5rem;
     text-align: center;
-    padding: 10px;
-    background-color: #ffe6e6; /* Светло-красный фон */
-    border: 1px solid #ff0000;
-    border-radius: 5px;
-    margin: 10px 0;
+    margin-bottom: 30px;
+    color: var(--text-color);
+    position: relative;
+}
+
+h2::after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 4px;
+    background: var(--accent-color);
+    margin: 15px auto;
+    border-radius: 2px;
+}
+
+.development-notice {
+    font-size: 1.2rem;
+    color: #ff6b6b;
+    text-align: center;
+    padding: 20px;
+    background: rgba(255, 107, 107, 0.1);
+    border: 2px dashed #ff6b6b;
+    border-radius: 12px;
+    margin: 30px auto;
+    max-width: 600px;
+    backdrop-filter: blur(5px);
+    transition: all 0.3s ease;
+}
+
+.development-notice:hover {
+    transform: scale(1.02);
+    box-shadow: 0 5px 15px rgba(255, 107, 107, 0.2);
 }
 
 .development-image {
     text-align: center;
-    margin: 20px 0;
+    margin: 40px 0;
+    perspective: 1000px;
 }
 
 .development-image img {
-    max-width: 300px; /* Ограничиваем максимальную ширину */
-    max-height: 300px; /* Ограничиваем максимальную высоту */
-    width: auto; /* Автоматическая ширина для сохранения пропорций */
-    height: auto; /* Автоматическая высота для сохранения пропорций */
-    border-radius: 5px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+    width: 100%;
+    height: auto;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    transition: all 0.5s ease;
+}
+
+.development-image img:hover {
+    transform: rotateY(5deg) rotateX(5deg);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+}
+
+@media (max-width: 768px) {
+    .meme-container {
+        padding: 10px;
+    }
+    
+    h2 {
+        font-size: 2rem;
+    }
+    
+    .development-notice {
+        margin: 20px 10px;
+        font-size: 1rem;
+    }
+    
+    .development-image img {
+        max-width: 300px;
+    }
 }
