@@ -27,21 +27,6 @@ body, p, a, div, h1, h2, h3, h4, h5, h6 {
     font-weight: 700; /* Увеличиваем жирность шрифта для .company-name */
 }
 
-/* Остальные стили остаются без изменений */
-#developers {
-    margin-top: 60px;
-    padding: 20px;
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 400;
-    width: 100%;
-    max-width: 400px;
-    position: absolute;
-    top: 780px;
-    right: 55px;
-}
 
 .developer-links {
     display: flex;
