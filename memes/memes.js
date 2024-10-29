@@ -4,6 +4,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const uploadFormContainer = document.getElementById('upload-form-container');
     const memesGrid = document.querySelector('.memes-grid');
 
+    // Добавляем HTML для индикатора загрузки
+    const uploadProgress = document.createElement('div');
+    uploadProgress.className = 'upload-progress';
+    uploadProgress.innerHTML = `
+        <div class="upload-spinner"></div>
+        <div class="upload-progress-text">Загрузка файла...</div>
+        <div class="progress-bar">
+            <div class="progress-bar-fill"></div>
+        </div>
+    `;
+    document.body.appendChild(uploadProgress);
+
     // Загружаем существующие мемы при загрузке страницы
     loadExistingMemes();
 
@@ -27,28 +39,69 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             const formData = new FormData(this);
             
+            // Показываем индикатор загрузки
+            uploadProgress.classList.add('show');
+            const progressText = uploadProgress.querySelector('.upload-progress-text');
+            const progressBarFill = uploadProgress.querySelector('.progress-bar-fill');
+            
             fetch('memes.php', {
                 method: 'POST',
                 body: formData
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.status === 'success') {
+                    // Обновляем текст
+                    progressText.textContent = 'Файл успешно загружен!';
+                    progressBarFill.style.width = '100%';
+                    
+                    // Добавляем новые мемы в сетку
                     data.files.forEach(fileInfo => {
                         const memeItem = createMemeItem(fileInfo);
                         const memesGrid = document.querySelector('.memes-grid');
                         memesGrid.insertBefore(memeItem, memesGrid.firstChild);
                     });
                     
-                    document.getElementById('upload-form-container').classList.remove('show');
-                    this.reset();
+                    // Скрываем индикатор загрузки через 1 секунду
+                    setTimeout(() => {
+                        uploadProgress.classList.remove('show');
+                        document.getElementById('upload-form-container').classList.remove('show');
+                        uploadForm.reset();
+                        progressBarFill.style.width = '0%';
+                    }, 1000);
                 } else {
-                    console.error('Ошибка:', data.message);
+                    throw new Error(data.message || 'Ошибка загрузки');
                 }
             })
             .catch(error => {
-                console.error('Ошибка загрузки:', error);
+                console.error('Error:', error);
+                progressText.textContent = 'Ошибка загрузки: ' + error.message;
+                progressText.style.color = '#ff4444';
+                
+                // Скрываем индикатор загрузки через 3 секунды
+                setTimeout(() => {
+                    uploadProgress.classList.remove('show');
+                    progressBarFill.style.width = '0%';
+                    progressText.style.color = 'white';
+                    progressText.textContent = 'Загрузка файла...';
+                }, 3000);
             });
+
+            // Имитация прогресса загрузки
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 30;
+                if (progress > 90) {
+                    clearInterval(interval);
+                    return;
+                }
+                progressBarFill.style.width = Math.min(progress, 90) + '%';
+            }, 500);
         });
     }
 });
