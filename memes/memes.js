@@ -190,19 +190,12 @@ function showDeleteConfirmation(memeId, memeElement) {
     const confirmButton = modalContent.querySelector('.confirm-button');
     const passwordInput = modalContent.querySelector('#delete-password');
     
-    // Добавляем обработчик Enter для поля пароля
-    passwordInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            confirmButton.click();
-        }
-    });
-    
     cancelButton.onclick = () => modal.remove();
     
     confirmButton.onclick = () => {
         const password = passwordInput.value;
         
-        // Показываем индикатор загрузки или блокируем кнопку
+        // Показываем индикатор загрузки
         confirmButton.disabled = true;
         confirmButton.textContent = 'Удаление...';
         
@@ -216,7 +209,12 @@ function showDeleteConfirmation(memeId, memeElement) {
                 password: password
             })
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.status === 'success') {
                 // Анимация удаления
@@ -227,22 +225,30 @@ function showDeleteConfirmation(memeId, memeElement) {
                 }, 300);
             } else {
                 alert(data.message || 'Неверный пароль или ошибка удаления');
-                confirmButton.disabled = false;
-                confirmButton.textContent = 'Удалить';
             }
         })
         .catch(error => {
-            console.error('Ошибка:', error);
+            console.error('Error:', error);
             alert('Произошла ошибка при удалении');
+        })
+        .finally(() => {
             confirmButton.disabled = false;
             confirmButton.textContent = 'Удалить';
         });
     };
     
+    // Закрытие по клику вне модального окна
     modal.onclick = (e) => {
         if (e.target === modal) modal.remove();
     };
     
-    // Фокус на поле ввода пароля
+    // Обработка клавиши Enter
+    passwordInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            confirmButton.click();
+        }
+    });
+    
+    // Фокус на поле ввода
     passwordInput.focus();
 }
