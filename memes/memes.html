@@ -51,6 +51,10 @@
         <div id="upload-form-container" class="upload-form-container">
             <h2>Загрузить мем</h2>
             <form id="upload-form" enctype="multipart/form-data" action="memes.php" method="POST">
+                <label for="file-input" class="file-input-label">
+                    Выберите файл или перетащите его сюда
+                </label>
+                <div id="file-name"></div>
                 <input type="file" name="meme" id="file-input" accept="image/*" required>
                 <button type="submit">Загрузить</button>
             </form>
