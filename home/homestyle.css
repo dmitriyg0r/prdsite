@@ -63,3 +63,36 @@
     height: 30px;
     pointer-events: none;
 }
+
+.upload-progress {
+    height: 4px;
+    background-color: var(--accent-color);
+    width: 0;
+    transition: width 0.3s ease;
+    margin-top: 5px;
+}
+
+.clear-all-button,
+.export-button {
+    margin: 10px;
+    padding: 8px 16px;
+    background-color: var(--accent-color);
+    color: var(--text-color);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.clear-all-button:hover,
+.export-button:hover {
+    opacity: 0.8;
+}
+
+.file-container {
+    margin: 5px 0;
+}
+
+.error {
+    color: red;
+    font-size: 0.9em;
+}
