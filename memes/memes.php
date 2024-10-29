@@ -8,20 +8,16 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     die(json_encode(['status' => 'error', 'message' => 'Неверный метод запроса']));
 }
 
-// Проверяем загрузку файла
 if (!isset($_FILES['meme'])) {
     die(json_encode(['status' => 'error', 'message' => 'Файл не был получен']));
 }
 
 $authorName = isset($_POST['author_name']) ? $_POST['author_name'] : 'Аноним';
-$uploadDir = $_SERVER['DOCUMENT_ROOT'] . '/memesy/';
+$uploadDir = '../memesy/';
 
-// Создаем директорию если не существует
 if (!file_exists($uploadDir)) {
     mkdir($uploadDir, 0777, true);
 }
-
-$response = ['status' => 'error', 'message' => 'Неизвестная ошибка'];
 
 try {
     $files = $_FILES['meme'];
@@ -38,7 +34,6 @@ try {
         );
     }
 
-    // Обрабатываем каждый файл
     foreach ($files['name'] as $key => $name) {
         if ($files['error'][$key] === UPLOAD_ERR_OK) {
             $fileExtension = strtolower(pathinfo($name, PATHINFO_EXTENSION));
@@ -46,36 +41,32 @@ try {
             $targetFile = $uploadDir . $newFileName;
             
             if (move_uploaded_file($files['tmp_name'][$key], $targetFile)) {
-                // Сохраняем информацию о файле
                 $fileInfo = [
-                    'path' => '/memesy/' . $newFileName,
-                    'author' => $authorName,
-                    'timestamp' => time()
+                    'path' => '../memesy/' . $newFileName,
+                    'author' => $authorName
                 ];
-                
-                // Сохраняем метаданные в JSON файл
-                $metaFile = $uploadDir . $newFileName . '.meta.json';
-                file_put_contents($metaFile, json_encode($fileInfo));
-                
                 $uploadedFiles[] = $fileInfo;
             }
         }
     }
 
     if (!empty($uploadedFiles)) {
-        $response = [
+        echo json_encode([
             'status' => 'success',
             'message' => 'Файлы успешно загружены',
             'files' => $uploadedFiles
-        ];
+        ]);
+    } else {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Не удалось загрузить файлы'
+        ]);
     }
 
 } catch (Exception $e) {
-    $response = [
+    echo json_encode([
         'status' => 'error',
         'message' => 'Ошибка: ' . $e->getMessage()
-    ];
+    ]);
 }
-
-echo json_encode($response);
 ?> 

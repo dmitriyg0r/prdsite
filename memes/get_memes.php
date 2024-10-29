@@ -1,36 +1,23 @@
 <?php
 header('Content-Type: application/json');
 
-$memesDir = $_SERVER['DOCUMENT_ROOT'] . '/memesy/';
+$uploadDir = '../memesy/';
 $memes = [];
 
-if (file_exists($memesDir)) {
-    $files = scandir($memesDir);
+if (file_exists($uploadDir)) {
+    $files = scandir($uploadDir);
     foreach ($files as $file) {
-        if ($file !== '.' && $file !== '..' && !str_ends_with($file, '.meta.json')) {
-            $metaFile = $memesDir . $file . '.meta.json';
-            $fileInfo = [
-                'path' => '/memesy/' . $file,
-                'author' => 'Аноним',
-                'timestamp' => 0
-            ];
-            
-            if (file_exists($metaFile)) {
-                $meta = json_decode(file_get_contents($metaFile), true);
-                if ($meta) {
-                    $fileInfo = array_merge($fileInfo, $meta);
-                }
+        if ($file !== '.' && $file !== '..') {
+            $fileExtension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+            if (in_array($fileExtension, ['jpg', 'jpeg', 'png', 'gif'])) {
+                $memes[] = [
+                    'path' => '../memesy/' . $file,
+                    'author' => 'Аноним'
+                ];
             }
-            
-            $memes[] = $fileInfo;
         }
     }
 }
-
-// Сортируем по времени загрузки (новые первые)
-usort($memes, function($a, $b) {
-    return $b['timestamp'] - $a['timestamp'];
-});
 
 echo json_encode([
     'status' => 'success',
