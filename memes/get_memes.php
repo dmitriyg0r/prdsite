@@ -1,23 +1,14 @@
 <?php
 header('Content-Type: application/json');
+require_once 'memes_data.php';
 
-$uploadDir = '../memesy/';
-$memes = [];
+$memesData = new MemesData();
+$memes = $memesData->getData();
 
-if (file_exists($uploadDir)) {
-    $files = scandir($uploadDir);
-    foreach ($files as $file) {
-        if ($file !== '.' && $file !== '..') {
-            $fileExtension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-            if (in_array($fileExtension, ['jpg', 'jpeg', 'png', 'gif'])) {
-                $memes[] = [
-                    'path' => '../memesy/' . $file,
-                    'author' => 'Аноним'
-                ];
-            }
-        }
-    }
-}
+// Сортируем по времени (новые первыми)
+usort($memes, function($a, $b) {
+    return ($b['timestamp'] ?? 0) - ($a['timestamp'] ?? 0);
+});
 
 echo json_encode([
     'status' => 'success',

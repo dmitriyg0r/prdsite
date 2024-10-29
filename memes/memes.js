@@ -73,8 +73,21 @@ function createMemeItem(memeInfo) {
     authorInfo.className = 'meme-author';
     authorInfo.textContent = memeInfo.author;
     
+    const description = document.createElement('div');
+    description.className = 'meme-description';
+    description.textContent = memeInfo.description || '';
+    
+    const date = document.createElement('div');
+    date.className = 'meme-date';
+    date.textContent = new Date(memeInfo.timestamp * 1000).toLocaleDateString();
+    
     // Собираем структуру
     memeInfoDiv.appendChild(authorInfo);
+    if (memeInfo.description) {
+        memeInfoDiv.appendChild(description);
+    }
+    memeInfoDiv.appendChild(date);
+    
     imageContainer.appendChild(img);
     memeItem.appendChild(imageContainer);
     memeItem.appendChild(memeInfoDiv);

@@ -3,6 +3,7 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 header('Content-Type: application/json');
+require_once 'memes_data.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     die(json_encode(['status' => 'error', 'message' => 'Неверный метод запроса']));
@@ -13,6 +14,7 @@ if (!isset($_FILES['meme'])) {
 }
 
 $authorName = isset($_POST['author_name']) ? $_POST['author_name'] : 'Аноним';
+$description = isset($_POST['description']) ? $_POST['description'] : '';
 $uploadDir = '../memesy/';
 
 if (!file_exists($uploadDir)) {
@@ -22,6 +24,7 @@ if (!file_exists($uploadDir)) {
 try {
     $files = $_FILES['meme'];
     $uploadedFiles = [];
+    $memesData = new MemesData();
     
     // Если загружен один файл
     if (!is_array($files['name'])) {
@@ -41,11 +44,16 @@ try {
             $targetFile = $uploadDir . $newFileName;
             
             if (move_uploaded_file($files['tmp_name'][$key], $targetFile)) {
-                $fileInfo = [
+                $memeInfo = [
+                    'id' => uniqid(),
                     'path' => '../memesy/' . $newFileName,
-                    'author' => $authorName
+                    'author' => $authorName,
+                    'description' => $description,
+                    'timestamp' => time()
                 ];
-                $uploadedFiles[] = $fileInfo;
+                
+                $memesData->addMeme($memeInfo);
+                $uploadedFiles[] = $memeInfo;
             }
         }
     }
