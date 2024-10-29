@@ -1,100 +1,117 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const showUploadFormButton = document.getElementById('show-upload-form');
-    const uploadFormContainer = document.getElementById('upload-form-container');
-    const uploadForm = document.getElementById('upload-form');
-
-    if (showUploadFormButton && uploadFormContainer) {
-        showUploadFormButton.addEventListener('click', function() {
-            uploadFormContainer.classList.toggle('show');
-        });
-
-        // Закрыть форму при клике вне её
-        document.addEventListener('click', function(event) {
-            if (!uploadFormContainer.contains(event.target) && event.target !== showUploadFormButton) {
-                uploadFormContainer.classList.remove('show');
-            }
-        });
-    }
-
-    uploadForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const adminPassword = prompt("Пожалуйста, введите пароль администратора:");
-    
-        if (adminPassword !== "Gg3985502") {
-            alert("Неверный пароль администратора. Доступ запрещен.");
-            return;
-        }
-    
-        const formData = new FormData(uploadForm);
-        formData.append('admin_password', adminPassword);
-    
-        fetch('memes.php', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                alert('Мем успешно загружен!');
-                uploadForm.reset();
-                uploadFormContainer.classList.remove('show');
-                // Здесь можно добавить обновление списка мемов
-            } else {
-                alert(data.message || 'Произошла ошибка при загрузке мема');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Произошла ошибка при загрузке мема');
-        });
-    });
-
-    // Добавляем эффект убегания от курсора
     const image = document.querySelector('.development-image img');
     const container = document.querySelector('.development-image');
 
     if (image && container) {
-        let isMoving = false;
-        const maxMove = 50; // Максимальное расстояние перемещения в пикселях
+        let currentX = window.innerWidth / 2;
+        let currentY = window.innerHeight / 2;
+        let targetX = currentX;
+        let targetY = currentY;
+        let isRunning = false;
 
-        container.addEventListener('mousemove', (e) => {
-            if (isMoving) return;
-
+        // Функция для проверки границ
+        function checkBounds(x, y) {
+            const margin = 20; // отступ от краев экрана
             const rect = image.getBoundingClientRect();
+            
+            return {
+                x: Math.min(Math.max(x, margin), window.innerWidth - rect.width - margin),
+                y: Math.min(Math.max(y, margin), window.innerHeight - rect.height - margin)
+            };
+        }
+
+        // Функция анимации
+        function animate() {
+            if (!isRunning) return;
+
+            // Вычисляем новую позицию с плавным переходом
+            currentX += (targetX - currentX) * 0.05;
+            currentY += (targetY - currentY) * 0.05;
+
+            // Применяем позицию к изображению
+            const bounds = checkBounds(currentX, currentY);
+            image.style.transform = `translate(${bounds.x}px, ${bounds.y}px)`;
+
+            requestAnimationFrame(animate);
+        }
+
+        // Обработчик движения мыши
+        document.addEventListener('mousemove', (e) => {
+            const rect = image.getBoundingClientRect();
+            const mouseX = e.clientX;
+            const mouseY = e.clientY;
             const imageX = rect.left + rect.width / 2;
             const imageY = rect.top + rect.height / 2;
 
-            // Вычисляем расстояние от курсора до центра изображения
-            const distanceX = e.clientX - imageX;
-            const distanceY = e.clientY - imageY;
+            // Вычисляем вектор от мыши к изображению
+            const deltaX = imageX - mouseX;
+            const deltaY = imageY - mouseY;
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
-            // Вычисляем направление "убегания" (противоположное от курсора)
-            const moveX = -Math.sign(distanceX) * Math.min(Math.abs(distanceX) * 0.1, maxMove);
-            const moveY = -Math.sign(distanceY) * Math.min(Math.abs(distanceY) * 0.1, maxMove);
+            // Определяем новую целевую позицию
+            if (distance < 300) { // Расстояние, на котором изображение начинает убегать
+                const angle = Math.atan2(deltaY, deltaX);
+                const force = (300 - distance) * 2; // Сила убегания
+                
+                targetX = imageX + Math.cos(angle) * force;
+                targetY = imageY + Math.sin(angle) * force;
 
-            // Применяем трансформацию
-            isMoving = true;
-            image.style.transform = `translate(${moveX}px, ${moveY}px)`;
-
-            // Добавляем небольшой наклон в противоположную сторону
-            const tiltX = -moveY * 0.05;
-            const tiltY = moveX * 0.05;
-            image.style.transform += ` rotate3d(${tiltX}, ${tiltY}, 0, 5deg)`;
-
-            // Возвращаем изображение в исходное положение через небольшую задержку
-            setTimeout(() => {
-                image.style.transform = 'translate(0, 0) rotate3d(0, 0, 0, 0deg)';
-                setTimeout(() => {
-                    isMoving = false;
-                }, 200);
-            }, 150);
+                if (!isRunning) {
+                    isRunning = true;
+                    animate();
+                }
+            }
         });
 
-        // Добавляем случайное "подрагивание" при клике
+        // Добавляем случайное движение
+        function addRandomMovement() {
+            if (!isRunning) {
+                const rect = image.getBoundingClientRect();
+                const randomAngle = Math.random() * Math.PI * 2;
+                const randomDistance = Math.random() * 100;
+
+                targetX = rect.left + Math.cos(randomAngle) * randomDistance;
+                targetY = rect.top + Math.sin(randomAngle) * randomDistance;
+
+                isRunning = true;
+                animate();
+            }
+        }
+
+        // Запускаем случайное движение каждые 3 секунды
+        setInterval(addRandomMovement, 3000);
+
+        // Обработчик изменения размера окна
+        window.addEventListener('resize', () => {
+            const bounds = checkBounds(currentX, currentY);
+            currentX = bounds.x;
+            currentY = bounds.y;
+            targetX = bounds.x;
+            targetY = bounds.y;
+        });
+
+        // Добавляем поведение при клике
         image.addEventListener('click', () => {
-            const randomX = (Math.random() - 0.5) * 10;
-            const randomY = (Math.random() - 0.5) * 10;
-            image.style.transform = `translate(${randomX}px, ${randomY}px)`;
+            const randomX = Math.random() * (window.innerWidth - image.width);
+            const randomY = Math.random() * (window.innerHeight - image.height);
+            
+            targetX = randomX;
+            targetY = randomY;
+
+            if (!isRunning) {
+                isRunning = true;
+                animate();
+            }
         });
+
+        // Инициализация начальной позиции
+        const rect = image.getBoundingClientRect();
+        currentX = window.innerWidth / 2 - rect.width / 2;
+        currentY = window.innerHeight / 2 - rect.height / 2;
+        targetX = currentX;
+        targetY = currentY;
+        
+        const bounds = checkBounds(currentX, currentY);
+        image.style.transform = `translate(${bounds.x}px, ${bounds.y}px)`;
     }
 }); 
