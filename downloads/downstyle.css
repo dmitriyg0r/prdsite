@@ -545,14 +545,6 @@ body.dark-theme .file-category li a {
     opacity: 1;
 }
 
-.file-item {
-    padding: 8px;
-    margin: 5px 0;
-    background-color: var(--table-background);
-    border-radius: 6px;
-    transition: background-color 0.3s ease;
-}
-
 .file-item:hover {
     background-color: rgba(var(--button-hover-rgb), 0.05);
 }
