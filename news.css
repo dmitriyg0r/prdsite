@@ -33,3 +33,26 @@
     font-size: 0.9em;
     color: #bbb;
 }
+
+/* News section styling */
+.news {
+    width: 90%;
+    max-width: 1200px;
+    margin: 2em auto;
+    padding: 1.5em;
+    background-color: #333;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.news h1 {
+    color: #fff;
+    margin-bottom: 0.5em;
+    font-size: 1.8em;
+}
+
+.news p {
+    color: #bbb;
+    font-size: 1em;
+    line-height: 1.5;
+}
