@@ -1,23 +1,17 @@
 <?php
-// Устанавливаем заголовок Content-Type
 header('Content-Type: application/json');
 
-$uploadDir = '../memesy/';
+$memesDir = $_SERVER['DOCUMENT_ROOT'] . '/memesy/';
 $memes = [];
 
-// Проверяем существование директории
-if (file_exists($uploadDir)) {
-    $files = scandir($uploadDir);
-    // Фильтруем . и .. и формируем массив путей к файлам
-    $memes = array_values(array_filter($files, function($file) {
-        return $file !== '.' && $file !== '..' && 
-               in_array(strtolower(pathinfo($file, PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png', 'gif']);
-    }));
-    
-    // Добавляем полный путь к файлам
-    $memes = array_map(function($file) {
-        return '../memesy/' . $file;
-    }, $memes);
+if (file_exists($memesDir)) {
+    $files = scandir($memesDir);
+    foreach ($files as $file) {
+        if ($file !== '.' && $file !== '..') {
+            // Добавляем путь относительно корня сайта
+            $memes[] = '/memesy/' . $file;
+        }
+    }
 }
 
 echo json_encode([

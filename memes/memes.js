@@ -1,34 +1,31 @@
 document.addEventListener('DOMContentLoaded', function() {
+    const uploadForm = document.getElementById('upload-form');
     const showUploadFormButton = document.getElementById('show-upload-form');
     const uploadFormContainer = document.getElementById('upload-form-container');
-    const uploadForm = document.getElementById('upload-form');
     const memesGrid = document.querySelector('.memes-grid');
 
-    // Загружаем существующие мемы
+    // Загружаем существующие мемы при загрузке страницы
     loadExistingMemes();
 
-    // Показываем/скрываем форму загрузки
+    // Показать/скрыть форму
     if (showUploadFormButton && uploadFormContainer) {
-        showUploadFormButton.addEventListener('click', function() {
+        showUploadFormButton.addEventListener('click', () => {
             uploadFormContainer.classList.toggle('show');
         });
 
-        document.addEventListener('click', function(event) {
-            if (!uploadFormContainer.contains(event.target) && 
-                event.target !== showUploadFormButton) {
+        document.addEventListener('click', (e) => {
+            if (!uploadFormContainer.contains(e.target) && 
+                e.target !== showUploadFormButton) {
                 uploadFormContainer.classList.remove('show');
             }
         });
     }
 
-    // Обработка загрузки файла
+    // Загрузка файла
     if (uploadForm) {
         uploadForm.addEventListener('submit', function(e) {
             e.preventDefault();
             const formData = new FormData(this);
-            
-            // Добавляем пароль администратора
-            formData.append('admin_password', 'Gg3985502');
 
             fetch('memes.php', {
                 method: 'POST',
@@ -37,23 +34,19 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-                    // Добавляем новые мемы в начало сетки
-                    data.filePaths.forEach(filePath => {
-                        const newMemeItem = createMemeItem(filePath);
-                        memesGrid.insertBefore(newMemeItem, memesGrid.firstChild);
+                    data.filePaths.forEach(path => {
+                        const memeItem = createMemeItem(path);
+                        memesGrid.insertBefore(memeItem, memesGrid.firstChild);
                     });
                     
                     uploadFormContainer.classList.remove('show');
                     uploadForm.reset();
                 } else {
-                    console.error('Ошибка загрузки:', data.message);
-                    if (data.errors) {
-                        console.error('Детали ошибок:', data.errors);
-                    }
+                    console.error('Ошибка:', data.message);
                 }
             })
             .catch(error => {
-                console.error('Ошибка:', error);
+                console.error('Ошибка загрузки:', error);
             });
         });
     }
@@ -63,12 +56,12 @@ function loadExistingMemes() {
     fetch('get_memes.php')
         .then(response => response.json())
         .then(data => {
-            if (data.status === 'success') {
+            if (data.status === 'success' && data.memes.length > 0) {
                 const memesGrid = document.querySelector('.memes-grid');
                 memesGrid.innerHTML = ''; // Очищаем сетку
                 
-                data.memes.forEach(memePath => {
-                    const memeItem = createMemeItem(memePath);
+                data.memes.forEach(path => {
+                    const memeItem = createMemeItem(path);
                     memesGrid.appendChild(memeItem);
                 });
             }
@@ -83,20 +76,9 @@ function createMemeItem(imageUrl) {
     memeItem.className = 'meme-item';
     
     const img = document.createElement('img');
+    img.src = imageUrl;
     img.alt = 'Мем';
     
-    img.onload = function() {
-        requestAnimationFrame(() => {
-            memeItem.style.opacity = '1';
-        });
-    };
-    
-    img.onerror = function() {
-        console.error('Ошибка загрузки изображения:', imageUrl);
-        memeItem.classList.add('error');
-    };
-    
-    img.src = imageUrl;
     memeItem.appendChild(img);
     return memeItem;
 }
