@@ -187,3 +187,226 @@
         transform: translateY(0);
     }
 }
+
+/* Обновленные стили для новостей */
+.news {
+    padding: 40px 20px;
+    background: none;
+    box-shadow: none;
+}
+
+.news h1 {
+    font-size: 32px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 40px;
+    color: var(--text-color);
+    letter-spacing: 0.5px;
+}
+
+.news-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px;
+    padding: 0 20px;
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+.post {
+    background: var(--text-container-background);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: var(--text-container-shadow);
+    transition: all 0.3s ease;
+    position: relative;
+    height: fit-content;
+}
+
+.post:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+}
+
+.post img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.post:hover img {
+    transform: scale(1.05);
+}
+
+.post-info {
+    padding: 20px;
+}
+
+.post p {
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--text-color);
+    margin-bottom: 15px;
+}
+
+.post .timestamp {
+    font-size: 14px;
+    color: var(--text-color);
+    opacity: 0.7;
+    display: block;
+    margin-top: auto;
+}
+
+/* Типы постов */
+.post.news {
+    border-left: 4px solid #4CAF50;
+}
+
+.post.event {
+    border-left: 4px solid #2196F3;
+}
+
+.post.message {
+    border-left: 4px solid #FF9800;
+}
+
+/* Модальное окно */
+.modal-content {
+    background: var(--text-container-background);
+    border-radius: 16px;
+    padding: 30px;
+    max-width: 600px;
+    width: 90%;
+    margin: 10vh auto;
+}
+
+#postForm {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+#postForm select,
+#postForm input[type="password"],
+#postForm input[type="file"],
+#postForm textarea {
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: 2px solid var(--table-border);
+    background: var(--table-background);
+    color: var(--text-color);
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+#postForm select:focus,
+#postForm input:focus,
+#postForm textarea:focus {
+    border-color: var(--button-background);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 140, 186, 0.2);
+}
+
+#postForm button {
+    background: linear-gradient(135deg, var(--button-background), var(--button-hover));
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#postForm button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 140, 186, 0.3);
+}
+
+/* Адаптивность */
+@media screen and (max-width: 1200px) {
+    .news-content {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .news-content {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 16px;
+        padding: 0 10px;
+    }
+
+    .news h1 {
+        font-size: 28px;
+        margin-bottom: 30px;
+    }
+
+    .post-info {
+        padding: 15px;
+    }
+
+    .post p {
+        font-size: 15px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .news-content {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-content {
+        padding: 20px;
+    }
+}
+
+/* Анимация появления постов */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.post {
+    animation: fadeInUp 0.5s ease-out forwards;
+}
+
+/* Кнопка добавления поста */
+.add-post-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: linear-gradient(135deg, var(--button-background), var(--button-hover));
+    color: white;
+    padding: 16px 32px;
+    border-radius: 30px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    z-index: 100;
+}
+
+.add-post-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+@media screen and (max-width: 768px) {
+    .add-post-btn {
+        bottom: 20px;
+        right: 20px;
+        padding: 12px 24px;
+        font-size: 14px;
+    }
+}
