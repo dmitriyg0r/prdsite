@@ -66,6 +66,7 @@ body {
     min-height: 100vh;
     background: #ffffff;
     color: var(--text-color);
+    padding-top: 60px;
 }
 
 body.darkmode {
@@ -83,6 +84,13 @@ header {
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    z-index: 1000;
+    background: var(--header-background);
 }
 
 /* Добавляем стили для навигации */
