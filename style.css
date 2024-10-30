@@ -1114,23 +1114,27 @@ body.darkmode .menu a:hover {
 
 /* Стили для старого меню */
 #menu-toggle {
-    display: none; /* По умолчанию скрыто */
+    display: none !important; /* Принудительно скрываем на всех устройствах по умолчанию */
 }
 
 .menu {
-    display: none; /* По умолчанию скрыто */
+    display: none !important; /* Принудительно скрываем на всех устройствах по умолчанию */
+}
+
+.header-nav {
+    display: none !important; /* Скрываем горизонтальное меню на всех устройствах по умолчанию */
 }
 
 /* Медиа-запросы */
 @media screen and (max-width: 768px) {
     /* Показываем старое меню только на мобильных */
     #menu-toggle {
-        display: block;
+        display: block !important;
         cursor: pointer;
     }
     
     .menu {
-        display: none; /* Начально скрыто, но будет показано при клике */
+        display: none !important; /* Начально скрыто, но будет показано при клике */
         position: absolute;
         top: 100%;
         right: 0;
@@ -1142,7 +1146,12 @@ body.darkmode .menu a:hover {
     }
 
     .menu.show {
-        display: block;
+        display: block !important;
+    }
+
+    /* Показываем горизонтальное меню на мобильных */
+    .header-nav {
+        display: flex !important;
     }
 
     /* Скрываем боковое меню на мобильных */
@@ -1153,15 +1162,16 @@ body.darkmode .menu a:hover {
 
 /* На десктопах */
 @media screen and (min-width: 769px) {
-    /* Скрываем старое меню на десктопах */
+    /* Принудительно скрываем старое меню на десктопах */
     #menu-toggle,
-    .menu {
+    .menu,
+    .header-nav {
         display: none !important;
     }
 
     /* Показываем боковое меню */
     .sidebar {
-        display: block;
+        display: block !important;
     }
     
     /* Сдвигаем контент */
