@@ -67,7 +67,7 @@ body {
 }
 
 body.darkmode {
-    background: #000000;
+    background: var(--table-background);
 }
 
 /* Стили заголовка */
