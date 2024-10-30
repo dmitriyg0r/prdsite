@@ -51,7 +51,7 @@
     --menu-border: rgba(255, 255, 255, 0.1);
 }
 
-/* Общи�� стили */
+/* Общи стили */
 * {
     box-sizing: border-box;
 }
@@ -206,7 +206,7 @@ main {
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
     border-radius: 20px;
     padding: 25px;
-    max-width: 1200px;
+    max-width: 1400px;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -219,8 +219,7 @@ table {
     border-collapse: separate;
     border-spacing: 0;
     width: 100%;
-    border-radius: 15px;
-    overflow: hidden;
+    min-width: 800px;
     background: var(--table-background);
 }
 
@@ -229,20 +228,79 @@ th {
     color: var(--header-text);
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 1.5px;
-    font-size: 14px;
-    padding: 20px 15px;
+    letter-spacing: 0.5px;
+    font-size: 15px;
+    padding: 15px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
 td {
     padding: 15px;
     font-size: 15px;
+    border-bottom: 1px solid var(--table-border);
     transition: all 0.3s ease;
+    white-space: nowrap;
 }
 
+/* Первая колонка (дни недели) */
+td:first-child {
+    font-weight: 600;
+    color: var(--header-background);
+    position: sticky;
+    left: 0;
+    background-color: var(--table-background);
+    z-index: 5;
+}
+
+/* Подсветка текущего дня */
+.today-highlight td {
+    background-color: var(--today-highlight) !important;
+    font-weight: bold;
+    position: relative;
+}
+
+.today-highlight td:first-child::before {
+    content: '►';
+    position: absolute;
+    left: -20px;
+    color: var(--header-background);
+}
+
+/* Стили для пустых ячеек */
+td:empty::before {
+    content: '—';
+    color: var(--table-border);
+}
+
+/* Адаптивность для мобильных устройств */
+@media screen and (max-width: 768px) {
+    .table-container {
+        margin: 15px -15px;
+        padding: 15px;
+        border-radius: 0;
+    }
+
+    table {
+        min-width: 600px;
+    }
+
+    th, td {
+        padding: 12px 8px;
+        font-size: 14px;
+    }
+
+    td:first-child {
+        padding-left: 15px;
+    }
+}
+
+/* Анимация при наведении на строку */
 tr:hover td {
     background-color: var(--table-hover-background);
     transform: scale(1.01);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Медиа-запросы */
