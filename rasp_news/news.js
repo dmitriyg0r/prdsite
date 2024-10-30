@@ -87,4 +87,37 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Загружаем посты при загрузке страницы
     loadPosts();
+
+    // Добавляем обработчик для удаления постов
+    newsContainer.addEventListener('contextmenu', async function(e) {
+        e.preventDefault();
+        const post = e.target.closest('.post');
+        if (!post) return;
+
+        const password = prompt('Введите пароль для удаления:');
+        if (!password) return;
+
+        try {
+            const response = await fetch('../rasp_news/delete_post.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    image: post.querySelector('img').src.split('/').pop(),
+                    password: password
+                })
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                post.remove();
+            } else {
+                alert('Ошибка при удалении поста: ' + result.error);
+            }
+        } catch (error) {
+            console.error('Ошибка при удалении:', error);
+            alert('Ошибка при удалении поста');
+        }
+    });
 });
