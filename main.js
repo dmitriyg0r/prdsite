@@ -135,25 +135,48 @@ function getWeekNumber(d) {
 function showCorrectTable() {
     const currentWeek = getWeekNumber(new Date());
     const tables = document.querySelectorAll('.table-container');
-
-    // Проверка существования таблиц
-    if (tables.length === 0) {
-        console.error('Таблицы с классом "table-container" не найдены');
-        return;
+    const weekIndicator = document.createElement('div');
+    weekIndicator.className = 'week-indicator';
+    weekIndicator.textContent = `${currentWeek % 2 === 0 ? 'Четная' : 'Нечетная'} неделя`;
+    
+    const existingIndicator = document.querySelector('.week-indicator');
+    if (existingIndicator) {
+        existingIndicator.remove();
     }
+    
+    document.querySelector('main').insertBefore(weekIndicator, tables[0]);
 
-    if (currentWeek % 2 === 0) {
-        // Четная неделя - показываем вторую таблицу
-        tables.forEach((table, index) => {
-            table.style.display = index === 1 ? 'block' : 'none';
-        });
-    } else {
-        // Нечетная неделя - показываем первую таблицу
-        tables.forEach((table, index) => {
-            table.style.display = index === 0 ? 'block' : 'none';
-        });
-    }
+    tables.forEach((table, index) => {
+        const isVisible = (currentWeek % 2 === 0 && index === 1) || 
+                         (currentWeek % 2 !== 0 && index === 0);
+        table.style.display = isVisible ? 'block' : 'none';
+        
+        if (isVisible) {
+            table.style.animation = 'fadeIn 0.3s ease-in-out';
+        }
+    });
 }
+
+// Добавляем новые стили для индикатора недели
+const style = document.createElement('style');
+style.textContent = `
+    .week-indicator {
+        background: var(--header-background);
+        color: var(--header-text);
+        padding: 10px 20px;
+        border-radius: 20px;
+        margin: 20px auto;
+        display: inline-block;
+        font-weight: bold;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+`;
+document.head.appendChild(style);
 
 // Функция для подсветки текущего дня
 function highlightToday() {

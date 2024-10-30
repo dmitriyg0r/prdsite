@@ -58,31 +58,68 @@ document.addEventListener('DOMContentLoaded', function() {
     async function loadPosts() {
         try {
             const response = await fetch('../rasp_news/get_posts.php');
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
             const posts = await response.json();
             
-            const postsHTML = posts.map(post => `
-                <div class="post ${post.type.toLowerCase()}">
-                    <img src="../rasp_news/news/${post.image}" alt="Post image">
+            if (!Array.isArray(posts)) {
+                throw new Error('Invalid data format');
+            }
+
+            const newsContent = document.createElement('div');
+            newsContent.className = 'news-content';
+            
+            const sortedPosts = posts.sort((a, b) => b.timestamp - a.timestamp);
+            
+            newsContent.innerHTML = sortedPosts.map(post => `
+                <div class="post ${post.type.toLowerCase()}" data-id="${post.id}">
+                    <img src="../rasp_news/news/${post.image}" alt="Post image" loading="lazy">
                     <div class="post-info">
-                        <p>${post.text}</p>
-                        <span class="timestamp">${new Date(post.timestamp * 1000).toLocaleString()}</span>
+                        <p>${escapeHtml(post.text)}</p>
+                        <span class="timestamp">${formatDate(post.timestamp)}</span>
                     </div>
                 </div>
             `).join('');
 
-            const newsContent = document.createElement('div');
-            newsContent.className = 'news-content';
-            newsContent.innerHTML = postsHTML;
-
-            // Очищаем предыдущие посты и добавляем новые
             const existingContent = newsContainer.querySelector('.news-content');
             if (existingContent) {
-                existingContent.remove();
+                existingContent.replaceWith(newsContent);
+            } else {
+                newsContainer.appendChild(newsContent);
             }
-            newsContainer.appendChild(newsContent);
         } catch (error) {
-            console.error('Ошибка при загрузке постов:', error);
+            console.error('Error loading posts:', error);
+            showError('Не удалось загрузить посты');
         }
+    }
+
+    function escapeHtml(unsafe) {
+        return unsafe
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function formatDate(timestamp) {
+        const date = new Date(timestamp * 1000);
+        return date.toLocaleString('ru-RU', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+
+    function showError(message) {
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message';
+        errorDiv.textContent = message;
+        newsContainer.appendChild(errorDiv);
+        setTimeout(() => errorDiv.remove(), 3000);
     }
 
     // Загружаем посты при загрузке страницы
