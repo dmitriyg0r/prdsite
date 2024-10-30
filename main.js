@@ -152,9 +152,6 @@ function getWeekNumber(d) {
 function showCorrectTable() {
     const currentWeek = getWeekNumber(new Date());
     const tables = document.querySelectorAll('.table-container');
-    const weekIndicator = document.createElement('div');
-    weekIndicator.className = 'week-indicator';
-    weekIndicator.textContent = `${currentWeek % 2 === 0 ? 'Четная' : 'Нечетная'} неделя`;
     
     const existingIndicator = document.querySelector('.week-indicator');
     if (existingIndicator) {
