@@ -62,7 +62,7 @@ body {
     margin: 0;
     padding: 0;
     min-height: 100vh;
-    background-color: var(--background-color);
+    background: linear-gradient(135deg, #e0f7fa, #e1bee7);
     color: var(--text-color);
 }
 
@@ -221,6 +221,8 @@ table {
     width: 100%;
     min-width: 800px;
     background: var(--table-background);
+    border-radius: 10px;
+    overflow: hidden;
 }
 
 th {
@@ -298,7 +300,7 @@ td:empty::before {
 
 /* Анимация при наведении на строку */
 tr:hover td {
-    background-color: var(--table-hover-background);
+    background-color: #f1f1f1;
     transform: scale(1.01);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -918,7 +920,7 @@ body.darkmode .menu a:hover {
 
 /* Обновленные стили для кнопок */
 .add-post-btn {
-    background: linear-gradient(135deg, var(--button-background), var(--button-hover));
+    background: linear-gradient(135deg, #42a5f5, #478ed1);
     color: white;
     border: none;
     padding: 12px 24px;
@@ -1010,4 +1012,10 @@ body.darkmode .menu a:hover {
     th, td {
         padding: 8px 4px;
     }
+}
+
+.table-container, .news, .text-container {
+    /* ... existing code ... */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    /* ... existing code ... */
 }

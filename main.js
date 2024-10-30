@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     themeToggle.addEventListener('click', () => {
         body.classList.toggle('darkmode');
+        body.style.transition = 'background-color 0.5s ease, color 0.5s ease';
         // Сохраняем текущую тему в localStorage
         localStorage.setItem('theme', body.classList.contains('darkmode') ? 'dark' : 'light');
     });
@@ -120,6 +121,22 @@ document.addEventListener('DOMContentLoaded', () => {
         highlightToday();
         showCorrectTable();
     }, 60000);
+
+    document.documentElement.style.scrollBehavior = 'smooth';
+
+    const modal = document.getElementById('postModal');
+    modal.style.transition = 'opacity 0.3s ease';
+    modal.style.opacity = 0;
+
+    document.querySelector('.add-post-btn').addEventListener('click', () => {
+        modal.style.display = 'block';
+        setTimeout(() => modal.style.opacity = 1, 10);
+    });
+
+    document.querySelector('.close').addEventListener('click', () => {
+        modal.style.opacity = 0;
+        setTimeout(() => modal.style.display = 'none', 300);
+    });
 });
 
 // Функция для получения номера недели
