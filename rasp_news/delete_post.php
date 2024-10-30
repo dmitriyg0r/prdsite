@@ -4,7 +4,7 @@ header('Content-Type: application/json');
 $data = json_decode(file_get_contents('php://input'), true);
 
 // Проверка пароля (замените 'ваш_пароль' на реальный пароль)
-if ($data['password'] !== 'ваш_пароль') {
+if ($data['password'] !== 'Gg3985502') {
     echo json_encode(['success' => false, 'error' => 'Неверный пароль']);
     exit;
 }
