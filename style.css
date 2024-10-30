@@ -24,6 +24,7 @@
     --menu-text: #333333;
     --menu-hover-background: #f5f5f5;
     --menu-border: rgba(0, 0, 0, 0.1);
+    --menu-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
 }
 
 .darkmode {
@@ -45,10 +46,11 @@
     --theme-toggle-hover-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
     --header-background-dark: #5c43a8;
     --today-highlight: #695acda5;
-    --menu-background: #2c2c3a;
-    --menu-text: #ffffff;
-    --menu-hover-background: #3c3c4a;
+    --menu-background: #2d2d2d;
+    --menu-text: #e0e0e0;
+    --menu-hover-background: #3d3d3d;
     --menu-border: rgba(255, 255, 255, 0.1);
+    --menu-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
 }
 
 /* Общи стили */
@@ -1026,10 +1028,11 @@ body.darkmode .menu a:hover {
     height: 100vh;
     width: 60px;
     background: var(--menu-background);
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--menu-shadow);
     transition: all 0.3s ease;
     z-index: 1000;
     display: none;
+    border-right: 1px solid var(--table-border);
 }
 
 .sidebar:hover {
