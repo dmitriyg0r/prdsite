@@ -1136,19 +1136,17 @@ body.darkmode .menu a:hover {
     #menu-toggle {
         display: block;
         cursor: pointer;
-        position: relative;
-        z-index: 1001;
     }
     
     .menu {
         display: none;
-        position: fixed;
-        top: 60px;
+        position: absolute;
+        top: 40px;
         right: 0;
         background: var(--header-background);
         width: 200px;
         padding: 10px 0;
-        border-radius: 0 0 5px 5px;
+        border-radius: 5px;
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         z-index: 1000;
     }
@@ -1163,6 +1161,7 @@ body.darkmode .menu a:hover {
         color: var(--header-text);
         text-decoration: none;
         text-align: left;
+        white-space: nowrap;
     }
 
     .menu a:hover {
