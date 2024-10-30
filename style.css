@@ -793,7 +793,7 @@ body.darkmode .menu a:hover {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* Обновляем медиа-запосы для м��ню */
+/* Обновляем медиа-запосы для мню */
 @media screen and (max-width: 480px) {
     .menu a {
         padding: 8px 12px;
@@ -1038,7 +1038,7 @@ body.darkmode .menu a:hover {
     background: var(--menu-background);
     box-shadow: var(--menu-shadow);
     transition: width 0.3s ease;
-    z-index: 1000;
+    z-index: 1001;
     display: none;
 }
 
@@ -1301,5 +1301,32 @@ body.darkmode .menu a:hover {
 
     .sidebar {
         display: block;
+    }
+}
+
+/* Обновляем отступы для main */
+@media screen and (min-width: 769px) {
+    main {
+        margin-left: 60px;
+        width: calc(100% - 60px);
+        margin-top: 60px;
+    }
+
+    header {
+        padding-left: 60px;
+        width: calc(100% - 60px);
+    }
+}
+
+@media screen and (max-width: 768px) {
+    main {
+        margin-left: 0;
+        width: 100%;
+        margin-top: 60px;
+    }
+
+    header {
+        width: 100%;
+        padding-left: 0;
     }
 }
