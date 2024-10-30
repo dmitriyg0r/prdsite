@@ -125,26 +125,34 @@ document.addEventListener('DOMContentLoaded', () => {
     document.documentElement.style.scrollBehavior = 'smooth';
 
     const modal = document.getElementById('postModal');
-    modal.style.transition = 'opacity 0.3s ease';
-    modal.style.opacity = 0;
-
-    document.querySelector('.add-post-btn').addEventListener('click', () => {
-        modal.style.display = 'block';
-        setTimeout(() => modal.style.opacity = 1, 10);
-    });
-
-    document.querySelector('.close').addEventListener('click', () => {
+    if (modal) {
+        modal.style.transition = 'opacity 0.3s ease';
         modal.style.opacity = 0;
-        setTimeout(() => modal.style.display = 'none', 300);
-    });
+
+        const addPostBtn = document.querySelector('.add-post-btn');
+        if (addPostBtn) {
+            addPostBtn.addEventListener('click', () => {
+                modal.style.display = 'block';
+                setTimeout(() => modal.style.opacity = 1, 10);
+            });
+        }
+
+        const closeBtn = document.querySelector('.close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                modal.style.opacity = 0;
+                setTimeout(() => modal.style.display = 'none', 300);
+            });
+        }
+    }
 });
 
 // Функция для получения номера недели
 function getWeekNumber(d) {
     d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
     d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
-    var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-    var weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
     return weekNo;
 }
 
@@ -152,13 +160,6 @@ function getWeekNumber(d) {
 function showCorrectTable() {
     const currentWeek = getWeekNumber(new Date());
     const tables = document.querySelectorAll('.table-container');
-    
-    const existingIndicator = document.querySelector('.week-indicator');
-    if (existingIndicator) {
-        existingIndicator.remove();
-    }
-    
-    document.querySelector('main').insertBefore(weekIndicator, tables[0]);
 
     tables.forEach((table, index) => {
         const isVisible = (currentWeek % 2 === 0 && index === 1) || 
@@ -170,7 +171,6 @@ function showCorrectTable() {
         }
     });
 }
-
 
 // Функция для подсветки текущего дня
 function highlightToday() {
