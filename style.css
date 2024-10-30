@@ -1186,7 +1186,12 @@ body.darkmode .menu a:hover {
     }
 
     main {
-        margin-top: 60px;
+        margin-top: 80px;
+        padding: 0 15px;
+    }
+
+    .schedule-table {
+        margin-top: 20px;
     }
 }
 
