@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const themeToggle = document.getElementById('theme-toggle');
+    const sidebarThemeToggle = document.getElementById('sidebar-theme-toggle');
     const body = document.body;
     const homeworkForm = document.getElementById('homework-form');
     const uploadForm = document.getElementById('upload-form');
@@ -13,12 +14,21 @@ document.addEventListener('DOMContentLoaded', () => {
         body.classList.add('darkmode');
     }
 
-    themeToggle.addEventListener('click', () => {
+    // Функция для переключения темы
+    const toggleTheme = () => {
         body.classList.toggle('darkmode');
         body.style.transition = 'background-color 0.5s ease, color 0.5s ease';
         // Сохраняем текущую тему в localStorage
         localStorage.setItem('theme', body.classList.contains('darkmode') ? 'dark' : 'light');
-    });
+    };
+
+    // Добавляем обработчики для обеих кнопок
+    if (themeToggle) {
+        themeToggle.addEventListener('click', toggleTheme);
+    }
+    if (sidebarThemeToggle) {
+        sidebarThemeToggle.addEventListener('click', toggleTheme);
+    }
 
     // Улучшение: Используем const вместо var
     document.getElementById('menu-toggle').addEventListener('click', function() {

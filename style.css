@@ -793,7 +793,7 @@ body.darkmode .menu a:hover {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* Обновляем медиа-запросы для меню */
+/* Обновляем медиа-зап��осы для меню */
 @media screen and (max-width: 480px) {
     .menu a {
         padding: 8px 12px;
@@ -1107,7 +1107,7 @@ body.darkmode .menu a:hover {
     }
 }
 
-/* Мобильная версия */
+/* Моби��ьная версия */
 @media screen and (max-width: 768px) {
     .sidebar {
         display: none;
@@ -1220,4 +1220,58 @@ body.darkmode .menu a:hover {
         margin-left: 60px;
         width: calc(100% - 60px);
     }
+}
+
+/* Стили для кнопки темы в боковом меню */
+.sidebar-theme-toggle {
+    margin-top: auto; /* Прижимаем к низу */
+    padding: 12px 15px;
+    display: none; /* По умолчанию скрыто */
+}
+
+/* Медиа-запросы */
+@media screen and (max-width: 768px) {
+    /* На мобильных показываем оригинальную кнопку темы */
+    #theme-toggle {
+        display: block;
+    }
+    
+    /* Скрываем кнопку темы в боковом меню */
+    .sidebar-theme-toggle {
+        display: none !important;
+    }
+}
+
+@media screen and (min-width: 769px) {
+    /* На десктопах скрываем оригинальную кнопку темы */
+    #theme-toggle {
+        display: none !important;
+    }
+    
+    /* Показываем кнопку темы в боковом меню */
+    .sidebar-theme-toggle {
+        display: flex !important;
+    }
+
+    /* Стили для контейнера бокового меню */
+    .sidebar-nav {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        padding: 20px 0;
+    }
+}
+
+/* Стили для кнопки темы */
+.sidebar-theme-toggle .theme-toggle {
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    background: var(--theme-toggle-background);
+    box-shadow: var(--theme-toggle-shadow);
+    transition: box-shadow 0.3s ease;
+}
+
+.sidebar-theme-toggle .theme-toggle:hover {
+    box-shadow: var(--theme-toggle-hover-shadow);
 }
