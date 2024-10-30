@@ -63,8 +63,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const postsHTML = posts.map(post => `
                 <div class="post ${post.type.toLowerCase()}">
                     <img src="../rasp_news/news/${post.image}" alt="Post image">
-                    <p>${post.text}</p>
-                    <span class="timestamp">${new Date(post.timestamp * 1000).toLocaleString()}</span>
+                    <div class="post-info">
+                        <p>${post.text}</p>
+                        <span class="timestamp">${new Date(post.timestamp * 1000).toLocaleString()}</span>
+                    </div>
                 </div>
             `).join('');
 
