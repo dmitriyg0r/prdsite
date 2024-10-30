@@ -62,8 +62,12 @@ body {
     margin: 0;
     padding: 0;
     min-height: 100vh;
-    background: linear-gradient(135deg, #e0f7fa, #e1bee7);
+    background: #ffffff;
     color: var(--text-color);
+}
+
+body.darkmode {
+    background: #000000;
 }
 
 /* Стили заголовка */
