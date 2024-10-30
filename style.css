@@ -1111,3 +1111,63 @@ body.darkmode .menu a:hover {
         width: 100%;
     }
 }
+
+/* Стили для старого меню */
+#menu-toggle {
+    display: none; /* По умолчанию скрыто */
+}
+
+.menu {
+    display: none; /* По умолчанию скрыто */
+}
+
+/* Медиа-запросы */
+@media screen and (max-width: 768px) {
+    /* Показываем старое меню только на мобильных */
+    #menu-toggle {
+        display: block;
+        cursor: pointer;
+    }
+    
+    .menu {
+        display: none; /* Начально скрыто, но будет показано при клике */
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background: var(--header-background);
+        width: 200px;
+        padding: 10px 0;
+        border-radius: 0 0 5px 5px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .menu.show {
+        display: block;
+    }
+
+    /* Скрываем боковое меню на мобильных */
+    .sidebar {
+        display: none !important;
+    }
+}
+
+/* На десктопах */
+@media screen and (min-width: 769px) {
+    /* Скрываем старое меню на десктопах */
+    #menu-toggle,
+    .menu {
+        display: none !important;
+    }
+
+    /* Показываем боковое меню */
+    .sidebar {
+        display: block;
+    }
+    
+    /* Сдвигаем контент */
+    header,
+    main {
+        margin-left: 60px;
+        width: calc(100% - 60px);
+    }
+}
