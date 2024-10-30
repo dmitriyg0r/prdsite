@@ -13,6 +13,9 @@
     --table-hover-background: #e0e0e0;
     --text-container-background: #ffffff;
     --text-container-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    --menu-background: #04578f;
+    --menu-text: white;
+    --menu-hover-background: #033e63;
 }
 
 /* Темная тема */
