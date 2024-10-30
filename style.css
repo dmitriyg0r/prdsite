@@ -1017,3 +1017,87 @@ body.darkmode .menu a:hover {
         padding: 8px 4px;
     }
 }
+
+/* Новое боковое меню для ПК */
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    width: 60px;
+    background: var(--menu-background);
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    transition: width 0.3s ease;
+    z-index: 1000;
+    display: none;
+}
+
+.sidebar:hover {
+    width: 200px;
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    padding: 20px 0;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    color: var(--menu-text);
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.sidebar-link i {
+    min-width: 30px;
+    font-size: 20px;
+    text-align: center;
+    margin-right: 10px;
+}
+
+.sidebar-link span {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.sidebar:hover .sidebar-link span {
+    opacity: 1;
+}
+
+.sidebar-link:hover {
+    background-color: var(--menu-hover-background);
+}
+
+/* Показываем боковое меню только на десктопах */
+@media screen and (min-width: 769px) {
+    .sidebar {
+        display: block;
+    }
+    
+    /* Сдвигаем основной контент */
+    main {
+        margin-left: 60px;
+    }
+    
+    /* Скрываем старое меню на десктопе */
+    #menu-toggle,
+    .menu {
+        display: none !important;
+    }
+}
+
+/* На мобильных устройствах оставляем старое меню */
+@media screen and (max-width: 768px) {
+    .sidebar {
+        display: none;
+    }
+    
+    main {
+        margin-left: 0;
+    }
+}
