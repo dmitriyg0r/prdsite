@@ -21,8 +21,8 @@
     --today-highlight: #04578fb0;
     --transition-duration: 0.3s;
     --menu-background: #ffffff;
-    --menu-text: #333;
-    --menu-hover-background: #e0e0e0;
+    --menu-text: #333333;
+    --menu-hover-background: #f5f5f5;
     --menu-border: rgba(0, 0, 0, 0.1);
 }
 
@@ -859,7 +859,7 @@ body.darkmode .menu a:hover {
     transform: scale(1.1);
 }
 
-/* Специфичные стили для выпадающего меню */
+/* Специфичные стили для выпадаюего меню */
 .menu {
     position: absolute;
     top: 74px;
@@ -1027,7 +1027,7 @@ body.darkmode .menu a:hover {
     width: 60px;
     background: var(--menu-background);
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-    transition: width 0.3s ease;
+    transition: all 0.3s ease;
     z-index: 1000;
     display: none;
 }
@@ -1048,7 +1048,7 @@ body.darkmode .menu a:hover {
     padding: 12px 15px;
     color: var(--menu-text);
     text-decoration: none;
-    transition: background-color 0.3s ease;
+    transition: all 0.3s ease;
     white-space: nowrap;
     overflow: hidden;
 }
@@ -1073,31 +1073,35 @@ body.darkmode .menu a:hover {
     background-color: var(--menu-hover-background);
 }
 
-/* Показываем боковое меню только на десктопах */
+/* Медиа-запросы для отображения бокового меню на десктопах */
 @media screen and (min-width: 769px) {
     .sidebar {
-        display: block;
+        display: block !important;
     }
     
     /* Сдвигаем основной контент */
+    header,
     main {
         margin-left: 60px;
+        width: calc(100% - 60px);
     }
     
-    /* Скрываем старое меню на десктопе */
+    /* Скрываем мобильное меню */
     #menu-toggle,
     .menu {
         display: none !important;
     }
 }
 
-/* На мобильных устройствах оставляем старое меню */
+/* Мобильная версия */
 @media screen and (max-width: 768px) {
     .sidebar {
-        display: none;
+        display: none !important;
     }
     
+    header,
     main {
         margin-left: 0;
+        width: 100%;
     }
 }
