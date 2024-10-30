@@ -300,7 +300,7 @@ td:empty::before {
 
 /* Анимация при наведении на строку */
 tr:hover td {
-    background-color: #f1f1f1;
+    background-color: var(--table-hover-background);
     transform: scale(1.01);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -1012,10 +1012,4 @@ body.darkmode .menu a:hover {
     th, td {
         padding: 8px 4px;
     }
-}
-
-.table-container, .news, .text-container {
-    /* ... existing code ... */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    /* ... existing code ... */
 }
