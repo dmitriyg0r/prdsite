@@ -9,7 +9,14 @@
 </head>
 <body>
     <header>
-        <h1>задания</h1>
+        <h1>Задания</h1>
+        <nav class="header-nav">
+            <a href="../home/homework.html" class="nav-link">Задания</a>
+            <a href="../index.html" class="nav-link">Расписание</a>
+            <a href="../downloads/downloads.html" class="nav-link">Загрузки</a>
+            <a href="../memes/memes.html" class="nav-link">Мемы</a>
+            <a href="../about/about.html" class="nav-link">О нас</a>
+        </nav>
         <div class="header-controls">
             <button id="theme-toggle" class="theme-toggle" aria-label="Переключить тему">
                 <svg id="sun-icon" class="theme-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
@@ -19,31 +26,27 @@
                     <path fill-rule="evenodd" d="M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10.503 10.503 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z" clip-rule="evenodd" />
                 </svg>
             </button>
-            <div class="menu-container">
-                <button id="menu-toggle" class="menu-toggle" aria-label="Открыть меню">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                        <path fill-rule="evenodd" d="M3 6.75A.75.75 0 013.75 6h16.5a.75.75 0 010 1.5H3.75A.75.75 0 013 6.75zM3 12a.75.75 0 01.75-.75h16.5a.75.75 0 010 1.5H3.75A.75.75 0 013 12zm0 5.25a.75.75 0 01.75-.75h16.5a.75.75 0 010 1.5H3.75a.75.75 0 01-.75-.75z" clip-rule="evenodd" />
-                    </svg>
-                </button>
-                <div id="menu" class="menu">
-                    <nav class="header-nav">
-                        <a href="home/homework.html" class="nav-link">Задания</a>
-                        <a href="index.html" class="nav-link">Расписание</a>
-                        <a href="downloads/downloads.html" class="nav-link">Загрузки</a>
-                        <a href="memes/memes.html" class="nav-link">Мемы</a>
-                        <a href="about/about.html" class="nav-link">О нас</a>
-                    </nav>
-                </div>
+            <button id="menu-toggle" class="menu-toggle" aria-label="Открыть меню">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path fill-rule="evenodd" d="M3 6.75A.75.75 0 013.75 6h16.5a.75.75 0 010 1.5H3.75A.75.75 0 013 6.75zM3 12a.75.75 0 01.75-.75h16.5a.75.75 0 010 1.5H3.75A.75.75 0 013 12zm0 5.25a.75.75 0 01.75-.75h16.5a.75.75 0 010 1.5H3.75a.75.75 0 01-.75-.75z" clip-rule="evenodd" />
+                </svg>
+            </button>
+            <div id="menu" class="menu">
+                <a href="../home/homework.html">Задания</a>
+                <a href="../index.html">Расписание</a>
+                <a href="../downloads/downloads.html">Загрузки</a>
+                <a href="../memes/memes.html">Мемы</a>
+                <a href="../about/about.html">О нас</a>
             </div>
         </div>
     </header>
     <main>
         <button id="show-upload-form" class="icon-button">
-            <img src="addbutton.png" alt="Add file" class="icon">
+            <img src="../downloads/addbutton.png" alt="Add file" class="icon">
         </button>
         <div id="upload-form-container" class="upload-form-container">
             <h2>Загрузить файл</h2>
-            <form id="upload-form" enctype="multipart/form-data" action="downloads.php" method="POST">
+            <form id="upload-form" enctype="multipart/form-data" action="homework.php" method="POST">
                 <select id="category-select" name="category" required>
                     <option value="">Выберите категорию</option>
                 </select>
@@ -51,7 +54,7 @@
                     <option value="">Выберите папку</option>
                 </select>
                 <label for="file-input" class="file-input-label">
-                    Выбе��ите файл или перетащите его сюда
+                    Выберите файл или перетащите его сюда
                 </label>
                 <div id="file-name"></div>
                 <input type="file" name="files[]" id="file-input" multiple required>
@@ -67,4 +70,5 @@
     </main>
     <script src="../main.js"></script>
     <script src="home.js"></script>
+</body>
 </html>
