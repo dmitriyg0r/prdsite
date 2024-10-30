@@ -1127,22 +1127,28 @@ body.darkmode .menu a:hover {
 
 /* Медиа-запросы */
 @media screen and (max-width: 768px) {
-    /* Показываем кнопку меню и настраиваем мобильное меню */
+    .header-controls {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
     #menu-toggle {
         display: block;
         cursor: pointer;
-        margin-left: 15px;
+        position: relative;
+        z-index: 1001;
     }
     
     .menu {
         display: none;
-        position: absolute;
-        top: calc(100% + 10px);
-        right: 10px;
+        position: fixed;
+        top: 60px;
+        right: 0;
         background: var(--header-background);
         width: 200px;
         padding: 10px 0;
-        border-radius: 5px;
+        border-radius: 0 0 5px 5px;
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         z-index: 1000;
     }
@@ -1156,42 +1162,47 @@ body.darkmode .menu a:hover {
         padding: 10px 20px;
         color: var(--header-text);
         text-decoration: none;
+        text-align: left;
     }
 
     .menu a:hover {
         background-color: var(--header-background-dark);
     }
 
-    /* Настройка header для мобильной версии */
-    header {
-        padding: 10px;
-    }
-
     .header-nav {
         display: none;
     }
 
-    /* Скрываем боковое меню на мобильных */
     .sidebar {
         display: none !important;
+    }
+
+    header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        background: var(--header-background);
+    }
+
+    main {
+        margin-top: 60px;
     }
 }
 
 /* На десктопах */
 @media screen and (min-width: 769px) {
-    /* Скрываем элементы мобильного меню */
     #menu-toggle,
     .menu,
     .header-nav {
         display: none !important;
     }
 
-    /* Показываем боковое меню */
     .sidebar {
         display: block !important;
     }
     
-    /* Сдвигаем контент */
     header,
     main {
         margin-left: 60px;
