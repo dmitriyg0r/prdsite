@@ -793,7 +793,7 @@ body.darkmode .menu a:hover {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* Обновляем медиа-запосы для меню */
+/* Обновляем медиа-запосы для м��ню */
 @media screen and (max-width: 480px) {
     .menu a {
         padding: 8px 12px;
@@ -1037,10 +1037,9 @@ body.darkmode .menu a:hover {
     width: 60px;
     background: var(--menu-background);
     box-shadow: var(--menu-shadow);
-    transition: all 0.3s ease;
+    transition: width 0.3s ease;
     z-index: 1000;
     display: none;
-    border-right: 1px solid var(--table-border);
 }
 
 .sidebar:hover {
@@ -1048,9 +1047,11 @@ body.darkmode .menu a:hover {
 }
 
 .sidebar-nav {
+    height: 100%;
     display: flex;
     flex-direction: column;
     padding: 20px 0;
+    position: relative;
 }
 
 .sidebar-link {
@@ -1224,10 +1225,14 @@ body.darkmode .menu a:hover {
 
 /* Стили для кнопки темы в боковом меню */
 .sidebar-theme-toggle {
-    margin-top: auto; /* Прижимаем к низу */
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    width: 100%;
     padding: 12px 15px;
     display: flex;
     justify-content: center;
+    box-sizing: border-box;
 }
 
 .theme-toggle {
@@ -1276,7 +1281,6 @@ body.darkmode .menu a:hover {
 
 /* Медиа-запросы */
 @media screen and (max-width: 768px) {
-    /* На мобильных показываем оригинальную кнопку темы */
     #theme-toggle {
         display: block;
     }
@@ -1287,12 +1291,15 @@ body.darkmode .menu a:hover {
 }
 
 @media screen and (min-width: 769px) {
-    /* На десктопах скрываем оригинальную кнопку темы */
     #theme-toggle {
         display: none !important;
     }
     
     .sidebar-theme-toggle {
         display: flex !important;
+    }
+
+    .sidebar {
+        display: block;
     }
 }
