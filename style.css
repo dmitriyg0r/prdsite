@@ -78,6 +78,47 @@ header {
     flex-wrap: wrap;
 }
 
+/* Добавляем стили для навигации */
+.header-nav {
+    display: flex;
+    gap: 15px;
+}
+
+.nav-link {
+    color: var(--header-text);
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    transition: background-color var(--transition-duration);
+}
+
+.nav-link:hover {
+    background-color: var(--header-background-dark);
+}
+
+/* Показываем меню только на мобильных устройствах */
+#menu-toggle, .menu {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    #menu-toggle {
+        display: block;
+    }
+    
+    .header-nav {
+        display: none;
+    }
+    
+    .menu {
+        display: none;
+    }
+    
+    .menu.active {
+        display: block;
+    }
+}
+
 /* Основное содержимое */
 main {
     padding: 20px;
