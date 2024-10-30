@@ -174,26 +174,6 @@ function showCorrectTable() {
     });
 }
 
-// Добавляем новые стили для индикатора недели
-const style = document.createElement('style');
-style.textContent = `
-    .week-indicator {
-        background: var(--header-background);
-        color: var(--header-text);
-        padding: 10px 20px;
-        border-radius: 20px;
-        margin: 20px auto;
-        display: inline-block;
-        font-weight: bold;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(-10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-`;
-document.head.appendChild(style);
 
 // Функция для подсветки текущего дня
 function highlightToday() {
