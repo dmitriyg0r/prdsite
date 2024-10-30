@@ -1114,27 +1114,28 @@ body.darkmode .menu a:hover {
 
 /* Стили для старого меню */
 #menu-toggle {
-    display: none !important; /* Принудительно скрываем на всех устройствах по умолчанию */
+    display: none;
 }
 
 .menu {
-    display: none !important; /* Принудительно скрываем на всех устройствах по умолчанию */
+    display: none;
 }
 
 .header-nav {
-    display: none !important; /* Скрываем горизонтальное меню на всех устройствах по умолчанию */
+    display: flex;
 }
 
 /* Медиа-запросы */
 @media screen and (max-width: 768px) {
-    /* Показываем старое меню только на мобильных */
+    /* Показываем кнопку меню и настраиваем мобильное меню */
     #menu-toggle {
-        display: block !important;
+        display: block;
         cursor: pointer;
+        margin-left: 15px;
     }
     
     .menu {
-        display: none !important; /* Начально скрыто, но будет показано при клике */
+        display: none;
         position: absolute;
         top: 100%;
         right: 0;
@@ -1143,15 +1144,37 @@ body.darkmode .menu a:hover {
         padding: 10px 0;
         border-radius: 0 0 5px 5px;
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        z-index: 1000;
     }
 
     .menu.show {
-        display: block !important;
+        display: block;
     }
 
-    /* Показываем горизонтальное меню на мобильных */
+    .menu a {
+        display: block;
+        padding: 10px 20px;
+        color: var(--header-text);
+        text-decoration: none;
+    }
+
+    .menu a:hover {
+        background-color: var(--header-background-dark);
+    }
+
+    /* Настройка header для мобильной версии */
+    header {
+        padding: 10px;
+    }
+
     .header-nav {
-        display: flex !important;
+        display: none; /* Скрываем горизонтальное меню на мобильных */
+    }
+
+    .header-controls {
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
 
     /* Скрываем боковое меню на мобильных */
@@ -1162,7 +1185,7 @@ body.darkmode .menu a:hover {
 
 /* На десктопах */
 @media screen and (min-width: 769px) {
-    /* Принудительно скрываем старое меню на десктопах */
+    /* Скрываем элементы мобильного меню */
     #menu-toggle,
     .menu,
     .header-nav {
