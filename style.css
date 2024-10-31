@@ -117,21 +117,7 @@ body {
     opacity: 1;
 }
 
-/* Стили для заголовка */
 .zagolovok {
-    text-align: center;
-    color: var(--text-color);
-    margin-top: 30px;
-    margin-left: 85px;
-    font-size: 2.5em;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    position: relative;
-    padding-bottom: 15px;
-}
-
-.zagolovok::after {
     content: '';
     position: absolute;
     bottom: 0;
