@@ -105,7 +105,7 @@ body {
     opacity: 1;
 }
 
-/* Стили для заголовка */
+/* Стили для заголов��а */
 .zagolovok {
     text-align: center;
     color: var(--text-color);
@@ -252,23 +252,6 @@ main {
     background-color: #ffffff;
     border-radius: 50%;
     transition: transform 0.3s ease;
-}
-
-/* Иконки солнца и луны */
-.theme-label i {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 12px;
-    color: #ffffff;
-}
-
-.fa-sun {
-    left: 6px;
-}
-
-.fa-moon {
-    right: 6px;
 }
 
 /* Состояние при включенной темной теме */
