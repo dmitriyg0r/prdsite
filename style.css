@@ -90,7 +90,7 @@ body {
 .sidebar-link {
     display: flex;
     align-items: center;
-    padding: 14px 24px;
+    padding: 14px 16px;
     text-decoration: none;
     color: rgba(232, 234, 237, 0.95);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -133,7 +133,7 @@ body {
 .sidebar-link i {
     min-width: 24px;
     font-size: 20px;
-    text-align: center;
+    text-align: left;
     transition: transform 0.3s ease;
 }
 
@@ -144,7 +144,7 @@ body {
 .sidebar-link span {
     font-size: 15px;
     opacity: 0;
-    margin-left: 32px;
+    margin-left: 16px;
     transition: all 0.3s ease;
     font-weight: 500;
 }
