@@ -119,20 +119,27 @@ body {
     z-index: 1000;
 }
 
-.theme-toggle, #menu-toggle {
+.theme-toggle {
     cursor: pointer;
     padding: 8px;
     border-radius: 50%;
     background-color: var(--sidebar-background);
     transition: background-color 0.3s ease;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.theme-toggle:hover, #menu-toggle:hover {
+.theme-toggle:hover {
     background-color: var(--sidebar-hover);
 }
 
 .theme-icon {
     display: none;
+    width: 24px;
+    height: 24px;
 }
 
 [data-theme="light"] #sun-icon {
@@ -141,6 +148,10 @@ body {
 
 [data-theme="dark"] #moon-icon {
     display: block;
+}
+
+.theme-icon path {
+    fill: var(--text-color);
 }
 
 /* Скрываем кнопку меню на ПК */
