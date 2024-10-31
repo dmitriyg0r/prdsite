@@ -11,9 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme) {
         body.setAttribute('data-theme', savedTheme);
-        if (savedTheme === 'dark') {
-            themeToggle.checked = true;
-        }
+        themeToggle.checked = savedTheme === 'dark';
     }
 
     // Обработчик переключения темы
@@ -114,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Инициализация списка файлов при загрузке страницы
+    // Инициализа��ия списка файлов при загрузке страницы
     fetchFiles();
 
     // Вызываем функцию для отображения правильной таблицы
