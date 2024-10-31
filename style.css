@@ -44,7 +44,7 @@ body {
 /* Стили для бокового меню */
 .sidebar {
     position: fixed;
-    width: 250px;
+    width: 70px;
     height: 100vh;
     background-color: #2d2736;
     z-index: 1000;
@@ -53,6 +53,8 @@ body {
     left: 0;
     top: 0;
     padding: 20px 0;
+    transition: width 0.3s ease;
+    overflow: hidden;
 }
 
 .sidebar:hover {
@@ -90,13 +92,13 @@ body {
     min-width: 24px;
     font-size: 20px;
     text-align: center;
-    margin-right: 15px;
 }
 
 .sidebar-link span {
     font-size: 15px;
-    opacity: 1;
-    margin-left: 12px;
+    opacity: 0;
+    margin-left: 32px;
+    transition: opacity 0.2s ease;
 }
 
 .sidebar:hover .sidebar-link span {
@@ -165,7 +167,7 @@ body {
 /* Основной контент */
 main {
     padding: 20px;
-    margin-left: 270px;
+    margin-left: 90px;
     transition: margin-left 0.3s ease;
 }
 
@@ -174,7 +176,7 @@ main {
     text-align: center;
     padding: 20px;
     margin-top: 40px;
-    margin-left: 270px;
+    margin-left: 90px;
     transition: margin-left 0.3s ease;
 }
 
@@ -223,51 +225,13 @@ main {
 .theme-toggle-container {
     display: flex;
     align-items: center;
-    padding: 12px 15px;
-    margin: 4px 0;
-    border-radius: 8px;
-    cursor: pointer;
-}
-
-.theme-toggle-container:hover {
-    background-color: #4a4255;
-}
-
-.theme-checkbox {
-    display: none;
-}
-
-.theme-label {
-    position: relative;
-    width: 40px;
-    height: 22px;
-    background-color: #4a4255;
-    border-radius: 50px;
-    cursor: pointer;
-}
-
-.ball {
-    position: absolute;
-    width: 18px;
-    height: 18px;
-    background-color: white;
-    border-radius: 50%;
-    transition: transform 0.3s ease;
-    top: 2px;
-    left: 2px;
-}
-
-.theme-checkbox:checked + .theme-label .ball {
-    transform: translateX(18px);
 }
 
 .theme-toggle-container span {
-    color: #e8eaed;
-    font-size: 14px;
-    margin-left: 12px;
     opacity: 0;
     transition: opacity 0.2s ease;
     white-space: nowrap;
+    margin-left: 32px;
 }
 
 .sidebar:hover .theme-toggle-container span {
@@ -302,4 +266,10 @@ main {
 
 .theme-checkbox:checked + .theme-label .fa-moon {
     opacity: 1;
+}
+
+.sidebar:hover ~ main,
+.sidebar:hover ~ .zagolovok,
+.sidebar:hover ~ .container {
+    margin-left: 270px;
 }
