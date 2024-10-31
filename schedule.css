@@ -134,4 +134,20 @@ td:not(:empty):not(:first-child)::after {
     font-size: 12px;
     color: var(--text-secondary);
     margin-top: 4px;
+}
+
+/* Добавьте следующие строки для определения цветов в зависимости от темы */
+:root {
+    --today-highlight-light: blue; /* Синий для светлой темы */
+    --today-highlight-dark: purple; /* Фиолетовый для тёмной темы */
+}
+
+/* Обновите класс подсветки текущего дня */
+.today-highlight td {
+    background-color: var(--today-highlight-light); /* По умолчанию синий */
+}
+
+/* Используйте медиа-запрос или класс для тёмной темы */
+body.dark-theme .today-highlight td {
+    background-color: var(--today-highlight-dark); /* Фиолетовый для тёмной темы */
 } 
