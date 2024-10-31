@@ -105,7 +105,7 @@ body {
     opacity: 1;
 }
 
-/* Стили для заголов��а */
+/* Стили для заголовка */
 .zagolovok {
     text-align: center;
     color: var(--text-color);
@@ -218,7 +218,7 @@ main {
 
 /* Стили для переключателя темы */
 .theme-switch-wrapper {
-    margin-top: auto;
+    margin-bottom: 20px;
     padding: 12px 24px;
 }
 
@@ -254,7 +254,6 @@ main {
     transition: transform 0.3s ease;
 }
 
-/* Состояние при включенной темной теме */
 .theme-checkbox:checked + .theme-label {
     background-color: #7d5af1;
 }
@@ -263,7 +262,6 @@ main {
     transform: translateX(20px);
 }
 
-/* Текст "Тёмная тема" */
 .theme-toggle-container span {
     opacity: 0;
     margin-left: 32px;
@@ -274,11 +272,6 @@ main {
 
 .sidebar:hover .theme-toggle-container span {
     opacity: 1;
-}
-
-/* Убедитесь, что у бокового меню есть overflow: hidden */
-.sidebar {
-    overflow: hidden;
 }
 
 .theme-label i {
