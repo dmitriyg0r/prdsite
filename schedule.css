@@ -23,6 +23,7 @@ table {
     background: var(--table-background);
     border-radius: 10px;
     overflow: hidden;
+    color: var(--text-color);
 }
 
 th {
@@ -36,6 +37,7 @@ th {
     position: sticky;
     top: 0;
     z-index: 10;
+    border-bottom: 2px solid var(--table-border);
 }
 
 td {
@@ -44,6 +46,7 @@ td {
     border-bottom: 1px solid var(--table-border);
     transition: all 0.3s ease;
     white-space: nowrap;
+    color: var(--text-color);
 }
 
 /* Первая колонка (дни недели) */
@@ -118,4 +121,17 @@ table.sheet0 col.col6 {
 
 table.sheet0 tr {
     height: auto;
+}
+
+/* Добавляем стили для номеров аудиторий */
+td:not(:empty):not(:first-child) {
+    position: relative;
+}
+
+td:not(:empty):not(:first-child)::after {
+    content: attr(data-room);
+    display: block;
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 4px;
 } 
