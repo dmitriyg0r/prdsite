@@ -26,21 +26,20 @@ table {
 
 th {
     background: linear-gradient(45deg, var(--header-background), var(--header-gradient));
-    padding: 18px 15px;
-    font-size: 14px;
+    padding: 20px 15px;
+    font-size: 15px;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    font-weight: 500;
-    border-bottom: none;
-    text-align: center;
+    letter-spacing: 1.5px;
+    font-weight: 600;
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 td {
-    padding: 16px;
-    font-size: 14px;
-    border-bottom: 1px solid rgba(var(--table-border-rgb), 0.08);
-    transition: all 0.2s ease;
-    text-align: center;
+    padding: 18px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    position: relative;
 }
 
 /* Первая колонка (дни недели) */
@@ -52,10 +51,21 @@ td:first-child {
 
 /* Подсветка текущего дня */
 .today-highlight {
-    background-color: var(--today-highlight-light);
-    font-weight: bold;
-    color: var(--header-text);
-    text-align: center;
+    background: linear-gradient(45deg, 
+        var(--today-highlight),
+        rgba(var(--table-hover-rgb), 0.05));
+    position: relative;
+}
+
+.today-highlight::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 4px;
+    background: var(--header-background);
+    border-radius: 2px;
 }
 
 [data-theme="dark"] .today-highlight {
@@ -156,4 +166,12 @@ body.dark-theme {
 body.light-theme {
     --header-text: #000; /* Чёрный текст для светлой темы */
     --table-text: #000; /* Чёрный текст для ячеек в светлой теме */
+}
+
+/* Анимация при наведении на ячейки */
+td:not(:empty):hover {
+    transform: scale(1.05);
+    z-index: 1;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    background-color: var(--table-hover-background);
 }
