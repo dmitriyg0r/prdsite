@@ -44,30 +44,30 @@ body {
 /* Стили для бокового меню */
 .sidebar {
     position: fixed;
-    width: 60px;
+    width: 65px;
     height: 100%;
     background-color: var(--sidebar-background);
-    transition: all 0.3s ease;
+    transition: width 0.3s ease;
     z-index: 1000;
     padding-top: 60px;
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
 }
 
 .sidebar:hover {
-    width: 250px;
+    width: 220px;
 }
 
 .sidebar-nav {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    padding: 20px 15px;
+    gap: 5px;
+    padding: 10px;
 }
 
 .sidebar-link {
     display: flex;
     align-items: center;
-    padding: 10px;
+    padding: 12px;
     text-decoration: none;
     color: var(--text-color);
     border-radius: 8px;
@@ -81,19 +81,21 @@ body {
 }
 
 .sidebar-link i {
-    min-width: 30px;
-    font-size: 20px;
+    min-width: 40px;
+    font-size: 18px;
     text-align: center;
+    opacity: 0.9;
 }
 
 .sidebar-link span {
+    font-size: 15px;
+    margin-left: 10px;
     opacity: 0;
     transition: opacity 0.2s ease;
-    margin-left: 10px;
 }
 
 .sidebar:hover .sidebar-link span {
-    opacity: 1;
+    opacity: 0.9;
 }
 
 /* Стили для заголовка */
@@ -101,7 +103,7 @@ body {
     text-align: center;
     color: var(--text-color);
     margin-top: 20px;
-    margin-left: 80px;
+    margin-left: 85px;
     transition: margin-left 0.3s ease;
 }
 
@@ -147,7 +149,7 @@ body {
 /* Основной контент */
 main {
     padding: 20px;
-    margin-left: 80px;
+    margin-left: 85px;
     transition: margin-left 0.3s ease;
 }
 
@@ -156,7 +158,7 @@ main {
     text-align: center;
     padding: 20px;
     margin-top: 40px;
-    margin-left: 80px;
+    margin-left: 85px;
     transition: margin-left 0.3s ease;
 }
 
@@ -179,8 +181,8 @@ main {
 /* Медиа-запрос для мобильных устройств */
 @media screen and (max-width: 768px) {
     .sidebar {
-        left: -60px;
-        width: 250px;
+        left: -65px;
+        width: 220px;
     }
 
     .sidebar.active {
@@ -188,7 +190,7 @@ main {
     }
 
     .sidebar:hover {
-        left: -60px;
+        left: -65px;
     }
 
     .sidebar.active:hover {
@@ -213,9 +215,12 @@ main {
 
 /* Стили для переключателя темы */
 .theme-switch-wrapper {
-    cursor: pointer;
     margin-top: auto;
-    padding: 10px;
+    border-radius: 8px;
+}
+
+.theme-switch-wrapper i {
+    opacity: 0.9;
 }
 
 .theme-switch {
