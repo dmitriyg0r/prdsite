@@ -44,20 +44,19 @@ body {
 /* Стили для бокового меню */
 .sidebar {
     position: fixed;
-    width: 65px;
+    width: 250px;
     height: 100vh;
     background-color: #2d2736;
-    transition: width 0.3s ease;
     z-index: 1000;
     display: flex;
     flex-direction: column;
     left: 0;
     top: 0;
-    overflow: hidden;
+    padding: 20px 0;
 }
 
 .sidebar:hover {
-    width: 220px;
+    width: 250px;
 }
 
 .sidebar-nav {
@@ -70,7 +69,7 @@ body {
 .sidebar-link {
     display: flex;
     align-items: center;
-    padding: 12px 15px;
+    padding: 12px 24px;
     text-decoration: none;
     color: #e8eaed;
     transition: background-color 0.3s ease;
@@ -96,8 +95,8 @@ body {
 
 .sidebar-link span {
     font-size: 15px;
-    opacity: 0;
-    transition: opacity 0.2s ease;
+    opacity: 1;
+    margin-left: 12px;
 }
 
 .sidebar:hover .sidebar-link span {
@@ -166,7 +165,7 @@ body {
 /* Основной контент */
 main {
     padding: 20px;
-    margin-left: 85px;
+    margin-left: 270px;
     transition: margin-left 0.3s ease;
 }
 
@@ -175,7 +174,7 @@ main {
     text-align: center;
     padding: 20px;
     margin-top: 40px;
-    margin-left: 85px;
+    margin-left: 270px;
     transition: margin-left 0.3s ease;
 }
 
@@ -198,32 +197,15 @@ main {
 /* Медиа-запрос для мобильных устройств */
 @media screen and (max-width: 768px) {
     .sidebar {
-        left: -65px;
-        width: 220px;
-        height: 100%;
-        min-height: 100vh;
+        left: -250px;
+        transition: left 0.3s ease;
     }
 
     .sidebar.active {
         left: 0;
     }
 
-    .sidebar:hover {
-        left: -65px;
-    }
-
-    .sidebar.active:hover {
-        left: 0;
-    }
-
-    .sidebar-link span,
-    .theme-switch {
-        opacity: 1;
-    }
-
-    main,
-    .zagolovok,
-    .container {
+    main, .zagolovok, .container {
         margin-left: 0;
     }
 
@@ -235,16 +217,16 @@ main {
 /* Стили для переключателя темы */
 .theme-switch-wrapper {
     margin-top: auto;
-    width: 100%;
+    padding: 12px 24px;
 }
 
 .theme-toggle-container {
     display: flex;
     align-items: center;
     padding: 12px 15px;
-    margin: 4px 8px;
+    margin: 4px 0;
     border-radius: 8px;
-    transition: background-color 0.3s ease;
+    cursor: pointer;
 }
 
 .theme-toggle-container:hover {
