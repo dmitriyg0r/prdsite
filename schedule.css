@@ -2,7 +2,7 @@
 .table-container {
     overflow-x: auto;
     margin: 30px auto;
-    background-color: var(--table-background);
+    background-color: var(--table-background, #fff);
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
     border-radius: 20px;
     padding: 25px;
@@ -20,15 +20,15 @@ table {
     border-spacing: 0;
     width: 100%;
     min-width: 800px;
-    background: var(--table-background);
+    background: var(--table-background, #fff);
     border-radius: 10px;
     overflow: hidden;
-    color: var(--text-color);
+    color: var(--text-color, #333);
 }
 
 th {
-    background-color: var(--header-background);
-    color: var(--header-text);
+    background-color: var(--header-background, #1557B0);
+    color: var(--header-text, #fff);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -37,57 +37,49 @@ th {
     position: sticky;
     top: 0;
     z-index: 10;
-    border-bottom: 2px solid var(--table-border);
+    border-bottom: 2px solid var(--table-border, #ddd);
 }
 
 td {
     padding: 15px;
     font-size: 15px;
-    border-bottom: 1px solid var(--table-border);
-    transition: all 0.3s ease;
+    border-bottom: 1px solid var(--table-border, #ddd);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
     white-space: nowrap;
-    color: var(--text-color);
+    color: var(--text-color, #333);
 }
 
 /* Первая колонка (дни недели) */
 td:first-child {
     font-weight: 600;
-    color: var(--header-background);
+    color: var(--header-background, #1557B0);
     position: sticky;
     left: 0;
-    background-color: var(--table-background);
+    background-color: var(--table-background, #fff);
     z-index: 5;
 }
 
 /* Подсветка текущего дня */
 .today-highlight {
-    background-color: var(--today-highlight-light) !important; /* Синий для светлой темы */
+    background-color: var(--today-highlight-light, #e0f7ff); /* Синий для светлой темы */
     font-weight: bold;
-    color: var(--header-text) !important;
+    color: var(--header-text, #fff);
 }
 
 /* Используйте медиа-запрос или класс для тёмной темы */
 body.dark-theme .today-highlight {
-    background-color: var(--today-highlight-dark) !important; /* Фиолетовый для тёмной темы */
-}
-
-.today-highlight td:first-child::before {
-    content: '►';
-    position: absolute;
-    left: -20px;
-    color: var(--header-background);
+    background-color: var(--today-highlight-dark, #e0c3fc); /* Фиолетовый для тёмной темы */
 }
 
 /* Стили для пустых ячеек */
 td:empty::before {
     content: '—';
-    color: var(--table-border);
+    color: var(--table-border, #ddd);
 }
 
 /* Анимация при наведении на строку */
 tr:hover td {
-    background-color: var(--table-hover-background);
-    transform: scale(1.01);
+    background-color: var(--table-hover-background, #f5f5f5);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
@@ -137,14 +129,19 @@ td:not(:empty):not(:first-child)::after {
     content: attr(data-room);
     display: block;
     font-size: 12px;
-    color: var(--text-secondary);
+    color: var(--text-secondary, #777);
     margin-top: 4px;
 }
 
 /* Добавьте следующие строки для определения цветов в зависимости от темы */
 :root {
-    --today-highlight-light: blue; /* Синий для светлой темы */
-    --today-highlight-dark: purple; /* Фиолетовый для тёмной темы */
+    --table-background: #fff; /* Цвет фона таблицы */
+    --text-color: #333; /* Цвет текста */
+    --table-border: #ddd; /* Цвет границ таблицы */
+    --table-hover-background: #f5f5f5; /* Цвет фона при наведении */
+    --text-secondary: #777; /* Вторичный цвет текста */
+    --today-highlight-light: #e0f7ff; /* Синий для светлой темы */
+    --today-highlight-dark: #e0c3fc; /* Фиолетовый для тёмной темы */
     --header-background: #1557B0; /* Цвет фона заголовка */
     --header-text: #fff; /* Цвет текста заголовка */
 }
