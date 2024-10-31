@@ -45,7 +45,8 @@ body {
 .sidebar {
     position: fixed;
     width: 65px;
-    height: 100vh;
+    height: 100%;
+    min-height: 100vh;
     background-color: var(--sidebar-background);
     transition: width 0.3s ease;
     z-index: 1000;
@@ -53,6 +54,9 @@ body {
     flex-direction: column;
     padding-top: 20px;
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    left: 0;
+    top: 0;
+    bottom: 0;
 }
 
 .sidebar:hover {
@@ -65,6 +69,7 @@ body {
     gap: 8px;
     padding: 10px;
     flex-grow: 1;
+    height: 100%;
 }
 
 .sidebar-link {
@@ -196,6 +201,8 @@ main {
     .sidebar {
         left: -65px;
         width: 220px;
+        height: 100%;
+        min-height: 100vh;
     }
 
     .sidebar.active {
@@ -228,7 +235,7 @@ main {
 
 /* Обновленные стили для переключателя темы */
 .theme-switch-wrapper {
-    margin-top: auto;
+    margin-top: auto !important;
     padding: 15px;
     background-color: var(--sidebar-hover);
     border-radius: 6px;
