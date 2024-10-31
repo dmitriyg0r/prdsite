@@ -80,7 +80,7 @@ body {
 }
 
 .sidebar-link:hover {
-    background-color: #4a4255;
+    background-color: var(--sidebar-hover);
 }
 
 .sidebar-link.active {
