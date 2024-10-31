@@ -222,7 +222,6 @@ main {
     background-color: var(--sidebar-hover);
     border-radius: 6px;
     margin: 10px;
-    margin-top: auto;
 }
 
 .theme-toggle-container {
@@ -241,34 +240,36 @@ main {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    width: 52px;
-    height: 28px;
+    width: 60px;
+    height: 30px;
     background-color: var(--text-color);
     border-radius: 50px;
-    padding: 4px;
+    padding: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
 
 .theme-label i {
-    font-size: 14px;
+    font-size: 16px;
     color: var(--background-color);
-    z-index: 1;
-    margin: 0 4px;
+    z-index: 2;
+    width: 20px;
+    text-align: center;
 }
 
 .ball {
     position: absolute;
-    width: 24px;
-    height: 24px;
+    width: 26px;
+    height: 26px;
     background-color: var(--background-color);
     border-radius: 50%;
     transition: transform 0.3s ease;
     left: 2px;
+    top: 2px;
 }
 
 .theme-checkbox:checked + .theme-label .ball {
-    transform: translateX(24px);
+    transform: translateX(30px);
 }
 
 .theme-switch-wrapper span {
@@ -276,6 +277,7 @@ main {
     font-size: 14px;
     opacity: 0;
     transition: opacity 0.2s ease;
+    white-space: nowrap;
 }
 
 .sidebar:hover .theme-switch-wrapper span {
@@ -288,21 +290,9 @@ main {
 }
 
 .theme-checkbox:checked + .theme-label .fa-sun {
-    opacity: 0.3;
+    opacity: 0.5;
 }
 
 .theme-checkbox:not(:checked) + .theme-label .fa-moon {
-    opacity: 0.3;
-}
-
-/* Медиа-запрос для мобильных устройств */
-@media screen and (max-width: 768px) {
-    .sidebar {
-        left: -65px;
-        width: 220px;
-    }
-
-    .theme-switch-wrapper span {
-        opacity: 1;
-    }
+    opacity: 0.5;
 }
