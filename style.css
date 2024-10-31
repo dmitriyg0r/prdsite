@@ -234,12 +234,28 @@ main {
 /* Обновленные стили для переключателя темы */
 .theme-switch-wrapper {
     margin-top: auto;
+    padding: 12px 15px;
     margin-bottom: 15px;
 }
 
 .theme-toggle-container {
     display: flex;
     align-items: center;
+    gap: 12px;
+    white-space: nowrap;
+}
+
+.theme-toggle-container span {
+    color: #e8eaed;
+    font-size: 14px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    display: none;
+}
+
+.sidebar:hover .theme-toggle-container span {
+    opacity: 1;
+    display: block;
 }
 
 .theme-checkbox {
@@ -257,7 +273,6 @@ main {
     border-radius: 50px;
     padding: 5px;
     cursor: pointer;
-    margin: 0 8px;
 }
 
 .ball {
