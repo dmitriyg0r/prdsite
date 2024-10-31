@@ -64,8 +64,7 @@ body {
 .sidebar-nav {
     display: flex;
     flex-direction: column;
-    padding: 15px 0;
-    height: 100%;
+    flex-grow: 0;
 }
 
 .sidebar-link {
@@ -218,8 +217,9 @@ main {
 
 /* Стили для переключателя темы */
 .theme-switch-wrapper {
-    margin-bottom: 20px;
+    margin-top: 20px;
     padding: 12px 24px;
+    flex-grow: 0;
 }
 
 .theme-toggle-container {
