@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const weekNumber = Math.ceil((((today - startOfYear) / 86400000) + startOfYear.getDay() + 1) / 7) % 2; // 0 - четная, 1 - нечетная
 
     // Отображение расписания в зависимости от четности недели
-    if (weekNumber === 1) {
+    if (weekNumber === 0) {
         document.getElementById('even-week-schedule').style.display = 'block';
         document.getElementById('odd-week-schedule').style.display = 'none';
     } else {
