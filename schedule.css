@@ -147,6 +147,7 @@ td:not(:empty):not(:first-child)::after {
     --today-highlight-dark: #e0c3fc; /* Фиолетовый для тёмной темы */
     --header-background: #1557B0; /* Цвет фона заголовка */
     --header-text: #fff; /* Цвет текста заголовка */
+    --table-text: #000; /* Цвет текста ячеек */
 }
 
 /* Стили для текста в зависимости от темы */
