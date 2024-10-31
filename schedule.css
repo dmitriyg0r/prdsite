@@ -2,13 +2,10 @@
 .table-container {
     overflow-x: auto;
     margin: 30px auto;
-    background-color: var(--table-background, #fff);
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
     border-radius: 20px;
-    padding: 25px;
     max-width: 1400px;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    font-family: 'Roboto', sans-serif; /* Добавляем шрифт для таблицы */
 }
 
 .table-container:hover {
