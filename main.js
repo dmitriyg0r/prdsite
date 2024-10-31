@@ -1,34 +1,31 @@
 document.addEventListener('DOMContentLoaded', () => {
     const themeToggle = document.getElementById('theme-toggle');
-    const sidebarThemeToggle = document.getElementById('sidebar-theme-toggle');
-    const body = document.body;
+    const body = document.documentElement;
     const homeworkForm = document.getElementById('homework-form');
     const uploadForm = document.getElementById('upload-form');
     const fileInput = document.getElementById('file-input');
     const uploadMessage = document.getElementById('upload-message');
     const fileList = document.getElementById('file-list');
 
-    // Проверяем, есть ли сохраненная тема в localStorage
+    // Проверяем сохраненную тему
     const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
-        body.classList.add('darkmode');
+    if (savedTheme) {
+        body.setAttribute('data-theme', savedTheme);
+        if (savedTheme === 'dark') {
+            themeToggle.checked = true;
+        }
     }
 
-    // Функция для переключения темы
-    const toggleTheme = () => {
-        body.classList.toggle('darkmode');
-        body.style.transition = 'background-color 0.5s ease, color 0.5s ease';
-        // Сохраняем текущую тему в localStorage
-        localStorage.setItem('theme', body.classList.contains('darkmode') ? 'dark' : 'light');
-    };
-
-    // Добавляем обработчики для обеих кнопок
-    if (themeToggle) {
-        themeToggle.addEventListener('click', toggleTheme);
-    }
-    if (sidebarThemeToggle) {
-        sidebarThemeToggle.addEventListener('click', toggleTheme);
-    }
+    // Обработчик переключения темы
+    themeToggle.addEventListener('change', () => {
+        if (themeToggle.checked) {
+            body.setAttribute('data-theme', 'dark');
+            localStorage.setItem('theme', 'dark');
+        } else {
+            body.setAttribute('data-theme', 'light');
+            localStorage.setItem('theme', 'light');
+        }
+    });
 
     // Улучшение: Используем const вместо var
     document.getElementById('menu-toggle').addEventListener('click', function() {
