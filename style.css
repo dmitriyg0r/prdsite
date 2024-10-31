@@ -1,152 +1,1337 @@
+/* Основные переменные и настройки */
 :root {
-    /* Основные цвета */
-    --primary-color: #1a73e8;
-    --text-color: #202124;
-    --background-color: #ffffff;
-    --sidebar-background: #f8f9fa;
-    --sidebar-hover: #e8eaed;
-    
-    /* Цвета для таблицы */
-    --table-background: #ffffff;
-    --table-border: #e0e0e0;
-    --table-hover-background: #f5f5f5;
-    --header-background: #1a73e8;
+    --header-background: #04578f;
+    --header-background-dark: #033e63;
+    --text-color: #333;
+    --header-text: white;
+    --footer-background: #333;
+    --footer-text: white;
+    --table-background: white;
+    --table-border: #ddd;
+    --button-background: #008CBA;
+    --button-hover: #005f73;
+    --table-hover-background: #e0e0e0;
+    --text-container-background: #ffffff;
+    --text-container-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    --theme-toggle-background: #ffffff;
+    --theme-toggle-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    --theme-toggle-hover-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    --sun-icon-color: #ffcc00;
+    --moon-icon-color: #ffffff;
+    --today-highlight: #04578fb0;
+    --transition-duration: 0.3s;
+    --menu-background: #04578f;
+    --menu-text: #ffffff;
+    --menu-hover-background: #033e63;
+    --menu-border: rgba(0, 0, 0, 0.1);
+    --menu-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.darkmode {
+    --background-color: #2c2c3a;
+    --text-color: #ffffff;
+    --header-background: #6a5acd;
     --header-text: #ffffff;
-    --today-highlight: #e8f0fe;
+    --footer-background: #1f1f1f;
+    --footer-text: #ffffff;
+    --table-background: #3c3c4a;
+    --table-border: #4a4a5a;
+    --button-background: #4b0082;
+    --button-hover: #8a2be2;
+    --table-hover-background: #4a4a5a;
+    --text-container-background: #2c2c3a;
+    --text-container-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    --theme-toggle-background: #3c3c4a;
+    --theme-toggle-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    --theme-toggle-hover-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+    --header-background-dark: #5c43a8;
+    --today-highlight: #695acda5;
+    --menu-background: #6a5acd;
+    --menu-text: #ffffff;
+    --menu-hover-background: #5b4cbe;
+    --menu-border: rgba(255, 255, 255, 0.1);
+    --menu-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Общи стили */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    transition: background-color var(--transition-duration), color var(--transition-duration);
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    background: #ffffff;
+    color: var(--text-color);
+    padding-top: 100px;
+}
+
+body.darkmode {
+    background: var(--table-background);
+}
+
+/* Стили заголовка */
+header {
+    background: linear-gradient(135deg, var(--header-background), var(--header-background-dark));
+    padding: 15px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    color: var(--header-text);
+    text-align: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100px;
+    z-index: 1000;
+    background: var(--header-background);
+}
+
+/* Добавляем стили для навигации */
+.header-nav {
+    display: flex;
+    gap: 15px;
+}
+.zagolovok {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+}
+.nav-link {
+    position: relative;
+    padding: 8px 16px;
+    overflow: hidden;
+    color: var(--header-text);
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background-color var(--transition-duration);
+}
+
+.nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: var(--header-text);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.nav-link:hover::after {
+    transform: scaleX(1);
+}
+
+.nav-link:hover {
+    background-color: var(--header-background-dark);
+}
+
+/* Показываем меню только на мобильных устройствах */
+#menu-toggle, .menu {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    #menu-toggle {
+        display: block;
+    }
+    
+    .header-nav {
+        display: none;
+    }
+    
+    .menu {
+        display: none;
+    }
+    
+    .menu.active {
+        display: block;
+    }
+}
+
+/* Основное содержимое */
+main {
+    padding: 20px;
+    text-align: center;
+}
+
+/* Переключатель темы */
+.theme-toggle {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    background-color: var(--theme-toggle-background);
+    border-radius: 50px;
+    padding: 5px;
+    box-shadow: var(--theme-toggle-shadow);
+    transition: box-shadow var(--transition-duration) ease, transform var(--transition-duration) ease;
+    position: relative;
+    width: 60px;
+    height: 30px;
+    overflow: hidden;
+}
+
+.theme-toggle:hover {
+    box-shadow: var(--theme-toggle-hover-shadow);
+    transform: scale(1.05);
+}
+
+.theme-icon {
+    width: 24px;
+    height: 24px;
+    position: absolute;
+    top: 50%;
+    left: 5px;
+    transform: translateY(-50%);
+    transition: transform 0.5s ease, opacity var(--transition-duration) ease, fill var(--transition-duration) ease;
+}
+
+#sun-icon {
+    opacity: 1;
+    fill: var(--sun-icon-color);
+}
+
+#moon-icon {
+    opacity: 0;
+    fill: var(--moon-icon-color);
+    transform: translateY(-50%) rotate(180deg);
+    left: auto;
+    right: 5px;
+}
+
+.darkmode #sun-icon {
+    opacity: 0;
+    transform: translateY(-50%) rotate(-180deg);
+}
+
+.darkmode #moon-icon {
+    opacity: 1;
+    transform: translateY(-50%) rotate(0);
+}
+
+/* Стили таблицы */
+.table-container {
+    overflow-x: auto;
+    margin: 30px auto;
+    background-color: var(--table-background);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    border-radius: 20px;
+    padding: 25px;
+    max-width: 1400px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.table-container:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+table {
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+    min-width: 800px;
+    background: var(--table-background);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+th {
+    background-color: var(--header-background);
+    color: var(--header-text);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 15px;
+    padding: 15px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+td {
+    padding: 15px;
+    font-size: 15px;
+    border-bottom: 1px solid var(--table-border);
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+/* Первая колонка (дни недели) */
+td:first-child {
+    font-weight: 600;
+    color: var(--header-background);
+    position: sticky;
+    left: 0;
+    background-color: var(--table-background);
+    z-index: 5;
+}
+
+/* Подсветка текущего дня */
+.today-highlight td {
+    background-color: var(--today-highlight) !important;
+    font-weight: bold;
+    position: relative;
+}
+
+.today-highlight td:first-child::before {
+    content: '►';
+    position: absolute;
+    left: -20px;
+    color: var(--header-background);
+}
+
+/* Стили для пустых ячеек */
+td:empty::before {
+    content: '—';
+    color: var(--table-border);
+}
+
+/* Адаптивность для мобильных устройств */
+@media screen and (max-width: 768px) {
+    .table-container {
+        margin: 15px -15px;
+        padding: 15px;
+        border-radius: 0;
+    }
+
+    table {
+        min-width: 600px;
+    }
+
+    th, td {
+        padding: 12px 8px;
+        font-size: 14px;
+    }
+
+    td:first-child {
+        padding-left: 15px;
+    }
+}
+
+/* Анимация при наведении на строку */
+tr:hover td {
+    background-color: var(--table-hover-background);
+    transform: scale(1.01);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Медиа-запросы */
+@media (max-width: 768px) {
+    .table-container {
+        overflow-x: scroll;
+    }
+
+    th, td {
+        padding: 8px;
+        font-size: 12px;
+    }
+
+    header {
+        flex-direction: column;
+    }
+
+    .header-controls {
+        margin-top: 10px;
+    }
+
+    .container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .qr {
+        margin-right: 0;
+        margin-bottom: 20px;
+    }
+
+    .text-container {
+        padding: 15px;
+    }
+
+    .dz {
+        font-size: 20px;
+    }
+
+    .bot {
+        font-size: 16px;
+    }
+
+    .ps {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    th, td {
+        padding: 6px;
+        font-size: 10px;
+    }
+
+    .menu {
+        width: 100%;
+        right: 0;
+    }
+
+    .menu a {
+        padding: 10px;
+    }
+}
+
+/* Дополнительные стили */
+.container {
+    display: flex;
+    align-items: center;
+    padding-top: 30px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.qr {
+    margin-right: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform var(--transition-duration) ease;
+    width: 150px;
+    height: 150px;
+}
+
+.qr:hover {
+    transform: scale(1.05);
+}
+
+.text-container {
+    flex: 1;
+    background-color: var(--text-container-background);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: var(--text-container-shadow);
+    text-align: center;
+    max-width: 100%;
+    margin-top: 20px;
+}
+
+.dz {
+    margin: 0;
+    font-size: 22px;
+    font-weight: bold;
+    color: var(--header-background);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.bot {
+    display: inline-block;
+    margin: 10px 0;
+    font-size: 18px;
+    color: var(--button-background);
+    text-decoration: none;
+    transition: color var(--transition-duration) ease, transform var(--transition-duration) ease;
+}
+
+.bot:hover {
+    color: var(--button-hover);
+    transform: translateY(-2px);
+}
+
+.ps {
+    margin: 10px 0 0;
+    font-size: 14px;
+    color: var(--text-color);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Стили меню */
+#menu-toggle {
+    cursor: pointer;
+    margin-left: 15px;
+    transition: transform var(--transition-duration) ease, color var(--transition-duration) ease;
+}
+
+#menu-toggle:hover {
+    transform: scale(1.1);
+    color: var(--button-hover);
+}
+
+.menu {
+    position: absolute;
+    top: 74px;
+    right: 1px;
+    width: 280px;
+    background: var(--menu-background);
+    border-radius: 12px;
+    padding: 12px;
+    display: none;
+    z-index: 1000;
+    border: 1px solid var(--menu-border);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(10px);
+}
+
+.menu a {
+    display: flex;
+    align-items: center;
+    padding: 14px 16px;
+    margin-bottom: 4px;
+    border-radius: 8px;
+    color: var(--menu-text);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 15px;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.menu a:last-child {
+    margin-bottom: 0;
+}
+
+.menu a:hover {
+    background: var(--menu-hover-background);
+    transform: translateX(4px);
+}
+
+/* Эффект ripple при клике */
+.menu a::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.3s ease, height 0.3s ease;
+}
+
+.menu a:active::after {
+    width: 300px;
+    height: 300px;
+}
+
+/* Анимация появления меню */
+@keyframes menuFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.menu.active {
+    display: block;
+    animation: menuFadeIn 0.2s ease-out forwards;
+}
+
+/* Медиа-запросы для адаптивности */
+@media screen and (max-width: 768px) {
+    .menu {
+        position: fixed;
+        top: 70px;
+        right: 10px;
+        left: 10px;
+        width: auto;
+        max-width: 400px;
+        margin: 0 auto;
+    }
+    
+    .menu a {
+        padding: 16px;
+        font-size: 16px;
+    }
 }
 
 /* Темная тема */
-[data-theme="dark"] {
-    /* Основные цвета */
-    --primary-color: #8ab4f8;
-    --text-color: #e8eaed;
-    --background-color: #202124;
-    --sidebar-background: #292a2d;
-    --sidebar-hover: #3c4043;
+body.darkmode .menu {
+    background: var(--menu-background);
+    border-color: var(--menu-border);
+}
+
+body.darkmode .menu a {
+    color: var(--menu-text);
+}
+
+body.darkmode .menu a:hover {
+    background-color: var(--menu-hover-background);
+    color: var(--menu-text);
+}
+
+.menu a i {
+    margin-right: 12px;
+    font-size: 18px;
+    opacity: 0.8;
+    transition: all 0.3s ease;
+}
+
+.menu a:hover i {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* Оптимизированная анимация появления */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Медиа-запросы для адаптивности */
+@media screen and (max-width: 768px) {
+    .menu {
+        position: fixed;
+        top: 70px;
+        right: 10px;
+        left: 10px;
+        width: auto;
+        max-width: 400px;
+        margin: 0 auto;
+    }
     
-    /* Цвета для таблицы */
-    --table-background: #292a2d;
-    --table-border: #3c4043;
-    --table-hover-background: #3c4043;
-    --header-background: #8ab4f8;
-    --header-text: #202124;
-    --today-highlight: #3c4043;
+    .menu a {
+        padding: 15px 20px;
+        font-size: 16px;
+    }
 }
 
-/* Общие стили */
-body {
-    margin: 0;
-    padding: 0;
-    font-family: 'Roboto', sans-serif;
-    background-color: var(--background-color);
+@media screen and (max-width: 480px) {
+    .menu {
+        padding: 15px;
+    }
+    
+    .menu a {
+        padding: 12px 15px;
+        font-size: 14px;
+    }
+}
+
+/* Стили для домашних заданий */
+.homework-item {
+    margin: 10px 0;
+    padding: 10px;
+    border: 1px solid var(--table-border);
+    background-color: var(--table-background);
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.homework-item strong {
+    color: var(--header-background);
+}
+
+.delete-button {
+    background-color: var(--button-background);
+    color: var(--header-text);
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-top: 5px;
+    transition: background-color var(--transition-duration) ease;
+}
+
+.delete-button:hover {
+    background-color: var(--button-hover);
+}
+
+/* Стили для новостей */
+.news {
+    background-color: var(--text-container-background);
+    border-radius: 20px;
+    padding: 30px;
+    margin: 30px auto;
+    max-width: 800px;
+    box-shadow: var(--text-container-shadow);
+    transition: transform 0.3s ease;
+}
+
+.news:hover {
+    transform: translateY(-5px);
+}
+
+.news h1 {
+    color: var(--header-background);
+    font-size: 28px;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+.news p {
+    font-size: 16px;
+    text-align: center;
+}
+
+@media (max-width: 600px) {
+    .news h1 {
+        font-size: 20px;
+    }
+    .news p {
+        font-size: 14px;
+    }
+}
+
+/* Стили для таблицы */
+table.sheet0 col.col0,
+table.sheet0 col.col1,
+table.sheet0 col.col2,
+table.sheet0 col.col3,
+table.sheet0 col.col4,
+table.sheet0 col.col5,
+table.sheet0 col.col6 {
+    width: 14.28%;
+}
+
+table.sheet0 tr {
+    height: auto;
+}
+
+.today-highlight td {
+    background-color: var(--today-highlight) !important;
+    font-weight: bold;
+    color: var(--header-text) !important;
+}
+
+/* Стили для кнопок темы и меню */
+.theme-toggle, .menu-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+}
+
+.theme-icon, .menu-toggle svg {
+    width: 24px;
+    height: 24px;
+    fill: var(--text-color);
+}
+
+/* Стили для темной темы */
+body.darkmode .theme-icon,
+body.darkmode .menu-toggle svg {
+    fill: var(--dark-text-color);
+}
+
+body.darkmode .menu {
+    background-color: var(--menu-background);
+}
+
+body.darkmode .menu a {
+    color: var(--menu-text);
+}
+
+body.darkmode .menu a:hover {
+    background-color: var(--menu-hover-background);
+}
+
+.header-controls {
+    display: flex;
+    align-items: center;
+}
+
+.theme-toggle, .menu-toggle {
+    margin-left: 10px;
+}
+
+.menu-container {
+    position: relative;
+}
+
+/* Медиа-запрос для мобильных устройств */
+@media screen and (max-width: 768px) {
+    .menu {
+        position: fixed;
+        top: 60px;
+        right: 10px;
+        left: 10px;
+        width: auto;
+    }
+}
+
+.theme-toggle.animating {
+    pointer-events: none;
+}
+
+/* Обновленные стили меню */
+.developer-links {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.developer-links a, .menu a {
+    padding: 10px 20px;
+    background-color: var(--menu-background);
+    color: var(--menu-text);
+    text-decoration: none;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+    width: 100%;
+    max-width: 300px;
+    text-align: center;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 400;
+}
+
+.developer-links a:hover, .menu a:hover {
+    background-color: var(--menu-hover-background);
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Обновляем медиа-запосы для мню */
+@media screen and (max-width: 480px) {
+    .menu a {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+}
+
+/* Общие стили меню */
+.menu, .developer-links {
+    background: var(--menu-background);
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Стили для ссылок в меню */
+.menu a, .developer-links a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--menu-text);
+    text-decoration: none;
+    padding: 12px 20px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    font-weight: 500;
+    background: var(--menu-background);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+}
+
+.menu a:last-child, .developer-links a:last-child {
+    margin-bottom: 0;
+}
+
+/* Эффект при наведении */
+.menu a:hover, .developer-links a:hover {
+    background: var(--menu-hover-background);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Эффект ripple при клике */
+.menu a::after, .developer-links a::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s ease, height 0.6s ease;
+}
+
+.menu a:active::after, .developer-links a:active::after {
+    width: 200px;
+    height: 200px;
+}
+
+/* Иконки в меню */
+.menu a i, .developer-links a i {
+    margin-right: 12px;
+    font-size: 18px;
+    transition: transform 0.3s ease;
+}
+
+.menu a:hover i, .developer-links a:hover i {
+    transform: scale(1.1);
+}
+
+/* Специфичные стили для выпадаюего меню */
+.menu {
+    position: absolute;
+    top: 74px;
+    right: 1px;
+    width: 300px;
+    display: none;
+    z-index: 1000;
+    border: 1px solid var(--menu-border);
+}
+
+/* Специфичные стили для developer-links */
+.developer-links {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+/* Медиа-запросы */
+@media screen and (max-width: 768px) {
+    .menu {
+        position: fixed;
+        top: 70px;
+        right: 10px;
+        left: 10px;
+        width: auto;
+        max-width: 400px;
+        margin: 0 auto;
+    }
+
+    .menu a, .developer-links a {
+        padding: 15px 20px;
+        font-size: 16px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .menu, .developer-links {
+        padding: 15px;
+    }
+
+    .menu a, .developer-links a {
+        padding: 12px 15px;
+        font-size: 14px;
+    }
+}
+
+/* Анимация появления */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Обновленные стили для кнопок */
+.add-post-btn {
+    background: linear-gradient(135deg, #42a5f5, #478ed1);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 30px;
+    font-weight: 500;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.add-post-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+.delete-button {
+    background: linear-gradient(135deg, #ff4b4b, #ff6b6b);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.delete-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 75, 75, 0.3);
+}
+
+/* Обновленные стили для текстовых контейнеров */
+.text-container {
+    background-color: var(--text-container-background);
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: var(--text-container-shadow);
+    margin: 30px auto;
+    max-width: 800px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.text-container:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+}
+
+.dz {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--header-background);
+    margin-bottom: 20px;
+    line-height: 1.4;
+}
+
+.ps {
     color: var(--text-color);
-    transition: background-color 0.3s ease, color 0.3s ease;
+    opacity: 0.8;
+    font-size: 14px;
+    margin-top: 20px;
 }
 
-/* Стили для бокового меню */
+@media screen and (max-width: 768px) {
+    header {
+        padding: 1em;
+    }
+
+    .header-nav {
+        width: 100%;
+        margin-top: 1em;
+    }
+
+    .nav-link {
+        padding: 6px 12px;
+        font-size: 14px;
+    }
+
+    .table-container {
+        margin: 15px 10px;
+        padding: 15px;
+        border-radius: 15px;
+    }
+
+    table {
+        font-size: 12px;
+    }
+
+    th, td {
+        padding: 8px 4px;
+    }
+}
+
+/* Новое боковое меню для ПК */
 .sidebar {
     position: fixed;
-    left: -250px;
+    left: 0;
     top: 0;
-    width: 250px;
-    height: 100%;
-    background-color: var(--sidebar-background);
-    transition: left 0.3s ease;
-    z-index: 1000;
-    padding-top: 60px;
+    height: 100vh;
+    width: 60px;
+    background: var(--menu-background);
+    box-shadow: var(--menu-shadow);
+    transition: width 0.3s ease;
+    z-index: 1001;
+    display: none;
 }
 
-.sidebar.active {
-    left: 0;
+.sidebar:hover {
+    width: 200px;
 }
 
 .sidebar-nav {
+    height: 100%;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    padding: 20px;
+    padding: 20px 0;
+    position: relative;
 }
 
 .sidebar-link {
     display: flex;
     align-items: center;
-    padding: 10px 15px;
+    padding: 12px 15px;
+    color: var(--menu-text);
     text-decoration: none;
-    color: var(--text-color);
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    overflow: hidden;
+    margin: 4px 8px;
     border-radius: 8px;
-    transition: background-color 0.3s ease;
-}
-
-.sidebar-link:hover {
-    background-color: var(--sidebar-hover);
 }
 
 .sidebar-link i {
+    min-width: 30px;
+    font-size: 20px;
+    text-align: center;
     margin-right: 10px;
-    width: 20px;
-    text-align: center;
+    color: var(--menu-text);
 }
 
-/* Стили для заголовка */
-.zagolovok {
-    text-align: center;
-    color: var(--text-color);
-    margin-top: 20px;
+.sidebar-link span {
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
-/* Стили для кнопок темы и меню */
-.header-controls {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    display: flex;
-    gap: 15px;
-    z-index: 1000;
+.sidebar:hover .sidebar-link span {
+    opacity: 1;
 }
 
-.theme-toggle, #menu-toggle {
-    cursor: pointer;
-    padding: 8px;
-    border-radius: 50%;
-    background-color: var(--sidebar-background);
-    transition: background-color 0.3s ease;
+.sidebar-link:hover {
+    background-color: var(--menu-hover-background);
 }
 
-.theme-toggle:hover, #menu-toggle:hover {
-    background-color: var(--sidebar-hover);
+/* Медиа-запросы для отображения бокового меню на десктопах */
+@media screen and (min-width: 769px) {
+    .sidebar {
+        display: block;
+    }
+    
+    /* Сдвигаем основной контент */
+    header,
+    main {
+        margin-left: 60px;
+        width: calc(100% - 60px);
+    }
+    
+    /* Скрываем мобильное меню */
+    #menu-toggle,
+    .menu {
+        display: none !important;
+    }
 }
 
-.theme-icon {
+/* Мобиьная версия */
+@media screen and (max-width: 768px) {
+    .sidebar {
+        display: none;
+    }
+    
+    header,
+    main {
+        margin-left: 0;
+        width: 100%;
+    }
+}
+
+/* Стили для старого меню */
+#menu-toggle {
     display: none;
 }
 
-[data-theme="light"] #sun-icon {
-    display: block;
+.menu {
+    display: none;
 }
 
-[data-theme="dark"] #moon-icon {
-    display: block;
+.header-nav {
+    display: flex;
 }
 
-/* Стили для подвала */
-.container {
-    text-align: center;
-    padding: 20px;
-    margin-top: 40px;
+/* Медиа-запросы */
+@media screen and (max-width: 768px) {
+    .header-controls {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    #menu-toggle {
+        display: block;
+        cursor: pointer;
+    }
+    
+    .menu {
+        display: none;
+        position: absolute;
+        top: 50px;
+        right: 0;
+        background: var(--header-background);
+        width: 200px;
+        padding: 10px 0;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        z-index: 1000;
+    }
+
+    .menu.show {
+        display: block;
+    }
+
+    .menu a {
+        display: block;
+        padding: 10px 20px;
+        color: var(--header-text);
+        text-decoration: none;
+        text-align: left;
+        white-space: nowrap;
+    }
+
+    .menu a:hover {
+        background-color: var(--header-background-dark);
+    }
+
+    .header-nav {
+        display: none;
+    }
+
+    .sidebar {
+        display: none !important;
+    }
+
+    header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        background: var(--header-background);
+    }
+
+    main {
+        margin-top: 80px;
+        padding: 0 15px;
+    }
+
+    .schedule-table {
+        margin-top: 20px;
+    }
 }
 
-.text-container {
-    max-width: 800px;
-    margin: 0 auto;
+/* На десктопах */
+@media screen and (min-width: 769px) {
+    #menu-toggle,
+    .menu,
+    .header-nav {
+        display: none !important;
+    }
+
+    .sidebar {
+        display: block !important;
+    }
+    
+    header,
+    main {
+        margin-left: 60px;
+        width: calc(100% - 60px);
+    }
 }
 
-.dz {
-    font-size: 1.2em;
-    color: var(--text-color);
+/* Стили для кнопки темы в боковом меню */
+.sidebar-theme-toggle {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    width: 100%;
+    padding: 12px 15px;
+    display: flex;
+    justify-content: center;
+    box-sizing: border-box;
 }
 
-.ps {
-    font-size: 0.9em;
-    color: var(--text-color);
-    opacity: 0.8;
+.theme-toggle {
+    width: 50px;
+    height: 25px;
+    background-color: #333;
+    border-radius: 25px;
+    padding: 5px;
+    position: relative;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.theme-toggle i {
+    color: #f1c40f;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.theme-toggle::before {
+    content: '';
+    position: absolute;
+    width: 21px;
+    height: 21px;
+    background-color: white;
+    border-radius: 50%;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.3s ease;
+}
+
+/* Стили для темной темы */
+.darkmode .theme-toggle::before {
+    transform: translateX(25px);
+}
+
+.darkmode .theme-toggle i.fa-sun {
+    color: #666;
+}
+
+.darkmode .theme-toggle i.fa-moon {
+    color: #f1c40f;
+}
+
+/* Медиа-запросы */
+@media screen and (max-width: 768px) {
+    #theme-toggle {
+        display: block;
+    }
+    
+    .sidebar-theme-toggle {
+        display: none !important;
+    }
+}
+
+@media screen and (min-width: 769px) {
+    #theme-toggle {
+        display: none !important;
+    }
+    
+    .sidebar-theme-toggle {
+        display: flex !important;
+    }
+
+    .sidebar {
+        display: block;
+    }
+}
+
+/* Обновляем отступы для main */
+@media screen and (min-width: 769px) {
+    main {
+        margin-left: 60px;
+        width: calc(100% - 60px);
+        margin-top: 60px;
+    }
+
+    header {
+        padding-left: 60px;
+        width: calc(100% - 60px);
+    }
+}
+
+@media screen and (max-width: 768px) {
+    main {
+        margin-left: 0;
+        width: 100%;
+        margin-top: 60px;
+    }
+
+    header {
+        width: 100%;
+        padding-left: 0;
+    }
 }
