@@ -41,10 +41,10 @@ body {
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Стили для бокового меню */
+/* Стили для бокового меню на ПК */
 .sidebar {
     position: fixed;
-    left: -250px;
+    left: 0;
     top: 0;
     width: 250px;
     height: 100%;
@@ -52,10 +52,6 @@ body {
     transition: left 0.3s ease;
     z-index: 1000;
     padding-top: 60px;
-}
-
-.sidebar.active {
-    left: 0;
 }
 
 .sidebar-nav {
@@ -90,6 +86,7 @@ body {
     text-align: center;
     color: var(--text-color);
     margin-top: 20px;
+    margin-left: 250px; /* Добавлен отступ для контента */
 }
 
 /* Стили для кнопок темы и меню */
@@ -126,11 +123,23 @@ body {
     display: block;
 }
 
+/* Скрываем кнопку меню на ПК */
+#menu-toggle {
+    display: none;
+}
+
+/* Основной контент */
+main {
+    margin-left: 250px; /* Отступ для контента */
+    padding: 20px;
+}
+
 /* Стили для подвала */
 .container {
     text-align: center;
     padding: 20px;
     margin-top: 40px;
+    margin-left: 250px; /* Добавлен отступ для контента */
 }
 
 .text-container {
@@ -147,4 +156,25 @@ body {
     font-size: 0.9em;
     color: var(--text-color);
     opacity: 0.8;
+}
+
+/* Медиа-запрос для мобильных устройств */
+@media screen and (max-width: 768px) {
+    .sidebar {
+        left: -250px;
+    }
+
+    .sidebar.active {
+        left: 0;
+    }
+
+    #menu-toggle {
+        display: block;
+    }
+
+    .zagolovok,
+    main,
+    .container {
+        margin-left: 0;
+    }
 }
