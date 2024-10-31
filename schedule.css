@@ -136,7 +136,6 @@ td:not(:empty):not(:first-child)::after {
 /* Добавьте следующие строки для определения цветов в зависимости от темы */
 :root {
     --table-background: #fff; /* Цвет фона таблицы */
-    --text-color: #333; /* Цвет текста */
     --table-border: #ddd; /* Цвет границ таблицы */
     --table-hover-background: #f5f5f5; /* Цвет фона при наведении */
     --text-secondary: #777; /* Вторичный цвет текста */
