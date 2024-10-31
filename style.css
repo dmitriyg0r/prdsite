@@ -1,5 +1,5 @@
 :root {
-    /* Основные цвета */
+    /* Основные цвета - синяя тема */
     --primary-color: #1a73e8;
     --text-color: #202124;
     --background-color: #ffffff;
@@ -14,21 +14,21 @@
     --text-secondary: #70757a;
 }
 
-/* Темная тема */
+/* Темная тема - фиолетовая */
 [data-theme="dark"] {
     /* Основные цвета */
-    --primary-color: #8ab4f8;
+    --primary-color: #9b6dff;
     --text-color: #e8eaed;
-    --background-color: #202124;
-    --sidebar-background: #292a2d;
-    --sidebar-hover: #3c4043;
+    --background-color: #1f1b24;
+    --sidebar-background: #2d2736;
+    --sidebar-hover: #3d3548;
 
     /* Переменные для новостей */
-    --text-container-background: #292a2d;
+    --text-container-background: #2d2736;
     --text-container-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    --button-background: #8ab4f8;
-    --button-hover: #6b8ec8;
-    --text-secondary: #9aa0a6;
+    --button-background: #9b6dff;
+    --button-hover: #8257e6;
+    --text-secondary: #a8a5ad;
 }
 
 /* Общие стили */
