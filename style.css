@@ -5,20 +5,27 @@
     --background-color: #ffffff;
     --sidebar-background: #1557b0;
     --sidebar-hover: #0d3c7d;
-
-    /* Переменные для новостей */
-    --text-container-background: #ffffff;
-    --text-container-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    
+    /* Дополнительные цвета */
+    --button-text: #ffffff;
     --button-background: #1a73e8;
     --button-hover: #1557b0;
+    --button-secondary: #f1f3f4;
+    --button-background-rgb: 26, 115, 232;
+    --button-hover-rgb: 21, 87, 176;
+    
+    /* Контейнеры */
+    --text-container-background: #ffffff;
+    --text-container-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --table-background: #ffffff;
+    --input-background: #ffffff;
+    --border-color: #e0e0e0;
+    
+    /* Текст */
     --text-secondary: #70757a;
-
-    /* Переменные для таблицы - светлая тема */
-    --table-border: #e0e0e0;
-    --header-background: #1557b0; /* Синий цвет как у сайдбара */
     --header-text: #ffffff;
-    --table-hover-background: #f5f5f5;
-    --today-highlight: rgba(21, 87, 176, 0.1); /* Светло-синий для выделения */
+    --header-gradient: #1557b0;
+    --accent-color: #1a73e8;
 }
 
 /* Темная тема - фиолетовая */
@@ -29,20 +36,27 @@
     --background-color: #1f1b24;
     --sidebar-background: #2d2736;
     --sidebar-hover: #3d3548;
-
-    /* Переменные для новостей */
-    --text-container-background: #2d2736;
-    --text-container-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    
+    /* Дополнительные цвета */
+    --button-text: #ffffff;
     --button-background: #9b6dff;
     --button-hover: #8257e6;
+    --button-secondary: #3d3548;
+    --button-background-rgb: 155, 109, 255;
+    --button-hover-rgb: 130, 87, 230;
+    
+    /* Контейнеры */
+    --text-container-background: #2d2736;
+    --text-container-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    --table-background: #2d2736;
+    --input-background: #3d3548;
+    --border-color: #4a4a4a;
+    
+    /* Текст */
     --text-secondary: #a8a5ad;
-
-    /* Переменные для таблицы - темная тема */
-    --table-border: #3d3548;
-    --header-background: #9b6dff; /* Фиолетовый цвет */
     --header-text: #ffffff;
-    --table-hover-background: #3d3548;
-    --today-highlight: rgba(155, 109, 255, 0.1); /* Светло-фиолетовый для выделения */
+    --header-gradient: #8257e6;
+    --accent-color: #9b6dff;
 }
 
 /* Общие стили */
@@ -128,6 +142,9 @@ body {
     letter-spacing: 2px;
     position: relative;
     padding-bottom: 15px;
+}
+
+.zagolovok::after {
     content: '';
     position: absolute;
     bottom: 0;
@@ -288,7 +305,7 @@ main {
     margin-left: 270px;
 }
 
-/* Улучшенные стили для боковой панели */
+/* Улучшенные стили для боковой паели */
 .sidebar-link {
     margin: 8px 12px;
     border-radius: 12px;
@@ -356,4 +373,121 @@ tr:hover {
 .add-post-btn:hover {
     transform: translateY(-3px);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+/* Общие стили для форм */
+.form-input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    background-color: var(--input-background);
+    color: var(--text-color);
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--button-hover);
+    box-shadow: 0 0 0 3px rgba(var(--button-hover-rgb), 0.2);
+}
+
+.form-button {
+    background-color: var(--button-background);
+    color: var(--button-text);
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.form-button:hover {
+    background-color: var(--button-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Медиа-запросы */
+@media screen and (max-width: 1600px) {
+    .grid-container {
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    }
+}
+
+@media screen and (max-width: 1200px) {
+    .grid-container {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 15px;
+        padding: 15px;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .grid-container {
+        grid-template-columns: 1fr;
+        padding: 10px;
+    }
+    
+    .form-input,
+    .form-button {
+        font-size: 14px;
+        padding: 10px 20px;
+    }
+    
+    .sidebar {
+        width: 60px;
+    }
+    
+    main {
+        margin-left: 70px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .form-input,
+    .form-button {
+        font-size: 13px;
+        padding: 8px 16px;
+    }
+    
+    .sidebar {
+        width: 50px;
+    }
+    
+    main {
+        margin-left: 60px;
+    }
+}
+
+/* Анимации */
+@keyframes fadeIn {
+    from { 
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(-100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+/* Классы для анимаций */
+.fade-in {
+    animation: fadeIn 0.6s ease-out;
+}
+
+.slide-in {
+    animation: slideIn 0.4s ease-out;
 }
