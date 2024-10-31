@@ -12,10 +12,16 @@ document.addEventListener("DOMContentLoaded", function() {
         document.getElementById('odd-week-schedule').style.display = 'block';
     }
 
-    // Подсветка текущего дня
-    const todayHighlightClass = 'today-highlight';
-    const currentDayCells = document.querySelectorAll(`tbody tr:nth-child(${dayOfWeek + 1}) td`);
-    currentDayCells.forEach(cell => {
-        cell.classList.add(todayHighlightClass);
+    // Получаем все строки таблицы
+    const rows = document.querySelectorAll('#even-week-schedule tbody tr, #odd-week-schedule tbody tr');
+
+    // Удаляем класс .today-highlight из всех строк
+    rows.forEach(row => {
+        row.classList.remove('today-highlight');
     });
+
+    // Добавляем класс .today-highlight к строке, соответствующей текущему дню
+    if (dayOfWeek > 0 && dayOfWeek < 6) { // Пропускаем воскресенье
+        rows[dayOfWeek - 1].classList.add('today-highlight'); // dayOfWeek - 1, так как массив начинается с 0
+    }
 });
