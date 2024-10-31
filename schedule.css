@@ -23,7 +23,6 @@ table {
     background: var(--table-background, #fff);
     border-radius: 10px;
     overflow: hidden;
-    color: var(--text-color, #333);
 }
 
 th {
@@ -46,7 +45,6 @@ td {
     border-bottom: 1px solid var(--table-border, #ddd);
     transition: background-color 0.3s ease, box-shadow 0.3s ease;
     white-space: nowrap;
-    color: var(--text-color, #333);
 }
 
 /* Первая колонка (дни недели) */
