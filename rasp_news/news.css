@@ -205,23 +205,19 @@
 }
 
 .news-content {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
     padding: 20px;
     max-width: 1200px;
     margin: 0 auto;
 }
 
 .post {
-    background: var(--text-container-background);
-    border-radius: 12px;
-    overflow: hidden;
+    flex: 1 1 calc(30% - 20px);
+    margin: 10px;
     box-shadow: var(--text-container-shadow);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
 }
 
 .post-info {
