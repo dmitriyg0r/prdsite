@@ -45,14 +45,17 @@ body {
 .sidebar {
     position: fixed;
     width: 65px;
-    height: 100%;
+    height: 100vh;
     background-color: var(--sidebar-background);
     transition: width 0.3s ease;
     z-index: 1000;
     display: flex;
     flex-direction: column;
     padding-top: 60px;
+    padding-bottom: 0;
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    top: 0;
+    left: 0;
 }
 
 .sidebar:hover {
@@ -220,14 +223,12 @@ main {
 .theme-switch-wrapper {
     padding: 12px;
     border-radius: 8px;
-    margin-top: 0;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 }
 
 .theme-toggle-container {
     display: flex;
     align-items: center;
-    justify-content: center;
 }
 
 .theme-checkbox {
@@ -240,34 +241,41 @@ main {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    width: 50px;
-    height: 26px;
+    width: 45px;
+    height: 24px;
     background-color: #111;
     border-radius: 50px;
     padding: 5px;
     cursor: pointer;
-    transform: scale(0.8);
 }
 
 .ball {
     position: absolute;
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
     background-color: #fff;
     border-radius: 50%;
     transition: transform 0.3s ease;
     left: 2px;
+    top: 2px;
 }
 
 .theme-checkbox:checked + .theme-label .ball {
-    transform: translateX(24px);
+    transform: translateX(21px);
+}
+
+.theme-label i {
+    font-size: 12px;
+    z-index: 1;
 }
 
 .theme-label .fa-sun {
+    margin-left: 4px;
     color: #f1c40f;
 }
 
 .theme-label .fa-moon {
+    margin-right: 4px;
     color: #f1c40f;
 }
 
@@ -284,7 +292,6 @@ main {
 
 /* Анимация иконок */
 .theme-label i {
-    font-size: 14px;
     transition: opacity 0.3s ease;
 }
 
@@ -298,11 +305,12 @@ main {
 
 /* Медиа-запрос для мобильных устройств */
 @media screen and (max-width: 768px) {
+    .sidebar {
+        left: -65px;
+        width: 220px;
+    }
+
     .theme-switch-wrapper span {
         opacity: 1;
-    }
-    
-    .theme-label {
-        transform: scale(1);
     }
 }
