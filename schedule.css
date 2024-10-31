@@ -19,57 +19,45 @@ table {
     width: 100%;
     min-width: 800px;
     background: var(--table-background, #fff);
-    border-radius: 10px;
+    border-radius: 15px;
     overflow: hidden;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Добавляем тень для таблицы */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
 }
 
 th {
-    background-color: var(--header-background, #1557B0);
-    color: var(--header-text, #fff);
-    font-weight: 600;
+    background: linear-gradient(45deg, var(--header-background, #1557B0), #2171d9);
+    padding: 18px 15px;
+    font-size: 14px;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-size: 15px;
-    padding: 15px;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    border-bottom: 2px solid var(--table-border, #ddd);
-    text-align: center; /* Центрируем текст заголовков */
+    letter-spacing: 1px;
+    font-weight: 500;
+    border-bottom: none;
 }
 
 td {
-    padding: 15px;
-    font-size: 15px;
-    border-bottom: 1px solid var(--table-border, #ffffff);
-    transition: background-color 0.3s ease, box-shadow 0.3s ease;
-    white-space: nowrap;
-    text-align: center; /* Центрируем текст ячеек */
+    padding: 16px;
+    font-size: 14px;
+    border-bottom: 1px solid rgba(var(--table-border-rgb), 0.08);
+    transition: all 0.2s ease;
 }
 
 /* Первая колонка (дни недели) */
 td:first-child {
     font-weight: 600;
-    color: var(--header-background, #1557B0);
-    position: sticky;
-    left: 0;
-    background-color: var(--table-background, #fff);
-    z-index: 5;
-    text-align: left; /* Выравниваем текст первой колонки */
+    background: linear-gradient(90deg, var(--table-background), rgba(var(--table-background-rgb), 0.98));
+    border-right: 1px solid rgba(var(--table-border-rgb), 0.08);
 }
 
 /* Подсветка текущего дня */
 .today-highlight {
-    background-color: var(--today-highlight-light, #1557B0); /* Синий для светлой темы */
+    background-color: var(--today-highlight-light);
     font-weight: bold;
-    color: var(--header-text, #fff);
-    text-align: center; /* Центрируем текст при подсветке */
+    color: var(--header-text);
+    text-align: center;
 }
 
-/* Используйте медиа-запрос или класс для тёмной темы */
-body.dark-theme .today-highlight {
-    background-color: var(--today-highlight-dark, #885DED); /* Фиолетовый для тёмной темы */
+[data-theme="dark"] .today-highlight {
+    background-color: var(--today-highlight-dark);
 }
 
 /* Стили для пустых ячеек */
@@ -81,8 +69,8 @@ td:empty::before {
 
 /* Анимация при наведении на строку */
 tr:hover td {
-    background-color: var(--table-hover-background, #f5f5f5);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: rgba(var(--table-hover-rgb), 0.04);
+    transform: scale(1.01);
 }
 
 /* Медиа-запросы для таблицы */
@@ -130,9 +118,10 @@ td:not(:empty):not(:first-child) {
 td:not(:empty):not(:first-child)::after {
     content: attr(data-room);
     display: block;
-    font-size: 12px;
-    margin-top: 4px;
-    text-align: center; /* Центрируем текст номеров аудиторий */
+    font-size: 11px;
+    margin-top: 6px;
+    color: rgba(var(--table-text-rgb), 0.7);
+    font-weight: 500;
 }
 
 /* Добавьте следующие строки для определения цветов в зависимости от темы */
@@ -145,12 +134,18 @@ td:not(:empty):not(:first-child)::after {
     --header-background: #1557b0; /* Синий цвет как у сайдбара */
     --header-text: #ffffff; /* Убедитесь, что это значение совпадает с темой */
     --table-text: #000; /* Цвет текста ячеек */
+    --table-border-rgb: 224, 224, 224;
+    --table-hover-rgb: 21, 87, 176;
+    --table-background-rgb: 255, 255, 255;
 }
 
 /* Стили для текста в зависимости от темы */
 body.dark-theme {
     --header-text: #ffffff; /* Белый текст для тёмной темы */
     --table-text: #fff; /* Белый текст для ячеек в тёмной теме */
+    --table-border-rgb: 75, 75, 75;
+    --table-hover-rgb: 136, 93, 237;
+    --table-background-rgb: 30, 30, 30;
 }
 
 body.light-theme {
