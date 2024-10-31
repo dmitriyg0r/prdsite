@@ -145,6 +145,6 @@ td:not(:empty):not(:first-child)::after {
 :root {
     --today-highlight-light: blue; /* Синий для светлой темы */
     --today-highlight-dark: purple; /* Фиолетовый для тёмной темы */
-    --header-background: #333; /* Цвет фона заголовка */
+    --header-background: #1557B0; /* Цвет фона заголовка */
     --header-text: #fff; /* Цвет текста заголовка */
 }
