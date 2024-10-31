@@ -1,62 +1,62 @@
 :root {
-    /* Основные цвета - синяя тема */
-    --primary-color: #1a73e8;
-    --text-color: #202124;
-    --background-color: #ffffff;
-    --sidebar-background: #1557b0;
-    --sidebar-hover: #0d3c7d;
+    /* Основные цвета - модернизированная синяя тема */
+    --primary-color: #2196f3;
+    --text-color: #2c3e50;
+    --background-color: #f8f9fa;
+    --sidebar-background: #1976d2;
+    --sidebar-hover: #1565c0;
     
     /* Дополнительные цвета */
     --button-text: #ffffff;
-    --button-background: #1a73e8;
-    --button-hover: #1557b0;
-    --button-secondary: #f1f3f4;
-    --button-background-rgb: 26, 115, 232;
-    --button-hover-rgb: 21, 87, 176;
+    --button-background: #2196f3;
+    --button-hover: #1976d2;
+    --button-secondary: #e3f2fd;
+    --button-background-rgb: 33, 150, 243;
+    --button-hover-rgb: 25, 118, 210;
     
     /* Контейнеры */
     --text-container-background: #ffffff;
-    --text-container-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --text-container-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
     --table-background: #ffffff;
     --input-background: #ffffff;
     --border-color: #e0e0e0;
     
     /* Текст */
-    --text-secondary: #70757a;
+    --text-secondary: #546e7a;
     --header-text: #ffffff;
-    --header-gradient: #1557b0;
-    --accent-color: #1a73e8;
+    --header-gradient: #1976d2;
+    --accent-color: #2196f3;
 }
 
-/* Темная тема - фиолетовая */
+/* Темная тема - улучшенная тёмная тема */
 [data-theme="dark"] {
     /* Основные цвета */
-    --primary-color: #9b6dff;
-    --text-color: #e8eaed;
-    --background-color: #1f1b24;
-    --sidebar-background: #2d2736;
-    --sidebar-hover: #3d3548;
+    --primary-color: #bb86fc;
+    --text-color: #e0e0e0;
+    --background-color: #121212;
+    --sidebar-background: #1f1f1f;
+    --sidebar-hover: #2d2d2d;
     
     /* Дополнительные цвета */
     --button-text: #ffffff;
-    --button-background: #9b6dff;
-    --button-hover: #8257e6;
-    --button-secondary: #3d3548;
-    --button-background-rgb: 155, 109, 255;
-    --button-hover-rgb: 130, 87, 230;
+    --button-background: #bb86fc;
+    --button-hover: #9d4edd;
+    --button-secondary: #2d2d2d;
+    --button-background-rgb: 187, 134, 252;
+    --button-hover-rgb: 157, 78, 221;
     
     /* Контейнеры */
-    --text-container-background: #2d2736;
-    --text-container-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    --table-background: #2d2736;
-    --input-background: #3d3548;
-    --border-color: #4a4a4a;
+    --text-container-background: #1f1f1f;
+    --text-container-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    --table-background: #1f1f1f;
+    --input-background: #2d2d2d;
+    --border-color: #333333;
     
     /* Текст */
-    --text-secondary: #a8a5ad;
+    --text-secondary: #b0bec5;
     --header-text: #ffffff;
-    --header-gradient: #8257e6;
-    --accent-color: #9b6dff;
+    --header-gradient: #9d4edd;
+    --accent-color: #bb86fc;
 }
 
 /* Общие стили */

@@ -138,29 +138,30 @@ td:not(:empty):not(:first-child)::after {
 
 /* Добавьте следующие строки для определения цветов в зависимости от темы */
 :root {
-    --table-background: #fff; /* Цвет фона таблицы */
-    --table-border: #e0e0e0; /* Убедитесь, что это значение совпадает с темой */
-    --table-hover-background: #f5f5f5; /* Убедитесь, что это значение совпадает с темой */
-    --today-highlight-light: rgba(21, 87, 176, 0.1); /* Светло-синий для выделения */
-    --today-highlight-dark: rgba(155, 109, 255, 0.1); /* Светло-фиолетовый для выделения */
-    --header-background: #1557b0; /* Синий цвет для светлой темы */
-    --header-gradient: #2171d9; /* Градиент для светлой темы */
-    --header-text: #ffffff; /* Убедитесь, что это значение совпадает с темой */
-    --table-text: #000; /* Цвет текста ячеек */
+    --table-background: #ffffff;
+    --table-border: #e0e0e0;
+    --table-hover-background: #f5f8ff;
+    --today-highlight-light: rgba(33, 150, 243, 0.1);
+    --header-background: #1976d2;
+    --header-gradient: #2196f3;
+    --table-text: #2c3e50;
     --table-border-rgb: 224, 224, 224;
-    --table-hover-rgb: 21, 87, 176;
+    --table-hover-rgb: 33, 150, 243;
     --table-background-rgb: 255, 255, 255;
 }
 
 /* Стили для текста в зависимости от темы */
 body.dark-theme {
-    --header-text: #ffffff; /* Белый текст для тёмной темы */
-    --table-text: #fff; /* Белый текст для ячеек в тёмной теме */
-    --table-border-rgb: 75, 75, 75;
-    --table-hover-rgb: 136, 93, 237;
-    --table-background-rgb: 30, 30, 30;
-    --header-background: #8C5FF0; /* Фиолетовый цвет для тёмной темы */
-    --header-gradient: #9b6dff; /* Градиент для тёмной темы */
+    --table-background: #1f1f1f;
+    --table-border: #333333;
+    --table-hover-background: #2d2d2d;
+    --today-highlight-dark: rgba(187, 134, 252, 0.15);
+    --header-background: #9d4edd;
+    --header-gradient: #bb86fc;
+    --table-text: #e0e0e0;
+    --table-border-rgb: 51, 51, 51;
+    --table-hover-rgb: 187, 134, 252;
+    --table-background-rgb: 31, 31, 31;
 }
 
 body.light-theme {
