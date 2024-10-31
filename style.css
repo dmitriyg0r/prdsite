@@ -44,19 +44,18 @@ body {
 /* Стили для бокового меню */
 .sidebar {
     position: fixed;
-    left: -190px;
-    top: 0;
     width: 250px;
     height: 100%;
     background-color: var(--sidebar-background);
     transition: all 0.3s ease;
     z-index: 1000;
     padding-top: 60px;
+    transform: translateX(-200px);
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
 }
 
 .sidebar:hover {
-    left: 0;
+    transform: translateX(0);
 }
 
 .sidebar-nav {
@@ -75,7 +74,6 @@ body {
     border-radius: 8px;
     transition: background-color 0.3s ease;
     white-space: nowrap;
-    width: calc(100% - 30px);
 }
 
 .sidebar-link:hover {
@@ -138,7 +136,7 @@ body {
 /* Основной контент */
 main {
     padding: 20px;
-    margin-left: 80px;
+    margin-left: 70px;
     transition: margin-left 0.3s ease;
 }
 
@@ -147,7 +145,7 @@ main {
     text-align: center;
     padding: 20px;
     margin-top: 40px;
-    margin-left: 80px;
+    margin-left: 70px;
     transition: margin-left 0.3s ease;
 }
 
@@ -170,15 +168,15 @@ main {
 /* Медиа-запрос для мобильных устройств */
 @media screen and (max-width: 768px) {
     .sidebar {
-        left: -250px;
+        transform: translateX(-250px);
     }
 
     .sidebar:hover {
-        left: -250px;
+        transform: translateX(-250px);
     }
 
     .sidebar.active {
-        left: 0;
+        transform: translateX(0);
     }
 
     #menu-toggle {
