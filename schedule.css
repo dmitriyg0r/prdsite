@@ -64,7 +64,7 @@ td:first-child {
 
 /* Подсветка текущего дня */
 .today-highlight {
-    background-color: var(--today-highlight-light, #e0f7ff); /* Синий для светлой темы */
+    background-color: var(--today-highlight-light, #1557B0); /* Синий для светлой темы */
     font-weight: bold;
     color: var(--header-text, #fff);
     text-align: center; /* Центрируем текст при подсветке */
@@ -72,7 +72,7 @@ td:first-child {
 
 /* Используйте медиа-запрос или класс для тёмной темы */
 body.dark-theme .today-highlight {
-    background-color: var(--today-highlight-dark, #e0c3fc); /* Фиолетовый для тёмной темы */
+    background-color: var(--today-highlight-dark, #885DED); /* Фиолетовый для тёмной темы */
 }
 
 /* Стили для пустых ячеек */
