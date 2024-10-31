@@ -90,12 +90,12 @@ body {
 .sidebar-link {
     display: flex;
     align-items: center;
-    padding: 14px 16px;
+    padding: 14px 8px;
     text-decoration: none;
     color: rgba(232, 234, 237, 0.95);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     white-space: nowrap;
-    margin: 4px 12px;
+    margin: 4px 8px;
     border-radius: 16px;
     position: relative;
     overflow: hidden;
@@ -557,4 +557,9 @@ tr:hover {
 
 .slide-in {
     animation: slideIn 0.4s ease-out;
+}
+
+/* При наведении на sidebar увеличиваем padding для корректного отображения */
+.sidebar:hover .sidebar-link {
+    padding: 14px 24px;
 }
