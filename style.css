@@ -73,7 +73,7 @@ body {
     position: fixed;
     width: 70px;
     height: 100vh;
-    background: linear-gradient(180deg, var(--sidebar-background), rgba(25, 118, 210, 0.95));
+    background: var(--sidebar-background);
     z-index: 1000;
     display: flex;
     flex-direction: column;
@@ -126,9 +126,7 @@ body {
 }
 
 .sidebar-link.active {
-    background: linear-gradient(90deg, 
-        var(--primary-color), 
-        rgba(110, 92, 194, 0.8));
+    background: var(--primary-color);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
