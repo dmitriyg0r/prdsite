@@ -14,7 +14,6 @@
     --text-secondary: #70757a;
 
     /* Переменные для таблицы - светлая тема */
-    --table-background: #ffffff;
     --table-border: #e0e0e0;
     --header-background: #1557b0; /* Синий цвет как у сайдбара */
     --header-text: #ffffff;
@@ -39,7 +38,6 @@
     --text-secondary: #a8a5ad;
 
     /* Переменные для таблицы - темная тема */
-    --table-background: #2d2736;
     --table-border: #3d3548;
     --header-background: #9b6dff; /* Фиолетовый цвет */
     --header-text: #ffffff;
