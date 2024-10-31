@@ -13,16 +13,9 @@ document.addEventListener("DOMContentLoaded", function() {
         document.getElementById('odd-week-schedule').style.display = 'block';
     }
 
-    // Получаем все строки таблицы
-    const rows = document.querySelectorAll('#even-week-schedule tbody tr, #odd-week-schedule tbody tr');
-
-    // Удаляем класс .today-highlight из всех строк
-    rows.forEach(row => {
-        row.classList.remove('today-highlight');
-    });
-
-    // Добавляем класс .today-highlight к строке, соответствующей текущему дню
-    if (dayOfWeek > 0 && dayOfWeek <= 6) { // Пропускаем воскресенье
-        rows[dayOfWeek - 1].classList.add('today-highlight'); // dayOfWeek - 1, так как массив начинается с 0
+    // Подсветка текущего дня в расписании
+    const rows = document.querySelectorAll('#odd-week-schedule tbody tr, #even-week-schedule tbody tr');
+    if (dayOfWeek > 0 && dayOfWeek < 6) { // Проверяем, что это будний день
+        rows[dayOfWeek - 1].classList.add('today-highlight'); // Подсвечиваем всю строку
     }
 });
