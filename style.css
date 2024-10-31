@@ -49,6 +49,8 @@ body {
     background-color: var(--sidebar-background);
     transition: width 0.3s ease;
     z-index: 1000;
+    display: flex;
+    flex-direction: column;
     padding-top: 60px;
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
 }
@@ -62,6 +64,7 @@ body {
     flex-direction: column;
     gap: 5px;
     padding: 10px;
+    flex-grow: 1;
 }
 
 .sidebar-link {
@@ -215,14 +218,16 @@ main {
 
 /* Стили для переключателя темы */
 .theme-switch-wrapper {
-    margin-top: auto;
     padding: 12px;
     border-radius: 8px;
+    margin-top: 0;
+    margin-bottom: 20px;
 }
 
 .theme-toggle-container {
     display: flex;
     align-items: center;
+    justify-content: center;
 }
 
 .theme-checkbox {
