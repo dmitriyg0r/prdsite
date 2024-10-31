@@ -138,6 +138,7 @@ td:not(:empty):not(:first-child)::after {
 
 /* Добавьте следующие строки для определения цветов в зависимости от темы */
 :root {
+    /* Улучшенные цвета для таблицы в светлой теме */
     --table-background: #ffffff;
     --table-border: #e0e0e0;
     --table-hover-background: #f5f8ff;
@@ -150,8 +151,8 @@ td:not(:empty):not(:first-child)::after {
     --table-background-rgb: 255, 255, 255;
 }
 
-/* Стили для текста в зависимости от темы */
 body.dark-theme {
+    /* Улучшенные цвета для таблицы в тёмной теме */
     --table-background: #1f1f1f;
     --table-border: #333333;
     --table-hover-background: #2d2d2d;
