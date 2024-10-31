@@ -41,17 +41,21 @@ body {
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Стили для бокового меню на ПК */
+/* Стили для бокового меню */
 .sidebar {
     position: fixed;
-    left: 0;
+    left: -200px;
     top: 0;
     width: 250px;
     height: 100%;
     background-color: var(--sidebar-background);
-    transition: left 0.3s ease;
+    transition: all 0.3s ease;
     z-index: 1000;
     padding-top: 60px;
+}
+
+.sidebar:hover {
+    left: 0;
 }
 
 .sidebar-nav {
@@ -69,6 +73,7 @@ body {
     color: var(--text-color);
     border-radius: 8px;
     transition: background-color 0.3s ease;
+    white-space: nowrap;
 }
 
 .sidebar-link:hover {
@@ -79,6 +84,7 @@ body {
     margin-right: 10px;
     width: 20px;
     text-align: center;
+    font-size: 20px;
 }
 
 /* Стили для заголовка */
@@ -86,7 +92,6 @@ body {
     text-align: center;
     color: var(--text-color);
     margin-top: 20px;
-    margin-left: 250px; /* Добавлен отступ для контента */
 }
 
 /* Стили для кнопок темы и меню */
@@ -130,8 +135,9 @@ body {
 
 /* Основной контент */
 main {
-    margin-left: 250px; /* Отступ для контента */
     padding: 20px;
+    margin-left: 50px;
+    transition: margin-left 0.3s ease;
 }
 
 /* Стили для подвала */
@@ -139,7 +145,7 @@ main {
     text-align: center;
     padding: 20px;
     margin-top: 40px;
-    margin-left: 250px; /* Добавлен отступ для контента */
+    transition: margin-left 0.3s ease;
 }
 
 .text-container {
@@ -164,6 +170,10 @@ main {
         left: -250px;
     }
 
+    .sidebar:hover {
+        left: -250px;
+    }
+
     .sidebar.active {
         left: 0;
     }
@@ -172,8 +182,10 @@ main {
         display: block;
     }
 
-    .zagolovok,
-    main,
+    main {
+        margin-left: 0;
+    }
+
     .container {
         margin-left: 0;
     }
