@@ -1,28 +1,56 @@
 /* Основные переменные и настройки */
 :root {
-    --primary-color: #1a73e8;
-    --text-color: #202124;
-    --background-color: #ffffff;
-    --sidebar-background: #f8f9fa;
-    --sidebar-hover: #e8eaed;
+    --header-background: #04578f;
+    --header-background-dark: #033e63;
+    --text-color: #333;
+    --header-text: white;
+    --footer-background: #333;
+    --footer-text: white;
+    --table-background: white;
+    --table-border: #ddd;
+    --button-background: #008CBA;
+    --button-hover: #005f73;
+    --table-hover-background: #e0e0e0;
     --text-container-background: #ffffff;
-    --text-container-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    --button-background: #1a73e8;
-    --button-hover: #1557b0;
-    --text-secondary: #70757a;
+    --text-container-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    --theme-toggle-background: #ffffff;
+    --theme-toggle-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    --theme-toggle-hover-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    --sun-icon-color: #ffcc00;
+    --moon-icon-color: #ffffff;
+    --today-highlight: #04578fb0;
+    --transition-duration: 0.3s;
+    --menu-background: #04578f;
+    --menu-text: #ffffff;
+    --menu-hover-background: #033e63;
+    --menu-border: rgba(0, 0, 0, 0.1);
+    --menu-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
 }
 
 .darkmode {
-    --primary-color: #8ab4f8;
-    --text-color: #e8eaed;
-    --background-color: #202124;
-    --sidebar-background: #292a2d;
-    --sidebar-hover: #3c4043;
-    --text-container-background: #292a2d;
-    --text-container-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    --button-background: #8ab4f8;
-    --button-hover: #6b8ec8;
-    --text-secondary: #9aa0a6;
+    --background-color: #2c2c3a;
+    --text-color: #ffffff;
+    --header-background: #6a5acd;
+    --header-text: #ffffff;
+    --footer-background: #1f1f1f;
+    --footer-text: #ffffff;
+    --table-background: #3c3c4a;
+    --table-border: #4a4a5a;
+    --button-background: #4b0082;
+    --button-hover: #8a2be2;
+    --table-hover-background: #4a4a5a;
+    --text-container-background: #2c2c3a;
+    --text-container-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    --theme-toggle-background: #3c3c4a;
+    --theme-toggle-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    --theme-toggle-hover-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+    --header-background-dark: #5c43a8;
+    --today-highlight: #695acda5;
+    --menu-background: #6a5acd;
+    --menu-text: #ffffff;
+    --menu-hover-background: #5b4cbe;
+    --menu-border: rgba(255, 255, 255, 0.1);
+    --menu-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
 }
 
 /* Общи стили */
@@ -816,7 +844,7 @@ body.darkmode .menu a:hover {
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
-/* Э��фект ripple при клике */
+/* Эффект ripple при клике */
 .menu a::after, .developer-links a::after {
     content: '';
     position: absolute;
