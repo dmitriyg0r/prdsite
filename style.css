@@ -296,3 +296,28 @@ main {
 .sidebar {
     overflow: hidden;
 }
+
+.theme-label i {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    transition: opacity 0.3s ease;
+}
+
+.theme-label .fa-sun {
+    left: 4px;
+    opacity: 1;
+}
+
+.theme-label .fa-moon {
+    right: 4px;
+    opacity: 0;
+}
+
+.theme-checkbox:checked + .theme-label .fa-sun {
+    opacity: 0;
+}
+
+.theme-checkbox:checked + .theme-label .fa-moon {
+    opacity: 1;
+}
