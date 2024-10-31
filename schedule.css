@@ -8,6 +8,7 @@
     padding: 25px;
     max-width: 1400px;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    font-family: 'Roboto', sans-serif; /* Добавляем шрифт для таблицы */
 }
 
 .table-container:hover {
@@ -23,6 +24,7 @@ table {
     background: var(--table-background, #fff);
     border-radius: 10px;
     overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Добавляем тень для таблицы */
 }
 
 th {
@@ -37,6 +39,7 @@ th {
     top: 0;
     z-index: 10;
     border-bottom: 2px solid var(--table-border, #ddd);
+    text-align: center; /* Центрируем текст заголовков */
 }
 
 td {
@@ -45,6 +48,7 @@ td {
     border-bottom: 1px solid var(--table-border, #ffffff);
     transition: background-color 0.3s ease, box-shadow 0.3s ease;
     white-space: nowrap;
+    text-align: center; /* Центрируем текст ячеек */
 }
 
 /* Первая колонка (дни недели) */
@@ -55,6 +59,7 @@ td:first-child {
     left: 0;
     background-color: var(--table-background, #fff);
     z-index: 5;
+    text-align: left; /* Выравниваем текст первой колонки */
 }
 
 /* Подсветка текущего дня */
@@ -62,6 +67,7 @@ td:first-child {
     background-color: var(--today-highlight-light, #e0f7ff); /* Синий для светлой темы */
     font-weight: bold;
     color: var(--header-text, #fff);
+    text-align: center; /* Центрируем текст при подсветке */
 }
 
 /* Используйте медиа-запрос или класс для тёмной темы */
@@ -73,6 +79,7 @@ body.dark-theme .today-highlight {
 td:empty::before {
     content: '—';
     color: var(--table-border, #ddd);
+    text-align: center; /* Центрируем текст для пустых ячеек */
 }
 
 /* Анимация при наведении на строку */
@@ -128,6 +135,7 @@ td:not(:empty):not(:first-child)::after {
     display: block;
     font-size: 12px;
     margin-top: 4px;
+    text-align: center; /* Центрируем текст номеров аудиторий */
 }
 
 /* Добавьте следующие строки для определения цветов в зависимости от темы */
