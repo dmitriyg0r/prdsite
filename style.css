@@ -113,51 +113,6 @@ body {
     transition: margin-left 0.3s ease;
 }
 
-/* Стили для кнопок темы и меню */
-.header-controls {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    display: flex;
-    gap: 15px;
-    z-index: 1000;
-}
-
-.theme-toggle {
-    cursor: pointer;
-    padding: 8px;
-    border-radius: 50%;
-    background-color: var(--sidebar-background);
-    transition: background-color 0.3s ease;
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.theme-toggle:hover {
-    background-color: var(--sidebar-hover);
-}
-
-.theme-icon {
-    display: none;
-    width: 24px;
-    height: 24px;
-}
-
-[data-theme="light"] #sun-icon {
-    display: block;
-}
-
-[data-theme="dark"] #moon-icon {
-    display: block;
-}
-
-.theme-icon path {
-    fill: var(--text-color);
-}
-
 /* Скрываем кнопку меню на ПК */
 #menu-toggle {
     display: none;
