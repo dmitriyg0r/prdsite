@@ -45,18 +45,14 @@ body {
 .sidebar {
     position: fixed;
     width: 65px;
-    height: 100%;
-    min-height: 100vh;
-    background-color: var(--sidebar-background);
+    height: 100vh;
+    background-color: #2d2736;
     transition: width 0.3s ease;
     z-index: 1000;
     display: flex;
     flex-direction: column;
-    padding-top: 20px;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
     left: 0;
     top: 0;
-    bottom: 0;
 }
 
 .sidebar:hover {
@@ -66,43 +62,45 @@ body {
 .sidebar-nav {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    padding: 10px;
-    flex-grow: 1;
+    padding: 15px 0;
     height: 100%;
 }
 
 .sidebar-link {
     display: flex;
     align-items: center;
-    padding: 8px 12px;
+    padding: 12px 15px;
     text-decoration: none;
-    color: var(--text-color);
-    border-radius: 6px;
+    color: #e8eaed;
     transition: background-color 0.3s ease;
     white-space: nowrap;
+    margin: 4px 8px;
+    border-radius: 8px;
 }
 
 .sidebar-link:hover {
-    background-color: var(--sidebar-hover);
+    background-color: #4a4255;
+}
+
+.sidebar-link.active {
+    background-color: #6e5cc2;
 }
 
 .sidebar-link i {
-    min-width: 40px;
-    font-size: 18px;
+    min-width: 24px;
+    font-size: 20px;
     text-align: center;
-    opacity: 0.9;
+    margin-right: 15px;
 }
 
 .sidebar-link span {
     font-size: 15px;
-    margin-left: 10px;
     opacity: 0;
     transition: opacity 0.2s ease;
 }
 
 .sidebar:hover .sidebar-link span {
-    opacity: 0.9;
+    opacity: 1;
 }
 
 /* Стили для заголовка */
@@ -235,22 +233,17 @@ main {
 
 /* Обновленные стили для переключателя темы */
 .theme-switch-wrapper {
-    margin-top: auto !important;
-    padding: 15px;
-    background-color: var(--sidebar-hover);
-    border-radius: 6px;
-    margin: 10px;
+    margin-top: auto;
+    margin-bottom: 15px;
 }
 
 .theme-toggle-container {
     display: flex;
     align-items: center;
-    gap: 12px;
 }
 
 .theme-checkbox {
-    opacity: 0;
-    position: absolute;
+    display: none;
 }
 
 .theme-label {
@@ -258,59 +251,31 @@ main {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    width: 60px;
-    height: 30px;
-    background-color: var(--text-color);
+    width: 48px;
+    height: 24px;
+    background-color: #4a4255;
     border-radius: 50px;
     padding: 5px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.theme-label i {
-    font-size: 16px;
-    color: var(--background-color);
-    z-index: 2;
-    width: 20px;
-    text-align: center;
+    margin: 0 8px;
 }
 
 .ball {
     position: absolute;
-    width: 26px;
-    height: 26px;
-    background-color: var(--background-color);
+    width: 20px;
+    height: 20px;
+    background-color: white;
     border-radius: 50%;
     transition: transform 0.3s ease;
     left: 2px;
-    top: 2px;
 }
 
 .theme-checkbox:checked + .theme-label .ball {
-    transform: translateX(30px);
+    transform: translateX(24px);
 }
 
-.theme-switch-wrapper span {
-    color: var(--text-color);
-    font-size: 14px;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-    white-space: nowrap;
-}
-
-.sidebar:hover .theme-switch-wrapper span {
-    opacity: 1;
-}
-
-/* Анимация иконок */
 .theme-label i {
-    transition: opacity 0.3s ease;
-}
-
-.theme-checkbox:checked + .theme-label .fa-sun {
-    opacity: 0.5;
-}
-
-.theme-checkbox:not(:checked) + .theme-label .fa-moon {
-    opacity: 0.5;
+    font-size: 12px;
+    color: #e8eaed;
+    z-index: 1;
 }
