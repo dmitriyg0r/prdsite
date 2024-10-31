@@ -12,6 +12,14 @@
     --button-background: #1a73e8;
     --button-hover: #1557b0;
     --text-secondary: #70757a;
+
+    /* Переменные для таблицы - светлая тема */
+    --table-background: #ffffff;
+    --table-border: #e0e0e0;
+    --header-background: #1557b0; /* Синий цвет как у сайдбара */
+    --header-text: #ffffff;
+    --table-hover-background: #f5f5f5;
+    --today-highlight: rgba(21, 87, 176, 0.1); /* Светло-синий для выделения */
 }
 
 /* Темная тема - фиолетовая */
@@ -29,6 +37,14 @@
     --button-background: #9b6dff;
     --button-hover: #8257e6;
     --text-secondary: #a8a5ad;
+
+    /* Переменные для таблицы - темная тема */
+    --table-background: #2d2736;
+    --table-border: #3d3548;
+    --header-background: #9b6dff; /* Фиолетовый цвет */
+    --header-text: #ffffff;
+    --table-hover-background: #3d3548;
+    --today-highlight: rgba(155, 109, 255, 0.1); /* Светло-фиолетовый для выделения */
 }
 
 /* Общие стили */
