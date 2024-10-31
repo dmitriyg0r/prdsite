@@ -145,22 +145,6 @@ td:not(:empty):not(:first-child)::after {
 :root {
     --today-highlight-light: blue; /* Синий для светлой темы */
     --today-highlight-dark: purple; /* Фиолетовый для тёмной темы */
-}
-/* Подсветка текущего дня */
-.today-highlight {
-    background-color: var(--today-highlight-light) !important; /* Синий для светлой темы */
-    font-weight: bold;
-    color: var(--header-text) !important;
-}
-
-/* Используйте медиа-запрос или класс для тёмной темы */
-body.dark-theme .today-highlight {
-    background-color: var(--today-highlight-dark) !important; /* Фиолетовый для тёмной темы */
-}
-
-.today-highlight td:first-child::before {
-    content: '►';
-    position: absolute;
-    left: -20px;
-    color: var(--header-background);
+    --header-background: #333; /* Цвет фона заголовка */
+    --header-text: #fff; /* Цвет текста заголовка */
 }

@@ -1,7 +1,8 @@
 document.addEventListener("DOMContentLoaded", function() {
     const today = new Date();
     const dayOfWeek = today.getDay(); // 0 (воскресенье) - 6 (суббота)
-    const weekNumber = Math.ceil((today.getDate() + (new Date(today.getFullYear(), today.getMonth(), 1).getDay())) / 7) % 2; // 0 - четная, 1 - нечетная
+    const startOfYear = new Date(today.getFullYear(), 0, 1);
+    const weekNumber = Math.ceil((((today - startOfYear) / 86400000) + startOfYear.getDay() + 1) / 7) % 2; // 0 - четная, 1 - нечетная
 
     // Отображение расписания в зависимости от четности недели
     if (weekNumber === 0) {
@@ -21,7 +22,7 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     // Добавляем класс .today-highlight к строке, соответствующей текущему дню
-    if (dayOfWeek > 0 && dayOfWeek < 6) { // Пропускаем воскресенье
+    if (dayOfWeek > 0 && dayOfWeek <= 6) { // Пропускаем воскресенье
         rows[dayOfWeek - 1].classList.add('today-highlight'); // dayOfWeek - 1, так как массив начинается с 0
     }
 });
