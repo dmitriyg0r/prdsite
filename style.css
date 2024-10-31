@@ -294,10 +294,14 @@ main {
     margin-left: 12px;
     opacity: 0;
     transition: opacity 0.2s ease;
-    display: none;
+    white-space: nowrap;
 }
 
 .sidebar:hover .theme-toggle-container span {
     opacity: 1;
-    display: inline-block;
+}
+
+/* Убедитесь, что у бокового меню есть overflow: hidden */
+.sidebar {
+    overflow: hidden;
 }

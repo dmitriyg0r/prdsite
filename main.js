@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const themeToggle = document.getElementById('theme-toggle');
+    const themeToggle = document.querySelector('.theme-checkbox');
     const body = document.documentElement;
     const homeworkForm = document.getElementById('homework-form');
     const uploadForm = document.getElementById('upload-form');
@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Инициализа��ия списка файлов при загрузке страницы
+    // Инициализация списка файлов при загрузке страницы
     fetchFiles();
 
     // Вызываем функцию для отображения правильной таблицы
