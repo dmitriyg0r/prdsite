@@ -6,12 +6,10 @@
     border-radius: 20px;
     max-width: 1400px;
     background: var(--table-background);
-    padding: 0;
 }
 
 table {
-    border-collapse: separate;
-    border-spacing: 0;
+    border-collapse: collapse;
     width: 100%;
     min-width: 800px;
     background: var(--table-background);
@@ -29,46 +27,22 @@ th {
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Скругление углов для первой строки заголовков */
-th:first-child {
-    border-top-left-radius: 20px;
-}
-
-th:last-child {
-    border-top-right-radius: 20px;
-}
-
-/* Скругление углов для последней строки */
-tr:last-child td:first-child {
-    border-bottom-left-radius: 20px;
-}
-
-tr:last-child td:last-child {
-    border-bottom-right-radius: 20px;
-}
-
 /* Стили для ячеек */
 td {
     padding: 15px;
     font-size: 14px;
-    border-bottom: 1px solid var(--table-border);
-    border-right: 1px solid var(--table-border);
+    border: 1px solid var(--table-border);
     background: var(--table-background);
     color: var(--text-color);
     vertical-align: middle;
     text-align: left;
-}
-
-/* Убираем лишние границы */
-td:first-child {
-    border-left: 1px solid var(--table-border);
+    position: relative;
 }
 
 /* Первая колонка (дни недели) */
 td:first-child {
     color: var(--primary-color);
     font-weight: 600;
-    border-right: 2px solid var(--table-border);
     min-width: 120px;
 }
 
@@ -77,18 +51,6 @@ td:first-child {
     background: linear-gradient(45deg, 
         rgba(var(--button-background-rgb), 0.05),
         rgba(var(--button-background-rgb), 0.02));
-    position: relative;
-}
-
-.today-highlight::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    height: 100%;
-    width: 4px;
-    background: var(--primary-color);
-    border-radius: 0 2px 2px 0;
 }
 
 /* Стили для текущей пары */
@@ -100,20 +62,25 @@ td:first-child {
     position: relative;
     z-index: 2;
     box-shadow: 0 4px 15px rgba(var(--button-background-rgb), 0.2);
-    transform: scale(1.02);
-    animation: pulse 2s infinite;
 }
 
-/* Стили для предстоящих пар в текущий день */
+/* Стили для предстоящих пар */
 .upcoming-lesson {
     background-color: rgba(var(--button-background-rgb), 0.05) !important;
-    transition: all 0.3s ease;
 }
 
-/* Стили для прошедших пар в текущий день */
+/* Стили для прошедших пар */
 .past-lesson {
     background-color: rgba(var(--button-background-rgb), 0.02) !important;
     opacity: 0.8;
+}
+
+/* Стили для пустых ячеек */
+td:empty::before {
+    content: '—';
+    color: var(--table-text-secondary);
+    display: block;
+    text-align: center;
 }
 
 /* Анимация пульсации для текущей пары */
@@ -127,23 +94,6 @@ td:first-child {
     100% {
         box-shadow: 0 0 0 0 rgba(var(--button-background-rgb), 0);
     }
-}
-
-/* Стили для пустых ячеек */
-td:empty {
-    background: var(--table-background) !important;
-}
-
-td:empty::before {
-    content: '—';
-    color: var(--table-text-secondary);
-    display: block;
-    text-align: center;
-}
-
-/* Убираем лишние эффекты трансформации */
-tr:hover td {
-    background-color: var(--table-hover);
 }
 
 /* Медиа-запросы */
