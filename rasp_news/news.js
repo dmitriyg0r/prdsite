@@ -5,6 +5,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const postForm = document.getElementById('postForm');
     const newsContainer = document.querySelector('.news');
 
+    // Assuming you have a checkbox for toggling the theme
+    const themeToggle = document.getElementById('theme-toggle');
+
+    themeToggle.addEventListener('change', () => {
+        document.body.classList.toggle('dark-theme', themeToggle.checked);
+    });
+
     // Открытие модального окна
     addPostBtn.addEventListener('click', () => {
         modal.style.display = 'block';
@@ -150,7 +157,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (result.success) {
                 post.remove();
             } else {
-                alert('Ошибка при удалении поста: ' + result.error);
+                alert('Оши��ка при удалении поста: ' + result.error);
             }
         } catch (error) {
             console.error('Ошибка при удалении:', error);
