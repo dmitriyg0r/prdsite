@@ -1,0 +1,46 @@
+.game-container {
+    width: 100%;
+    max-width: 600px;
+    margin: 20px auto;
+    text-align: center;
+}
+
+#game {
+    width: 600px;
+    height: 200px;
+    border: 1px solid #000;
+    margin: 0 auto;
+    position: relative;
+    overflow: hidden;
+    background-color: #f7f7f7;
+}
+
+#dino {
+    width: 50px;
+    height: 50px;
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEwAACxMBAJqcGAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAANrSURBVGiB7ZpNaBNBGIbfmd1NoupBEcUfVNCDoBc9KaV4EcSLiiBUFKpHsXgQBL0IgvYiCIqgICgI/h0Ei3oQKyoqKq0/qIh6qYpGUVs1TWyT3Z3xkGQx3Z3dZJNs0uL7wB52Zr55v5nZ+WY2QJ06dWrGRCpN+ftT+tAhNZjNqhfzeRoKArUvCNhhrTEjhHhZX6+2trXxz0qKy7+Tz58jk0jsg4ivtm1vB8ACAX4GwAhA');
+}
+
+.jump {
+    animation: jump 0.5s linear;
+}
+
+@keyframes jump {
+    0% {
+        bottom: 0;
+    }
+    50% {
+        bottom: 100px;
+    }
+    100% {
+        bottom: 0;
+    }
+}
+
+#cactus {
+    width: 20px;
+    height: 40px;
+    background-color: green;
+    position: absolute;
+    bottom: 0;
+}
