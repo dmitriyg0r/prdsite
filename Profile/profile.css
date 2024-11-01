@@ -42,6 +42,7 @@ main {
     width: 100%;
     max-width: 400px;
     animation: fadeIn 0.6s ease-out;
+    box-sizing: border-box; /* Важно для правильного расчета ширины */
 }
 
 .form-title {
@@ -68,6 +69,7 @@ main {
 
 .form-group {
     margin-bottom: 20px;
+    width: 100%; /* Занимаем всю доступную ширину */
 }
 
 .form-group label {
@@ -86,6 +88,7 @@ main {
     background-color: var(--input-background);
     color: var(--text-color);
     transition: all 0.3s ease;
+    box-sizing: border-box; /* Важно для правильного расчета ширины */
 }
 
 .form-group input:focus {
@@ -96,6 +99,12 @@ main {
 
 .password-wrapper {
     position: relative;
+    width: 100%;
+}
+
+.password-wrapper input {
+    width: 100%;
+    padding-right: 40px; /* Место для иконки глаза */
 }
 
 .eye-icon {
@@ -106,6 +115,7 @@ main {
     cursor: pointer;
     color: var(--text-secondary);
     transition: color 0.3s ease;
+    z-index: 1;
 }
 
 .eye-icon:hover {
@@ -114,7 +124,7 @@ main {
 
 .login-btn {
     width: 100%;
-    padding: 12px;
+    padding: 12px 15px;
     background: linear-gradient(45deg, var(--button-background), var(--header-gradient));
     color: var(--button-text);
     border: none;
@@ -123,7 +133,8 @@ main {
     font-weight: 500;
     cursor: pointer;
     transition: all 0.3s ease;
-    margin-top: 10px;
+    margin-top: 20px;
+    box-sizing: border-box;
 }
 
 .login-btn:hover {
