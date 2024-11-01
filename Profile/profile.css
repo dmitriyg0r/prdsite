@@ -13,7 +13,8 @@ main {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-left: 70px; /* Отступ для меню */
+    min-height: calc(100vh - 100px); /* Высота минус высота заголовка */
+    margin-left: 70px; /* Отступ для свёрнутого меню */
     padding: 0 20px;
 }
 
@@ -22,10 +23,15 @@ main {
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 100%;
-    max-width: 500px; /* Ограничиваем максимальную ширину */
-    margin: 20px auto; /* Центрируем по горизонтали */
+    width: calc(100% - 70px); /* Ширина минус ширина свёрнутого меню */
+    max-width: 500px;
+    margin: 0 auto;
     padding: 20px;
+    position: absolute; /* Абсолютное позиционирование */
+    top: 50%; /* Центрирование по вертикали */
+    left: 50%; /* Центрирование по горизонтали */
+    transform: translate(-50%, -50%); /* Точное центрирование */
+    margin-left: 35px; /* Половина ширины свёрнутого меню */
 }
 
 .login-form {
@@ -166,6 +172,8 @@ main {
     }
 
     .login-container {
+        width: 100%;
+        margin-left: 0;
         padding: 15px;
     }
 
