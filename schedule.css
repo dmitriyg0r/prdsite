@@ -6,6 +6,7 @@
     border-radius: 20px;
     max-width: 1400px;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background: var(--table-background);
 }
 
 .table-container:hover {
@@ -18,7 +19,7 @@ table {
     border-spacing: 0;
     width: 100%;
     min-width: 800px;
-    background: var(--table-background, #fff);
+    background: var(--table-background);
     border-radius: 15px;
     overflow: hidden;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
@@ -40,13 +41,15 @@ td {
     font-size: 15px;
     transition: all 0.3s ease;
     position: relative;
+    background: var(--table-background);
+    color: var(--table-text);
 }
 
 /* Первая колонка (дни недели) */
 td:first-child {
     font-weight: 600;
-    background: linear-gradient(90deg, var(--table-background), rgba(var(--table-background-rgb), 0.98));
-    border-right: 1px solid rgba(var(--table-border-rgb), 0.08);
+    background: var(--table-background);
+    border-right: 1px solid var(--table-border);
 }
 
 /* Подсветка текущего дня */
@@ -75,13 +78,13 @@ td:first-child {
 /* Стили для пустых ячеек */
 td:empty::before {
     content: '—';
-    color: var(--table-border, #ddd);
+    color: var(--table-text-secondary);
     text-align: center; /* Центрируем текст для пустых ячеек */
 }
 
 /* Анимация при наведении на строку */
 tr:hover td {
-    background-color: rgba(var(--table-hover-rgb), 0.04);
+    background-color: var(--table-hover);
     transform: scale(1.01);
 }
 
