@@ -26,6 +26,16 @@
     --header-text: #ffffff;
     --header-gradient: #1976d2;
     --accent-color: #2196f3;
+    
+    /* Таблицы */
+    --table-header-bg: var(--primary-color);
+    --table-header-text: #ffffff;
+    --table-hover: rgba(var(--button-background-rgb), 0.1);
+    --table-today: rgba(var(--button-background-rgb), 0.15);
+    --table-border: var(--border-color);
+    --table-background: var(--text-container-background);
+    --table-text: var(--text-color);
+    --table-text-secondary: var(--text-secondary);
 }
 
 /* Темная тема - улучшенная тёмная тема */
@@ -57,6 +67,16 @@
     --header-text: #ffffff;
     --header-gradient: #9d4edd;
     --accent-color: #bb86fc;
+    
+    /* Таблицы */
+    --table-header-bg: var(--primary-color);
+    --table-header-text: #ffffff;
+    --table-hover: rgba(var(--button-background-rgb), 0.1);
+    --table-today: rgba(var(--button-background-rgb), 0.15);
+    --table-border: var(--border-color);
+    --table-background: var(--text-container-background);
+    --table-text: var(--text-color);
+    --table-text-secondary: var(--text-secondary);
 }
 
 /* Общие стили */
