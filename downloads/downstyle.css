@@ -442,83 +442,26 @@ body.dark-theme .upload-form-container {
     .icon-button {
         width: 50px;
         height: 50px;
-        bottom: 15px;
-        right: 15px;
     }
-
-    .icon-button .icon {
-        width: 25px;
-        height: 25px;
-    }
-
+    
     .upload-form-container {
         width: 95%;
         padding: 15px;
     }
-
-    #upload-form select, 
-    #upload-form input[type="file"],
-    #upload-form button {
-        padding: 12px;
-        font-size: 14px;
-    }
-
+    
     .file-category {
         flex: 1 1 100%;
-        max-width: 100%;
+        max-width: none;
     }
-
-    .file-category h3 {
-        font-size: 20px;
-    }
-
-    .file-category li {
-        padding: 12px;
-    }
-
+    
     .download-button {
-        padding: 8px 16px;
+        padding: 8px 15px;
         font-size: 14px;
     }
 }
 
-/* Дополнительные медиа-запросы для очень маленьких экранов */
 @media screen and (max-width: 480px) {
-    .icon-button {
-        width: 45px;
-        height: 45px;
-        bottom: 10px;
-        right: 10px;
-    }
-
-    .icon-button .icon {
-        width: 22px;
-        height: 22px;
-    }
-
-    .upload-form-container {
-        padding: 10px;
-    }
-
-    #upload-form select, 
-    #upload-form input[type="file"],
-    #upload-form button {
-        padding: 10px;
-        font-size: 13px;
-    }
-
-    .file-category h3 {
-        font-size: 18px;
-    }
-
-    .file-category li {
-        padding: 10px;
-    }
-
-    .download-button {
-        padding: 6px 12px;
-        font-size: 13px;
-    }
+    /* Дополнительные стили только для очень маленьких экранов */
 }
 
 .theme-icon {

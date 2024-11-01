@@ -1,0 +1,298 @@
+:root {
+    /* Базовые цвета */
+    --primary-hue: 207;
+    --primary-saturation: 90%;
+    --primary-lightness: 54%;
+    
+    /* Генерация цветов на основе базовых */
+    --primary-color: hsl(var(--primary-hue), var(--primary-saturation), var(--primary-lightness));
+    --primary-dark: hsl(var(--primary-hue), var(--primary-saturation), calc(var(--primary-lightness) - 10%));
+    --primary-light: hsl(var(--primary-hue), var(--primary-saturation), calc(var(--primary-lightness) + 10%));
+    
+    --text-color: #2c3e50;
+    --background-color: #f8f9fa;
+    --sidebar-background: #1976d2;
+    --sidebar-hover: #1565c0;
+    
+    --button-text: #ffffff;
+    --button-background: #2196f3;
+    --button-hover: #1976d2;
+    --button-secondary: #e3f2fd;
+    --button-background-rgb: 33, 150, 243;
+    --button-hover-rgb: 25, 118, 210;
+    
+    --text-container-background: #ffffff;
+    --text-container-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+    --table-background: #ffffff;
+    --input-background: #ffffff;
+    --border-color: #e0e0e0;
+    
+    --text-secondary: #546e7a;
+    --header-text: #ffffff;
+    --header-gradient: #1976d2;
+    --accent-color: #2196f3;
+    
+    --table-header-bg: var(--primary-color);
+    --table-header-text: var(--header-text);
+    --table-hover: rgba(var(--button-background-rgb), 0.1);
+    --table-today: rgba(var(--button-background-rgb), 0.15);
+    --table-border: var(--border-color);
+    --table-background: var(--text-container-background);
+    --table-text: var(--text-color);
+    --table-text-secondary: var(--text-secondary);
+}
+
+/* Темная тема - улучшенная тёмная тема */
+[data-theme="dark"] {
+    /* Основные цвета - улучшенная тёмная тема */
+    --primary-color: #7B2CBF;
+    --primary-color-rgb: 123, 44, 191;
+    --text-color: #ffffff;
+    --background-color: #242424;
+    --sidebar-background: #7B2CBF;
+    --sidebar-hover: #9D4EDA;
+    
+    /* Дополнительные цвета */
+    --button-text: #ffffff;
+    --button-background: #7B2CBF;
+    --button-hover: #5A1E8C;
+    --button-secondary: #2d2d2d;
+    --button-background-rgb: 123, 44, 191;
+    --button-hover-rgb: 90, 30, 145;
+    
+    /* Контейнеры */
+    --text-container-background: #2a2a2a;
+    --text-container-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    --table-background: #2d2d2d;
+    --input-background: #333333;
+    --border-color: #404040;
+    
+    /* Текст */
+    --text-secondary: rgba(255, 255, 255, 0.7);
+    --header-text: #ffffff;
+    --header-gradient: #9D4EDA;
+    --accent-color: #7B2CBF;
+    
+    /* Таблицы */
+    --table-header-bg: var(--primary-color);
+    --table-header-text: var(--header-text);
+    --table-hover: rgba(123, 44, 191, 0.1);
+    --table-today: rgba(123, 44, 191, 0.15);
+    --table-border: #333333;
+    --table-background: var(--text-container-background);
+    --table-text: var(--text-color);
+    --table-text-secondary: rgba(255, 255, 255, 0.5);
+    
+    /* Дополнительные оттенки для градиентов и эффектов */
+    --primary-dark: #5A1E8C;
+    --primary-light: #9D4EDA;
+    
+    /* Новые цвета фона */
+    --background: #242424;
+    --surface: #2d2d2d;
+    --card-background: #333333;
+    --hover-background: #383838;
+    --today-highlight: rgba(123, 44, 191, 0.05);
+}
+
+/* Общие стили */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Roboto', sans-serif;
+    background-color: var(--background-color);
+    transition: background-color 0.3s ease, color 0.3s ease;
+    font-size: 14px;
+    color: var(--text-color);
+}
+
+/* Стили для бокового меню */
+.sidebar {
+    position: fixed;
+    width: 100%;
+    height: 60px;
+    background: var(--sidebar-background);
+    z-index: 1000;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    left: 0;
+    top: 0;
+    padding: 0;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+}
+
+.sidebar-nav {
+    display: flex;
+    width: 100%;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    color: var(--button-text);
+    text-decoration: none;
+    font-size: 20px;
+    transition: background-color 0.3s ease;
+}
+
+.sidebar-link:hover {
+    background-color: var(--sidebar-hover);
+}
+
+.sidebar-link i {
+    margin-right: 8px;
+}
+
+/* Основной контент */
+main {
+    padding: 15px;
+    margin-top: 70px;
+    margin-left: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* Стили для заголовка */
+.zagolovok {
+    font-size: 1.8em;
+    margin: 20px 0;
+    padding: 0 10px;
+    color: var(--text-color);
+    text-align: center;
+}
+
+/* Стили для контейнеров */
+.container {
+    background-color: var(--text-container-background);
+    padding: 20px;
+    margin: 10px 0;
+    border-radius: 10px;
+    box-shadow: var(--text-container-shadow);
+}
+
+/* Стили для форм */
+.form-input {
+    width: 100%;
+    padding: 12px;
+    font-size: 14px;
+    margin-bottom: 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: var(--input-background);
+    color: var(--text-color);
+}
+
+.form-button {
+    width: 100%;
+    padding: 12px;
+    font-size: 14px;
+    background-color: var(--button-background);
+    color: var(--button-text);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.form-button:hover {
+    background-color: var(--button-hover);
+}
+
+/* Стили для таблиц */
+.table-container {
+    margin: 10px 0;
+    overflow-x: auto;
+    background-color: var(--table-background);
+    border-radius: 10px;
+    box-shadow: var(--text-container-shadow);
+}
+
+/* Стили для новостей */
+.news {
+    background-color: var(--text-container-background);
+    padding: 20px;
+    margin: 10px 0;
+    border-radius: 10px;
+    box-shadow: var(--text-container-shadow);
+}
+
+.news h1 {
+    font-size: 1.5em;
+    color: var(--text-color);
+    margin-bottom: 15px;
+}
+
+/* Кнопка добавления поста */
+.add-post-btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 14px;
+    margin: 10px 0;
+    background-color: var(--button-background);
+    color: var(--button-text);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.add-post-btn:hover {
+    background-color: var(--button-hover);
+}
+
+/* Медиа-запросы */
+@media screen and (max-width: 320px) {
+    body {
+        font-size: 13px;
+    }
+    
+    .sidebar-link {
+        padding: 8px;
+        font-size: 18px;
+    }
+    
+    .zagolovok {
+        font-size: 1.5em;
+    }
+    
+    .container {
+        padding: 15px;
+    }
+}
+
+/* Анимации */
+@keyframes fadeIn {
+    from { 
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.4s ease-out;
+}
+
+/* Темная тема для мобильных */
+[data-theme="dark"] .sidebar {
+    background: var(--primary-color);
+}
+
+[data-theme="dark"] .sidebar-link {
+    color: var(--button-text);
+}
+
+[data-theme="dark"] .container,
+[data-theme="dark"] .news,
+[data-theme="dark"] .table-container {
+    background: var(--card-background);
+}
