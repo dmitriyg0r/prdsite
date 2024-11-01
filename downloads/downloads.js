@@ -55,6 +55,12 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     function displayFiles() {
+        if (!fileStorage || Object.keys(fileStorage).length === 0) {
+            console.log('No files to display');
+            categoriesContainer.innerHTML = '<p>Нет доступных файлов</p>';
+            return;
+        }
+
         categoriesContainer.innerHTML = '';
         
         // Сортировка категорий по алфавиту
@@ -130,20 +136,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function loadExistingFiles() {
         fetch('get_files.php')
-            .then(response => response.text()) // Измените здесь на text()
-            .then(text => {
-                console.log('Raw response text:', text); // Выведите сырой ответ
-                try {
-                    const data = JSON.parse(text);
-                    fileStorage = data;
-                    displayFiles();
-                } catch (error) {
-                    console.error('JSON parse error:', error);
-                    console.log('Raw response text:', text); // Выведите сырой ответ
-                }
+            .then(response => response.json())
+            .then(data => {
+                console.log('Loaded files:', data);
+                fileStorage = data;
+                displayFiles();
             })
             .catch(error => {
-                console.error('Error loading existing files:', error);
+                console.error('Error loading files:', error);
             });
     }
     
@@ -180,47 +180,35 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            uploadMessage.textContent = "Загрузка файлов...";
             const formData = new FormData(uploadForm);
             formData.append('admin_password', adminPassword);
 
+            uploadMessage.textContent = "Загрузка файлов...";
+            
             const response = await fetch('downloads.php', {
                 method: 'POST',
                 body: formData
             });
 
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
             const data = await response.json();
+            console.log('Upload response:', data);
             
             if (data.status === 'success') {
                 uploadMessage.textContent = data.message;
-                
-                // Обновление структуры файлов
-                const category = formData.get('category');
-                const folder = formData.get('folder');
-                
-                if (!fileStorage[category]) {
-                    fileStorage[category] = {};
-                }
-                if (!fileStorage[category][folder]) {
-                    fileStorage[category][folder] = [];
-                }
-                
-                data.files.forEach(file => {
-                    if (!fileStorage[category][folder].includes(file)) {
-                        fileStorage[category][folder].push(file);
-                    }
-                });
-
+                await loadExistingFiles();
                 uploadForm.reset();
                 fileName.textContent = '';
                 fileLabel.style.borderColor = 'var(--button-background)';
-                displayFiles();
                 uploadFormContainer.classList.remove('show');
             } else {
                 uploadMessage.textContent = data.message || 'Произошла ошибка при загрузке';
             }
         } catch (error) {
-            console.error('Error:', error);
+            console.error('Upload error:', error);
             uploadMessage.textContent = `Ошибка загрузки: ${error.message}`;
         }
     });
