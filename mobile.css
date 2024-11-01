@@ -59,11 +59,39 @@
 }
 
 @media (max-width: 768px) {
+    .sidebar {
+        display: none;
+    }
+    
     .mobile-menu-toggle {
         display: block;
     }
     
-    .desktop-menu {
+    main {
+        margin-left: 0;
+        padding: 20px;
+    }
+    
+    .mobile-menu {
+        padding-top: 60px;
+    }
+    
+    .mobile-menu ul li a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        font-size: 20px;
+    }
+    
+    .mobile-menu ul li a i {
+        font-size: 24px;
+    }
+}
+
+@media (min-width: 769px) {
+    .mobile-menu,
+    .mobile-menu-toggle {
         display: none;
     }
 }
