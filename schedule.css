@@ -151,20 +151,6 @@ td:not(:empty):not(:first-child)::after {
     --table-background-rgb: var(--text-container-background);
 }
 
-[data-theme="dark"] {
-    --table-background: var(--text-container-background);
-    --table-border: var(--border-color);
-    --table-hover-background: rgba(var(--button-background-rgb), 0.05);
-    --today-highlight: rgba(var(--button-background-rgb), 0.15);
-    --header-background: var(--primary-color);
-    --header-gradient: var(--header-gradient);
-    --table-text: var(--text-color);
-    --table-text-secondary: var(--text-secondary);
-    --table-border-rgb: var(--border-color);
-    --table-hover-rgb: var(--button-background-rgb);
-    --table-background-rgb: var(--text-container-background);
-}
-
 /* Анимация при наведении на ячейки */
 td:not(:empty):hover {
     transform: scale(1.05);
