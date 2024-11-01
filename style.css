@@ -165,8 +165,9 @@ body {
 .sidebar-link i {
     min-width: 24px;
     font-size: 20px;
-    text-align: left;
-    transition: transform 0.3s ease;
+    text-align: center;
+    margin: 0 auto;
+    transition: transform 0.3s ease, margin 0.3s ease;
 }
 
 .sidebar-link:hover i {
@@ -324,7 +325,10 @@ main {
 .theme-toggle-container {
     display: flex;
     align-items: center;
+    justify-content: center;
     cursor: pointer;
+    padding: 14px 8px;
+    margin: 4px 8px;
 }
 
 .theme-checkbox {
@@ -650,7 +654,7 @@ tr:hover {
     background-color: rgba(123, 44, 191, 0.03) !important;
 }
 
-/* Обновляем стили для кнопок �� других элементов */
+/* Обновляем стили для кнопок других элементов */
 [data-theme="dark"] .button,
 [data-theme="dark"] .primary-button {
     background: var(--primary-color);
@@ -689,4 +693,59 @@ tr:hover {
 
 [data-theme="dark"] td {
     background: var(--table-background);
+}
+
+/* Стили для переключателя темы */
+.theme-switch-wrapper {
+    margin-top: 20px;
+    padding: 12px 24px;
+    flex-grow: 0;
+}
+
+.theme-toggle-container {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+/* Скрываем слайдер и показываем только иконку в закрытом меню */
+.theme-label {
+    display: none;  /* Скрываем слайдер по умолчанию */
+}
+
+/* Показываем иконку в закрытом меню */
+.theme-icon {
+    font-size: 20px;
+    color: #ffffff;
+    margin: 0 auto;
+    display: block;
+}
+
+/* Показываем полный переключатель при наведении на sidebar */
+.sidebar:hover .theme-label {
+    display: inline-block;
+    position: relative;
+    width: 44px;
+    height: 24px;
+    background-color: #8e8e93;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+/* Скрываем отдельную иконку при открытом меню */
+.sidebar:hover .theme-icon {
+    display: none;
+}
+
+/* При наведении на sidebar возвращаем отступ слева */
+.sidebar:hover .sidebar-link i {
+    margin: 0;
+    margin-left: 8px; /* Добавляем отступ слева при развернутом меню */
+}
+
+/* При наведении на sidebar меняем стили контейнера темы */
+.sidebar:hover .theme-toggle-container {
+    justify-content: flex-start;
+    padding: 14px 24px;
 }
