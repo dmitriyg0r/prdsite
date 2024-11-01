@@ -18,7 +18,7 @@
     transition: all 0.3s ease;
     padding: 15px;
     width: 320px;
-    margin: 15px;
+    margin: 20px;
     display: inline-block;
     position: relative;
 }
@@ -96,4 +96,24 @@
 
 .dark-theme .news-title {
     color: #fff;
+}
+
+/* Добавляем обертку для новостей */
+body {
+    padding: 0 40px; /* Отступы по бокам от края экрана */
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center; /* Центрирование контента */
+}
+
+/* Медиа-запрос для мобильных устройств */
+@media (max-width: 768px) {
+    body {
+        padding: 0 20px; /* Меньшие отступы на мобильных */
+    }
+    
+    .post {
+        width: 100%; /* Полная ширина на мобильных */
+        margin: 15px 0; /* Вертикальные отступы между постами */
+    }
 }
