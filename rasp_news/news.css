@@ -1,38 +1,49 @@
 /* Add this to your existing CSS file */
 .news-content {
     display: grid; /* Use grid layout */
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Responsive columns */
-    gap: 16px; /* Space between items */
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Increased min width for better layout */
+    gap: 20px; /* Increased space between items */
 }
 
 .post {
     background: #fff; /* Background for each post */
     border: 1px solid #ddd; /* Border for posts */
-    border-radius: 8px; /* Rounded corners */
+    border-radius: 12px; /* Slightly more rounded corners */
     overflow: hidden; /* Prevent overflow */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Shadow effect */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Enhanced shadow effect */
+    transition: transform 0.2s, box-shadow 0.2s; /* Smooth transition for hover effect */
+}
+
+.post:hover {
+    transform: translateY(-5px); /* Lift effect on hover */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* Darker shadow on hover */
 }
 
 .post img {
     width: 100%; /* Make images responsive */
     height: auto; /* Maintain aspect ratio */
+    border-bottom: 2px solid #ddd; /* Added border below image for separation */
 }
+
 .news-title {
     text-align: center;
-    font-size: 24px;
+    font-size: 26px; /* Increased font size for title */
     font-weight: bold;
     margin: 20px 0;
+    color: #333; /* Darker color for better readability */
 }
+
 .news-description {
     text-align: center;
-    font-size: 16px;
+    font-size: 18px; /* Increased font size for description */
     margin: 10px 0;
+    color: #666; /* Lighter color for description */
 }
 
 .dark-theme .news-description {
-    color: white; /* Change text color to white in dark theme */
+    color: #ccc; /* Change text color to a lighter shade in dark theme */
 }
 .dark-theme .post {
-    background: #333; /* Dark background for posts in dark theme */
-    border-color: #555; /* Dark border color for posts in dark theme */
+    background: #444; /* Darker background for posts in dark theme */
+    border-color: #666; /* Darker border color for posts in dark theme */
 }
