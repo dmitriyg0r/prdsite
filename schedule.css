@@ -61,21 +61,17 @@ td:first-child {
     padding: 13px;
 }
 
-/* Стили для предстоящих пар */
+/* Стили для предстоящих пар - без скругления */
 .upcoming-lesson {
     background-color: rgba(var(--button-background-rgb), 0.08) !important;
-    border-radius: 12px;
-    margin: 2px;
-    padding: 13px;
+    padding: 15px;
 }
 
-/* Стили для прошедших пар */
+/* Стили для прошедших пар - без скругления */
 .past-lesson {
     background-color: rgba(var(--button-background-rgb), 0.03) !important;
     opacity: 0.75;
-    border-radius: 12px;
-    margin: 2px;
-    padding: 13px;
+    padding: 15px;
 }
 
 /* Стили для пустых ячеек */
