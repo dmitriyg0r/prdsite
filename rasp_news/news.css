@@ -37,7 +37,7 @@
     text-align: center;
     font-size: 18px; /* Increased font size for description */
     margin: 10px 0;
-    color: #666; /* Lighter color for description */
+    color: #000000; /* Lighter color for description */
 }
 
 .dark-theme .news-description {
@@ -46,4 +46,7 @@
 .dark-theme .post {
     background: #444; /* Darker background for posts in dark theme */
     border-color: #666; /* Darker border color for posts in dark theme */
+}
+.dark-theme .news-description {
+    color: #ffffff; /* Darker color for description in dark theme */
 }
