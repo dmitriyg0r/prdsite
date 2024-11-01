@@ -147,10 +147,10 @@
     }
 }
 
-/* Добавляем стили для переключателя темы */
+/* Стили для переключателя темы */
 .theme-toggle-container {
     position: fixed;
-    top: 20px;
+    bottom: 20px;
     right: 20px;
     display: flex;
     align-items: center;
@@ -205,10 +205,10 @@
     background: #7B2CBF;
 }
 
-[data-theme="dark"] .theme-label {
-    background-color: rgba(255, 255, 255, 0.2);
-}
-
-[data-theme="dark"] .theme-checkbox:checked + .theme-label .ball {
-    background: white;
+/* Медиа-запрос для мобильных устройств */
+@media screen and (max-width: 768px) {
+    .theme-toggle-container {
+        bottom: 10px;
+        right: 10px;
+    }
 }
