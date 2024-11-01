@@ -182,7 +182,7 @@ body {
     font-weight: 500;
 }
 
-/* Анимация при наведении на sidebar */
+/* Анимация при ��аведении на sidebar */
 .sidebar:hover {
     width: 250px;
     box-shadow: 6px 0 20px rgba(0, 0, 0, 0.2);
@@ -705,20 +705,20 @@ tr:hover {
 .theme-toggle-container {
     display: flex;
     align-items: center;
+    justify-content: center;
     cursor: pointer;
+    padding: 14px 8px;
+    margin: 4px 8px;
 }
 
-/* Скрываем слайдер и показываем только иконку в закрытом меню */
-.theme-label {
-    display: none;  /* Скрываем слайдер по умолчанию */
-}
-
-/* Показываем иконку в закрытом меню */
 .theme-icon {
     font-size: 20px;
     color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
     margin: 0 auto;
-    display: block;
 }
 
 /* Показываем полный переключатель при наведении на sidebar */
@@ -733,19 +733,13 @@ tr:hover {
     cursor: pointer;
 }
 
-/* Скрываем отдельную иконку при открытом меню */
-.sidebar:hover .theme-icon {
-    display: none;
-}
-
-/* При наведении на sidebar возвращаем отступ слева */
-.sidebar:hover .sidebar-link i {
-    margin: 0;
-    margin-left: 8px; /* Добавляем отступ слева при развернутом меню */
-}
-
 /* При наведении на sidebar меняем стили контейнера темы */
 .sidebar:hover .theme-toggle-container {
     justify-content: flex-start;
     padding: 14px 24px;
+}
+
+/* Скрываем отдельную иконку при открытом меню */
+.sidebar:hover .theme-icon {
+    display: none;
 }
