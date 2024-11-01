@@ -30,7 +30,7 @@ foreach ($_FILES['files']['size'] as $size) {
     }
 }
 
-$uploadDir = 'uploads/';
+$uploadDir = '../downloads/uploads/';
 if (!file_exists($uploadDir)) {
     if (!mkdir($uploadDir, 0777, true)) {
         exit(json_encode([
