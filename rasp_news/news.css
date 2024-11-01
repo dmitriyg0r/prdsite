@@ -1,7 +1,7 @@
 /* Add this to your existing CSS file */
 .news-content {
-    display: grid; /* Use grid layout */
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Increased min width for better layout */
+    display: flex; /* Changed to flex layout for better news display */
+    flex-wrap: wrap; /* Allows news items to wrap to the next line */
     gap: 20px; /* Increased space between items */
 }
 
@@ -13,6 +13,7 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Enhanced shadow effect */
     transition: transform 0.2s, box-shadow 0.2s; /* Smooth transition for hover effect */
     padding: 10px; /* Added padding for better spacing */
+    width: calc(33.333% - 20px); /* Adjusted width for better layout */
 }
 
 .post:hover {
