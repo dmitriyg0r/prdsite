@@ -57,12 +57,19 @@
     <main>
         <div class="game-container">
             <div id="game">
-                <div id="dino"></div>
-                <div id="cactus"></div>
+                <div class="clouds">
+                    <div class="cloud cloud1"></div>
+                    <div class="cloud cloud2"></div>
+                    <div class="cloud cloud3"></div>
+                </div>
+                <div id="bird"></div>
+                <div id="pipe-top" class="pipe"></div>
+                <div id="pipe-bottom" class="pipe"></div>
+                <div id="ground"></div>
             </div>
             <div class="game-controls">
                 <span id="score">Счёт: 0</span>
-                <button id="startGame">Начать игру</button>
+                <button id="restart-button" style="display: none;">Начать заново</button>
             </div>
         </div>
     </main>

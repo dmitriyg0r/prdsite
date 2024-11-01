@@ -1,59 +1,230 @@
 .game-container {
     width: 100%;
-    max-width: 600px;
+    max-width: 400px;
     margin: 20px auto;
     text-align: center;
 }
 
 #game {
-    width: 600px;
-    height: 200px;
+    width: 400px;
+    height: 600px;
     border: 1px solid #000;
     margin: 0 auto;
     position: relative;
     overflow: hidden;
-    background-color: #f7f7f7;
+    background: linear-gradient(#87CEEB, #4EC0CA);
+    animation: skyColor 60s linear infinite;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
 }
 
-#dino {
+#ground {
+    position: absolute;
+    bottom: 0;
+    width: 200%;
+    height: 100px;
+    background: linear-gradient(#8B4513, #654321);
+    background-image: 
+        linear-gradient(90deg, #654321 0%, #8B4513 5%, #8B4513 95%, #654321 100%),
+        linear-gradient(#2D5A27 0%, #2D5A27 20%, transparent 20%);
+    background-size: 50% 100%, 50px 20px;
+    animation: moveGround 3s linear infinite;
+    z-index: 1;
+}
+
+/* Добавим траву на земле */
+#ground::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    width: 100%;
+    height: 10px;
+    background-color: #2D5A27;
+}
+
+#bird {
+    width: 40px;
+    height: 40px;
+    background-color: yellow;
+    border-radius: 50%;
+    position: absolute;
+    left: 50px;
+    transition: transform 0.1s;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+    z-index: 3;
+}
+
+.pipe {
+    width: 60px;
+    position: absolute;
+    background-color: #73C92D;
+    right: -60px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+    z-index: 2;
+}
+
+#pipe-top {
+    top: 0;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+#pipe-bottom {
+    bottom: 100px;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+.game-controls {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+#score, #best-score {
+    font-size: 24px;
+    color: #333;
+    font-weight: bold;
+}
+
+#restart-button {
+    padding: 10px 20px;
+    font-size: 18px;
+    background-color: #73C92D;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background-color 0.3s, transform 0.1s;
+}
+
+#restart-button:hover {
+    background-color: #5fa825;
+    transform: scale(1.05);
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+.shake {
+    animation: shake 0.5s;
+}
+
+/* Стили для облаков */
+.clouds {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 0;
+}
+
+.cloud {
+    position: absolute;
+    background: white;
+    border-radius: 20px;
+    opacity: 0.8;
+}
+
+.cloud::before,
+.cloud::after {
+    content: '';
+    position: absolute;
+    background: white;
+    border-radius: 50%;
+}
+
+.cloud1 {
+    width: 100px;
+    height: 30px;
+    top: 50px;
+    animation: moveCloud 15s linear infinite;
+}
+
+.cloud1::before {
+    width: 40px;
+    height: 40px;
+    top: -20px;
+    left: 15px;
+}
+
+.cloud1::after {
     width: 50px;
     height: 50px;
-    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEwAACxMBAJqcGAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAANrSURBVGiB7ZpNaBNBGIbfmd1NoupBEcUfVNCDoBc9KaV4EcSLiiBUFKpHsXgQBL0IgvYiCIqgICgI/h0Ei3oQKyoqKq0/qIh6qYpGUVs1TWyT3Z3xkGQx3Z3dZJNs0uL7wB52Zr55v5nZ+WY2QJ06dWrGRCpN+ftT+tAhNZjNqhfzeRoKArUvCNhhrTEjhHhZX6+2trXxz0qKy7+Tz58jk0jsg4ivtm1vB8ACAX4GwAhA');
-    background-size: contain;
-    position: absolute;
-    bottom: 0;
+    top: -25px;
+    left: 35px;
 }
 
-.jump {
-    animation: jump 0.5s linear;
+.cloud2 {
+    width: 80px;
+    height: 25px;
+    top: 150px;
+    animation: moveCloud 20s linear infinite;
+    animation-delay: -5s;
 }
 
-@keyframes jump {
-    0% {
-        bottom: 0;
+.cloud2::before {
+    width: 35px;
+    height: 35px;
+    top: -18px;
+    left: 10px;
+}
+
+.cloud2::after {
+    width: 45px;
+    height: 45px;
+    top: -22px;
+    left: 25px;
+}
+
+.cloud3 {
+    width: 120px;
+    height: 35px;
+    top: 250px;
+    animation: moveCloud 25s linear infinite;
+    animation-delay: -10s;
+}
+
+.cloud3::before {
+    width: 45px;
+    height: 45px;
+    top: -23px;
+    left: 18px;
+}
+
+.cloud3::after {
+    width: 55px;
+    height: 55px;
+    top: -28px;
+    left: 40px;
+}
+
+@keyframes moveCloud {
+    from {
+        left: 100%;
     }
-    50% {
-        bottom: 100px;
-    }
-    100% {
-        bottom: 0;
+    to {
+        left: -150px;
     }
 }
 
-#cactus {
-    width: 20px;
-    height: 40px;
-    background-color: green;
-    position: absolute;
-    bottom: 0;
-    left: 580px;
+/* Анимация движения земли */
+@keyframes moveGround {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(-50%);
+    }
 }
 
-@keyframes cactusMove {
-    0% {
-        left: 580px;
-    }
-    100% {
-        left: -20px;
-    }
+/* Обновляем фон игры */
+@keyframes skyColor {
+    0%, 100% { background: linear-gradient(#87CEEB, #4EC0CA); }
+    50% { background: linear-gradient(#6CA0C7, #3A8F98); }
 }
