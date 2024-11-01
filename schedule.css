@@ -6,10 +6,12 @@
     border-radius: 20px;
     max-width: 1400px;
     background: var(--table-background);
+    padding: 0;
 }
 
 table {
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
     width: 100%;
     min-width: 800px;
     background: var(--table-background);
@@ -24,6 +26,24 @@ th {
     letter-spacing: 1px;
     font-weight: 600;
     color: white;
+}
+
+/* Скругление углов заголовков */
+th:first-child {
+    border-top-left-radius: 20px;
+}
+
+th:last-child {
+    border-top-right-radius: 20px;
+}
+
+/* Скругление нижних углов таблицы */
+tr:last-child td:first-child {
+    border-bottom-left-radius: 20px;
+}
+
+tr:last-child td:last-child {
+    border-bottom-right-radius: 20px;
 }
 
 /* Стили для ячеек */
