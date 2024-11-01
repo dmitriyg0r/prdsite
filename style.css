@@ -656,3 +656,60 @@ tr:hover {
 [data-theme="dark"] td {
     background: var(--table-background);
 }
+
+/* Стили для бокового меню */
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    padding: 14px 8px;
+    text-decoration: none;
+    color: rgba(232, 234, 237, 0.95);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+    margin: 4px 8px;
+    border-radius: 16px;
+    position: relative;
+    overflow: hidden;
+}
+
+.sidebar-link i {
+    min-width: 24px;
+    font-size: 20px;
+    text-align: center;
+    margin: 0 auto;
+}
+
+/* При наведении на sidebar */
+.sidebar:hover .sidebar-link {
+    padding: 14px 24px;
+    justify-content: flex-start;
+}
+
+.sidebar:hover .sidebar-link i {
+    margin: 0;
+    margin-right: 16px;
+}
+
+/* Стили для переключателя темы */
+.theme-toggle-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 14px 8px;
+    margin: 4px 8px;
+}
+
+.theme-icon {
+    font-size: 20px;
+    color: #ffffff;
+    min-width: 24px;
+    text-align: center;
+    margin: 0 auto;
+}
+
+/* При наведении на sidebar для контейнера темы */
+.sidebar:hover .theme-toggle-container {
+    padding: 14px 24px;
+    justify-content: flex-start;
+}
