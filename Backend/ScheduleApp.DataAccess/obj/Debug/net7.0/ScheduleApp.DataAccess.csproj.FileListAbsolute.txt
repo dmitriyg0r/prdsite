@@ -1,0 +1,6 @@
+/home/mrgodgames/Документы/GitHub/prdsite/Backend/ScheduleApp.DataAccess/obj/Debug/net7.0/ScheduleApp.DataAccess.csproj.AssemblyReference.cache
+/home/mrgodgames/Документы/GitHub/prdsite/Backend/ScheduleApp.DataAccess/obj/Debug/net7.0/ScheduleApp.DataAccess.GeneratedMSBuildEditorConfig.editorconfig
+/home/mrgodgames/Документы/GitHub/prdsite/Backend/ScheduleApp.DataAccess/obj/Debug/net7.0/ScheduleApp.DataAccess.AssemblyInfoInputs.cache
+/home/mrgodgames/Документы/GitHub/prdsite/Backend/ScheduleApp.DataAccess/obj/Debug/net7.0/ScheduleApp.DataAccess.AssemblyInfo.cs
+/home/mrgodgames/Документы/GitHub/prdsite/Backend/ScheduleApp.DataAccess/obj/Debug/net7.0/ScheduleApp.DataAccess.csproj.CoreCompileInputs.cache
+/home/mrgodgames/Документы/GitHub/prdsite/Backend/ScheduleApp.DataAccess/obj/Debug/net7.0/ScheduleApp.DataAccess.sourcelink.json
