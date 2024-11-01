@@ -13,7 +13,8 @@ main {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-left: 70px; /* Отступ для меню */
+    min-height: calc(100vh - 100px); /* Высота минус высота заголовка */
+    margin-left: 70px; /* Отступ для свёрнутого меню */
     padding: 0 20px;
 }
 
@@ -22,10 +23,15 @@ main {
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 100%;
-    max-width: 500px; /* Ограничиваем максимальную ширину */
-    margin: 20px auto; /* Центрируем по горизонтали */
+    width: calc(100% - 70px); /* Ширина минус ширина свёрнутого меню */
+    max-width: 500px;
+    margin: 0 auto;
     padding: 20px;
+    position: absolute; /* Абсолютное позиционирование */
+    top: 50%; /* Центрирование по вертикали */
+    left: 50%; /* Центрирование по горизонтали */
+    transform: translate(-50%, -50%); /* Точное центрирование */
+    margin-left: 35px; /* Половина ширины свёрнутого меню */
 }
 
 .login-form {
@@ -36,6 +42,7 @@ main {
     width: 100%;
     max-width: 400px;
     animation: fadeIn 0.6s ease-out;
+    box-sizing: border-box; /* Важно для правильного расчета ширины */
 }
 
 .form-title {
@@ -62,6 +69,7 @@ main {
 
 .form-group {
     margin-bottom: 20px;
+    width: 100%; /* Занимаем всю доступную ширину */
 }
 
 .form-group label {
@@ -80,6 +88,7 @@ main {
     background-color: var(--input-background);
     color: var(--text-color);
     transition: all 0.3s ease;
+    box-sizing: border-box; /* Важно для правильного расчета ширины */
 }
 
 .form-group input:focus {
@@ -90,6 +99,12 @@ main {
 
 .password-wrapper {
     position: relative;
+    width: 100%;
+}
+
+.password-wrapper input {
+    width: 100%;
+    padding-right: 40px; /* Место для иконки глаза */
 }
 
 .eye-icon {
@@ -100,6 +115,7 @@ main {
     cursor: pointer;
     color: var(--text-secondary);
     transition: color 0.3s ease;
+    z-index: 1;
 }
 
 .eye-icon:hover {
@@ -108,7 +124,7 @@ main {
 
 .login-btn {
     width: 100%;
-    padding: 12px;
+    padding: 12px 15px;
     background: linear-gradient(45deg, var(--button-background), var(--header-gradient));
     color: var(--button-text);
     border: none;
@@ -117,7 +133,8 @@ main {
     font-weight: 500;
     cursor: pointer;
     transition: all 0.3s ease;
-    margin-top: 10px;
+    margin-top: 20px;
+    box-sizing: border-box;
 }
 
 .login-btn:hover {
@@ -166,6 +183,8 @@ main {
     }
 
     .login-container {
+        width: 100%;
+        margin-left: 0;
         padding: 15px;
     }
 
