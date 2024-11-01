@@ -241,25 +241,42 @@ body:not(.dark-theme) .file-category li a {
 /* Добавляем стили для темной темы */
 
 body.dark-theme .container {
-    background-color: #1a1a1a;
+    background-color: #1e1e1e;
 }
 
 body.dark-theme .file-category {
-    background-color: #2a2a2a;
+    background-color: #2d2d2d;
+    border: 1px solid #404040;
 }
 
 body.dark-theme .file-category h3 {
-    color: #e0e0e0;
+    color: #ffffff;
 }
 
 body.dark-theme .file-category li {
-    background-color: #3a3a3a;
-    border-color: #4a4a4a;
+    background-color: #363636;
+    border-color: #505050;
+}
+
+body.dark-theme .file-category li:hover {
+    background-color: #404040;
 }
 
 body.dark-theme .file-category li,
 body.dark-theme .file-category li a {
-    color: #e0e0e0;
+    color: #f0f0f0;
+}
+
+body.dark-theme .upload-section,
+body.dark-theme .download-section,
+body.dark-theme .links {
+    background-color: #2d2d2d;
+    border: 1px solid #404040;
+}
+
+body.dark-theme .upload-form-container {
+    background-color: #2d2d2d;
+    border: 1px solid #404040;
 }
 
 .file-item {
