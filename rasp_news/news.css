@@ -1,9 +1,9 @@
 /* Add this to your existing CSS file */
 .news-content {
     display: grid; /* Use grid layout */
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Increased min width for better layout */
-    gap: 30px; /* Increased space between items */
-    padding: 20px; /* Added padding for better spacing */
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Increased min width for better layout */
+    gap: 2rem; /* Increased space between items */
+    padding: 2rem; /* Added padding for better spacing */
     width: 100%; /* Takes full available width */
     max-width: 1400px; /* Maximum width for very wide screens */
     margin: 0 auto; /* Centering the content */
@@ -16,7 +16,10 @@
     overflow: hidden;
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
-    padding: 15px;
+    padding: 1.5rem;
+    height: fit-content;
+    display: flex;
+    flex-direction: column;
 }
 
 .post:hover {
@@ -113,8 +116,12 @@ body {
         padding: 0 20px; /* Меньшие отступы на мобильных */
     }
     
+    .news-content {
+        gap: 1.5rem; /* Уменьшаем отступы на мобильных */
+        padding: 1rem;
+    }
+    
     .post {
-        width: calc(100% - 40px); /* Один пост в ряд */
-        margin: 15px auto;
+        padding: 1rem;
     }
 }
