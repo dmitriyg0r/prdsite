@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let birdY = 300;
     let velocity = 0;
     let gravity = 0.5;
-    let jumpForce = -10;
+    let jumpForce = -8;
     let pipeX = 400;
     let score = 0;
     let isGameOver = false;
@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let pipePassed = false;
 
     function createPipes() {
-        const gap = 200;
+        const gap = 170;
         const minHeight = 50;
         const maxHeight = 300;
         const topHeight = Math.random() * (maxHeight - minHeight) + minHeight;
@@ -114,7 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         bird.style.top = birdY + 'px';
-        const rotation = velocity * 2;
+        const rotation = Math.min(Math.max(velocity * 3, -45), 45);
         bird.style.transform = `rotate(${rotation}deg)`;
     }
 
@@ -128,15 +128,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     document.addEventListener('keydown', (e) => {
-        if (e.code === 'Space') {
-            if (!isGameOver) {
-                velocity = jumpForce;
-            }
-        }
-    });
-
-    document.addEventListener('click', (e) => {
-        if (!isGameOver && e.target !== restartButton) {
+        if (e.code === 'Space' && !isGameOver) {
+            e.preventDefault();
             velocity = jumpForce;
         }
     });
@@ -152,23 +145,14 @@ document.addEventListener('DOMContentLoaded', () => {
         cloud.style.top = `${Math.random() * 300}px`;
         document.querySelector('.clouds').appendChild(cloud);
 
-        // Удаляем облако после завершения анимации
         cloud.addEventListener('animationend', () => {
             cloud.remove();
         });
     }
 
-    // Добавляем периодическое создание облаков
     function startCloudGeneration() {
-        setInterval(createCloud, 10000); // Создаем новое облако каждые 10 секунд
+        setInterval(createCloud, 10000);
     }
 
-    // Добавляем вызов функции при старте игры
-    function resetGame() {
-        // ... существующий код ...
-        startCloudGeneration();
-    }
-
-    // Запускаем генерацию облаков при старте
     startCloudGeneration();
 });
