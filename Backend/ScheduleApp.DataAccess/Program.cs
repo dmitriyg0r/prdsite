@@ -59,6 +59,12 @@ class Program
         Console.Write("Введите логин: ");
         var username = Console.ReadLine();
 
+        if (string.IsNullOrEmpty(username))
+        {
+            Console.WriteLine("Логин не может быть пустым");
+            return;
+        }
+
         if (db.Users.Any(u => u.Username == username))
         {
             Console.WriteLine("Пользователь с таким логином уже существует");
@@ -68,8 +74,20 @@ class Program
         Console.Write("Введите пароль: ");
         var password = Console.ReadLine();
 
+        if (string.IsNullOrEmpty(password))
+        {
+            Console.WriteLine("Пароль не может быть пустым");
+            return;
+        }
+
         Console.Write("Введите роль (Admin/User): ");
         var role = Console.ReadLine();
+
+        if (role != "Admin" && role != "User")
+        {
+            Console.WriteLine("Роль должна быть Admin или User");
+            return;
+        }
 
         var user = new User
         {
