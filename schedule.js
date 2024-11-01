@@ -69,12 +69,13 @@ document.addEventListener("DOMContentLoaded", function() {
                         const elapsed = currentTime - slot.start;
                         const progress = (elapsed / totalDuration) * 100;
                         
-                        // Обновляем ширину прогресс-бара
-                        currentLesson.style.setProperty('--progress', `${100 - progress}%`);
-                        currentLesson.style.background = `linear-gradient(to right, 
-                            rgba(var(--button-background-rgb), 0.1) ${100 - progress}%, 
-                            rgba(var(--button-background-rgb), 0.35) ${100 - progress}%
-                        )`;
+                        // Обновляем прогресс-бар
+                        currentLesson.style.setProperty('--lesson-progress', `${progress}%`);
+                        currentLesson.style.setProperty('--lesson-remaining', `${100 - progress}%`);
+                        
+                        // Трансформируем прогресс-бар
+                        const transform = `translateX(-${progress}%)`;
+                        currentLesson.querySelector('::before')?.style.transform = transform;
                     }
                 });
             }
