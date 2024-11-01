@@ -65,6 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
         bird.style.transform = 'rotate(0deg)';
         createPipes();
         gameLoop();
+        startCloudGeneration();
     }
 
     function checkCollision() {
@@ -144,4 +145,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     createPipes();
     gameLoop();
+
+    function createCloud() {
+        const cloud = document.createElement('div');
+        cloud.className = `cloud cloud${Math.floor(Math.random() * 3) + 1}`;
+        cloud.style.top = `${Math.random() * 300}px`;
+        document.querySelector('.clouds').appendChild(cloud);
+
+        // Удаляем облако после завершения анимации
+        cloud.addEventListener('animationend', () => {
+            cloud.remove();
+        });
+    }
+
+    // Добавляем периодическое создание облаков
+    function startCloudGeneration() {
+        setInterval(createCloud, 10000); // Создаем новое облако каждые 10 секунд
+    }
+
+    // Добавляем вызов функции при старте игры
+    function resetGame() {
+        // ... существующий код ...
+        startCloudGeneration();
+    }
+
+    // Запускаем генерацию облаков при старте
+    startCloudGeneration();
 });
