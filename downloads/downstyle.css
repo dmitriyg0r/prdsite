@@ -547,22 +547,17 @@ body.dark-theme .upload-form-container {
 
 .files-list {
     margin-left: 20px;
-    transition: max-height 0.3s ease-out;
-    overflow: hidden;
+    transition: all 0.3s ease;
+    max-height: 1000px;
+    opacity: 1;
 }
 
 .files-list.collapsed {
     max-height: 0;
-    margin-top: 0;
-    margin-bottom: 0;
     opacity: 0;
-}
-
-.files-list:not(.collapsed) {
-    max-height: 1000px; /* Достаточно большое значение */
-    margin-top: 10px;
-    margin-bottom: 10px;
-    opacity: 1;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
 }
 
 .file-item {
@@ -570,7 +565,11 @@ body.dark-theme .upload-form-container {
     margin: 5px 0;
     background-color: var(--table-background);
     border-radius: 6px;
-    transition: background-color 0.3s ease;
+    transition: all 0.3s ease;
+}
+
+.file-item:hover {
+    background-color: rgba(var(--button-hover-rgb), 0.1);
 }
 
 /* Анимация для стрелки */
