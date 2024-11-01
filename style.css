@@ -650,7 +650,7 @@ tr:hover {
     background-color: rgba(123, 44, 191, 0.03) !important;
 }
 
-/* Обновляем стили для кнопок �� других элементов */
+/* Обновляем стили для кнопок других элементов */
 [data-theme="dark"] .button,
 [data-theme="dark"] .primary-button {
     background: var(--primary-color);
@@ -689,4 +689,47 @@ tr:hover {
 
 [data-theme="dark"] td {
     background: var(--table-background);
+}
+
+/* Стили для переключателя темы */
+.theme-switch-wrapper {
+    margin-top: 20px;
+    padding: 12px 24px;
+    flex-grow: 0;
+}
+
+.theme-toggle-container {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+/* Скрываем слайдер и показываем только иконку в закрытом меню */
+.theme-label {
+    display: none;  /* Скрываем слайдер по умолчанию */
+}
+
+/* Показываем иконку в закрытом меню */
+.theme-icon {
+    font-size: 20px;
+    color: #ffffff;
+    margin: 0 auto;
+    display: block;
+}
+
+/* Показываем полный переключатель при наведении на sidebar */
+.sidebar:hover .theme-label {
+    display: inline-block;
+    position: relative;
+    width: 44px;
+    height: 24px;
+    background-color: #8e8e93;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+/* Скрываем отдельную иконку при открытом меню */
+.sidebar:hover .theme-icon {
+    display: none;
 }
