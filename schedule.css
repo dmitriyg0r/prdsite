@@ -74,7 +74,7 @@ tr:last-child td:last-child {
         rgba(var(--button-background-rgb), 0.05));
 }
 
-/* Стили для текущей пары - усиленная подсветка */
+/* Стили для текущей пары - скругленная подсветка */
 .current-lesson {
     background: linear-gradient(45deg, 
         rgba(var(--button-background-rgb), 0.35),
@@ -86,20 +86,33 @@ tr:last-child td:last-child {
     transform: scale(1.02);
     transition: all 0.3s ease;
     animation: pulse 2s infinite;
+    border-radius: 12px;
+    margin: 2px;
+    padding: 13px;
 }
 
 /* Стили для предстоящих пар */
 .upcoming-lesson {
     background-color: rgba(var(--button-background-rgb), 0.08) !important;
+    border-radius: 12px;
+    margin: 2px;
+    padding: 13px;
 }
 
 /* Стили для прошедших пар */
 .past-lesson {
     background-color: rgba(var(--button-background-rgb), 0.03) !important;
     opacity: 0.75;
+    border-radius: 12px;
+    margin: 2px;
+    padding: 13px;
 }
 
 /* Стили для пустых ячеек */
+td:empty {
+    padding: 15px;
+}
+
 td:empty::before {
     content: '—';
     color: var(--table-text-secondary);
