@@ -11,9 +11,6 @@ class Program
 {
     static void Main(string[] args)
     {
-        using var db = new ApplicationDbContext();
-        db.Database.EnsureCreated();
-
         var builder = WebApplication.CreateBuilder(args);
 
         // Add services to the container.
@@ -61,6 +58,13 @@ class Program
             app.UseExceptionHandler("/Error");
             app.UseHsts();
         }
+
+        using (var scope = app.Services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            context.Database.EnsureCreated();
+        }
+
         app.Run();
     }
 
