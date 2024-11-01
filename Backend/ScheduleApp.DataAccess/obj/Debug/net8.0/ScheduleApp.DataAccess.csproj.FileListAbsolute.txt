@@ -60,3 +60,4 @@
 /home/mrgodgames/Документы/GitHub/prdsite/Backend/ScheduleApp.DataAccess/obj/Debug/net8.0/ScheduleApp.DataAccess.pdb
 /home/mrgodgames/Документы/GitHub/prdsite/Backend/ScheduleApp.DataAccess/obj/Debug/net8.0/ScheduleApp.DataAccess.genruntimeconfig.cache
 /home/mrgodgames/Документы/GitHub/prdsite/Backend/ScheduleApp.DataAccess/obj/Debug/net8.0/ref/ScheduleApp.DataAccess.dll
+/home/mrgodgames/Документы/GitHub/prdsite/Backend/ScheduleApp.DataAccess/bin/Debug/net8.0/appsettings.json
