@@ -214,7 +214,7 @@
     color: var(--button-hover);
 }
 
-/* Стили для свтлой темы */
+/* Стили для светлой темы */
 
 body:not(.dark-theme) .container {
     background-color: #ffffff;
