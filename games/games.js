@@ -1,49 +1,100 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const dino = document.getElementById("dino");
-    const cactus = document.getElementById("cactus");
-    const scoreElement = document.getElementById("score");
-
+    const bird = document.getElementById('bird');
+    const pipeTop = document.getElementById('pipe-top');
+    const pipeBottom = document.getElementById('pipe-bottom');
+    const scoreElement = document.getElementById('score');
+    const restartButton = document.getElementById('restart-button');
+    
+    let birdY = 300;
+    let velocity = 0;
+    let gravity = 0.5;
+    let jumpForce = -10;
     let score = 0;
-
-    // Добавляем анимацию движения кактуса
-    cactus.style.animation = "cactusMove 1.5s infinite linear";
-
-    function jump() {
-        if (!dino.classList.contains("jump")) {
-            dino.classList.add("jump");
-            setTimeout(() => {
-                dino.classList.remove("jump");
-            }, 500);
+    let isGameOver = false;
+    let pipeX = 400;
+    let gap = 200;
+    
+    function updateBirdPosition() {
+        velocity += gravity;
+        birdY += velocity;
+        bird.style.top = birdY + 'px';
+        bird.style.transform = `rotate(${velocity * 2}deg)`;
+    }
+    
+    function createPipes() {
+        let pipeHeight = Math.random() * 300 + 100;
+        pipeTop.style.height = pipeHeight + 'px';
+        pipeBottom.style.height = (600 - pipeHeight - gap) + 'px';
+    }
+    
+    function updatePipes() {
+        pipeX -= 2;
+        pipeTop.style.right = -pipeX + 'px';
+        pipeBottom.style.right = -pipeX + 'px';
+        
+        if (pipeX >= 400) {
+            pipeX = 0;
+            createPipes();
+            score++;
+            scoreElement.textContent = `Счёт: ${score}`;
         }
     }
-
-    // Проверка столкновений
-    let checkAlive = setInterval(() => {
-        let dinoTop = parseInt(window.getComputedStyle(dino).getPropertyValue("bottom"));
-        let cactusLeft = parseInt(window.getComputedStyle(cactus).getPropertyValue("left"));
-
-        // Проверяем столкновение
-        if (cactusLeft < 50 && cactusLeft > 0 && dinoTop <= 50) {
-            // При столкновении сбрасываем счет
-            score = 0;
-            scoreElement.textContent = "Счёт: 0";
-            
-            // Перезапускаем анимацию кактуса
-            cactus.style.animation = "none";
-            setTimeout(() => {
-                cactus.style.animation = "cactusMove 1.5s infinite linear";
-            }, 10);
-        } else {
-            score++;
-            scoreElement.textContent = "Счёт: " + Math.floor(score/10);
+    
+    function checkCollision() {
+        const birdRect = bird.getBoundingClientRect();
+        const topPipeRect = pipeTop.getBoundingClientRect();
+        const bottomPipeRect = pipeBottom.getBoundingClientRect();
+        
+        if (
+            birdRect.bottom >= 600 || // Столкновение с землей
+            birdRect.top <= 0 || // Столкновение с потолком
+            (
+                birdRect.right >= topPipeRect.left &&
+                birdRect.left <= topPipeRect.right &&
+                (birdRect.top <= topPipeRect.bottom || birdRect.bottom >= bottomPipeRect.top)
+            )
+        ) {
+            isGameOver = true;
+            restartButton.style.display = 'block';
         }
-    }, 10);
-
-    // Обработка нажатия пробела
-    document.addEventListener("keydown", (event) => {
-        if (event.code === "Space") {
-            jump();
-            event.preventDefault(); // Предотвращаем прокрутку страницы
+    }
+    
+    function resetGame() {
+        birdY = 300;
+        velocity = 0;
+        score = 0;
+        isGameOver = false;
+        pipeX = 400;
+        scoreElement.textContent = `Счёт: ${score}`;
+        restartButton.style.display = 'none';
+        createPipes();
+        gameLoop();
+    }
+    
+    function gameLoop() {
+        if (!isGameOver) {
+            updateBirdPosition();
+            updatePipes();
+            checkCollision();
+            requestAnimationFrame(gameLoop);
+        }
+    }
+    
+    document.addEventListener('keydown', (e) => {
+        if (e.code === 'Space' && !isGameOver) {
+            velocity = jumpForce;
         }
     });
+    
+    document.addEventListener('click', () => {
+        if (!isGameOver) {
+            velocity = jumpForce;
+        }
+    });
+    
+    restartButton.addEventListener('click', resetGame);
+    
+    // Начинаем игру
+    createPipes();
+    gameLoop();
 });
