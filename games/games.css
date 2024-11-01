@@ -13,6 +13,7 @@
     position: relative;
     overflow: hidden;
     background-color: #4EC0CA;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
 }
 
 #bird {
@@ -23,6 +24,7 @@
     position: absolute;
     left: 50px;
     transition: transform 0.1s;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
 }
 
 .pipe {
@@ -30,23 +32,33 @@
     position: absolute;
     background-color: #73C92D;
     right: -60px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
 }
 
 #pipe-top {
     top: 0;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
 }
 
 #pipe-bottom {
     bottom: 0;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
 }
 
 .game-controls {
     margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
 }
 
-#score {
+#score, #best-score {
     font-size: 24px;
     color: #333;
+    font-weight: bold;
 }
 
 #restart-button {
@@ -58,8 +70,20 @@
     border-radius: 5px;
     cursor: pointer;
     margin-top: 10px;
+    transition: background-color 0.3s, transform 0.1s;
 }
 
 #restart-button:hover {
     background-color: #5fa825;
+    transform: scale(1.05);
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+.shake {
+    animation: shake 0.5s;
 }
