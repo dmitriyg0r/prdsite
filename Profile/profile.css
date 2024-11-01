@@ -155,17 +155,18 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 10px;
-    border-radius: 20px;
-    background: var(--primary-color);
+    padding: 8px 16px;
+    border-radius: 8px;
+    background: #2196f3;
     color: white;
     cursor: pointer;
     z-index: 1000;
 }
 
-.theme-icon {
-    font-size: 20px;
-    color: #ffffff;
+.theme-toggle-container span {
+    font-size: 14px;
+    color: white;
+    user-select: none;
 }
 
 .theme-checkbox {
@@ -174,13 +175,13 @@
 }
 
 .theme-label {
-    background-color: rgba(0, 0, 0, 0.2);
+    background-color: rgba(255, 255, 255, 0.3);
     border-radius: 50px;
     cursor: pointer;
     display: inline-block;
     position: relative;
-    height: 26px;
-    width: 50px;
+    height: 20px;
+    width: 36px;
 }
 
 .theme-label .ball {
@@ -189,19 +190,19 @@
     position: absolute;
     top: 2px;
     left: 2px;
-    height: 22px;
-    width: 22px;
+    height: 16px;
+    width: 16px;
     transform: translateX(0px);
     transition: transform 0.2s linear;
 }
 
 .theme-checkbox:checked + .theme-label .ball {
-    transform: translateX(24px);
+    transform: translateX(16px);
 }
 
 /* Обновляем стили для темной темы */
 [data-theme="dark"] .theme-toggle-container {
-    background: var(--primary-color);
+    background: #7B2CBF;
 }
 
 [data-theme="dark"] .theme-label {
