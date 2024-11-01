@@ -28,6 +28,11 @@ th {
     color: white;
 }
 
+/* Стили для тёмной темы заголовков */
+[data-theme="dark"] th {
+    background: var(--primary-color);
+}
+
 /* Скругление углов заголовков */
 th:first-child {
     border-top-left-radius: 20px;
@@ -57,6 +62,12 @@ td {
     position: relative;
 }
 
+/* Стили для тёмной темы ячеек */
+[data-theme="dark"] td {
+    background: var(--table-background);
+    color: var(--text-color);
+}
+
 /* Первая колонка (дни недели) */
 td:first-child {
     color: var(--primary-color);
@@ -81,10 +92,23 @@ td:first-child {
     padding: 13px;
 }
 
+/* Стили для текущей пары в тёмной теме */
+[data-theme="dark"] .current-lesson {
+    background: linear-gradient(45deg, 
+        rgba(var(--button-background-rgb), 0.35),
+        rgba(var(--button-background-rgb), 0.25)) !important;
+    box-shadow: 0 4px 20px rgba(var(--button-background-rgb), 0.3);
+}
+
 /* Стили для предстоящих пар - без скругления */
 .upcoming-lesson {
     background-color: rgba(var(--button-background-rgb), 0.08) !important;
     padding: 15px;
+}
+
+/* Стили для предстоящих пар в тёмной теме */
+[data-theme="dark"] .upcoming-lesson {
+    background-color: rgba(var(--button-background-rgb), 0.08) !important;
 }
 
 /* Стили для прошедших пар - без скругления */
@@ -94,12 +118,22 @@ td:first-child {
     padding: 15px;
 }
 
+/* Стили для прошедших пар в тёмной теме */
+[data-theme="dark"] .past-lesson {
+    background-color: rgba(var(--button-background-rgb), 0.03) !important;
+}
+
 /* Стили для пустых ячеек */
 td:empty::before {
     content: '—';
     color: var(--table-text-secondary);
     display: block;
     text-align: center;
+}
+
+/* Стили для пустых ячеек в тёмной теме */
+[data-theme="dark"] td:empty::before {
+    color: var(--table-text-secondary);
 }
 
 /* Анимация пульсации для текущей пары */
