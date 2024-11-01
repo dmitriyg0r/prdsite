@@ -388,22 +388,6 @@ tr:hover {
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
-/* Стили для новостей */
-.news {
-    background: var(--text-container-background);
-    border-radius: 20px;
-    padding: 30px;
-    margin: 40px auto;
-    max-width: 1000px;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
-}
-
-.news h1 {
-    color: var(--text-color);
-    font-size: 2em;
-    margin-bottom: 20px;
-    text-align: center;
-}
 
 /* Улучшенные стили для кнопки создания поста */
 .add-post-btn {
