@@ -5,6 +5,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const scoreElement = document.getElementById('score');
     const restartButton = document.getElementById('restart-button');
     const gameContainer = document.getElementById('game');
+    const GROUND_HEIGHT = 100; // Высота земли
+    const GAME_HEIGHT = 600; // Высота игрового поля
 
     let birdY = 300;
     let velocity = 0;
@@ -14,8 +16,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let score = 0;
     let isGameOver = false;
     let gameSpeed = 3;
-    let bestScore = localStorage.getItem('bestScore') || 0;
     let pipePassed = false;
+    let bestScore = localStorage.getItem('bestScore') || 0;
 
     function createPipes() {
         const gap = 170;
@@ -24,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const topHeight = Math.random() * (maxHeight - minHeight) + minHeight;
         
         pipeTop.style.height = topHeight + 'px';
-        pipeBottom.style.height = (500 - topHeight - gap) + 'px';
+        pipeBottom.style.height = (GAME_HEIGHT - GROUND_HEIGHT - topHeight - gap) + 'px';
         pipePassed = false;
     }
 
@@ -73,8 +75,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const bottomPipeRect = pipeBottom.getBoundingClientRect();
         
         if (
-            birdRect.bottom >= 500 ||
-            birdRect.top <= 0 ||
+            birdRect.top <= 0 || // Столкновение с потолком
+            birdY > GAME_HEIGHT - GROUND_HEIGHT - 40 || // Столкновение с землей
             (
                 birdRect.right >= topPipeRect.left &&
                 birdRect.left <= topPipeRect.right &&
@@ -107,12 +109,11 @@ document.addEventListener('DOMContentLoaded', () => {
         velocity += gravity;
         birdY += velocity;
         
-        const maxY = 500;
-        if (birdY > maxY) {
-            birdY = maxY;
-            velocity = 0;
+        if (birdY > GAME_HEIGHT - GROUND_HEIGHT - 40) { // 40 - высота птицы
             gameOver();
+            birdY = GAME_HEIGHT - GROUND_HEIGHT - 40; // Фиксируем птицу на земле
         }
+        
         if (birdY < 0) {
             birdY = 0;
             velocity = 0;
