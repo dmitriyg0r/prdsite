@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ScheduleApp.DataAccess.Data;
 using ScheduleApp.DataAccess.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace ScheduleApp.DataAccess;
 
@@ -37,6 +38,9 @@ class Program
             logging.AddDebug();
         });
 
+        builder.Services.AddDbContext<ApplicationDbContext>(options =>
+            options.UseSqlite("Data Source=schedule.db"));
+
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
@@ -58,64 +62,6 @@ class Program
             app.UseHsts();
         }
         app.Run();
-    }
-
-    static void ShowUsers(ApplicationDbContext db)
-    {
-        var users = db.Users.ToList();
-        Console.WriteLine("\nСписок пользователей:");
-        foreach (var user in users)
-        {
-            Console.WriteLine($"ID: {user.Id}, Логин: {user.Username}, Роль: {user.Role}");
-        }
-    }
-
-    static void AddUser(ApplicationDbContext db)
-    {
-        Console.Write("Введите логин: ");
-        var username = Console.ReadLine();
-
-        if (string.IsNullOrEmpty(username))
-        {
-            Console.WriteLine("Логин не может быть пустым");
-            return;
-        }
-
-        if (db.Users.Any(u => u.Username == username))
-        {
-            Console.WriteLine("Пользователь с таким логином уже существует");
-            return;
-        }
-
-        Console.Write("Введите пароль: ");
-        var password = Console.ReadLine();
-
-        if (string.IsNullOrEmpty(password))
-        {
-            Console.WriteLine("Пароль не может быть пустым");
-            return;
-        }
-
-        Console.Write("Введите роль (Admin/User): ");
-        var role = Console.ReadLine();
-
-        if (role != "Admin" && role != "User")
-        {
-            Console.WriteLine("Роль должна быть Admin или User");
-            return;
-        }
-
-        var user = new User
-        {
-            Username = username,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(password),
-            Role = role,
-            CreatedAt = DateTime.UtcNow
-        };
-
-        db.Users.Add(user);
-        db.SaveChanges();
-        Console.WriteLine("Пользователь успешно добавлен");
     }
 
     static void ChangePassword(ApplicationDbContext db)
