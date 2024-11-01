@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "teZOc/L3nZ7ksOPwDnAMx2GJvAXL3+PzBusvsogiX4E=",
+  "Source": "ScheduleApp.DataAccess",
+  "BasePath": "_content/ScheduleApp.DataAccess",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}
