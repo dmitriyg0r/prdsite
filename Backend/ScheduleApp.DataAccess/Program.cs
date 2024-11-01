@@ -1,6 +1,8 @@
 ﻿using ScheduleApp.DataAccess.Data;
 using ScheduleApp.DataAccess.Models;
 
+namespace ScheduleApp.DataAccess;
+
 class Program
 {
     static void Main(string[] args)

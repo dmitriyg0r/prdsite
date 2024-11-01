@@ -5,7 +5,7 @@ namespace ScheduleApp.DataAccess.Data;
 
 public class ApplicationDbContext : DbContext
 {
-    public DbSet<User> Users { get; set; }
+    public DbSet<User> Users { get; set; } = null!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -14,18 +14,16 @@ public class ApplicationDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // Настройка уникальности username
         modelBuilder.Entity<User>()
             .HasIndex(u => u.Username)
             .IsUnique();
 
-        // Добавление администратора по умолчанию
         modelBuilder.Entity<User>().HasData(
             new User
             {
                 Id = 1,
                 Username = "admin",
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin"), // Пароль: admin
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin"),
                 Role = "Admin",
                 CreatedAt = DateTime.UtcNow
             }

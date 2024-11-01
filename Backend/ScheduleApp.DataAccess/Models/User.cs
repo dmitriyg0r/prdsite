@@ -1,3 +1,5 @@
+namespace ScheduleApp.DataAccess.Models;
+
 public class User
 {
     public int Id { get; set; }
@@ -6,4 +8,4 @@ public class User
     public string Role { get; set; } // Admin или User
     public DateTime CreatedAt { get; set; }
     public DateTime? LastLogin { get; set; }
-} 
+}
