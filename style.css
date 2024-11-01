@@ -276,11 +276,12 @@ main {
 /* Стили для подвала */
 .container {
     text-align: center;
-    padding: 40px 20px;
+    padding: 40px 0;
     margin-top: 60px;
-    border-radius: 20px 20px 0 0;
+    border-radius: 0;
     box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.1);
     background: var(--text-container-background);
+    width: 100%;
 }
 
 .text-container {
