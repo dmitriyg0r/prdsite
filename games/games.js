@@ -15,12 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let isGameOver = false;
     let gameSpeed = 2;
     let bestScore = localStorage.getItem('bestScore') || 0;
-
-    // Добавляем элемент для лучшего счета
-    const bestScoreElement = document.createElement('span');
-    bestScoreElement.id = 'best-score';
-    bestScoreElement.textContent = `Рекорд: ${bestScore}`;
-    document.querySelector('.game-controls').appendChild(bestScoreElement);
+    let pipePassed = false;
 
     function createPipes() {
         const gap = 200;
@@ -30,22 +25,46 @@ document.addEventListener('DOMContentLoaded', () => {
         
         pipeTop.style.height = topHeight + 'px';
         pipeBottom.style.height = (500 - topHeight - gap) + 'px';
+        pipePassed = false;
     }
 
-    function updateBirdPosition() {
-        velocity += gravity;
-        birdY += velocity;
+    function updatePipes() {
+        pipeX -= gameSpeed;
+        pipeTop.style.right = -pipeX + 'px';
+        pipeBottom.style.right = -pipeX + 'px';
         
-        const maxY = 500;
-        if (birdY > maxY) {
-            birdY = maxY;
-            velocity = 0;
+        const birdRect = bird.getBoundingClientRect();
+        const pipeRect = pipeTop.getBoundingClientRect();
+        
+        if (!pipePassed && pipeRect.right < birdRect.left) {
+            score++;
+            scoreElement.textContent = `Счёт: ${score}`;
+            pipePassed = true;
+            
+            if (score % 5 === 0) {
+                gameSpeed += 0.5;
+            }
         }
         
-        bird.style.top = birdY + 'px';
-        
-        const rotation = velocity * 2;
-        bird.style.transform = `rotate(${rotation}deg)`;
+        if (pipeRect.right < 0) {
+            pipeX = 0;
+            createPipes();
+        }
+    }
+
+    function resetGame() {
+        birdY = 300;
+        velocity = 0;
+        score = 0;
+        isGameOver = false;
+        pipeX = 400;
+        gameSpeed = 2;
+        pipePassed = false;
+        scoreElement.textContent = `Счёт: ${score}`;
+        restartButton.style.display = 'none';
+        bird.style.transform = 'rotate(0deg)';
+        createPipes();
+        gameLoop();
     }
 
     function checkCollision() {
@@ -74,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (score > bestScore) {
             bestScore = score;
             localStorage.setItem('bestScore', bestScore);
-            bestScoreElement.textContent = `Рекорд: ${bestScore}`;
+            document.getElementById('best-score').textContent = `Рекорд: ${bestScore}`;
         }
 
         gameContainer.classList.add('shake');
@@ -83,35 +102,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 500);
     }
 
-    function updatePipes() {
-        pipeX -= gameSpeed;
-        pipeTop.style.right = -pipeX + 'px';
-        pipeBottom.style.right = -pipeX + 'px';
+    function updateBirdPosition() {
+        velocity += gravity;
+        birdY += velocity;
         
-        if (pipeX >= 400) {
-            pipeX = 0;
-            createPipes();
-            score++;
-            scoreElement.textContent = `Счёт: ${score}`;
-            
-            if (score % 5 === 0) {
-                gameSpeed += 0.5;
-            }
+        const maxY = 500;
+        if (birdY > maxY) {
+            birdY = maxY;
+            velocity = 0;
         }
-    }
-
-    function resetGame() {
-        birdY = 300;
-        velocity = 0;
-        score = 0;
-        isGameOver = false;
-        pipeX = 400;
-        gameSpeed = 2;
-        scoreElement.textContent = `Счёт: ${score}`;
-        restartButton.style.display = 'none';
-        bird.style.transform = 'rotate(0deg)';
-        createPipes();
-        gameLoop();
+        
+        bird.style.top = birdY + 'px';
+        const rotation = velocity * 2;
+        bird.style.transform = `rotate(${rotation}deg)`;
     }
 
     function gameLoop() {
