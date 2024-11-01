@@ -41,16 +41,9 @@ class Program
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
-        app.UseCors(builder =>
-            builder
-                .WithOrigins("https://adminflow.ru")
-                .AllowAnyMethod()
-                .AllowAnyHeader()
-                .AllowCredentials());
+        app.UseCors("AllowAll");
 
-        app.Urls.Add("http://0.0.0.0:5000");  // Слушаем все входящие подключения
-        // или
-        app.Urls.Add("http://adminflow.ru:5000");  // Слушаем конкретный домен
+        app.Urls.Add("http://0.0.0.0:5001");
 
         app.UseRouting();
         app.UseHttpsRedirection();
@@ -74,48 +67,5 @@ class Program
         }
 
         app.Run();
-    }
-
-    static void ChangePassword(ApplicationDbContext db)
-    {
-        Console.Write("Введите логин пользователя: ");
-        var username = Console.ReadLine();
-
-        var user = db.Users.FirstOrDefault(u => u.Username == username);
-        if (user == null)
-        {
-            Console.WriteLine("Пользователь не найден");
-            return;
-        }
-
-        Console.Write("Введите новый пароль: ");
-        var newPassword = Console.ReadLine();
-
-        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
-        db.SaveChanges();
-        Console.WriteLine("Пароль успешно изменен");
-    }
-
-    static void DeleteUser(ApplicationDbContext db)
-    {
-        Console.Write("Введите логин пользователя для удаления: ");
-        var username = Console.ReadLine();
-
-        var user = db.Users.FirstOrDefault(u => u.Username == username);
-        if (user == null)
-        {
-            Console.WriteLine("Пользователь не найден");
-            return;
-        }
-
-        if (user.Role == "Admin" && db.Users.Count(u => u.Role == "Admin") == 1)
-        {
-            Console.WriteLine("Нельзя удалить последнего администратора");
-            return;
-        }
-
-        db.Users.Remove(user);
-        db.SaveChanges();
-        Console.WriteLine("Пользователь успешно удален");
     }
 }
