@@ -578,7 +578,44 @@ tr:hover {
     animation: slideIn 0.4s ease-out;
 }
 
-/* При наведении на sidebar увеличиваем padding для корректного отображения */
+/* При наведени�� на sidebar увеличиваем padding для корректного отображения */
 .sidebar:hover .sidebar-link {
     padding: 14px 24px;
+}
+
+/* Стили для бокового меню в тёмной теме */
+[data-theme="dark"] .sidebar {
+    background: var(--primary-color); /* Используем фиолетовый цвет из переменных */
+    box-shadow: 2px 0 20px rgba(187, 134, 252, 0.2); /* Добавляем фиолетовое свечение */
+}
+
+[data-theme="dark"] .sidebar-link {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+[data-theme="dark"] .sidebar-link:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+[data-theme="dark"] .sidebar-link.active {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+}
+
+[data-theme="dark"] .sidebar-link i {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Стили для переключателя темы в тёмном меню */
+[data-theme="dark"] .theme-switch-wrapper {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .theme-label {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="dark"] .theme-checkbox:checked + .theme-label .ball {
+    background: white;
 }
