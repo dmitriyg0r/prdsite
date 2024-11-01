@@ -17,3 +17,14 @@
     width: 100%; /* Make images responsive */
     height: auto; /* Maintain aspect ratio */
 }
+.news-title {
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    margin: 20px 0;
+}
+.news-description {
+    text-align: center;
+    font-size: 16px;
+    margin: 10px 0;
+}
