@@ -165,8 +165,9 @@ body {
 .sidebar-link i {
     min-width: 24px;
     font-size: 20px;
-    text-align: left;
-    transition: transform 0.3s ease;
+    text-align: center;
+    margin: 0 auto;
+    transition: transform 0.3s ease, margin 0.3s ease;
 }
 
 .sidebar-link:hover i {
@@ -324,7 +325,10 @@ main {
 .theme-toggle-container {
     display: flex;
     align-items: center;
+    justify-content: center;
     cursor: pointer;
+    padding: 14px 8px;
+    margin: 4px 8px;
 }
 
 .theme-checkbox {
@@ -732,4 +736,16 @@ tr:hover {
 /* Скрываем отдельную иконку при открытом меню */
 .sidebar:hover .theme-icon {
     display: none;
+}
+
+/* При наведении на sidebar возвращаем отступ слева */
+.sidebar:hover .sidebar-link i {
+    margin: 0;
+    margin-left: 8px; /* Добавляем отступ слева при развернутом меню */
+}
+
+/* При наведении на sidebar меняем стили контейнера темы */
+.sidebar:hover .theme-toggle-container {
+    justify-content: flex-start;
+    padding: 14px 24px;
 }
