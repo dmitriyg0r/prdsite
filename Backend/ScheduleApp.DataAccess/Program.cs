@@ -31,14 +31,32 @@ class Program
                 });
         });
 
+        builder.Services.AddLogging(logging =>
+        {
+            logging.AddConsole();
+            logging.AddDebug();
+        });
+
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
+        app.UseStaticFiles();
+        app.UseDefaultFiles();
+
+        app.UseCors("AllowAll");
         app.UseHttpsRedirection();
         app.UseAuthorization();
         app.MapControllers();
-        app.UseCors("AllowAll");
 
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseDeveloperExceptionPage();
+        }
+        else
+        {
+            app.UseExceptionHandler("/Error");
+            app.UseHsts();
+        }
         app.Run();
     }
 

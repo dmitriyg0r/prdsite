@@ -8,7 +8,7 @@ using BCrypt.Net;
 namespace ScheduleApp.DataAccess.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/auth")]
 public class AuthController : ControllerBase
 {
     private readonly ApplicationDbContext _db;
