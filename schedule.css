@@ -70,30 +70,33 @@ tr:last-child td:last-child {
 /* Подсветка текущего дня */
 .today-highlight td {
     background: linear-gradient(45deg, 
-        rgba(var(--button-background-rgb), 0.05),
-        rgba(var(--button-background-rgb), 0.02));
+        rgba(var(--button-background-rgb), 0.08),
+        rgba(var(--button-background-rgb), 0.05));
 }
 
-/* Стили для текущей пары */
+/* Стили для текущей пары - усиленная подсветка */
 .current-lesson {
     background: linear-gradient(45deg, 
-        rgba(var(--button-background-rgb), 0.25),
-        rgba(var(--button-background-rgb), 0.15)) !important;
+        rgba(var(--button-background-rgb), 0.35),
+        rgba(var(--button-background-rgb), 0.25)) !important;
     font-weight: 600;
     position: relative;
     z-index: 2;
-    box-shadow: 0 4px 15px rgba(var(--button-background-rgb), 0.2);
+    box-shadow: 0 4px 20px rgba(var(--button-background-rgb), 0.3);
+    transform: scale(1.02);
+    transition: all 0.3s ease;
+    animation: pulse 2s infinite;
 }
 
 /* Стили для предстоящих пар */
 .upcoming-lesson {
-    background-color: rgba(var(--button-background-rgb), 0.05) !important;
+    background-color: rgba(var(--button-background-rgb), 0.08) !important;
 }
 
 /* Стили для прошедших пар */
 .past-lesson {
-    background-color: rgba(var(--button-background-rgb), 0.02) !important;
-    opacity: 0.8;
+    background-color: rgba(var(--button-background-rgb), 0.03) !important;
+    opacity: 0.75;
 }
 
 /* Стили для пустых ячеек */
@@ -107,14 +110,20 @@ td:empty::before {
 /* Анимация пульсации для текущей пары */
 @keyframes pulse {
     0% {
-        box-shadow: 0 0 0 0 rgba(var(--button-background-rgb), 0.4);
+        box-shadow: 0 0 0 0 rgba(var(--button-background-rgb), 0.5);
     }
     70% {
-        box-shadow: 0 0 0 10px rgba(var(--button-background-rgb), 0);
+        box-shadow: 0 0 0 15px rgba(var(--button-background-rgb), 0);
     }
     100% {
         box-shadow: 0 0 0 0 rgba(var(--button-background-rgb), 0);
     }
+}
+
+/* Добавляем эффект при наведении на текущую пару */
+.current-lesson:hover {
+    transform: scale(1.03);
+    box-shadow: 0 6px 25px rgba(var(--button-background-rgb), 0.4);
 }
 
 /* Медиа-запросы */
