@@ -7,14 +7,14 @@ public class User
     
     [Required]
     [StringLength(50, MinimumLength = 3)]
-    public string Username { get; set; }
+    public required string Username { get; set; }
     
     [Required]
-    public string PasswordHash { get; set; }
+    public required string PasswordHash { get; set; }
     
     [Required]
     [RegularExpression("^(Admin|User)$")]
-    public string Role { get; set; }
+    public required string Role { get; set; }
     
     public DateTime CreatedAt { get; set; }
     public DateTime? LastLogin { get; set; }
