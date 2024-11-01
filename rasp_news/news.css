@@ -32,3 +32,7 @@
 .dark-theme .news-description {
     color: white; /* Change text color to white in dark theme */
 }
+.dark-theme .post {
+    background: #333; /* Dark background for posts in dark theme */
+    border-color: #555; /* Dark border color for posts in dark theme */
+}
