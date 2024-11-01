@@ -138,24 +138,20 @@ td:not(:empty):not(:first-child)::after {
 
 /* Добавьте следующие строки для определения цветов в зависимости от темы */
 :root {
-    /* Улучшенные цвета для таблицы в светлой теме */
-    --table-background: #ffffff;
-    --table-border: #e0e0e0;
-    --table-hover-background: #f5f8ff;
-    --today-highlight-light: rgba(33, 150, 243, 0.1);
-    --header-background: #1976d2;
-    --header-gradient: #2196f3;
-    --table-text: #2c3e50;
-    --table-border-rgb: 224, 224, 224;
-    --table-hover-rgb: 33, 150, 243;
-    --table-background-rgb: 255, 255, 255;
+    --table-background: var(--text-container-background);
+    --table-border: var(--border-color);
+    --table-hover-background: rgba(var(--button-background-rgb), 0.05);
+    --today-highlight: rgba(var(--button-background-rgb), 0.1);
+    --header-background: var(--primary-color);
+    --header-gradient: var(--header-gradient);
+    --table-text: var(--text-color);
+    --table-border-rgb: var(--border-color);
+    --table-hover-rgb: var(--button-background-rgb);
+    --table-background-rgb: var(--text-container-background);
 }
 
 body.dark-theme {
     /* Улучшенные цвета для таблицы в тёмной теме */
-    --table-background: #1f1f1f;
-    --table-border: #333333;
-    --table-hover-background: #2d2d2d;
     --today-highlight-dark: rgba(187, 134, 252, 0.15);
     --header-background: #9d4edd;
     --header-gradient: #bb86fc;
