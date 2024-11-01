@@ -26,7 +26,7 @@ table {
 }
 
 th {
-    background: linear-gradient(45deg, var(--header-background), var(--header-gradient));
+    background: var(--sidebar-background);
     padding: 20px 15px;
     font-size: 15px;
     text-transform: uppercase;
@@ -47,6 +47,7 @@ td {
 
 /* Первая колонка (дни недели) */
 td:first-child {
+    color: var(--primary-color);
     font-weight: 600;
     background: var(--table-background);
     border-right: 1px solid var(--table-border);
@@ -224,4 +225,26 @@ td:not(:empty):not(:first-child)::after {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+/* Добавляем стили для активной строки (как для среды в примере) */
+tr.active {
+    background-color: var(--button-background);
+}
+
+tr.active td {
+    background-color: var(--button-background);
+    color: white;
+}
+
+/* Обновляем стили для ячеек с номерами аудиторий */
+td:not(:empty):not(:first-child)::after {
+    color: var(--text-secondary);
+    opacity: 0.8;
+}
+
+/* Обновляем стили для первой колонки (дни недели) */
+td:first-child {
+    color: var(--primary-color);
+    font-weight: 600;
 }
