@@ -91,6 +91,11 @@
     --today-highlight: rgba(123, 44, 191, 0.05);
 }
 
+/* Добавим общее правило для всего текста */
+[data-theme="dark"] * {
+    color: var(--text-color);
+}
+
 /* Общие стили */
 body {
     margin: 0;
