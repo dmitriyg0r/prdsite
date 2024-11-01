@@ -2,7 +2,8 @@
 // Устанавливаем заголовок Content-Type перед любым выводом
 header('Content-Type: application/json');
 
-$uploadDir = 'uploads/';
+// Исправленный путь к директории загрузок
+$uploadDir = '../downloads/uploads/';
 
 // Проверяем существование директории
 if (!file_exists($uploadDir)) {

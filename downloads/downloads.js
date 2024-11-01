@@ -106,10 +106,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     fileItemContent.appendChild(fileName);
 
                     const downloadButton = document.createElement('a');
-                    downloadButton.href = encodeURI(`uploads/${category}/${folder}/${file}`);
+                    downloadButton.href = encodeURI(`../downloads/uploads/${category}/${folder}/${file}`);
                     downloadButton.textContent = 'Скачать';
                     downloadButton.className = 'download-button';
-                    downloadButton.download = file; // Добавляем атрибут download
+                    downloadButton.download = file;
                     fileItemContent.appendChild(downloadButton);
 
                     fileItem.appendChild(fileItemContent);
