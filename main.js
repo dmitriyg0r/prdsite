@@ -1,39 +1,39 @@
-document.addEventListener('DOMContentLoaded', () => {
+// Функция для применения темы
+function applyTheme(theme) {
+    const body = document.body;
     const themeToggle = document.querySelector('.theme-checkbox');
     const themeIcon = document.querySelector('.theme-icon');
-    const body = document.body;
 
-    // Функция обновления иконки
-    function updateThemeIcon(isDark) {
-        if (isDark) {
+    if (theme === 'dark') {
+        body.setAttribute('data-theme', 'dark');
+        if (themeToggle) themeToggle.checked = true;
+        if (themeIcon) {
             themeIcon.classList.remove('fa-sun');
             themeIcon.classList.add('fa-moon');
-        } else {
+        }
+    } else {
+        body.removeAttribute('data-theme');
+        if (themeToggle) themeToggle.checked = false;
+        if (themeIcon) {
             themeIcon.classList.remove('fa-moon');
             themeIcon.classList.add('fa-sun');
         }
     }
+}
 
-    // Проверяем сохраненную тему при загрузке
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme) {
-        body.setAttribute('data-theme', savedTheme);
-        themeToggle.checked = savedTheme === 'dark';
-        updateThemeIcon(savedTheme === 'dark');
+// Применяем тему при загрузке страницы
+document.addEventListener('DOMContentLoaded', () => {
+    // Получаем сохраненную тему
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    applyTheme(savedTheme);
+
+    // Добавляем обработчик для переключателя темы
+    const themeToggle = document.querySelector('.theme-checkbox');
+    if (themeToggle) {
+        themeToggle.addEventListener('change', () => {
+            const newTheme = themeToggle.checked ? 'dark' : 'light';
+            localStorage.setItem('theme', newTheme);
+            applyTheme(newTheme);
+        });
     }
-
-    // Обработчик переключения темы
-    themeToggle.addEventListener('change', () => {
-        const isDark = themeToggle.checked;
-        console.log('Переключение темы:', isDark ? 'темная' : 'светлая');
-        
-        if (isDark) {
-            body.setAttribute('data-theme', 'dark');
-            localStorage.setItem('theme', 'dark');
-        } else {
-            body.removeAttribute('data-theme');
-            localStorage.setItem('theme', 'light');
-        }
-        updateThemeIcon(isDark);
-    });
 });

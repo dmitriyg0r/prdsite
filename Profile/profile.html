@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="profile.css">
     <link rel="stylesheet" href="mobile.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="path/to/main.js"></script>
 </head>
 <body>
     <!-- Добавляем боковое меню -->
@@ -46,11 +47,12 @@
         <!-- Переключатель темы после навигации -->
         <div class="theme-switch-wrapper">
             <div class="theme-toggle-container">
-                <input type="checkbox" id="theme-toggle" class="theme-checkbox">
+                <i class="theme-icon fas fa-sun"></i>
+                <span>Тема</span>
+                <input type="checkbox" class="theme-checkbox" id="theme-toggle">
                 <label for="theme-toggle" class="theme-label">
                     <div class="ball"></div>
                 </label>
-                <span>Тёмная тема</span>
             </div>
         </div>
     </nav>
@@ -81,7 +83,6 @@
             </form>
         </div>
     </main>
-    <script src="../main.js"></script>
     <script src="profile.js"></script>
 </body>
 </html>
