@@ -30,6 +30,9 @@
     background-color: var(--button-background);
     margin: 15px auto 0;
 }
+.dark-theme .download-section h2 {
+    color: #ffffff;
+}
 
 #upload-form {
     display: flex;
