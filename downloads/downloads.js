@@ -56,37 +56,47 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function displayFiles() {
         categoriesContainer.innerHTML = '';
-        for (const [category, folders] of Object.entries(fileStorage)) {
+        
+        // Сортировка категорий по алфавиту
+        const sortedCategories = Object.entries(fileStorage).sort((a, b) => a[0].localeCompare(b[0]));
+        
+        for (const [category, folders] of sortedCategories) {
             const categoryDiv = document.createElement('div');
             categoryDiv.className = 'file-category';
+            
             const categoryTitle = document.createElement('h3');
-            categoryTitle.textContent = `${categoryIcons[category] || ''} ${category}`;
+            categoryTitle.textContent = `${categoryIcons[category] || '📁'} ${category}`;
             categoryDiv.appendChild(categoryTitle);
+            
             const folderList = document.createElement('ul');
             
-            for (const [folder, files] of Object.entries(folders)) {
+            // Сортировка папок по алфавиту
+            const sortedFolders = Object.entries(folders).sort((a, b) => a[0].localeCompare(b[0]));
+            
+            for (const [folder, files] of sortedFolders) {
                 const listItem = document.createElement('li');
                 const folderHeader = document.createElement('div');
                 folderHeader.className = 'folder-header';
                 
-                // Добавляем стрелку и название папки
                 const arrow = document.createElement('span');
                 arrow.className = 'folder-arrow';
                 arrow.textContent = '▶';
                 
                 const folderName = document.createElement('span');
                 folderName.className = 'folder-name';
-                folderName.textContent = folder;
+                folderName.textContent = `${folder} (${files.length})`;
                 
                 folderHeader.appendChild(arrow);
                 folderHeader.appendChild(folderName);
                 listItem.appendChild(folderHeader);
 
-                // Создаем контейнер для файлов
                 const filesList = document.createElement('ul');
                 filesList.className = 'files-list collapsed';
 
-                Object.values(files).forEach(file => {
+                // Сортировка файлов по алфавиту
+                const sortedFiles = [...files].sort((a, b) => a.localeCompare(b));
+
+                sortedFiles.forEach(file => {
                     const fileItem = document.createElement('li');
                     const fileItemContent = document.createElement('div');
                     fileItemContent.className = 'file-item';
@@ -96,9 +106,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     fileItemContent.appendChild(fileName);
 
                     const downloadButton = document.createElement('a');
-                    downloadButton.href = `uploads/${encodeURIComponent(category)}/${encodeURIComponent(folder)}/${encodeURIComponent(file)}`;
+                    downloadButton.href = encodeURI(`uploads/${category}/${folder}/${file}`);
                     downloadButton.textContent = 'Скачать';
                     downloadButton.className = 'download-button';
+                    downloadButton.download = file; // Добавляем атрибут download
                     fileItemContent.appendChild(downloadButton);
 
                     fileItem.appendChild(fileItemContent);
@@ -107,12 +118,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 listItem.appendChild(filesList);
                 folderList.appendChild(listItem);
-
-                // Добавляем обработчик клика для разворачивания/сворачивания
-                folderHeader.addEventListener('click', function() {
-                    filesList.classList.toggle('collapsed');
-                    arrow.classList.toggle('rotated');
-                });
             }
             
             categoryDiv.appendChild(folderList);
@@ -163,64 +168,62 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    uploadForm.addEventListener('submit', function(e) {
+    uploadForm.addEventListener('submit', async function(e) {
         e.preventDefault();
-        const adminPassword = prompt("Please enter the admin password:");
-    
-        if (adminPassword !== "Gg3985502") {
-            uploadMessage.textContent = "Invalid admin password. Access denied.";
-            return;
-        }
-    
-        uploadMessage.textContent = "Uploading files...";
-        const formData = new FormData(uploadForm);
-        formData.append('admin_password', adminPassword);
-    
-        fetch('downloads.php', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.text())
-        .then(text => {
-            console.log('Raw response text:', text); // Вывод сырых данных для отладки
-            try {
-                const data = JSON.parse(text);
-                if (data.status === 'success') {
-                    uploadMessage.textContent = data.message;
-                    // обновление структуры файлов
-                    if (!fileStorage[data.category]) {
-                        fileStorage[data.category] = {};
-                    }
-                    if (!fileStorage[data.category][data.folder]) {
-                        fileStorage[data.category][data.folder] = [];
-                    }
-                    data.files.forEach(file => {
-                        fileStorage[data.category][data.folder].push(file);
-                    });
-    
-                    uploadForm.reset();
-                    displayFiles();
-                } else {
-                    uploadMessage.textContent = data.message || 'An unknown error occurred';
-                    if (data.debug_output) {
-                        console.error('Debug output:', data.debug_output);
-                    }
-                }
-            } catch (error) {
-                console.error('JSON parse error:', error);
-                console.log('Raw response text:', text); // Вывод сырых данных
-                uploadMessage.textContent = `File upload failed: ${error.message}`;
+        
+        try {
+            const adminPassword = prompt("Введите пароль администратора:");
+            if (!adminPassword) return;
+
+            if (adminPassword !== "Gg3985502") {
+                uploadMessage.textContent = "Неверный пароль администратора.";
+                return;
             }
-        })
-        .catch(error => {
+
+            uploadMessage.textContent = "Загрузка файлов...";
+            const formData = new FormData(uploadForm);
+            formData.append('admin_password', adminPassword);
+
+            const response = await fetch('downloads.php', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+            
+            if (data.status === 'success') {
+                uploadMessage.textContent = data.message;
+                
+                // Обновление структуры файлов
+                const category = formData.get('category');
+                const folder = formData.get('folder');
+                
+                if (!fileStorage[category]) {
+                    fileStorage[category] = {};
+                }
+                if (!fileStorage[category][folder]) {
+                    fileStorage[category][folder] = [];
+                }
+                
+                data.files.forEach(file => {
+                    if (!fileStorage[category][folder].includes(file)) {
+                        fileStorage[category][folder].push(file);
+                    }
+                });
+
+                uploadForm.reset();
+                fileName.textContent = '';
+                fileLabel.style.borderColor = 'var(--button-background)';
+                displayFiles();
+                uploadFormContainer.classList.remove('show');
+            } else {
+                uploadMessage.textContent = data.message || 'Произошла ошибка при загрузке';
+            }
+        } catch (error) {
             console.error('Error:', error);
-            uploadMessage.textContent = `File upload failed: ${error.message}`;
-        })
-        .finally(() => {
-            // Очистка поля ввода файлов после попытки загрузки
-            fileInput.value = '';
-        });
-    });    
+            uploadMessage.textContent = `Ошибка загрузки: ${error.message}`;
+        }
+    });
 
     const themeToggle = document.getElementById('theme-toggle');
     const menuToggle = document.getElementById('menu-toggle');
