@@ -17,10 +17,11 @@
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
     padding: 15px;
-    width: 320px;
+    width: calc(33.33% - 40px); /* Ширина для трех колонок с учетом отступов */
+    max-width: 320px; /* Максимальная ширина поста */
     margin: 20px;
     display: inline-block;
-    position: relative;
+    vertical-align: top; /* Выравнивание постов по верхнему краю */
 }
 
 .post:hover {
@@ -101,9 +102,14 @@
 /* Добавляем обертку для новостей */
 body {
     padding: 0 40px; /* Отступы по бокам от края экрана */
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center; /* Центрирование контента */
+    text-align: center; /* Центрирование контента */
+}
+
+/* Медиа-запрос для планшетов */
+@media (max-width: 1024px) {
+    .post {
+        width: calc(50% - 40px); /* Два поста в ряд */
+    }
 }
 
 /* Медиа-запрос для мобильных устройств */
@@ -113,7 +119,7 @@ body {
     }
     
     .post {
-        width: 100%; /* Полная ширина на мобильных */
-        margin: 15px 0; /* Вертикальные отступы между постами */
+        width: calc(100% - 40px); /* Один пост в ряд */
+        margin: 15px auto;
     }
 }
