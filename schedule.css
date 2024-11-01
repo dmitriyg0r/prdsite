@@ -92,6 +92,13 @@ td:first-child {
     padding: 13px;
 }
 
+/* Стили для пары слева от текущей */
+.current-lesson + td {
+    border-radius: 12px 0 0 12px;
+    background: rgba(var(--button-background-rgb), 0.08) !important;
+    padding: 15px;
+}
+
 /* Стили для текущей пары в тёмной теме */
 [data-theme="dark"] .current-lesson {
     background: linear-gradient(45deg, 
