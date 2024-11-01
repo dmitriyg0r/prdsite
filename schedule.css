@@ -9,8 +9,7 @@
 }
 
 table {
-    border-collapse: separate;
-    border-spacing: 0;
+    border-collapse: collapse;
     width: 100%;
     min-width: 800px;
     background: var(--table-background);
@@ -25,24 +24,12 @@ th {
     letter-spacing: 1px;
     font-weight: 600;
     color: white;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* Скругление углов заголовков */
-th:first-child {
-    border-top-left-radius: 20px;
-}
-
-th:last-child {
-    border-top-right-radius: 20px;
 }
 
 /* Стили для ячеек */
 td {
     padding: 15px;
     font-size: 14px;
-    border-right: 1px solid var(--table-border);
-    border-bottom: 1px solid var(--table-border);
     background: var(--table-background);
     color: var(--text-color);
     vertical-align: middle;
@@ -50,31 +37,14 @@ td {
     position: relative;
 }
 
-/* Добавляем левую границу для первой колонки */
+/* Первая колонка (дни недели) */
 td:first-child {
-    border-left: 1px solid var(--table-border);
     color: var(--primary-color);
     font-weight: 600;
     min-width: 120px;
 }
 
-/* Скругление для последней строки */
-tr:last-child td:first-child {
-    border-bottom-left-radius: 20px;
-}
-
-tr:last-child td:last-child {
-    border-bottom-right-radius: 20px;
-}
-
-/* Подсветка текущего дня */
-.today-highlight td {
-    background: linear-gradient(45deg, 
-        rgba(var(--button-background-rgb), 0.08),
-        rgba(var(--button-background-rgb), 0.05));
-}
-
-/* Стили для текущей пары - скругленная подсветка */
+/* Стили для текущей пары */
 .current-lesson {
     background: linear-gradient(45deg, 
         rgba(var(--button-background-rgb), 0.35),
@@ -109,10 +79,6 @@ tr:last-child td:last-child {
 }
 
 /* Стили для пустых ячеек */
-td:empty {
-    padding: 15px;
-}
-
 td:empty::before {
     content: '—';
     color: var(--table-text-secondary);
@@ -137,21 +103,4 @@ td:empty::before {
 .current-lesson:hover {
     transform: scale(1.03);
     box-shadow: 0 6px 25px rgba(var(--button-background-rgb), 0.4);
-}
-
-/* Медиа-запросы */
-@media screen and (max-width: 768px) {
-    .table-container {
-        margin: 15px 0;
-        border-radius: 0;
-    }
-
-    table {
-        min-width: 600px;
-    }
-
-    th, td {
-        padding: 10px;
-        font-size: 13px;
-    }
 }
