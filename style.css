@@ -780,3 +780,30 @@ table {
         margin-top: 20px;
     }
 }
+
+/* Стили для активного пункта меню */
+.sidebar-link.active {
+    background: rgba(255, 255, 255, 0.2); /* Полупрозрачный белый для светлой темы */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-link.active i,
+.sidebar-link.active span {
+    color: #ffffff; /* Белый цвет для иконки и текста */
+}
+
+/* Стили для активного пункта при наведении */
+.sidebar-link.active:hover {
+    background: rgba(255, 255, 255, 0.25); /* Чуть светлее при наведении */
+    transform: translateX(5px);
+}
+
+/* Стили для темной темы */
+[data-theme="dark"] .sidebar-link.active {
+    background: rgba(255, 255, 255, 0.15); /* Более темный оттенок для темной темы */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .sidebar-link.active:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
