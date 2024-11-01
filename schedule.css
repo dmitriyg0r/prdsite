@@ -86,10 +86,24 @@ td:first-child {
     box-shadow: 0 4px 20px rgba(var(--button-background-rgb), 0.3);
     transform: scale(1.02);
     transition: all 0.3s ease;
-    animation: pulse 2s infinite;
     border-radius: 12px;
     margin: 2px;
     padding: 13px;
+    overflow: hidden;
+}
+
+/* Добавляем прогресс-бар */
+.current-lesson::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: linear-gradient(45deg,
+        rgba(var(--button-background-rgb), 0.15),
+        rgba(var(--button-background-rgb), 0.05));
+    z-index: -1;
+    transition: width 1s linear;
 }
 
 /* Стили для пары слева от текущей */

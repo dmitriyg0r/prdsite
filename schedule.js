@@ -58,4 +58,30 @@ document.addEventListener("DOMContentLoaded", function() {
             });
         }
     }
+
+    function updateLessonProgress() {
+        if (dayOfWeek > 0 && dayOfWeek < 6) {
+            const currentLesson = document.querySelector('.current-lesson');
+            if (currentLesson) {
+                timeSlots.forEach((slot, index) => {
+                    if (currentTime >= slot.start && currentTime <= slot.end) {
+                        const totalDuration = slot.end - slot.start;
+                        const elapsed = currentTime - slot.start;
+                        const progress = (elapsed / totalDuration) * 100;
+                        
+                        // Обновляем ширину прогресс-бара
+                        currentLesson.style.setProperty('--progress', `${100 - progress}%`);
+                        currentLesson.style.background = `linear-gradient(to right, 
+                            rgba(var(--button-background-rgb), 0.1) ${100 - progress}%, 
+                            rgba(var(--button-background-rgb), 0.35) ${100 - progress}%
+                        )`;
+                    }
+                });
+            }
+        }
+    }
+
+    // Обновляем прогресс каждую минуту
+    updateLessonProgress();
+    setInterval(updateLessonProgress, 60000);
 });
