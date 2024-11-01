@@ -28,3 +28,7 @@
     font-size: 16px;
     margin: 10px 0;
 }
+
+.dark-theme .news-description {
+    color: white; /* Change text color to white in dark theme */
+}
