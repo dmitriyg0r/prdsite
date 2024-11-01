@@ -55,8 +55,30 @@
     </nav>
     <h1 class="zagolovok">Профиль</h1>
     <main>
-
-
+        <div class="login-container">
+            <form class="login-form">
+                <h2 class="form-title">Вход в систему</h2>
+                
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" placeholder="Введите ваш email">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Пароль</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="password" class="password-input" placeholder="Введите ваш пароль">
+                        <span class="eye-icon" onclick="togglePassword()">👁️</span>
+                    </div>
+                </div>
+                
+                <button type="submit" class="login-btn">Войти</button>
+                
+                <div class="forgot-password">
+                    <a href="#">Забыли пароль?</a>
+                </div>
+            </form>
+        </div>
     </main>
     <script src="../main.js"></script>
 </body>
