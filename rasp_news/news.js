@@ -13,18 +13,14 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Открытие модального окна
-    addPostBtn.addEventListener('click', () => {
-        modal.style.display = 'block';
-    });
+    addPostBtn.addEventListener('click', openModal);
 
     // Закрытие модального окна
-    closeBtn.addEventListener('click', () => {
-        modal.style.display = 'none';
-    });
+    closeBtn.addEventListener('click', closeModal);
 
     window.addEventListener('click', (e) => {
         if (e.target === modal) {
-            modal.style.display = 'none';
+            closeModal();
         }
     });
 
@@ -157,11 +153,41 @@ document.addEventListener('DOMContentLoaded', function() {
             if (result.success) {
                 post.remove();
             } else {
-                alert('Оши��ка при удалении поста: ' + result.error);
+                alert('Ошибка при удалении поста: ' + result.error);
             }
         } catch (error) {
             console.error('Ошибка при удалении:', error);
             alert('Ошибка при удалении поста');
         }
     });
+
+    // Отображение имени выбранного файла
+    document.getElementById('imageInput').addEventListener('change', function(e) {
+        const fileName = e.target.files[0]?.name;
+        const label = document.querySelector('.file-input-label');
+        if (fileName) {
+            label.innerHTML = `<i class="fas fa-image"></i> ${fileName}`;
+        } else {
+            label.innerHTML = `<i class="fas fa-image"></i> Выберите изображение`;
+        }
+    });
+
+    // Анимация открытия/закрытия модального окна
+    function openModal() {
+        modal.style.display = 'block';
+        modal.style.opacity = '0';
+        setTimeout(() => {
+            modal.style.opacity = '1';
+        }, 10);
+    }
+
+    function closeModal() {
+        modal.style.opacity = '0';
+        setTimeout(() => {
+            modal.style.display = 'none';
+            postForm.reset();
+            document.querySelector('.file-input-label').innerHTML = 
+                `<i class="fas fa-image"></i> Выберите изображение`;
+        }, 300);
+    }
 });
