@@ -25,19 +25,25 @@ document.addEventListener('DOMContentLoaded', () => {
     function createPipes() {
         const gap = 200;
         const minHeight = 50;
-        const maxHeight = 400;
+        const maxHeight = 300;
         const topHeight = Math.random() * (maxHeight - minHeight) + minHeight;
         
         pipeTop.style.height = topHeight + 'px';
-        pipeBottom.style.height = (600 - topHeight - gap) + 'px';
+        pipeBottom.style.height = (500 - topHeight - gap) + 'px';
     }
 
     function updateBirdPosition() {
         velocity += gravity;
         birdY += velocity;
+        
+        const maxY = 500;
+        if (birdY > maxY) {
+            birdY = maxY;
+            velocity = 0;
+        }
+        
         bird.style.top = birdY + 'px';
         
-        // Добавляем вращение птицы в зависимости от скорости падения
         const rotation = velocity * 2;
         bird.style.transform = `rotate(${rotation}deg)`;
     }
@@ -46,10 +52,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const birdRect = bird.getBoundingClientRect();
         const topPipeRect = pipeTop.getBoundingClientRect();
         const bottomPipeRect = pipeBottom.getBoundingClientRect();
+        const gameRect = document.getElementById('game').getBoundingClientRect();
         
         if (
-            birdRect.bottom >= 600 || // Столкновение с землей
-            birdRect.top <= 0 || // Столкновение с потолком
+            birdRect.bottom >= gameRect.bottom - 100 ||
+            birdRect.top <= 0 ||
             (
                 birdRect.right >= topPipeRect.left &&
                 birdRect.left <= topPipeRect.right &&
@@ -64,14 +71,12 @@ document.addEventListener('DOMContentLoaded', () => {
         isGameOver = true;
         restartButton.style.display = 'block';
         
-        // Обновляем рекорд
         if (score > bestScore) {
             bestScore = score;
             localStorage.setItem('bestScore', bestScore);
             bestScoreElement.textContent = `Рекорд: ${bestScore}`;
         }
 
-        // Добавляем эффект встряски при проигрыше
         gameContainer.classList.add('shake');
         setTimeout(() => {
             gameContainer.classList.remove('shake');
@@ -89,7 +94,6 @@ document.addEventListener('DOMContentLoaded', () => {
             score++;
             scoreElement.textContent = `Счёт: ${score}`;
             
-            // Увеличиваем скорость игры каждые 5 очков
             if (score % 5 === 0) {
                 gameSpeed += 0.5;
             }
@@ -119,7 +123,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Обработчики событий
     document.addEventListener('keydown', (e) => {
         if (e.code === 'Space') {
             if (!isGameOver) {
@@ -129,7 +132,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.addEventListener('click', (e) => {
-        // Проверяем, что клик был не по кнопке перезапуска
         if (!isGameOver && e.target !== restartButton) {
             velocity = jumpForce;
         }
@@ -137,7 +139,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     restartButton.addEventListener('click', resetGame);
 
-    // Начинаем игру
     createPipes();
     gameLoop();
 });
