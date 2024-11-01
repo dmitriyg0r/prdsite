@@ -9,11 +9,6 @@
     background: var(--table-background);
 }
 
-.table-container:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-}
-
 table {
     border-collapse: separate;
     border-spacing: 0;
@@ -22,9 +17,9 @@ table {
     background: var(--table-background);
     border-radius: 15px;
     overflow: hidden;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
 }
 
+/* Стили для заголовков */
 th {
     background: var(--sidebar-background);
     padding: 20px 15px;
@@ -36,13 +31,15 @@ th {
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
+/* Стили для ячеек */
 td {
     padding: 18px;
     font-size: 15px;
     transition: all 0.3s ease;
     position: relative;
     background: var(--table-background);
-    color: var(--table-text);
+    color: var(--text-color);
+    border: 1px solid var(--table-border);
 }
 
 /* Первая колонка (дни недели) */
@@ -50,14 +47,17 @@ td:first-child {
     color: var(--primary-color);
     font-weight: 600;
     background: var(--table-background);
-    border-right: 1px solid var(--table-border);
+    border-right: 2px solid var(--table-border);
 }
 
 /* Подсветка текущего дня */
-.today-highlight {
+.today-highlight td {
     background: linear-gradient(45deg, 
         var(--today-highlight),
         rgba(var(--table-hover-rgb), 0.05));
+}
+
+.today-highlight {
     position: relative;
 }
 
@@ -72,15 +72,31 @@ td:first-child {
     border-radius: 2px;
 }
 
-[data-theme="dark"] .today-highlight {
-    background-color: var(--today-highlight-dark);
+/* Стили для текущей пары */
+.current-lesson {
+    background-color: rgba(var(--button-background-rgb), 0.2) !important;
+    font-weight: 600;
+    transform: scale(1.02);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    z-index: 2;
+    animation: pulse 2s infinite;
+}
+
+/* Стили для предстоящих пар */
+.upcoming-lesson {
+    background-color: rgba(var(--button-background-rgb), 0.05) !important;
+}
+
+/* Стили для прошедших пар */
+.past-lesson {
+    opacity: 0.7;
 }
 
 /* Стили для пустых ячеек */
 td:empty::before {
     content: '—';
     color: var(--table-text-secondary);
-    text-align: center; /* Центрируем текст для пустых ячеек */
+    text-align: center;
 }
 
 /* Анимация при наведении на строку */
