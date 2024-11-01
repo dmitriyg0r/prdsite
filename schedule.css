@@ -1,15 +1,17 @@
 /* Стили для таблицы расписания */
 .table-container {
-    overflow-x: auto;
+    overflow: hidden;
     margin: 30px auto;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
     border-radius: 20px;
     max-width: 1400px;
     background: var(--table-background);
+    padding: 0;
 }
 
 table {
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
     width: 100%;
     min-width: 800px;
     background: var(--table-background);
@@ -27,15 +29,39 @@ th {
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* Скругление углов для первой строки заголовков */
+th:first-child {
+    border-top-left-radius: 20px;
+}
+
+th:last-child {
+    border-top-right-radius: 20px;
+}
+
+/* Скругление углов для последней строки */
+tr:last-child td:first-child {
+    border-bottom-left-radius: 20px;
+}
+
+tr:last-child td:last-child {
+    border-bottom-right-radius: 20px;
+}
+
 /* Стили для ячеек */
 td {
     padding: 15px;
     font-size: 14px;
-    border: 1px solid var(--table-border);
+    border-bottom: 1px solid var(--table-border);
+    border-right: 1px solid var(--table-border);
     background: var(--table-background);
     color: var(--text-color);
     vertical-align: middle;
     text-align: left;
+}
+
+/* Убираем лишние границы */
+td:first-child {
+    border-left: 1px solid var(--table-border);
 }
 
 /* Первая колонка (дни недели) */
