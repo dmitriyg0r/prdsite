@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&family=Montserrat:wght@300&display=swap">
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="profile.css">
-    <link rel="stylesheet" href="mobile.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="path/to/main.js"></script>
 </head>
@@ -20,7 +19,7 @@
                 <span>Расписание</span>
             </a>
             <a href="../home/homework.html" class="sidebar-link">
-                <i class="fas fa-book"></i>
+                <i class="fas fa-tasks"></i>
                 <span>Задания</span>
             </a>
             <a href="../downloads/downloads.html" class="sidebar-link">
@@ -39,7 +38,7 @@
                 <i class="fas fa-gamepad"></i>
                 <span>Игры</span>
             </a>
-            <a href="profile.html" class="sidebar-link">
+            <a href="profile.html" class="sidebar-link active">
                 <i class="fas fa-user"></i>
                 <span>Профиль</span>
             </a>
@@ -47,12 +46,13 @@
         <!-- Переключатель темы после навигации -->
         <div class="theme-switch-wrapper">
             <div class="theme-toggle-container">
-                <i class="theme-icon fas fa-sun"></i>
-                <span>Тема</span>
-                <input type="checkbox" class="theme-checkbox" id="theme-toggle">
+                <!-- Добавляем иконку для закрытого меню -->
+                <i class="fas fa-sun theme-icon"></i>
+                <input type="checkbox" id="theme-toggle" class="theme-checkbox">
                 <label for="theme-toggle" class="theme-label">
                     <div class="ball"></div>
                 </label>
+                <span>Тёмная тема</span>
             </div>
         </div>
     </nav>
@@ -84,5 +84,6 @@
         </div>
     </main>
     <script src="profile.js"></script>
+    <script src="../main.js"></script>
 </body>
 </html>

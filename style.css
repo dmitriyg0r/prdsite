@@ -91,6 +91,11 @@
     --today-highlight: rgba(123, 44, 191, 0.05);
 }
 
+/* Добавим общее правило для всего текста */
+[data-theme="dark"] * {
+    color: var(--text-color);
+}
+
 /* Общие стили */
 body {
     margin: 0;
@@ -266,16 +271,22 @@ main {
     padding: 20px;
     margin-left: 90px;
     transition: margin-left 0.3s ease;
+    min-height: calc(100vh - 200px);
 }
 
 /* Стили для подвала */
 .container {
     text-align: center;
-    padding: 40px 20px;
+    padding: 40px 0;
     margin-top: 60px;
-    border-radius: 20px 20px 0 0;
+    margin-left: 0;
+    border-radius: 0;
     box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.1);
     background: var(--text-container-background);
+    width: calc(100% - 70px);
+    margin-left: 70px;
+    box-sizing: border-box;
+    position: relative;
 }
 
 .text-container {
@@ -366,11 +377,17 @@ main {
 
 /*  стили для таблицы */
 .table-container {
-    margin: 40px auto;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    overflow-x: auto;
+    margin: 40px 0;
+    background: var(--table-background);
     border-radius: 25px;
-    background: var(--background-color);
-    padding: 5px;
+    box-shadow: var(--text-container-shadow);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px;
 }
 
 /* Анимация для строк таблицы */
@@ -383,22 +400,6 @@ tr:hover {
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
-/* Стили для новостей */
-.news {
-    background: var(--text-container-background);
-    border-radius: 20px;
-    padding: 30px;
-    margin: 40px auto;
-    max-width: 1000px;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
-}
-
-.news h1 {
-    color: var(--text-color);
-    font-size: 2em;
-    margin-bottom: 20px;
-    text-align: center;
-}
 
 /* Улучшенные стили для кнопки создания поста */
 .add-post-btn {
@@ -736,4 +737,73 @@ tr:hover {
     display: block;
     color: #ffffff;
     margin-left: 16px;
+}
+
+/* Добавить стили для корректного отображения таблицы */
+.table-container {
+    overflow-x: auto;
+    margin: 40px 0;
+    background: var(--table-background);
+    border-radius: 25px;
+    box-shadow: var(--text-container-shadow);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px;
+}
+
+/* Добавить медиа-запрос для мобильных устройств */
+@media screen and (max-width: 768px) {
+    .sidebar {
+        width: 0;
+        overflow: hidden;
+    }
+    
+    .sidebar:hover {
+        width: 250px;
+    }
+    
+    main {
+        margin-left: 0;
+        padding: 10px;
+    }
+    
+    .container {
+        width: 100%;
+        margin-left: 0;
+    }
+    
+    .zagolovok {
+        font-size: 2em;
+        margin-top: 20px;
+    }
+}
+
+/* Стили для активного пункта меню */
+.sidebar-link.active {
+    background: rgba(255, 255, 255, 0.2); /* Полупрозрачный белый для светлой темы */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-link.active i,
+.sidebar-link.active span {
+    color: #ffffff; /* Белый цвет для иконки и текста */
+}
+
+/* Стили для активного пункта при наведении */
+.sidebar-link.active:hover {
+    background: rgba(255, 255, 255, 0.25); /* Чуть светлее при наведении */
+    transform: translateX(5px);
+}
+
+/* Стили для темной темы */
+[data-theme="dark"] .sidebar-link.active {
+    background: rgba(255, 255, 255, 0.15); /* Более темный оттенок для темной темы */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .sidebar-link.active:hover {
+    background: rgba(255, 255, 255, 0.2);
 }

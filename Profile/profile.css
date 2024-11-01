@@ -1,25 +1,69 @@
+/* Стили для заголовка */
+.zagolovok {
+    text-align: center;
+    margin: 30px 0;
+    margin-left: 70px; /* Отступ для меню */
+    color: var(--text-color);
+    font-size: 32px;
+    font-weight: 700;
+}
+
+/* Контейнер для основного контента */
+main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: calc(100vh - 100px); /* Высота минус высота заголовка */
+    margin-left: 70px; /* Отступ для свёрнутого меню */
+    padding: 0 20px;
+}
+
+/* Контейнер для формы входа */
 .login-container {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
-    background-color: #f5f5f5;
+    width: calc(100% - 70px); /* Ширина минус ширина свёрнутого меню */
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 20px;
+    position: absolute; /* Абсолютное позиционирование */
+    top: 50%; /* Центрирование по вертикали */
+    left: 50%; /* Центрирование по горизонтали */
+    transform: translate(-50%, -50%); /* Точное центрирование */
+    margin-left: 35px; /* Половина ширины свёрнутого меню */
 }
 
 .login-form {
-    background: white;
+    background: var(--text-container-background);
     padding: 40px;
-    border-radius: 10px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    border-radius: 20px;
+    box-shadow: var(--text-container-shadow);
     width: 100%;
     max-width: 400px;
+    animation: fadeIn 0.6s ease-out;
 }
 
 .form-title {
     text-align: center;
     margin-bottom: 30px;
-    color: #333;
+    color: var(--text-color);
     font-size: 24px;
+    font-weight: 700;
+    position: relative;
+    padding-bottom: 15px;
+}
+
+.form-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary-color), var(--header-gradient));
+    border-radius: 2px;
 }
 
 .form-group {
@@ -29,21 +73,25 @@
 .form-group label {
     display: block;
     margin-bottom: 8px;
-    color: #555;
+    color: var(--text-color);
+    font-weight: 500;
 }
 
 .form-group input {
     width: 100%;
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
+    padding: 12px 15px;
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
     font-size: 16px;
-    transition: border-color 0.3s;
+    background-color: var(--input-background);
+    color: var(--text-color);
+    transition: all 0.3s ease;
 }
 
 .form-group input:focus {
-    border-color: #007bff;
+    border-color: var(--primary-color);
     outline: none;
+    box-shadow: 0 0 0 3px rgba(var(--button-background-rgb), 0.2);
 }
 
 .password-wrapper {
@@ -56,30 +104,80 @@
     top: 50%;
     transform: translateY(-50%);
     cursor: pointer;
-    color: #666;
+    color: var(--text-secondary);
+    transition: color 0.3s ease;
+}
+
+.eye-icon:hover {
+    color: var(--primary-color);
 }
 
 .login-btn {
     width: 100%;
     padding: 12px;
-    background-color: #007bff;
-    color: white;
+    background: linear-gradient(45deg, var(--button-background), var(--header-gradient));
+    color: var(--button-text);
     border: none;
-    border-radius: 5px;
+    border-radius: 10px;
     font-size: 16px;
+    font-weight: 500;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: all 0.3s ease;
+    margin-top: 10px;
 }
 
 .login-btn:hover {
-    background-color: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(var(--button-background-rgb), 0.3);
 }
 
 .forgot-password {
     text-align: center;
-    margin-top: 15px;
+    margin-top: 20px;
 }
 
 .forgot-password a {
-    color: #007bff;
+    color: var(--primary-color);
+    text-decoration: none;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.forgot-password a:hover {
+    color: var(--button-hover);
+    text-decoration: underline;
+}
+
+/* Анимация появления */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Медиа-запросы */
+@media screen and (max-width: 768px) {
+    .zagolovok {
+        margin-left: 0;
+        font-size: 28px;
+    }
+
+    main {
+        margin-left: 0;
+    }
+
+    .login-container {
+        width: 100%;
+        margin-left: 0;
+        padding: 15px;
+    }
+
+    .login-form {
+        padding: 30px 20px;
+    }
 }

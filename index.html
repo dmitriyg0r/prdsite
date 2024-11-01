@@ -20,7 +20,7 @@
                 <span>Расписание</span>
             </a>
             <a href="../home/homework.html" class="sidebar-link">
-                <i class="fas fa-book"></i>
+                <i class="fas fa-tasks"></i>
                 <span>Задания</span>
             </a>
             <a href="../downloads/downloads.html" class="sidebar-link">
@@ -200,9 +200,14 @@
                         <option value="News">Новость</option>
                         <option value="Event">Событие</option>
                     </select>
-                    <input type="password" id="postPassword" placeholder="Введите пароль" required>
-                    <input type="file" id="imageInput" accept="image/*" required>
                     <textarea id="postText" placeholder="Введите текст поста..." required></textarea>
+                    <div class="file-input-container">
+                        <label for="imageInput" class="file-input-label">
+                            <i class="fas fa-image"></i> Выберите изображение
+                        </label>
+                        <input type="file" id="imageInput" accept="image/*" required>
+                    </div>
+                    <input type="password" id="postPassword" placeholder="Введите пароль" required>
                     <button type="submit">Опубликовать</button>
                 </form>
             </div>
