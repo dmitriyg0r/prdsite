@@ -5,49 +5,45 @@
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
     border-radius: 20px;
     max-width: 1400px;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
     background: var(--table-background);
 }
 
 table {
-    border-collapse: separate;
-    border-spacing: 0;
+    border-collapse: collapse;
     width: 100%;
     min-width: 800px;
     background: var(--table-background);
-    border-radius: 15px;
-    overflow: hidden;
 }
 
 /* Стили для заголовков */
 th {
     background: var(--sidebar-background);
-    padding: 20px 15px;
-    font-size: 15px;
+    padding: 15px;
+    font-size: 14px;
     text-transform: uppercase;
-    letter-spacing: 1.5px;
+    letter-spacing: 1px;
     font-weight: 600;
     color: white;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Стили для ячеек */
 td {
-    padding: 18px;
-    font-size: 15px;
-    transition: all 0.3s ease;
-    position: relative;
+    padding: 15px;
+    font-size: 14px;
+    border: 1px solid var(--table-border);
     background: var(--table-background);
     color: var(--text-color);
-    border: 1px solid var(--table-border);
+    vertical-align: middle;
+    text-align: left;
 }
 
 /* Первая колонка (дни недели) */
 td:first-child {
     color: var(--primary-color);
     font-weight: 600;
-    background: var(--table-background);
     border-right: 2px solid var(--table-border);
+    min-width: 120px;
 }
 
 /* Подсветка текущего дня */
@@ -57,59 +53,35 @@ td:first-child {
         rgba(var(--table-hover-rgb), 0.05));
 }
 
-.today-highlight {
-    position: relative;
-}
-
-.today-highlight::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    height: 100%;
-    width: 4px;
-    background: var(--primary-color);
-    border-radius: 2px;
-}
-
 /* Стили для текущей пары */
 .current-lesson {
     background-color: rgba(var(--button-background-rgb), 0.2) !important;
     font-weight: 600;
-    transform: scale(1.02);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    position: relative;
     z-index: 2;
-    animation: pulse 2s infinite;
-}
-
-/* Стили для предстоящих пар */
-.upcoming-lesson {
-    background-color: rgba(var(--button-background-rgb), 0.05) !important;
-}
-
-/* Стили для прошедших пар */
-.past-lesson {
-    opacity: 0.7;
 }
 
 /* Стили для пустых ячеек */
+td:empty {
+    background: var(--table-background) !important;
+}
+
 td:empty::before {
     content: '—';
     color: var(--table-text-secondary);
+    display: block;
     text-align: center;
 }
 
-/* Анимация при наведении на строку */
+/* Убираем лишние эффекты трансформации */
 tr:hover td {
     background-color: var(--table-hover);
-    transform: scale(1.01);
 }
 
-/* Медиа-запросы для таблицы */
+/* Медиа-запросы */
 @media screen and (max-width: 768px) {
     .table-container {
-        margin: 15px -15px;
-        padding: 15px;
+        margin: 15px 0;
         border-radius: 0;
     }
 
@@ -118,259 +90,7 @@ tr:hover td {
     }
 
     th, td {
-        padding: 12px 8px;
-        font-size: 14px;
-    }
-
-    td:first-child {
-        padding-left: 15px;
-    }
-}
-
-/* Специфичные стили для таблицы */
-table.sheet0 col.col0,
-table.sheet0 col.col1,
-table.sheet0 col.col2,
-table.sheet0 col.col3,
-table.sheet0 col.col4,
-table.sheet0 col.col5,
-table.sheet0 col.col6 {
-    width: 14.28%;
-}
-
-table.sheet0 tr {
-    height: auto;
-}
-
-/* Добавляем стили для номеров аудиторий */
-td:not(:empty):not(:first-child) {
-    position: relative;
-}
-
-td:not(:empty):not(:first-child)::after {
-    content: attr(data-room);
-    display: block;
-    font-size: 11px;
-    margin-top: 6px;
-    color: var(--table-text-secondary);
-    font-weight: 500;
-}
-
-/* Добавьте следующие строки для определения цветов в зависимости от темы */
-:root {
-    --table-background: var(--text-container-background);
-    --table-border: var(--border-color);
-    --table-hover-background: rgba(var(--button-background-rgb), 0.05);
-    --today-highlight: rgba(var(--button-background-rgb), 0.1);
-    --header-background: var(--primary-color);
-    --header-gradient: var(--header-gradient);
-    --table-text: var(--text-color);
-    --table-text-secondary: var(--text-secondary);
-    --table-border-rgb: var(--border-color);
-    --table-hover-rgb: var(--button-background-rgb);
-    --table-background-rgb: var(--text-container-background);
-}
-
-/* Анимация при наведении на ячейки */
-td:not(:empty):hover {
-    transform: scale(1.05);
-    z-index: 1;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    background-color: var(--table-hover-background);
-}
-
-/* Используем переменные из style.css */
-:root {
-    --table-header-bg: var(--primary-color);
-    --table-header-text: var(--header-text);
-    --table-hover: rgba(var(--button-background-rgb), 0.1);
-    --table-today: rgba(var(--button-background-rgb), 0.15);
-    --table-border: var(--border-color);
-    --table-shadow: var(--text-container-shadow);
-}
-
-/* Стили таблицы */
-.schedule-table {
-    background: var(--text-container-background);
-    border-radius: 15px;
-    overflow: hidden;
-    box-shadow: var(--text-container-shadow);
-    border: 1px solid var(--border-color);
-}
-
-.schedule-table th {
-    background: var(--primary-color);
-    color: var(--header-text);
-    padding: 15px;
-    font-weight: 500;
-}
-
-.schedule-table td {
-    border: 1px solid var(--border-color);
-    padding: 15px;
-    color: var(--text-color);
-    transition: background-color 0.3s ease;
-}
-
-/* Эффект при наведении */
-.schedule-table tr:hover td {
-    background-color: rgba(var(--button-background-rgb), 0.1);
-}
-
-/* Подсветка текущего дня */
-.schedule-table td.today {
-    background-color: rgba(var(--button-background-rgb), 0.15);
-}
-
-/* Стили для времени в ячейках */
-td:not(:empty):not(:first-child)::after {
-    color: var(--text-secondary);
-}
-
-/* Анимация при загрузке */
-.schedule-table {
-    animation: fadeIn 0.6s ease-out;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Добавляем стили для активной строки (как для среды в примере) */
-tr.active {
-    background-color: var(--button-background);
-}
-
-tr.active td {
-    background-color: var(--button-background);
-    color: white;
-}
-
-/* Обновляем стили для ячеек с номерами аудиторий */
-td:not(:empty):not(:first-child)::after {
-    color: var(--text-secondary);
-    opacity: 0.8;
-}
-
-/* Обновляем стили для первой колонки (дни недели) */
-td:first-child {
-    color: var(--primary-color);
-    font-weight: 600;
-}
-
-/* Стили для заголовков таблицы */
-th {
-    background: var(--sidebar-background);
-    padding: 20px 15px;
-    font-size: 15px;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    font-weight: 600;
-    color: white;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-/* Стили для тёмной темы */
-[data-theme="dark"] th {
-    background: var(--primary-color);
-    padding: 20px 15px;
-    font-size: 15px;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    font-weight: 600;
-    color: white;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-/* Обновляем стили для активной строки */
-tr.active {
-    background-color: var(--button-background);
-}
-
-tr.active td {
-    background-color: var(--button-background);
-    color: white;
-}
-
-[data-theme="dark"] tr.active {
-    background-color: var(--button-background);
-}
-
-[data-theme="dark"] tr.active td {
-    background-color: var(--button-background);
-    color: white;
-}
-
-/* Обновляем стили для первой колонки (дни недели) */
-td:first-child {
-    color: var(--primary-color);
-    font-weight: 600;
-}
-
-/* Обновляем стили для ячеек с номерами аудиторий */
-td:not(:empty):not(:first-child)::after {
-    color: var(--text-secondary);
-    opacity: 0.8;
-}
-
-/* Добавляем стили для подсветки пар */
-.today-highlight {
-    background: linear-gradient(45deg, 
-        var(--today-highlight),
-        rgba(var(--table-hover-rgb), 0.05));
-    position: relative;
-}
-
-.today-highlight::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    height: 100%;
-    width: 4px;
-    background: var(--primary-color);
-    border-radius: 2px;
-}
-
-/* Стили для текущей пары */
-.current-lesson {
-    background-color: rgba(var(--button-background-rgb), 0.2) !important;
-    font-weight: 600;
-    transform: scale(1.02);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    z-index: 2;
-}
-
-/* Стили для предстоящих пар */
-.upcoming-lesson {
-    background-color: rgba(var(--button-background-rgb), 0.05) !important;
-}
-
-/* Стили для прошедших пар */
-.past-lesson {
-    opacity: 0.7;
-}
-
-/* Анимация для текущей пары */
-.current-lesson {
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0% {
-        box-shadow: 0 0 0 0 rgba(var(--button-background-rgb), 0.4);
-    }
-    70% {
-        box-shadow: 0 0 0 10px rgba(var(--button-background-rgb), 0);
-    }
-    100% {
-        box-shadow: 0 0 0 0 rgba(var(--button-background-rgb), 0);
+        padding: 10px;
+        font-size: 13px;
     }
 }
