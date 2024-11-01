@@ -392,9 +392,8 @@ main {
     margin-left: 270px;
 }
 
-/* Улучшенные стили для боковой паели */
+/* стили для боковой паели */
 .sidebar-link {
-    margin: 8px 12px;
     border-radius: 12px;
     padding: 14px 24px;
     transition: all 0.3s ease;
@@ -406,7 +405,7 @@ main {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
-/* Улучшенные стили для таблицы */
+/*  стили для таблицы */
 .table-container {
     margin: 40px auto;
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
