@@ -87,14 +87,13 @@ td:first-child {
     transform: scale(1.02);
     transition: all 0.3s ease;
     animation: pulse 2s infinite;
-    border-radius: 0 12px 12px 0;
+    border-radius: 12px;
     margin: 2px;
     padding: 13px;
 }
 
 /* Стили для пары слева от текущей */
-.current-lesson + td,
-td.current-lesson {
+.current-lesson + td {
     border-radius: 12px 0 0 12px;
     background: rgba(var(--button-background-rgb), 0.08) !important;
     padding: 15px;
