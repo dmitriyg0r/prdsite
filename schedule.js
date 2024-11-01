@@ -69,7 +69,6 @@ document.addEventListener("DOMContentLoaded", function() {
                         const elapsed = currentTime - slot.start;
                         const progress = (elapsed / totalDuration) * 100;
                         
-                        // Проверяем существование прогресс-бара
                         let progressBar = currentLesson.querySelector('.progress-bar');
                         if (!progressBar) {
                             progressBar = document.createElement('div');
@@ -77,8 +76,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             currentLesson.appendChild(progressBar);
                         }
                         
-                        // Обновляем прогресс
-                        progressBar.style.transform = `translateX(-${progress}%)`;
+                        progressBar.style.transform = `translateX(-${100 - progress}%)`;
                     }
                 });
             }
