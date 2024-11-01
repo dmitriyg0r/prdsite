@@ -323,6 +323,7 @@ main {
     cursor: pointer;
     padding: 14px 8px;
     margin: 4px 8px;
+    position: relative;
 }
 
 .theme-icon {
@@ -547,7 +548,7 @@ tr:hover {
     }
 }
 
-/* Клас��ы для анимаций */
+/* Класы для анимаций */
 .fade-in {
     animation: fadeIn 0.6s ease-out;
 }
@@ -725,9 +726,11 @@ tr:hover {
     border-radius: 50px;
     cursor: pointer;
     display: inline-block;
-    position: relative;
+    position: absolute;
     height: 26px;
     width: 50px;
+    opacity: 0;
+    pointer-events: none;
 }
 
 .theme-label .ball {
@@ -740,6 +743,13 @@ tr:hover {
     width: 22px;
     transform: translateX(0px);
     transition: transform 0.2s linear;
+}
+
+/* Показываем слайдер при наведении на sidebar */
+.sidebar:hover .theme-label {
+    position: relative;
+    opacity: 1;
+    pointer-events: auto;
 }
 
 /* Положение шарика при включенной тёмной теме */
@@ -770,7 +780,7 @@ tr:hover {
 .sidebar:hover .theme-toggle-container {
     padding: 14px 24px;
     justify-content: flex-start;
-    gap: 16px; /* Добавляем отступ между элементами */
+    gap: 16px;
 }
 
 /* Скрываем иконку при открытом меню */
