@@ -1,4 +1,7 @@
-﻿using ScheduleApp.DataAccess.Data;
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using ScheduleApp.DataAccess.Data;
 using ScheduleApp.DataAccess.Models;
 
 namespace ScheduleApp.DataAccess;
@@ -10,38 +13,33 @@ class Program
         using var db = new ApplicationDbContext();
         db.Database.EnsureCreated();
 
-        while (true)
+        var builder = WebApplication.CreateBuilder(args);
+
+        // Add services to the container.
+        builder.Services.AddControllers();
+        builder.Services.AddEndpointsApiExplorer();
+
+        builder.Services.AddCors(options =>
         {
-            Console.WriteLine("\nВыберите действие:");
-            Console.WriteLine("1. Показать всех пользователей");
-            Console.WriteLine("2. Добавить пользователя");
-            Console.WriteLine("3. Изменить пароль");
-            Console.WriteLine("4. Удалить пользователя");
-            Console.WriteLine("5. Выход");
+            options.AddPolicy("AllowAll",
+                builder =>
+                {
+                    builder
+                        .AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader();
+                });
+        });
 
-            var choice = Console.ReadLine();
+        var app = builder.Build();
 
-            switch (choice)
-            {
-                case "1":
-                    ShowUsers(db);
-                    break;
-                case "2":
-                    AddUser(db);
-                    break;
-                case "3":
-                    ChangePassword(db);
-                    break;
-                case "4":
-                    DeleteUser(db);
-                    break;
-                case "5":
-                    return;
-                default:
-                    Console.WriteLine("Неверный выбор");
-                    break;
-            }
-        }
+        // Configure the HTTP request pipeline.
+        app.UseHttpsRedirection();
+        app.UseAuthorization();
+        app.MapControllers();
+        app.UseCors("AllowAll");
+
+        app.Run();
     }
 
     static void ShowUsers(ApplicationDbContext db)

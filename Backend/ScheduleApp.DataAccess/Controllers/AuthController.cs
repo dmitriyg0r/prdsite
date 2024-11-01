@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using ScheduleApp.DataAccess.Models;
 using ScheduleApp.DataAccess.Data;
+using BCrypt.Net;
 
 namespace ScheduleApp.DataAccess.Controllers;
 
@@ -40,6 +41,16 @@ public class AuthController : ControllerBase
             username = user.Username,
             role = user.Role
         });
+    }
+
+    [HttpGet("routes")]
+    public IActionResult GetRoutes()
+    {
+        var endpoints = HttpContext.RequestServices
+            .GetRequiredService<IEnumerable<EndpointDataSource>>()
+            .SelectMany(source => source.Endpoints);
+        
+        return Ok(endpoints.Select(e => e.DisplayName));
     }
 }
 

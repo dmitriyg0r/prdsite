@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Data.Sqlite;
 using ScheduleApp.DataAccess.Models;
 
 namespace ScheduleApp.DataAccess.Data;
@@ -9,7 +10,10 @@ public class ApplicationDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseSqlite("Data Source=schedule.db");
+        if (!optionsBuilder.IsConfigured)
+        {
+            optionsBuilder.UseSqlite("Data Source=schedule.db");
+        }
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
