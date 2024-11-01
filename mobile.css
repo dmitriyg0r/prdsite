@@ -1,0 +1,240 @@
+:root {
+    /* Основные цвета - модернизированная синяя тема */
+    --primary-color: #2196f3;
+    --text-color: #2c3e50;
+    --background-color: #f8f9fa;
+    --sidebar-background: #1976d2;
+    --sidebar-hover: #1565c0;
+    
+    /* Дополнительные цвета */
+    --button-text: #ffffff;
+    --button-background: #2196f3;
+    --button-hover: #1976d2;
+    --button-secondary: #e3f2fd;
+    --button-background-rgb: 33, 150, 243;
+    --button-hover-rgb: 25, 118, 210;
+    
+    /* Контейнеры */
+    --text-container-background: #ffffff;
+    --text-container-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+    --table-background: #ffffff;
+    --input-background: #ffffff;
+    --border-color: #e0e0e0;
+    
+    /* Текст */
+    --text-secondary: #546e7a;
+    --header-text: #ffffff;
+    --header-gradient: #1976d2;
+    --accent-color: #2196f3;
+    
+    /* Таблицы */
+    --table-header-bg: var(--primary-color);
+    --table-header-text: var(--header-text);
+    --table-hover: rgba(var(--button-background-rgb), 0.1);
+    --table-today: rgba(var(--button-background-rgb), 0.15);
+    --table-border: var(--border-color);
+    --table-background: var(--text-container-background);
+    --table-text: var(--text-color);
+    --table-text-secondary: var(--text-secondary);
+}
+
+/* Темная тема - улучшенная тёмная тема */
+[data-theme="dark"] {
+    /* Основные цвета - улучшенная тёмная тема */
+    --primary-color: #7B2CBF;
+    --primary-color-rgb: 123, 44, 191;
+    --text-color: #ffffff;
+    --background-color: #242424;
+    --sidebar-background: #7B2CBF;
+    --sidebar-hover: #9D4EDA;
+    
+    /* Дополнительные цвета */
+    --button-text: #ffffff;
+    --button-background: #7B2CBF;
+    --button-hover: #5A1E8C;
+    --button-secondary: #2d2d2d;
+    --button-background-rgb: 123, 44, 191;
+    --button-hover-rgb: 90, 30, 145;
+    
+    /* Контейнеры */
+    --text-container-background: #2a2a2a;
+    --text-container-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    --table-background: #2d2d2d;
+    --input-background: #333333;
+    --border-color: #404040;
+    
+    /* Текст */
+    --text-secondary: rgba(255, 255, 255, 0.7);
+    --header-text: #ffffff;
+    --header-gradient: #9D4EDA;
+    --accent-color: #7B2CBF;
+    
+    /* Таблицы */
+    --table-header-bg: var(--primary-color);
+    --table-header-text: var(--header-text);
+    --table-hover: rgba(123, 44, 191, 0.1);
+    --table-today: rgba(123, 44, 191, 0.15);
+    --table-border: #333333;
+    --table-background: var(--text-container-background);
+    --table-text: var(--text-color);
+    --table-text-secondary: rgba(255, 255, 255, 0.5);
+    
+    /* Дополнительные оттенки для градиентов и эффектов */
+    --primary-dark: #5A1E8C;
+    --primary-light: #9D4EDA;
+    
+    /* Новые цвета фона */
+    --background: #242424;
+    --surface: #2d2d2d;
+    --card-background: #333333;
+    --hover-background: #383838;
+    --today-highlight: rgba(123, 44, 191, 0.05);
+}
+
+/* Общие стили */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Roboto', sans-serif;
+    background-color: var(--background-color);
+    transition: background-color 0.3s ease, color 0.3s ease;
+    font-size: 14px; /* Уменьшенный размер шрифта для мобильных */
+}
+
+/* Стили для бокового меню */
+.sidebar {
+    position: fixed;
+    width: 100%; /* Полная ширина на мобильных */
+    height: 60px; /* Уменьшенная высота */
+    background: var(--sidebar-background);
+    z-index: 1000;
+    display: flex;
+    flex-direction: row; /* Горизонтальное расположение */
+    left: 0;
+    top: 0;
+    padding: 0;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+}
+
+.sidebar-link {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    color: var(--button-text);
+    text-decoration: none;
+    font-size: 20px;
+}
+
+/* Основной контент */
+main {
+    padding: 10px;
+    margin-top: 60px; /* Отступ под фиксированным меню */
+    margin-left: 0;
+}
+
+/* Стили для заголовка */
+.zagolovok {
+    font-size: 1.8em;
+    margin-top: 20px;
+    padding: 0 10px;
+}
+
+/* Стили для контейнеров */
+.container {
+    padding: 20px 10px;
+    margin: 10px;
+    border-radius: 10px;
+}
+
+/* Стили для форм */
+.form-input {
+    padding: 10px;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.form-button {
+    width: 100%;
+    padding: 12px;
+    font-size: 14px;
+}
+
+/* Стили для таблиц */
+.table-container {
+    margin: 10px;
+    overflow-x: auto; /* Горизонтальная прокрутка */
+    border-radius: 10px;
+}
+
+/* Стили для новостей */
+.news {
+    padding: 15px;
+    margin: 10px;
+    border-radius: 10px;
+}
+
+.news h1 {
+    font-size: 1.5em;
+}
+
+/* Кнопка добавления поста */
+.add-post-btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 14px;
+    margin: 10px 0;
+}
+
+/* Медиа-запросы */
+@media screen and (max-width: 320px) {
+    body {
+        font-size: 13px;
+    }
+    
+    .sidebar-link {
+        padding: 8px;
+        font-size: 18px;
+    }
+    
+    .zagolovok {
+        font-size: 1.5em;
+    }
+    
+    .container {
+        padding: 15px 8px;
+    }
+}
+
+/* Анимации */
+@keyframes fadeIn {
+    from { 
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.4s ease-out;
+}
+
+/* Темная тема для мобильных */
+[data-theme="dark"] .sidebar {
+    background: var(--primary-color);
+}
+
+[data-theme="dark"] .sidebar-link {
+    color: #ffffff;
+}
+
+[data-theme="dark"] .container,
+[data-theme="dark"] .news,
+[data-theme="dark"] .table-container {
+    background: var(--card-background);
+}
