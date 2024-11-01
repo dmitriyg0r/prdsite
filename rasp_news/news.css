@@ -7,17 +7,19 @@
     width: 100%; /* Takes full available width */
     max-width: 1400px; /* Maximum width for very wide screens */
     margin: 0 auto; /* Centering the content */
+    box-sizing: border-box; /* Добавить для правильного расчета ширины */
 }
 
 .post {
-    background: #fff;
-    border: 1px solid #eaeaea;
+    background: var(--text-container-background); /* Использовать переменную темы */
+    border: 1px solid var(--border-color);
     border-radius: 16px;
     overflow: hidden;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--text-container-shadow);
     transition: all 0.3s ease;
     padding: 1.5rem;
-    height: 400px; /* Фиксированная высота для всех карточек */
+    height: auto; /* Изменить на auto для адаптивности */
+    min-height: 400px; /* Минимальная высота */
     display: flex;
     flex-direction: column;
 }
@@ -108,7 +110,7 @@
 
 /* Добавляем обертку для новостей */
 body {
-    padding: 0 40px; /* Отступы по бокам от края экрана */
+    padding: 0; /* Убрать padding, так как он уже есть в main */
     text-align: center; /* Центрирование контента */
 }
 
