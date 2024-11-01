@@ -283,4 +283,82 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    function displayFiles() {
+        if (!fileStorage || Object.keys(fileStorage).length === 0) {
+            console.log('No files to display');
+            categoriesContainer.innerHTML = '<p>Нет доступных файлов</p>';
+            return;
+        }
+
+        categoriesContainer.innerHTML = '';
+        const sortedCategories = Object.entries(fileStorage).sort((a, b) => a[0].localeCompare(b[0]));
+        
+        for (const [category, folders] of sortedCategories) {
+            const categoryDiv = document.createElement('div');
+            categoryDiv.className = 'file-category';
+            
+            const categoryTitle = document.createElement('h3');
+            categoryTitle.textContent = `${categoryIcons[category] || '📁'} ${category}`;
+            categoryDiv.appendChild(categoryTitle);
+            
+            const folderList = document.createElement('ul');
+            const sortedFolders = Object.entries(folders).sort((a, b) => a[0].localeCompare(b[0]));
+            
+            for (const [folder, files] of sortedFolders) {
+                const listItem = document.createElement('li');
+                const folderHeader = document.createElement('div');
+                folderHeader.className = 'folder-header';
+                
+                const arrow = document.createElement('span');
+                arrow.className = 'folder-arrow';
+                arrow.textContent = '▶';
+                
+                const folderName = document.createElement('span');
+                folderName.className = 'folder-name';
+                folderName.textContent = `${folder} (${files.length})`;
+                
+                folderHeader.appendChild(arrow);
+                folderHeader.appendChild(folderName);
+                listItem.appendChild(folderHeader);
+
+                const filesList = document.createElement('ul');
+                filesList.className = 'files-list collapsed';
+
+                // Добавляем обработчик клика на заголовок папки
+                folderHeader.addEventListener('click', () => {
+                    arrow.classList.toggle('rotated');
+                    filesList.classList.toggle('collapsed');
+                });
+
+                const sortedFiles = [...files].sort((a, b) => a.localeCompare(b));
+
+                sortedFiles.forEach(file => {
+                    const fileItem = document.createElement('li');
+                    const fileItemContent = document.createElement('div');
+                    fileItemContent.className = 'file-item';
+
+                    const fileName = document.createElement('span');
+                    fileName.textContent = file;
+                    fileItemContent.appendChild(fileName);
+
+                    const downloadButton = document.createElement('a');
+                    downloadButton.href = encodeURI(`../downloads/uploads/${category}/${folder}/${file}`);
+                    downloadButton.textContent = 'Скачать';
+                    downloadButton.className = 'download-button';
+                    downloadButton.download = file;
+                    fileItemContent.appendChild(downloadButton);
+
+                    fileItem.appendChild(fileItemContent);
+                    filesList.appendChild(fileItem);
+                });
+
+                listItem.appendChild(filesList);
+                folderList.appendChild(listItem);
+            }
+            
+            categoryDiv.appendChild(folderList);
+            categoriesContainer.appendChild(categoryDiv);
+        }
+    }
 });
