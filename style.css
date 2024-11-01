@@ -182,7 +182,7 @@ body {
     font-weight: 500;
 }
 
-/* Анимация при ��аведении на sidebar */
+/* Анимация при аведении на sidebar */
 .sidebar:hover {
     width: 250px;
     box-shadow: 6px 0 20px rgba(0, 0, 0, 0.2);
@@ -316,12 +316,6 @@ main {
 }
 
 /* Стили для переключателя темы */
-.theme-switch-wrapper {
-    margin-top: 20px;
-    padding: 12px 24px;
-    flex-grow: 0;
-}
-
 .theme-toggle-container {
     display: flex;
     align-items: center;
@@ -331,13 +325,26 @@ main {
     margin: 4px 8px;
 }
 
-.theme-checkbox {
+.theme-icon {
+    font-size: 20px;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    margin: 0 auto;
+}
+
+/* Полностью скрываем слайдер и текст в закрытом меню */
+.theme-label, 
+.theme-toggle-container span {
     display: none;
 }
 
-.theme-label {
-    position: relative;
+/* Показываем слайдер и текст только при наведении на sidebar */
+.sidebar:hover .theme-label {
     display: inline-block;
+    position: relative;
     width: 44px;
     height: 24px;
     background-color: #8e8e93;
@@ -346,66 +353,21 @@ main {
     cursor: pointer;
 }
 
-.theme-label .ball {
-    position: absolute;
-    left: 2px;
-    top: 2px;
-    width: 20px;
-    height: 20px;
-    background-color: #ffffff;
-    border-radius: 50%;
-    transition: transform 0.3s ease;
-}
-
-.theme-checkbox:checked + .theme-label {
-    background-color: #7d5af1;
-}
-
-.theme-checkbox:checked + .theme-label .ball {
-    transform: translateX(20px);
-}
-
-.theme-toggle-container span {
-    opacity: 0;
-    margin-left: 32px;
-    transition: opacity 0.2s ease;
-    white-space: nowrap;
-    color: #e8eaed;
-}
-
 .sidebar:hover .theme-toggle-container span {
+    display: block;
     opacity: 1;
+    margin-left: 32px;
 }
 
-.theme-label i {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    transition: opacity 0.3s ease;
+/* При наведении на sidebar меняем стили контейнера темы */
+.sidebar:hover .theme-toggle-container {
+    justify-content: flex-start;
+    padding: 14px 24px;
 }
 
-.theme-label .fa-sun {
-    left: 4px;
-    opacity: 1;
-}
-
-.theme-label .fa-moon {
-    right: 4px;
-    opacity: 0;
-}
-
-.theme-checkbox:checked + .theme-label .fa-sun {
-    opacity: 0;
-}
-
-.theme-checkbox:checked + .theme-label .fa-moon {
-    opacity: 1;
-}
-
-.sidebar:hover ~ main,
-.sidebar:hover ~ .zagolovok,
-.sidebar:hover ~ .container {
-    margin-left: 270px;
+/* Скрываем иконку при открытом меню */
+.sidebar:hover .theme-icon {
+    display: none;
 }
 
 /* стили для боковой паели */
@@ -693,53 +655,4 @@ tr:hover {
 
 [data-theme="dark"] td {
     background: var(--table-background);
-}
-
-/* Стили для переключателя темы */
-.theme-switch-wrapper {
-    margin-top: 20px;
-    padding: 12px 24px;
-    flex-grow: 0;
-}
-
-.theme-toggle-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    padding: 14px 8px;
-    margin: 4px 8px;
-}
-
-.theme-icon {
-    font-size: 20px;
-    color: #ffffff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 24px;
-    margin: 0 auto;
-}
-
-/* Показываем полный переключатель при наведении на sidebar */
-.sidebar:hover .theme-label {
-    display: inline-block;
-    position: relative;
-    width: 44px;
-    height: 24px;
-    background-color: #8e8e93;
-    border-radius: 12px;
-    transition: all 0.3s ease;
-    cursor: pointer;
-}
-
-/* При наведении на sidebar меняем стили контейнера темы */
-.sidebar:hover .theme-toggle-container {
-    justify-content: flex-start;
-    padding: 14px 24px;
-}
-
-/* Скрываем отдельную иконку при открытом меню */
-.sidebar:hover .theme-icon {
-    display: none;
 }
