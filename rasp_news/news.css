@@ -12,6 +12,7 @@
     overflow: hidden; /* Prevent overflow */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Enhanced shadow effect */
     transition: transform 0.2s, box-shadow 0.2s; /* Smooth transition for hover effect */
+    padding: 10px; /* Added padding for better spacing */
 }
 
 .post:hover {
@@ -23,6 +24,18 @@
     width: 100%; /* Make images responsive */
     height: auto; /* Maintain aspect ratio */
     border-bottom: 2px solid #ddd; /* Added border below image for separation */
+    border-radius: 8px; /* Rounded corners for images */
+}
+
+.post-info {
+    padding: 10px; /* Added padding for post info */
+}
+
+.timestamp {
+    font-size: 12px; /* Smaller font size for timestamp */
+    color: #888; /* Lighter color for timestamp */
+    display: block; /* Display timestamp as block */
+    margin-top: 5px; /* Margin for spacing */
 }
 
 .news-title {
