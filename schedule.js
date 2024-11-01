@@ -1,9 +1,21 @@
 document.addEventListener("DOMContentLoaded", function() {
     const today = new Date();
     const dayOfWeek = today.getDay(); // 0 (воскресенье) - 6 (суббота)
-    const startOfYear = new Date(today.getFullYear(), 0, 1);
+    const currentHour = today.getHours();
+    const currentMinute = today.getMinutes();
+    const currentTime = currentHour * 60 + currentMinute; // Текущее время в минутах
 
-    // Вычисление номера недели по ISO 8601
+    // Массив с временными слотами (начало и конец в минутах)
+    const timeSlots = [
+        { start: 9 * 60, end: 10 * 60 + 30 },     // 9:00 - 10:30
+        { start: 10 * 60 + 40, end: 12 * 60 + 10 }, // 10:40 - 12:10
+        { start: 12 * 60 + 40, end: 14 * 60 + 10 }, // 12:40 - 14:10
+        { start: 14 * 60 + 40, end: 16 * 60 + 10 }, // 14:40 - 16:10
+        { start: 16 * 60 + 20, end: 17 * 60 + 50 }, // 16:20 - 17:50
+        { start: 18 * 60, end: 19 * 60 + 30 }      // 18:00 - 19:30
+    ];
+
+    // Вычисление номера недели
     function getWeekNumber(date) {
         const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
         const dayNum = d.getUTCDay() || 7;
@@ -13,7 +25,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     const weekNumber = getWeekNumber(today);
-    const isEvenWeek = weekNumber % 2 === 0; // 0 - четная, 1 - нечетная
+    const isEvenWeek = weekNumber % 2 === 0;
 
     // Отображение расписания в зависимости от четности недели
     const evenWeekSchedule = document.getElementById('even-week-schedule');
@@ -24,12 +36,26 @@ document.addEventListener("DOMContentLoaded", function() {
         oddWeekSchedule.style.display = isEvenWeek ? 'none' : 'block';
     }
 
-    // Подсветка текущего дня в расписании
-    const rows = document.querySelectorAll('#odd-week-schedule tbody tr, #even-week-schedule tbody tr');
+    // Подсветка текущего дня и активной пары
+    const activeSchedule = isEvenWeek ? evenWeekSchedule : oddWeekSchedule;
     if (dayOfWeek > 0 && dayOfWeek < 6) { // Проверяем, что это будний день
-        const rowIndex = dayOfWeek - 1;
-        if (rows[rowIndex]) {
-            rows[rowIndex].classList.add('today-highlight'); // Подсвечиваем всю строку
+        const rows = activeSchedule.querySelectorAll('tbody tr');
+        const currentRow = rows[dayOfWeek - 1];
+        
+        if (currentRow) {
+            currentRow.classList.add('today-highlight'); // Подсвечиваем текущий день
+
+            // Находим текущую пару
+            const cells = currentRow.querySelectorAll('td');
+            timeSlots.forEach((slot, index) => {
+                if (currentTime >= slot.start && currentTime <= slot.end) {
+                    cells[index + 1]?.classList.add('current-lesson');
+                } else if (currentTime < slot.start) {
+                    cells[index + 1]?.classList.add('upcoming-lesson');
+                } else {
+                    cells[index + 1]?.classList.add('past-lesson');
+                }
+            });
         }
     }
 });

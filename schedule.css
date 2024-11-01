@@ -68,7 +68,7 @@ td:first-child {
     top: 0;
     height: 100%;
     width: 4px;
-    background: var(--header-background);
+    background: var(--primary-color);
     border-radius: 2px;
 }
 
@@ -302,4 +302,59 @@ td:first-child {
 td:not(:empty):not(:first-child)::after {
     color: var(--text-secondary);
     opacity: 0.8;
+}
+
+/* Добавляем стили для подсветки пар */
+.today-highlight {
+    background: linear-gradient(45deg, 
+        var(--today-highlight),
+        rgba(var(--table-hover-rgb), 0.05));
+    position: relative;
+}
+
+.today-highlight::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 4px;
+    background: var(--primary-color);
+    border-radius: 2px;
+}
+
+/* Стили для текущей пары */
+.current-lesson {
+    background-color: rgba(var(--button-background-rgb), 0.2) !important;
+    font-weight: 600;
+    transform: scale(1.02);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    z-index: 2;
+}
+
+/* Стили для предстоящих пар */
+.upcoming-lesson {
+    background-color: rgba(var(--button-background-rgb), 0.05) !important;
+}
+
+/* Стили для прошедших пар */
+.past-lesson {
+    opacity: 0.7;
+}
+
+/* Анимация для текущей пары */
+.current-lesson {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(var(--button-background-rgb), 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(var(--button-background-rgb), 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(var(--button-background-rgb), 0);
+    }
 }
