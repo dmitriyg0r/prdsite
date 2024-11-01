@@ -172,3 +172,67 @@ td:not(:empty):hover {
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
     background-color: var(--table-hover-background);
 }
+
+/* Используем переменные из style.css */
+:root {
+    --table-header-bg: var(--primary-color);
+    --table-header-text: var(--header-text);
+    --table-hover: rgba(var(--button-background-rgb), 0.1);
+    --table-today: rgba(var(--button-background-rgb), 0.15);
+    --table-border: var(--border-color);
+    --table-shadow: var(--text-container-shadow);
+}
+
+/* Стили таблицы */
+.schedule-table {
+    background: var(--text-container-background);
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: var(--text-container-shadow);
+    border: 1px solid var(--border-color);
+}
+
+.schedule-table th {
+    background: var(--primary-color);
+    color: var(--header-text);
+    padding: 15px;
+    font-weight: 500;
+}
+
+.schedule-table td {
+    border: 1px solid var(--border-color);
+    padding: 15px;
+    color: var(--text-color);
+    transition: background-color 0.3s ease;
+}
+
+/* Эффект при наведении */
+.schedule-table tr:hover td {
+    background-color: rgba(var(--button-background-rgb), 0.1);
+}
+
+/* Подсветка текущего дня */
+.schedule-table td.today {
+    background-color: rgba(var(--button-background-rgb), 0.15);
+}
+
+/* Стили для времени в ячейках */
+td:not(:empty):not(:first-child)::after {
+    color: var(--text-secondary);
+}
+
+/* Анимация при загрузке */
+.schedule-table {
+    animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
