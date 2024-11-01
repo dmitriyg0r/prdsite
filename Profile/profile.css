@@ -146,3 +146,68 @@
         transform: translateY(0);
     }
 }
+
+/* Добавляем стили для переключателя темы */
+.theme-toggle-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border-radius: 20px;
+    background: var(--primary-color);
+    color: white;
+    cursor: pointer;
+    z-index: 1000;
+}
+
+.theme-icon {
+    font-size: 20px;
+    color: #ffffff;
+}
+
+.theme-checkbox {
+    opacity: 0;
+    position: absolute;
+}
+
+.theme-label {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 50px;
+    cursor: pointer;
+    display: inline-block;
+    position: relative;
+    height: 26px;
+    width: 50px;
+}
+
+.theme-label .ball {
+    background-color: #fff;
+    border-radius: 50%;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    height: 22px;
+    width: 22px;
+    transform: translateX(0px);
+    transition: transform 0.2s linear;
+}
+
+.theme-checkbox:checked + .theme-label .ball {
+    transform: translateX(24px);
+}
+
+/* Обновляем стили для темной темы */
+[data-theme="dark"] .theme-toggle-container {
+    background: var(--primary-color);
+}
+
+[data-theme="dark"] .theme-label {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="dark"] .theme-checkbox:checked + .theme-label .ball {
+    background: white;
+}
