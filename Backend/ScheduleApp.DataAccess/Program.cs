@@ -41,7 +41,16 @@ class Program
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
-        app.UseCors("AllowAll");
+        app.UseCors(builder =>
+            builder
+                .WithOrigins("https://adminflow.ru")
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .AllowCredentials());
+
+        app.Urls.Add("http://0.0.0.0:5000");  // Слушаем все входящие подключения
+        // или
+        app.Urls.Add("http://adminflow.ru:5000");  // Слушаем конкретный домен
 
         app.UseRouting();
         app.UseHttpsRedirection();
