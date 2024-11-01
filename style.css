@@ -42,8 +42,9 @@
 [data-theme="dark"] {
     /* Основные цвета - улучшенная тёмная тема */
     --primary-color: #7B2CBF;
+    --primary-color-rgb: 123, 44, 191;
     --text-color: #ffffff;
-    --background-color: #121212;
+    --background-color: #1E1E1E;
     --sidebar-background: #7B2CBF;
     --sidebar-hover: #9D4EDA;
     
@@ -58,7 +59,7 @@
     /* Контейнеры */
     --text-container-background: #1f1f1f;
     --text-container-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-    --table-background: #1f1f1f;
+    --table-background: #252525;
     --input-background: #2d2d2d;
     --border-color: #333333;
     
@@ -73,7 +74,7 @@
     --table-header-text: var(--header-text);
     --table-hover: rgba(123, 44, 191, 0.1);
     --table-today: rgba(123, 44, 191, 0.15);
-    --table-border: #2d2d2d;
+    --table-border: #333333;
     --table-background: var(--text-container-background);
     --table-text: var(--text-color);
     --table-text-secondary: rgba(255, 255, 255, 0.5);
@@ -81,6 +82,13 @@
     /* Дополнительные оттенки для градиентов и эффектов */
     --primary-dark: #5A1E8C;
     --primary-light: #9D4EDA;
+    
+    /* Новые цвета фона */
+    --background: #1E1E1E;
+    --surface: #252525;
+    --card-background: #2A2A2A;
+    --hover-background: #2D2D2D;
+    --today-highlight: rgba(123, 44, 191, 0.05);
 }
 
 /* Общие стили */
@@ -657,4 +665,28 @@ tr:hover {
 [data-theme="dark"] .active,
 [data-theme="dark"] .sidebar-link.active {
     background: var(--primary-dark);
+}
+
+/* Обновляем стили для основного контейнера */
+[data-theme="dark"] body {
+    background-color: var(--background);
+}
+
+/* Обновляем стили для карточек и контейнеров */
+[data-theme="dark"] .card,
+[data-theme="dark"] .container {
+    background-color: var(--card-background);
+}
+
+/* Обновляем стили для таблицы */
+[data-theme="dark"] .table-container {
+    background: var(--table-background);
+}
+
+[data-theme="dark"] table {
+    background: var(--table-background);
+}
+
+[data-theme="dark"] td {
+    background: var(--table-background);
 }
