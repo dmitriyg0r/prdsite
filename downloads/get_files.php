@@ -1,27 +1,40 @@
 <?php
-// Устанавливаем заголовок Content-Type перед любым выводом
 header('Content-Type: application/json');
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
-// Исправленный путь к директории загрузок
-$uploadDir = '../downloads/uploads/';
-
-// Проверяем существование директории
-if (!file_exists($uploadDir)) {
-    echo json_encode([]);
-    exit;
-}
-
-$categories = scandir($uploadDir);
-$fileStorage = [];
-
-foreach ($categories as $category) {
-    if ($category === '.' || $category === '..') continue;
-    $folders = scandir($uploadDir . $category);
-    foreach ($folders as $folder) {
-        if ($folder === '.' || $folder === '..') continue;
-        $files = scandir($uploadDir . $category . '/' . $folder);
-        $fileStorage[$category][$folder] = array_diff($files, ['.', '..']);
+try {
+    $uploadDir = 'uploads/';
+    
+    if (!file_exists($uploadDir)) {
+        echo json_encode([]);
+        exit;
     }
-}
 
-echo json_encode($fileStorage);
+    $fileStorage = [];
+    $categories = array_diff(scandir($uploadDir), ['.', '..']);
+
+    foreach ($categories as $category) {
+        $categoryPath = $uploadDir . $category;
+        if (is_dir($categoryPath)) {
+            $folders = array_diff(scandir($categoryPath), ['.', '..']);
+            foreach ($folders as $folder) {
+                $folderPath = $categoryPath . '/' . $folder;
+                if (is_dir($folderPath)) {
+                    $files = array_diff(scandir($folderPath), ['.', '..']);
+                    if (!empty($files)) {
+                        $fileStorage[$category][$folder] = array_values($files);
+                    }
+                }
+            }
+        }
+    }
+
+    echo json_encode($fileStorage);
+
+} catch (Exception $e) {
+    echo json_encode([
+        'status' => 'error',
+        'message' => $e->getMessage()
+    ]);
+}
