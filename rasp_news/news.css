@@ -1,14 +1,4 @@
 /* Add this to your existing CSS file */
-.news-content {
-    display: grid; /* Use grid layout */
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Increased min width for better layout */
-    gap: 30px; /* Increased space between items */
-    padding: 20px; /* Added padding for better spacing */
-    width: 100%; /* Takes full available width */
-    max-width: 1400px; /* Maximum width for very wide screens */
-    margin: 0 auto; /* Centering the content */
-}
-
 .post {
     background: #fff; /* Background for each post */
     border: 1px solid #ddd; /* Border for posts */
@@ -17,8 +7,9 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Enhanced shadow effect */
     transition: transform 0.2s, box-shadow 0.2s; /* Smooth transition for hover effect */
     padding: 10px; /* Added padding for better spacing */
-    width: 100%; /* Takes full available width */
-    margin: 0; /* Removed external spacing */
+    width: 300px; /* Фиксированная ширина для каждого поста */
+    margin: 15px; /* Добавил отступы между постами */
+    display: inline-block; /* Позволяет постам располагаться в ряд */
 }
 
 .post:hover {
