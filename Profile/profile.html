@@ -59,21 +59,24 @@
     <h1 class="zagolovok">Профиль</h1>
     <main>
         <div class="login-container">
-            <form class="login-form">
+            <form class="login-form" onsubmit="handleLogin(event)">
                 <h2 class="form-title">Вход в систему</h2>
                 
                 <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" placeholder="Введите ваш email">
+                    <label for="username">Логин</label>
+                    <input type="text" id="username" placeholder="Введите ваш логин" required>
                 </div>
                 
                 <div class="form-group">
                     <label for="password">Пароль</label>
                     <div class="password-wrapper">
-                        <input type="password" id="password" class="password-input" placeholder="Введите ваш пароль">
+                        <input type="password" id="password" class="password-input" 
+                               placeholder="Введите ваш пароль" required>
                         <span class="eye-icon" onclick="togglePassword()">👁️</span>
                     </div>
                 </div>
+                
+                <div id="error-message" class="error-message"></div>
                 
                 <button type="submit" class="login-btn">Войти</button>
                 

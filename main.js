@@ -37,3 +37,22 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// Проверка аутентификации
+function checkAuth() {
+    const user = localStorage.getItem('user');
+    if (!user && !window.location.href.includes('profile.html')) {
+        // Если пользователь не авторизован и не на странице входа,
+        // перенаправляем на страницу входа
+        window.location.href = '/Profile/profile.html';
+    }
+}
+
+// Выход из системы
+function logout() {
+    localStorage.removeItem('user');
+    window.location.href = '/Profile/profile.html';
+}
+
+// Проверяем при загрузке каждой страницы
+document.addEventListener('DOMContentLoaded', checkAuth);
