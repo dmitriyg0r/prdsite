@@ -173,7 +173,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         try {
             const adminPassword = prompt("Введите пароль администратора:");
-            if (!adminPassword) return;
+            if (!adminPassword) {
+                uploadMessage.textContent = "Загрузка отменена";
+                return;
+            }
 
             if (adminPassword !== "Gg3985502") {
                 uploadMessage.textContent = "Неверный пароль администратора.";
@@ -209,7 +212,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         } catch (error) {
             console.error('Upload error:', error);
-            uploadMessage.textContent = `Ошибка загрузки: ${error.message}`;
+            uploadMessage.textContent = `Ошибка загрузки: ${error.message || 'Неизвестная ошибка'}`;
         }
     });
 

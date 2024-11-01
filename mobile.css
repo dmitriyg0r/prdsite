@@ -1,12 +1,19 @@
 :root {
-    /* Основные цвета - модернизированная синяя тема */
-    --primary-color: #2196f3;
+    /* Базовые цвета */
+    --primary-hue: 207;
+    --primary-saturation: 90%;
+    --primary-lightness: 54%;
+    
+    /* Генерация цветов на основе базовых */
+    --primary-color: hsl(var(--primary-hue), var(--primary-saturation), var(--primary-lightness));
+    --primary-dark: hsl(var(--primary-hue), var(--primary-saturation), calc(var(--primary-lightness) - 10%));
+    --primary-light: hsl(var(--primary-hue), var(--primary-saturation), calc(var(--primary-lightness) + 10%));
+    
     --text-color: #2c3e50;
     --background-color: #f8f9fa;
     --sidebar-background: #1976d2;
     --sidebar-hover: #1565c0;
     
-    /* Дополнительные цвета */
     --button-text: #ffffff;
     --button-background: #2196f3;
     --button-hover: #1976d2;
@@ -14,20 +21,17 @@
     --button-background-rgb: 33, 150, 243;
     --button-hover-rgb: 25, 118, 210;
     
-    /* Контейнеры */
     --text-container-background: #ffffff;
     --text-container-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
     --table-background: #ffffff;
     --input-background: #ffffff;
     --border-color: #e0e0e0;
     
-    /* Текст */
     --text-secondary: #546e7a;
     --header-text: #ffffff;
     --header-gradient: #1976d2;
     --accent-color: #2196f3;
     
-    /* Таблицы */
     --table-header-bg: var(--primary-color);
     --table-header-text: var(--header-text);
     --table-hover: rgba(var(--button-background-rgb), 0.1);
