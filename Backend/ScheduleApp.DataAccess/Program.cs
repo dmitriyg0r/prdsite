@@ -41,10 +41,9 @@ class Program
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
-        app.UseStaticFiles();
-        app.UseDefaultFiles();
-
         app.UseCors("AllowAll");
+
+        app.UseRouting();
         app.UseHttpsRedirection();
         app.UseAuthorization();
         app.MapControllers();
