@@ -44,7 +44,7 @@
     --primary-color: #7B2CBF;
     --primary-color-rgb: 123, 44, 191;
     --text-color: #ffffff;
-    --background-color: #1E1E1E;
+    --background-color: #242424;
     --sidebar-background: #7B2CBF;
     --sidebar-hover: #9D4EDA;
     
@@ -57,11 +57,11 @@
     --button-hover-rgb: 90, 30, 145;
     
     /* Контейнеры */
-    --text-container-background: #1f1f1f;
+    --text-container-background: #2a2a2a;
     --text-container-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-    --table-background: #252525;
-    --input-background: #2d2d2d;
-    --border-color: #333333;
+    --table-background: #2d2d2d;
+    --input-background: #333333;
+    --border-color: #404040;
     
     /* Текст */
     --text-secondary: rgba(255, 255, 255, 0.7);
@@ -84,10 +84,10 @@
     --primary-light: #9D4EDA;
     
     /* Новые цвета фона */
-    --background: #1E1E1E;
-    --surface: #252525;
-    --card-background: #2A2A2A;
-    --hover-background: #2D2D2D;
+    --background: #242424;
+    --surface: #2d2d2d;
+    --card-background: #333333;
+    --hover-background: #383838;
     --today-highlight: rgba(123, 44, 191, 0.05);
 }
 
@@ -650,7 +650,7 @@ tr:hover {
     background-color: rgba(123, 44, 191, 0.03) !important;
 }
 
-/* Обновляем стили для кнопок и других элементов */
+/* Обновляем стили для кнопок �� других элементов */
 [data-theme="dark"] .button,
 [data-theme="dark"] .primary-button {
     background: var(--primary-color);
