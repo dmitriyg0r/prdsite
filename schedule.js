@@ -69,13 +69,16 @@ document.addEventListener("DOMContentLoaded", function() {
                         const elapsed = currentTime - slot.start;
                         const progress = (elapsed / totalDuration) * 100;
                         
-                        // Обновляем прогресс-бар
-                        currentLesson.style.setProperty('--lesson-progress', `${progress}%`);
-                        currentLesson.style.setProperty('--lesson-remaining', `${100 - progress}%`);
+                        // Проверяем существование прогресс-бара
+                        let progressBar = currentLesson.querySelector('.progress-bar');
+                        if (!progressBar) {
+                            progressBar = document.createElement('div');
+                            progressBar.className = 'progress-bar';
+                            currentLesson.appendChild(progressBar);
+                        }
                         
-                        // Трансформируем прогресс-бар
-                        const transform = `translateX(-${progress}%)`;
-                        currentLesson.querySelector('::before')?.style.transform = transform;
+                        // Обновляем прогресс
+                        progressBar.style.transform = `translateX(-${progress}%)`;
                     }
                 });
             }
