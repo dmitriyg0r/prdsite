@@ -110,16 +110,17 @@ body {
     position: fixed;
     width: 70px;
     height: 100vh;
-    background: var(--sidebar-background);
+    background: linear-gradient(180deg, var(--sidebar-background), var(--primary-dark));
     z-index: 1000;
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
     left: 0;
     top: 0;
     padding: 20px 0;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden;
-    box-shadow: 4px 0 15px rgba(0, 0, 0, 0.15);
+    box-shadow: 4px 0 25px rgba(0, 0, 0, 0.15);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
 }
@@ -127,15 +128,16 @@ body {
 .sidebar-link {
     display: flex;
     align-items: center;
-    padding: 14px 8px;
+    padding: 12px 8px;
     text-decoration: none;
-    color: rgba(232, 234, 237, 0.95);
+    color: rgba(255, 255, 255, 0.85);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     white-space: nowrap;
-    margin: 4px 8px;
-    border-radius: 16px;
+    margin: 4px 12px;
+    border-radius: 12px;
     position: relative;
     overflow: hidden;
+    font-weight: 500;
 }
 
 .sidebar-link::before {
@@ -153,9 +155,10 @@ body {
 }
 
 .sidebar-link:hover {
-    background-color: var(--sidebar-hover);
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.1);
     transform: translateX(5px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .sidebar-link:hover::before {
@@ -163,8 +166,9 @@ body {
 }
 
 .sidebar-link.active {
-    background: var(--primary-color);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .sidebar-link i {
@@ -172,7 +176,7 @@ body {
     font-size: 20px;
     text-align: center;
     margin: 0 auto;
-    transition: transform 0.3s ease, margin 0.3s ease;
+    transition: all 0.3s ease;
 }
 
 .sidebar-link:hover i {
@@ -187,53 +191,36 @@ body {
     font-weight: 500;
 }
 
-/* Анимация при аведении на sidebar */
+/* Анимация при наведении на sidebar */
 .sidebar:hover {
     width: 250px;
-    box-shadow: 6px 0 20px rgba(0, 0, 0, 0.2);
 }
 
-.sidebar-nav {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 0;
-}
-
-.sidebar-link {
-    display: flex;
-    align-items: center;
+.sidebar:hover .sidebar-link {
     padding: 12px 24px;
-    text-decoration: none;
-    color: #e8eaed;
-    transition: background-color 0.3s ease;
-    white-space: nowrap;
-    margin: 4px 8px;
-    border-radius: 8px;
+    justify-content: flex-start;
 }
 
-.sidebar-link:hover {
-    background-color: var(--sidebar-hover);
-}
-
-.sidebar-link.active {
-    background-color: #6e5cc2;
-}
-
-.sidebar-link i {
-    min-width: 24px;
-    font-size: 20px;
-    text-align: center;
-}
-
-.sidebar-link span {
-    font-size: 15px;
-    opacity: 0;
-    margin-left: 32px;
-    transition: opacity 0.2s ease;
+.sidebar:hover .sidebar-link i {
+    margin: 0;
+    margin-right: 16px;
 }
 
 .sidebar:hover .sidebar-link span {
     opacity: 1;
+}
+
+/* Стили для темной темы */
+[data-theme="dark"] .sidebar {
+    background: linear-gradient(180deg, var(--primary-color), var(--primary-dark));
+}
+
+[data-theme="dark"] .sidebar-link:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+[data-theme="dark"] .sidebar-link.active {
+    background: rgba(255, 255, 255, 0.18);
 }
 
 /* Стили для заголовка */
