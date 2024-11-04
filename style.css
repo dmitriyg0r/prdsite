@@ -313,7 +313,7 @@ main {
     margin: 0 auto;
 }
 
-/* Полностью скрываем слайдер и текст в закрытом меню */
+/* Полно��тью скрываем слайдер и текст в закрытом меню */
 .theme-label, 
 .theme-toggle-container span {
     display: none;
@@ -639,7 +639,7 @@ tr:hover {
     margin: 0 auto;
 }
 
-/* При наведении на sidebar для контейнера темы */
+/* При наведен��и на sidebar ��ля контейнера темы */
 .sidebar:hover .theme-toggle-container {
     padding: 14px 24px;
     justify-content: flex-start;
@@ -652,7 +652,7 @@ tr:hover {
 }
 
 .theme-label {
-    background-color: #111;
+    background-color: rgba(255, 255, 255, 0.2);
     border-radius: 50px;
     cursor: pointer;
     display: inline-block;
@@ -780,7 +780,7 @@ table {
 
 /* Стили для активного пункта при наведении */
 .sidebar-link.active:hover {
-    background: rgba(255, 255, 255, 0.25); /* Чуть светлее при навед��нии */
+    background: rgba(255, 255, 255, 0.25); /* Чуть светлее при наведнии */
     transform: translateX(5px);
 }
 
@@ -832,4 +832,67 @@ table {
     display: flex;
     flex-direction: column;
     padding-bottom: 60px;
+}
+
+/* Стили для переключателя темы */
+.theme-label {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 50px;
+    cursor: pointer;
+    display: inline-block;
+    position: absolute;
+    height: 26px;
+    width: 50px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.theme-label .ball {
+    background-color: #fff;
+    border-radius: 50%;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    height: 22px;
+    width: 22px;
+    transform: translateX(0px);
+    transition: transform 0.2s linear;
+}
+
+/* Стили для активной страницы */
+.sidebar-link.active {
+    background: var(--sidebar-hover);
+    color: #ffffff;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+.sidebar-link.active::after {
+    content: '';
+    position: absolute;
+    left: -12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 70%;
+    background: #ffffff;
+    border-radius: 0 4px 4px 0;
+}
+
+/* Стили для темной темы */
+[data-theme="dark"] .theme-label {
+    background-color: rgba(0, 0, 0, 0.4); /* Более тёмный фон для переключателя */
+}
+
+[data-theme="dark"] .theme-checkbox:checked + .theme-label .ball {
+    background-color: var(--primary-light); /* Цвет шарика в активном состоянии */
+}
+
+[data-theme="dark"] .sidebar-link.active {
+    background: var(--primary-dark);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .sidebar-link.active::after {
+    background: var(--primary-light); /* Цвет индикатора активной страницы */
 }
