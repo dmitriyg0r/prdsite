@@ -110,7 +110,7 @@ body {
     position: fixed;
     width: 70px;
     height: 100vh;
-    background: linear-gradient(180deg, var(--sidebar-background), var(--primary-dark));
+    background: var(--sidebar-background);
     z-index: 1000;
     display: flex;
     flex-direction: column;
@@ -121,8 +121,6 @@ body {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden;
     box-shadow: 4px 0 25px rgba(0, 0, 0, 0.15);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
 }
 
 .sidebar-link {
@@ -156,7 +154,7 @@ body {
 
 .sidebar-link:hover {
     color: #ffffff;
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--sidebar-hover);
     transform: translateX(5px);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
@@ -166,7 +164,7 @@ body {
 }
 
 .sidebar-link.active {
-    background: rgba(255, 255, 255, 0.15);
+    background: var(--sidebar-hover);
     color: #ffffff;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
@@ -212,15 +210,15 @@ body {
 
 /* Стили для темной темы */
 [data-theme="dark"] .sidebar {
-    background: linear-gradient(180deg, var(--primary-color), var(--primary-dark));
+    background: var(--primary-color);
 }
 
 [data-theme="dark"] .sidebar-link:hover {
-    background: rgba(255, 255, 255, 0.12);
+    background: var(--sidebar-hover);
 }
 
 [data-theme="dark"] .sidebar-link.active {
-    background: rgba(255, 255, 255, 0.18);
+    background: var(--sidebar-hover);
 }
 
 /* Стили для заголовка */
@@ -504,12 +502,12 @@ tr:hover {
 }
 
 [data-theme="dark"] .sidebar-link:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--sidebar-hover);
     color: white;
 }
 
 [data-theme="dark"] .sidebar-link.active {
-    background: rgba(255, 255, 255, 0.15);
+    background: var(--sidebar-hover);
     color: white;
 }
 
@@ -787,10 +785,10 @@ table {
 
 /* Стили для темной темы */
 [data-theme="dark"] .sidebar-link.active {
-    background: rgba(255, 255, 255, 0.15); /* Более темный оттенок для темной темы */
+    background: var(--sidebar-hover);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 [data-theme="dark"] .sidebar-link.active:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: var(--sidebar-hover);
 }
