@@ -51,12 +51,12 @@ document.addEventListener('DOMContentLoaded', () => {
             scoreElement.textContent = `Счёт: ${score}`;
             pipePassed = true;
             
-            if (score % 3 === 0) {
-                gameSpeed *= 2;
+            if (score % 5 === 0) {
+                gameSpeed *= 1.2;
             }
         }
         
-        if (pipeRect.right < 200) {
+        if (pipeX >= 400) {
             pipeX = 0;
             createPipes();
         }
@@ -74,6 +74,9 @@ document.addEventListener('DOMContentLoaded', () => {
         restartButton.style.display = 'none';
         startScreen.style.display = 'none';
         bird.style.transform = 'rotate(0deg)';
+        
+        document.getElementById('best-score').textContent = `Рекорд: ${bestScore}`;
+        
         createPipes();
         
         if (!gameStarted) {
@@ -176,12 +179,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.addEventListener('keydown', (e) => {
         if (e.code === 'Space') {
-            e.preventDefault();
             if (!gameStarted) {
                 startGame();
-            } else if (!isGameOver) {
-                velocity = jumpForce;
+            } else {
+                velocity = -8;
             }
+            e.preventDefault();
         }
     });
 
