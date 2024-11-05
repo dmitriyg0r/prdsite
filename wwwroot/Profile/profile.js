@@ -40,4 +40,30 @@ async function handleLogin(event) {
         errorMessage.textContent = 'Ошибка сервера. Попробуйте позже.';
         errorMessage.style.display = 'block';
     }
+}
+
+async function handleAnonymousLogin() {
+    try {
+        const response = await fetch('/api/auth/anonymous-login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            localStorage.setItem('user', JSON.stringify(data));
+            window.location.href = '/index.html';
+        } else {
+            const error = await response.json();
+            const errorMessage = document.getElementById('error-message');
+            errorMessage.textContent = error.message || 'Ошибка входа';
+            errorMessage.style.display = 'block';
+        }
+    } catch (error) {
+        const errorMessage = document.getElementById('error-message');
+        errorMessage.textContent = 'Ошибка сервера. Попробуйте позже.';
+        errorMessage.style.display = 'block';
+    }
 } 

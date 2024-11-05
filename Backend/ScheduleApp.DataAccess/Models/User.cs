@@ -13,7 +13,7 @@ public class User
     public required string PasswordHash { get; set; }
     
     [Required]
-    [RegularExpression("^(Admin|User)$")]
+    [RegularExpression("^(Admin|User|Anonymous)$")]
     public required string Role { get; set; }
     
     public DateTime CreatedAt { get; set; }
