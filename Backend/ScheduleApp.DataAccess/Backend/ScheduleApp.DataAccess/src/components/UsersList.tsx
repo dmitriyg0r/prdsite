@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User } from '../types/User';
+import type { User } from '../types/User';
 
 const UsersList: React.FC = () => {
     const [users, setUsers] = useState<User[]>([]);
@@ -8,9 +8,15 @@ const UsersList: React.FC = () => {
     useEffect(() => {
         const fetchUsers = async () => {
             try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    throw new Error('No authentication token found');
+                }
+
                 const response = await fetch('https://adminflow.ru:5002/api/users', {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
                     }
                 });
                 
@@ -30,10 +36,16 @@ const UsersList: React.FC = () => {
 
     const handleDelete = async (id: number) => {
         try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                throw new Error('No authentication token found');
+            }
+
             const response = await fetch(`https://adminflow.ru:5002/api/users/${id}`, {
                 method: 'DELETE',
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
                 }
             });
 
@@ -41,15 +53,18 @@ const UsersList: React.FC = () => {
                 throw new Error('Failed to delete user');
             }
 
-            setUsers(users.filter(user => user.id !== id));
+            setUsers(prevUsers => prevUsers.filter(user => user.id !== id));
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Error deleting user');
         }
     };
 
+    if (error) {
+        return <div className="error">{error}</div>;
+    }
+
     return (
         <div className="users-list">
-            {error ? <p className="error">{error}</p> : null}
             <table>
                 <thead>
                     <tr>
