@@ -19,6 +19,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let pipePassed = false;
     let bestScore = localStorage.getItem('bestScore') || 0;
 
+    let lastTime = 0;
+    const FPS = 60;
+    const frameTime = 1000 / FPS;
+    let accumulator = 0;
+
     function createPipes() {
         const gap = 170;
         const minHeight = 50;
@@ -31,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updatePipes() {
-        pipeX -= gameSpeed;
+        pipeX -= gameSpeed * (frameTime / 1000) * 50;
         pipeTop.style.right = -pipeX + 'px';
         pipeBottom.style.right = -pipeX + 'px';
         
@@ -106,8 +111,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateBirdPosition() {
-        velocity += gravity;
-        birdY += velocity;
+        velocity += gravity * (frameTime / 1000);
+        birdY += velocity * (frameTime / 1000) * 50;
         
         if (birdY > GAME_HEIGHT - GROUND_HEIGHT - 40) { // 40 - высота птицы
             gameOver();
@@ -125,11 +130,22 @@ document.addEventListener('DOMContentLoaded', () => {
         bird.style.transform = `rotate(${rotation}deg)`;
     }
 
-    function gameLoop() {
+    function gameLoop(currentTime) {
         if (!isGameOver) {
-            updateBirdPosition();
-            updatePipes();
-            checkCollision();
+            if (!lastTime) lastTime = currentTime;
+            
+            const deltaTime = currentTime - lastTime;
+            lastTime = currentTime;
+            
+            accumulator += deltaTime;
+            
+            while (accumulator >= frameTime) {
+                updateBirdPosition();
+                updatePipes();
+                checkCollision();
+                accumulator -= frameTime;
+            }
+            
             requestAnimationFrame(gameLoop);
         }
     }
