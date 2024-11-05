@@ -20,7 +20,10 @@ class Program
         // Добавьте эту конфигурацию
         builder.WebHost.ConfigureKestrel(serverOptions =>
         {
-            serverOptions.ListenLocalhost(5002);
+            serverOptions.ListenAnyIP(5002, listenOptions =>
+            {
+                listenOptions.UseHttps();
+            });
         });
 
         // Add services to the container.
@@ -32,12 +35,7 @@ class Program
             options.AddPolicy("AllowAll", builder =>
             {
                 builder
-                    .WithOrigins(
-                        "https://adminflow.ru",
-                        "http://adminflow.ru",
-                        "https://www.adminflow.ru",
-                        "http://www.adminflow.ru"
-                    )
+                    .SetIsOriginAllowed(_ => true)
                     .AllowAnyMethod()
                     .AllowAnyHeader()
                     .AllowCredentials();
@@ -73,26 +71,24 @@ class Program
 
         var app = builder.Build();
 
-        // Configure the HTTP request pipeline.
+        // Переместите UseCors перед всеми остальными middleware
+        app.UseCors("AllowAll");
+
+        // Добавьте обработку OPTIONS запросов
         app.Use(async (context, next) =>
         {
-            var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
-            logger.LogInformation(
-                "Request {Method} {Path} started at {Time}",
-                context.Request.Method,
-                context.Request.Path,
-                DateTime.Now);
-            
-            await next();
-            
-            logger.LogInformation(
-                "Request {Method} {Path} completed with status {Status}",
-                context.Request.Method,
-                context.Request.Path,
-                context.Response.StatusCode);
-        });
+            if (context.Request.Method == "OPTIONS")
+            {
+                context.Response.Headers.Add("Access-Control-Allow-Origin", context.Request.Headers["Origin"]);
+                context.Response.Headers.Add("Access-Control-Allow-Headers", "Content-Type, Authorization");
+                context.Response.Headers.Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+                context.Response.Headers.Add("Access-Control-Allow-Credentials", "true");
+                context.Response.StatusCode = 200;
+                return;
+            }
 
-        app.UseCors("AllowAll");
+            await next();
+        });
 
         app.UseRouting();
         app.UseAuthentication();

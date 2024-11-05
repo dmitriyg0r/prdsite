@@ -9,11 +9,13 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.Cors;
 
 namespace ScheduleApp.DataAccess.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[EnableCors("AllowAll")]
 public class AuthController : ControllerBase
 {
     private readonly ApplicationDbContext _db;
