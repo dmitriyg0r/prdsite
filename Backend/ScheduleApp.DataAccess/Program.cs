@@ -93,7 +93,6 @@ class Program
         else
         {
             app.UseExceptionHandler("/Error");
-            app.UseHsts();
         }
 
         using (var scope = app.Services.CreateScope())
