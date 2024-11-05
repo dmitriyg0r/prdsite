@@ -67,7 +67,6 @@ function displayUsers(users) {
         row.innerHTML = `
             <td>${user.id}</td>
             <td>${user.username}</td>
-            <td>${user.email || 'Не указан'}</td>
             <td>${user.role}</td>
             <td>
                 <button class="action-btn edit-btn" onclick="editUser(${user.id})">
@@ -115,7 +114,6 @@ function showProfile(userData) {
     // Обновляем информацию профиля
     document.getElementById('profile-username').textContent = userData.username || 'Анонимный пользователь';
     document.getElementById('profile-role').textContent = userData.role || 'Гость';
-    document.getElementById('profile-email').textContent = userData.email || 'Не указан';
     document.getElementById('last-login').textContent = 'Последний вход: ' + new Date().toLocaleString();
     
     // Показываем админ-панель, если пользователь админ

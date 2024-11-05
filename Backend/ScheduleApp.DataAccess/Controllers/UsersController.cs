@@ -30,7 +30,6 @@ namespace ScheduleApp.DataAccess.Controllers
                     .Select(u => new {
                         u.Id,
                         u.Username,
-                        u.Email,
                         u.Role,
                         u.LastLogin
                     })
