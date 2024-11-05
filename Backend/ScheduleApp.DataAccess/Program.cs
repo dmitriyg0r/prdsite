@@ -55,7 +55,7 @@ class Program
         app.UseCors("AllowAll");
 
         app.Urls.Clear();
-        app.Urls.Add("http://localhost:5001");
+        app.Urls.Add("https://localhost:5001");
 
         app.UseRouting();
         app.UseHttpsRedirection();
