@@ -116,11 +116,28 @@ class Program
             app.UseExceptionHandler("/Error");
         }
 
-        using (var scope = app.Services.CreateScope())
+        // Создаем асинхронную функцию для инициализации базы данных
+        async Task InitializeDatabase()
         {
-            var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            context.Database.EnsureCreated();
+            using (var scope = app.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+                try
+                {
+                    var context = services.GetRequiredService<ApplicationDbContext>();
+                    await context.Database.MigrateAsync();
+                    await context.InitializeUsers();
+                }
+                catch (Exception ex)
+                {
+                    var logger = services.GetRequiredService<ILogger<Program>>();
+                    logger.LogError(ex, "An error occurred while initializing the database.");
+                }
+            }
         }
+
+        // Вызываем инициализацию
+        await InitializeDatabase();
 
         app.Run();
     }

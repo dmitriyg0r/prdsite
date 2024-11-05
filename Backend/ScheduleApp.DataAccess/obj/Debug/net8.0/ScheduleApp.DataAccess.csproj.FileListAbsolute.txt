@@ -61,3 +61,17 @@
 /home/mrgodgames/Документы/GitHub/prdsite/Backend/ScheduleApp.DataAccess/obj/Debug/net8.0/ScheduleApp.DataAccess.genruntimeconfig.cache
 /home/mrgodgames/Документы/GitHub/prdsite/Backend/ScheduleApp.DataAccess/obj/Debug/net8.0/ref/ScheduleApp.DataAccess.dll
 /home/mrgodgames/Документы/GitHub/prdsite/Backend/ScheduleApp.DataAccess/bin/Debug/net8.0/appsettings.json
+/home/mrgodgames/Документы/GitHub/prdsite/Backend/ScheduleApp.DataAccess/bin/Debug/net8.0/Microsoft.AspNetCore.Authentication.JwtBearer.dll
+/home/mrgodgames/Документы/GitHub/prdsite/Backend/ScheduleApp.DataAccess/bin/Debug/net8.0/Microsoft.Extensions.Caching.Memory.dll
+/home/mrgodgames/Документы/GitHub/prdsite/Backend/ScheduleApp.DataAccess/bin/Debug/net8.0/Microsoft.Extensions.DependencyInjection.dll
+/home/mrgodgames/Документы/GitHub/prdsite/Backend/ScheduleApp.DataAccess/bin/Debug/net8.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll
+/home/mrgodgames/Документы/GitHub/prdsite/Backend/ScheduleApp.DataAccess/bin/Debug/net8.0/Microsoft.Extensions.Logging.dll
+/home/mrgodgames/Документы/GitHub/prdsite/Backend/ScheduleApp.DataAccess/bin/Debug/net8.0/Microsoft.Extensions.Logging.Abstractions.dll
+/home/mrgodgames/Документы/GitHub/prdsite/Backend/ScheduleApp.DataAccess/bin/Debug/net8.0/Microsoft.Extensions.Options.dll
+/home/mrgodgames/Документы/GitHub/prdsite/Backend/ScheduleApp.DataAccess/bin/Debug/net8.0/Microsoft.IdentityModel.Abstractions.dll
+/home/mrgodgames/Документы/GitHub/prdsite/Backend/ScheduleApp.DataAccess/bin/Debug/net8.0/Microsoft.IdentityModel.JsonWebTokens.dll
+/home/mrgodgames/Документы/GitHub/prdsite/Backend/ScheduleApp.DataAccess/bin/Debug/net8.0/Microsoft.IdentityModel.Logging.dll
+/home/mrgodgames/Документы/GitHub/prdsite/Backend/ScheduleApp.DataAccess/bin/Debug/net8.0/Microsoft.IdentityModel.Protocols.dll
+/home/mrgodgames/Документы/GitHub/prdsite/Backend/ScheduleApp.DataAccess/bin/Debug/net8.0/Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+/home/mrgodgames/Документы/GitHub/prdsite/Backend/ScheduleApp.DataAccess/bin/Debug/net8.0/Microsoft.IdentityModel.Tokens.dll
+/home/mrgodgames/Документы/GitHub/prdsite/Backend/ScheduleApp.DataAccess/bin/Debug/net8.0/System.IdentityModel.Tokens.Jwt.dll

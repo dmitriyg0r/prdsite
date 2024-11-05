@@ -1,45 +1,45 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Data.Sqlite;
 using ScheduleApp.DataAccess.Models;
+using BCrypt.Net;
 
 namespace ScheduleApp.DataAccess.Data;
 
 public class ApplicationDbContext : DbContext
 {
-    public DbSet<User> Users { get; set; } = null!;
+    public DbSet<User> Users { get; set; }
 
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-        : base(options)
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
     }
 
-    public ApplicationDbContext()
+    public async Task InitializeUsers()
     {
-    }
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        if (!optionsBuilder.IsConfigured)
+        if (!await Users.AnyAsync())
         {
-            optionsBuilder.UseSqlite("Data Source=schedule.db");
-        }
-    }
-
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        modelBuilder.Entity<User>()
-            .HasIndex(u => u.Username)
-            .IsUnique();
-
-        modelBuilder.Entity<User>().HasData(
-            new User
+            var users = new List<User>
             {
-                Id = 1,
-                Username = "admin",
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin"),
-                Role = "Admin",
-                CreatedAt = DateTime.UtcNow
-            }
-        );
+                new User
+                {
+                    Username = "admin",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin"),
+                    Role = "Admin"
+                },
+                new User
+                {
+                    Username = "user1",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("user1"),
+                    Role = "User"
+                },
+                new User
+                {
+                    Username = "user2",
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("user2"),
+                    Role = "User"
+                }
+            };
+
+            Users.AddRange(users);
+            await SaveChangesAsync();
+        }
     }
 } 
