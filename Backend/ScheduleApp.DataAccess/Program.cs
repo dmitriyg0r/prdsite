@@ -20,14 +20,18 @@ class Program
         // Добавляем CORS до других сервисов
         builder.Services.AddCors(options =>
         {
-            options.AddDefaultPolicy(builder =>
+            options.AddDefaultPolicy(policy =>
             {
-                builder
-                    .SetIsOriginAllowed(origin => true) // Разрешаем все источники в режиме разработки
+                policy
+                    .WithOrigins(
+                        "https://adminflow.ru",
+                        "https://www.adminflow.ru",
+                        "http://adminflow.ru",
+                        "http://www.adminflow.ru"
+                    )
                     .AllowAnyMethod()
                     .AllowAnyHeader()
-                    .AllowCredentials()
-                    .WithExposedHeaders("Content-Disposition");
+                    .AllowCredentials();
             });
         });
 
@@ -64,10 +68,9 @@ class Program
 
         var app = builder.Build();
 
-        // Настраиваем CORS middleware первым
+        // Используйте CORS перед другими middleware
         app.UseCors();
 
-        // Остальные middleware
         app.UseRouting();
         app.UseAuthentication();
         app.UseAuthorization();

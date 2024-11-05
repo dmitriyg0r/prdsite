@@ -33,7 +33,7 @@ async function handleAnonymousLogin() {
     try {
         console.log('Attempting anonymous login...');
         
-        const response = await fetch('https://adminflow.ru:5002/api/auth/anonymous-login', {
+        const response = await fetch('https://localhost:5002/api/auth/anonymous-login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -43,17 +43,10 @@ async function handleAnonymousLogin() {
             credentials: 'include'
         });
 
-        console.log('Response received:', response.status);
-
+        console.log('Response status:', response.status);
+        
         if (!response.ok) {
-            let errorMessage = 'Ошибка сервера';
-            try {
-                const errorData = await response.json();
-                errorMessage = errorData.message || errorMessage;
-            } catch (e) {
-                console.error('Error parsing error response:', e);
-            }
-            throw new Error(errorMessage);
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const data = await response.json();
@@ -63,7 +56,22 @@ async function handleAnonymousLogin() {
         showProfile(data);
     } catch (error) {
         console.error('Login error:', error);
-        showError('Ошибка входа: ' + (error.message || 'Неизвестная ошибка'));
+        showError('Ошибка входа. Пожалуйста, попробуйте позже.');
+    }
+}
+
+async function checkServerStatus() {
+    try {
+        const response = await fetch('https://adminflow.ru:5002/api/health', {
+            method: 'GET',
+            mode: 'cors'  // Убрали credentials
+        });
+        
+        console.log('Server status:', response.status);
+        return response.ok;
+    } catch (error) {
+        console.error('Server check failed:', error);
+        return false;
     }
 }
 
@@ -215,30 +223,6 @@ async function handleLogin(event) {
         showError('Ошибка сети. Проверьте подключение.');
     }
 }
-
-// Добавьте функцию для проверки состояния сервера
-async function checkServerStatus() {
-    try {
-        const response = await fetch('https://adminflow.ru:5002/api/health', {
-            method: 'GET',
-            mode: 'cors',
-            credentials: 'include'
-        });
-        
-        console.log('Server status:', response.status);
-        return response.ok;
-    } catch (error) {
-        console.error('Server check failed:', error);
-        return false;
-    }
-}
-
-document.addEventListener('DOMContentLoaded', async () => {
-    const serverIsUp = await checkServerStatus();
-    if (!serverIsUp) {
-        showError('Сервер недоступен. Пожалуйста, попробуйте позже.');
-    }
-});
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log('DOMContentLoaded event fired');
