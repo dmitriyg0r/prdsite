@@ -195,3 +195,23 @@
     border-radius: 10px;
     margin: 20px 0;
 }
+
+.homework-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.delete-btn {
+    background: none;
+    border: none;
+    color: #ff4444;
+    cursor: pointer;
+    padding: 5px;
+    transition: color 0.2s;
+}
+
+.delete-btn:hover {
+    color: #cc0000;
+}
