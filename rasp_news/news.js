@@ -190,4 +190,46 @@ document.addEventListener('DOMContentLoaded', function() {
                 `<i class="fas fa-image"></i> Выберите изображение`;
         }, 300);
     }
+
+    // Добавляем HTML для модального окна предпросмотра
+    const previewHTML = `
+        <div id="postPreviewModal" class="preview-modal">
+            <div class="preview-content">
+                <img class="preview-image" src="" alt="Post preview">
+                <div class="preview-text"></div>
+                <span class="preview-timestamp"></span>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', previewHTML);
+
+    // Добавляем обработчик клика по посту
+    newsContainer.addEventListener('click', function(e) {
+        const post = e.target.closest('.post');
+        if (!post) return;
+
+        const previewModal = document.getElementById('postPreviewModal');
+        const previewImage = previewModal.querySelector('.preview-image');
+        const previewText = previewModal.querySelector('.preview-text');
+        const previewTimestamp = previewModal.querySelector('.preview-timestamp');
+
+        previewImage.src = post.querySelector('img').src;
+        previewText.textContent = post.querySelector('.post-info p').textContent;
+        previewTimestamp.textContent = post.querySelector('.timestamp').textContent;
+
+        previewModal.style.display = 'flex';
+        setTimeout(() => {
+            previewModal.style.opacity = '1';
+        }, 10);
+    });
+
+    // Закрытие предпросмотра при клике вне контента
+    document.getElementById('postPreviewModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.style.opacity = '0';
+            setTimeout(() => {
+                this.style.display = 'none';
+            }, 300);
+        }
+    });
 });
