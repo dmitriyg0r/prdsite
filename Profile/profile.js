@@ -42,17 +42,24 @@ async function handleAnonymousLogin() {
 async function loadUsers() {
     try {
         const userData = JSON.parse(localStorage.getItem('user'));
+        console.log('User Data:', userData);
+
         const response = await fetch('/api/users', {
             headers: {
-                'Authorization': `Bearer ${userData.token}`
+                'Authorization': `Bearer ${userData.token}`,
+                'Content-Type': 'application/json'
             }
         });
         
+        console.log('Response status:', response.status);
+        
         if (response.ok) {
             const users = await response.json();
+            console.log('Users data:', users);
             displayUsers(users);
         } else {
-            console.error('Ошибка загрузки пользователей');
+            const error = await response.json();
+            console.error('Ошибка загрузки пользователей:', error);
         }
     } catch (error) {
         console.error('Ошибка:', error);

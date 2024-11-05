@@ -1,11 +1,13 @@
 {
   "version": 2,
-  "dgSpecHash": "JQDyDyrXzW66CqSIMoUTwFqy+p8BbHME0Ieili2T9OIa9ZJS07qld7jEnoRZSbul9PpN/OuN2LmO1mvWAqY4Vg==",
+  "dgSpecHash": "ooYIcaSPkQFN2TBWzyW7juyUK3eXrkm7i9CjTHljg1iEiFvEDWAKjm23JLKcCIo+3JtLtjlCnthYxt2w2dRnLw==",
   "success": true,
   "projectFilePath": "/home/mrgodgames/Документы/GitHub/prdsite/Backend/ScheduleApp.DataAccess/ScheduleApp.DataAccess.csproj",
   "expectedPackageFiles": [
     "/home/mrgodgames/.nuget/packages/bcrypt.net-next/4.0.3/bcrypt.net-next.4.0.3.nupkg.sha512",
+    "/home/mrgodgames/.nuget/packages/microsoft.aspnetcore.authentication.jwtbearer/8.0.10/microsoft.aspnetcore.authentication.jwtbearer.8.0.10.nupkg.sha512",
     "/home/mrgodgames/.nuget/packages/microsoft.aspnetcore.openapi/8.0.10/microsoft.aspnetcore.openapi.8.0.10.nupkg.sha512",
+    "/home/mrgodgames/.nuget/packages/microsoft.bcl.timeprovider/8.0.1/microsoft.bcl.timeprovider.8.0.1.nupkg.sha512",
     "/home/mrgodgames/.nuget/packages/microsoft.data.sqlite.core/8.0.10/microsoft.data.sqlite.core.8.0.10.nupkg.sha512",
     "/home/mrgodgames/.nuget/packages/microsoft.entityframeworkcore/8.0.10/microsoft.entityframeworkcore.8.0.10.nupkg.sha512",
     "/home/mrgodgames/.nuget/packages/microsoft.entityframeworkcore.abstractions/8.0.10/microsoft.entityframeworkcore.abstractions.8.0.10.nupkg.sha512",
@@ -24,6 +26,12 @@
     "/home/mrgodgames/.nuget/packages/microsoft.extensions.logging.abstractions/8.0.2/microsoft.extensions.logging.abstractions.8.0.2.nupkg.sha512",
     "/home/mrgodgames/.nuget/packages/microsoft.extensions.options/8.0.2/microsoft.extensions.options.8.0.2.nupkg.sha512",
     "/home/mrgodgames/.nuget/packages/microsoft.extensions.primitives/8.0.0/microsoft.extensions.primitives.8.0.0.nupkg.sha512",
+    "/home/mrgodgames/.nuget/packages/microsoft.identitymodel.abstractions/8.2.0/microsoft.identitymodel.abstractions.8.2.0.nupkg.sha512",
+    "/home/mrgodgames/.nuget/packages/microsoft.identitymodel.jsonwebtokens/8.2.0/microsoft.identitymodel.jsonwebtokens.8.2.0.nupkg.sha512",
+    "/home/mrgodgames/.nuget/packages/microsoft.identitymodel.logging/8.2.0/microsoft.identitymodel.logging.8.2.0.nupkg.sha512",
+    "/home/mrgodgames/.nuget/packages/microsoft.identitymodel.protocols/7.1.2/microsoft.identitymodel.protocols.7.1.2.nupkg.sha512",
+    "/home/mrgodgames/.nuget/packages/microsoft.identitymodel.protocols.openidconnect/7.1.2/microsoft.identitymodel.protocols.openidconnect.7.1.2.nupkg.sha512",
+    "/home/mrgodgames/.nuget/packages/microsoft.identitymodel.tokens/8.2.0/microsoft.identitymodel.tokens.8.2.0.nupkg.sha512",
     "/home/mrgodgames/.nuget/packages/microsoft.openapi/1.6.14/microsoft.openapi.1.6.14.nupkg.sha512",
     "/home/mrgodgames/.nuget/packages/sqlitepclraw.bundle_e_sqlite3/2.1.6/sqlitepclraw.bundle_e_sqlite3.2.1.6.nupkg.sha512",
     "/home/mrgodgames/.nuget/packages/sqlitepclraw.core/2.1.6/sqlitepclraw.core.2.1.6.nupkg.sha512",
@@ -33,6 +41,7 @@
     "/home/mrgodgames/.nuget/packages/swashbuckle.aspnetcore.swagger/6.9.0/swashbuckle.aspnetcore.swagger.6.9.0.nupkg.sha512",
     "/home/mrgodgames/.nuget/packages/swashbuckle.aspnetcore.swaggergen/6.9.0/swashbuckle.aspnetcore.swaggergen.6.9.0.nupkg.sha512",
     "/home/mrgodgames/.nuget/packages/swashbuckle.aspnetcore.swaggerui/6.9.0/swashbuckle.aspnetcore.swaggerui.6.9.0.nupkg.sha512",
+    "/home/mrgodgames/.nuget/packages/system.identitymodel.tokens.jwt/8.2.0/system.identitymodel.tokens.jwt.8.2.0.nupkg.sha512",
     "/home/mrgodgames/.nuget/packages/system.memory/4.5.3/system.memory.4.5.3.nupkg.sha512"
   ],
   "logs": []

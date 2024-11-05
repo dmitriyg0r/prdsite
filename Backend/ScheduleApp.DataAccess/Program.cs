@@ -5,6 +5,9 @@ using ScheduleApp.DataAccess.Data;
 using ScheduleApp.DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace ScheduleApp.DataAccess;
 
@@ -51,6 +54,23 @@ class Program
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlite("Data Source=schedule.db"));
 
+        // Add JWT authentication
+        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                    ValidAudience = builder.Configuration["Jwt:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? "your-default-key-here-min-16-chars"))
+                };
+            });
+
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
@@ -75,6 +95,7 @@ class Program
         app.UseCors("AllowAll");
 
         app.UseRouting();
+        app.UseAuthentication();
         app.UseAuthorization();
         app.MapControllers();
 

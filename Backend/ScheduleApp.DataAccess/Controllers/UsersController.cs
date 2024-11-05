@@ -34,6 +34,14 @@ namespace ScheduleApp.DataAccess.Controllers
                         u.LastLogin
                     })
                     .ToListAsync();
+
+                _logger.LogInformation($"Found {users.Count()} users");
+                
+                foreach (var user in users)
+                {
+                    _logger.LogInformation($"User: {user.Username}, Role: {user.Role}");
+                }
+
                 return Ok(users);
             }
             catch (Exception ex)

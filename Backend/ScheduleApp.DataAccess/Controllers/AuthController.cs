@@ -5,6 +5,10 @@ using ScheduleApp.DataAccess.Models;
 using ScheduleApp.DataAccess.Data;
 using BCrypt.Net;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace ScheduleApp.DataAccess.Controllers;
 
@@ -14,11 +18,36 @@ public class AuthController : ControllerBase
 {
     private readonly ApplicationDbContext _db;
     private readonly ILogger<AuthController> _logger;
+    private readonly IConfiguration _configuration;
 
-    public AuthController(ApplicationDbContext db, ILogger<AuthController> logger)
+    public AuthController(ApplicationDbContext db, ILogger<AuthController> logger, IConfiguration configuration)
     {
         _db = db;
         _logger = logger;
+        _configuration = configuration;
+    }
+
+    private string GenerateJwtToken(User user)
+    {
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.Name, user.Username),
+            new Claim(ClaimTypes.Role, user.Role),
+            new Claim("UserId", user.Id.ToString())
+        };
+
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? "your-default-key-here-min-16-chars"));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var token = new JwtSecurityToken(
+            issuer: _configuration["Jwt:Issuer"],
+            audience: _configuration["Jwt:Audience"],
+            claims: claims,
+            expires: DateTime.Now.AddDays(1),
+            signingCredentials: creds
+        );
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
     [HttpPost("login")]
@@ -36,13 +65,17 @@ public class AuthController : ControllerBase
             return Unauthorized(new { message = "Неверный логин или пароль" });
         }
 
+        // Генерируем JWT токен
+        var token = GenerateJwtToken(user);
+
         // Обновляем время последнего входа
         user.LastLogin = DateTime.UtcNow;
         _db.SaveChanges();
 
         return Ok(new { 
             username = user.Username,
-            role = user.Role
+            role = user.Role,
+            token = token
         });
     }
 
