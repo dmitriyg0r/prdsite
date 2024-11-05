@@ -19,11 +19,12 @@ const showError = (message) => {
 
 async function handleAnonymousLogin() {
     try {
-        const response = await fetch('http://localhost:5001/api/auth/anonymous-login', {
+        const response = await fetch('http://adminflow.ru:5001/api/auth/anonymous-login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-            }
+            },
+            credentials: 'include'
         });
 
         if (response.ok) {

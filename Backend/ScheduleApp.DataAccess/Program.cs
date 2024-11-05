@@ -19,14 +19,19 @@ class Program
 
         builder.Services.AddCors(options =>
         {
-            options.AddPolicy("AllowAll",
-                builder =>
-                {
-                    builder
-                        .AllowAnyOrigin()
-                        .AllowAnyMethod()
-                        .AllowAnyHeader();
-                });
+            options.AddPolicy("AllowAll", builder =>
+            {
+                builder
+                    .WithOrigins(
+                        "https://adminflow.ru",
+                        "http://adminflow.ru",
+                        "https://www.adminflow.ru",
+                        "http://www.adminflow.ru"
+                    )
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials();
+            });
         });
 
         builder.Services.AddLogging(logging =>
