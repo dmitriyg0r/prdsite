@@ -2,10 +2,15 @@
 header('Content-Type: application/json');
 
 $homeworkFile = '../home/homework_data/homework.json';
+$VALID_PASSWORD = 'Gg3985502';
 
 try {
-    if (!isset($_POST['id'])) {
-        throw new Exception('ID задания не указан');
+    if (!isset($_POST['id']) || !isset($_POST['password'])) {
+        throw new Exception('Отсутствуют необходимые данные');
+    }
+
+    if ($_POST['password'] !== $VALID_PASSWORD) {
+        throw new Exception('Неверный пароль');
     }
 
     $id = $_POST['id'];

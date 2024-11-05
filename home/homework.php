@@ -1,18 +1,25 @@
 <?php
 header('Content-Type: application/json');
 
-$dataDir = '../home/homework_data';
-$uploadsDir = '../home/uploads';
-
-// Создаем директории, если они не существуют
-if (!file_exists($dataDir)) {
-    mkdir($dataDir, 0777, true);
-}
-if (!file_exists($uploadsDir)) {
-    mkdir($uploadsDir, 0777, true);
-}
+$VALID_PASSWORD = 'Gg3985502';
 
 try {
+    // Проверка пароля
+    if (!isset($_POST['password']) || $_POST['password'] !== $VALID_PASSWORD) {
+        throw new Exception('Неверный пароль');
+    }
+
+    $dataDir = '../home/homework_data';
+    $uploadsDir = '../home/uploads';
+
+    // Создаем директории, если они не существуют
+    if (!file_exists($dataDir)) {
+        mkdir($dataDir, 0777, true);
+    }
+    if (!file_exists($uploadsDir)) {
+        mkdir($uploadsDir, 0777, true);
+    }
+
     // Проверка обязательных полей
     if (empty($_POST['title']) || empty($_POST['subject']) || empty($_POST['deadline'])) {
         throw new Exception('Не все обязательные поля заполнены');
