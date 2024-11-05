@@ -98,14 +98,12 @@ public class AuthController : ControllerBase
         {
             _logger.LogInformation("Anonymous login attempt");
             
-            // Используем Append вместо Add для заголовков
-            Response.Headers.Append("Access-Control-Allow-Origin", "*");
-            Response.Headers.Append("Access-Control-Allow-Methods", "POST, OPTIONS");
-            Response.Headers.Append("Access-Control-Allow-Headers", "Content-Type");
-            
             var response = new { 
-                username = "anonymous",
-                role = "Anonymous"
+                success = true,
+                data = new {
+                    username = "anonymous",
+                    role = "Anonymous"
+                }
             };
             
             return Ok(response);
@@ -113,7 +111,7 @@ public class AuthController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error in AnonymousLogin");
-            return StatusCode(500, new { message = "Internal server error" });
+            return StatusCode(500, new { success = false, message = "Internal server error" });
         }
     }
 
@@ -124,13 +122,8 @@ public class AuthController : ControllerBase
     }
 
     [HttpOptions]
-    [Route("{*url}")]
-    public IActionResult HandleOptions()
+    public IActionResult Options()
     {
-        // Используем Append вместо Add для заголовков
-        Response.Headers.Append("Access-Control-Allow-Origin", "*");
-        Response.Headers.Append("Access-Control-Allow-Headers", "Content-Type, Accept, Authorization");
-        Response.Headers.Append("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
         return Ok();
     }
 }

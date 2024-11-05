@@ -49,12 +49,6 @@ async function handleAnonymousLogin() {
     try {
         console.log('Attempting anonymous login...');
         
-        // Сначала проверяем доступность сервера
-        const serverIsUp = await checkServerStatus();
-        if (!serverIsUp) {
-            throw new Error('Сервер недоступен');
-        }
-        
         const response = await fetch(`${API_BASE_URL}/api/auth/anonymous-login`, {
             method: 'POST',
             headers: {
@@ -64,15 +58,17 @@ async function handleAnonymousLogin() {
             mode: 'cors'
         });
 
-        console.log('Anonymous login response:', response);
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
         
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+            const errorText = await response.text();
+            console.error('Error response:', errorText);
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const data = await response.json();
-        console.log('Anonymous login successful:', data);
+        console.log('Login successful:', data);
         
         localStorage.setItem('user', JSON.stringify(data));
         showProfile(data);
