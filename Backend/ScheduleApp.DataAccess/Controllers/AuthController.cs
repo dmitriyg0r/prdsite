@@ -98,10 +98,10 @@ public class AuthController : ControllerBase
         {
             _logger.LogInformation("Anonymous login attempt");
             
-            // Добавляем CORS заголовки явно
-            Response.Headers.Add("Access-Control-Allow-Origin", "*");
-            Response.Headers.Add("Access-Control-Allow-Methods", "POST, OPTIONS");
-            Response.Headers.Add("Access-Control-Allow-Headers", "Content-Type");
+            // Используем Append вместо Add для заголовков
+            Response.Headers.Append("Access-Control-Allow-Origin", "*");
+            Response.Headers.Append("Access-Control-Allow-Methods", "POST, OPTIONS");
+            Response.Headers.Append("Access-Control-Allow-Headers", "Content-Type");
             
             var response = new { 
                 username = "anonymous",
@@ -127,9 +127,10 @@ public class AuthController : ControllerBase
     [Route("{*url}")]
     public IActionResult HandleOptions()
     {
-        Response.Headers.Add("Access-Control-Allow-Origin", "*");
-        Response.Headers.Add("Access-Control-Allow-Headers", "Content-Type, Accept, Authorization");
-        Response.Headers.Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        // Используем Append вместо Add для заголовков
+        Response.Headers.Append("Access-Control-Allow-Origin", "*");
+        Response.Headers.Append("Access-Control-Allow-Headers", "Content-Type, Accept, Authorization");
+        Response.Headers.Append("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
         return Ok();
     }
 }
