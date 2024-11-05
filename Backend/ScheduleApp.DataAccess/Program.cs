@@ -99,6 +99,20 @@ class Program
         app.UseAuthorization();
         app.MapControllers();
 
+        app.MapGet("/api/users", async (ApplicationDbContext db) =>
+        {
+            var users = await db.Users.ToListAsync();
+            return Results.Ok(users);
+        });
+
+        app.MapGet("/api/users/{id}", async (int id, ApplicationDbContext db) =>
+        {
+            var user = await db.Users.FindAsync(id);
+            if (user == null)
+                return Results.NotFound();
+            return Results.Ok(user);
+        });
+
         var logger = app.Services.GetRequiredService<ILogger<Program>>();
         var endpoints = app.Services.GetRequiredService<IEnumerable<EndpointDataSource>>()
             .SelectMany(source => source.Endpoints);
