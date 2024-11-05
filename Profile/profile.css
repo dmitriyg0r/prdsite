@@ -320,11 +320,7 @@ main {
 
 .database-section {
     margin-top: 20px;
-}
-
-.database-section h4 {
-    color: var(--text-color);
-    margin-bottom: 15px;
+    overflow-x: auto;
 }
 
 .users-table {
