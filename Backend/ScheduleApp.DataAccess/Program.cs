@@ -35,15 +35,14 @@ class Program
         {
             options.AddPolicy("AllowAll", builder =>
             {
-                builder
-                    .SetIsOriginAllowed(origin => 
-                    {
-                        Console.WriteLine($"Checking origin: {origin}");
-                        return true;
-                    })
-                    .AllowAnyMethod()
-                    .AllowAnyHeader()
-                    .AllowCredentials();
+                builder.SetIsOriginAllowed(origin =>
+                {
+                    Console.WriteLine($"Checking CORS origin: {origin}");
+                    return true;
+                })
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .AllowCredentials();
             });
         });
 

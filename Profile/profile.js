@@ -25,11 +25,15 @@ async function handleAnonymousLogin() {
         const response = await fetch(`${API_BASE_URL}/auth/anonymous-login`, {
             method: 'POST',
             credentials: 'include',
+            mode: 'cors',
             headers: {
                 'Content-Type': 'application/json',
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'Origin': window.location.origin
             }
         });
+
+        console.log('Anonymous login response:', response);
 
         if (response.ok) {
             const data = await response.json();
@@ -41,6 +45,7 @@ async function handleAnonymousLogin() {
         }
     } catch (error) {
         console.error('Error details:', error);
+        console.error('Error stack:', error.stack);
         showError('Ошибка сервера. Попробуйте позже.');
     }
 }
@@ -164,14 +169,20 @@ async function handleLogin(event) {
     try {
         const response = await fetch(`${API_BASE_URL}/auth/login`, {
             method: 'POST',
+            credentials: 'include',
+            mode: 'cors',
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Origin': window.location.origin
             },
             body: JSON.stringify({ 
                 username: document.getElementById('username').value,
                 password: document.getElementById('password').value 
             })
         });
+
+        console.log('Login response:', response);
 
         if (response.ok) {
             const data = await response.json();
@@ -182,8 +193,9 @@ async function handleLogin(event) {
             showError(error.message || 'Ошибка входа');
         }
     } catch (error) {
+        console.error('Login error details:', error);
+        console.error('Error stack:', error.stack);
         showError('Ошибка сервера. Попробуйте позже.');
-        console.error('Login error:', error);
     }
 }
 

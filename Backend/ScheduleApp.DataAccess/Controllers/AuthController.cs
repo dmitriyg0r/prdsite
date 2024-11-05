@@ -118,6 +118,12 @@ public class AuthController : ControllerBase
     {
         return Ok(new { message = "API is working" });
     }
+
+    [HttpOptions]
+    public IActionResult PreflightRoute()
+    {
+        return Ok();
+    }
 }
 
 public class LoginRequest
