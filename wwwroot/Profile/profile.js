@@ -11,12 +11,17 @@ const togglePassword = () => {
     }
 }
 
+const showError = (message) => {
+    const errorMessage = document.getElementById('error-message');
+    errorMessage.textContent = message;
+    errorMessage.style.display = 'block';
+};
+
 async function handleLogin(event) {
     event.preventDefault();
     
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
-    const errorMessage = document.getElementById('error-message');
     
     try {
         const response = await fetch('/api/auth/login', {
@@ -33,12 +38,10 @@ async function handleLogin(event) {
             window.location.href = '/index.html';
         } else {
             const error = await response.json();
-            errorMessage.textContent = error.message || 'Ошибка входа';
-            errorMessage.style.display = 'block';
+            showError(error.message || 'Ошибка входа');
         }
     } catch (error) {
-        errorMessage.textContent = 'Ошибка сервера. Попробуйте позже.';
-        errorMessage.style.display = 'block';
+        showError('Ошибка сервера. Попробуйте позже.');
     }
 }
 
@@ -57,13 +60,24 @@ async function handleAnonymousLogin() {
             window.location.href = '/index.html';
         } else {
             const error = await response.json();
-            const errorMessage = document.getElementById('error-message');
-            errorMessage.textContent = error.message || 'Ошибка входа';
-            errorMessage.style.display = 'block';
+            showError(error.message || 'Ошибка входа');
         }
     } catch (error) {
-        const errorMessage = document.getElementById('error-message');
-        errorMessage.textContent = 'Ошибка сервера. Попробуйте позже.';
-        errorMessage.style.display = 'block';
+        showError('Ошибка сервера. Попробуйте позже.');
     }
-} 
+}
+
+// Add event listeners when the document loads
+document.addEventListener('DOMContentLoaded', () => {
+    // Bind regular login form submit
+    const loginForm = document.getElementById('login-form');
+    if (loginForm) {
+        loginForm.addEventListener('submit', handleLogin);
+    }
+
+    // Bind anonymous login button
+    const anonymousLoginBtn = document.getElementById('anonymous-login-btn');
+    if (anonymousLoginBtn) {
+        anonymousLoginBtn.addEventListener('click', handleAnonymousLogin);
+    }
+}); 
