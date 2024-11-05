@@ -22,6 +22,7 @@
     min-height: 400px; /* Минимальная высота */
     display: flex;
     flex-direction: column;
+    cursor: pointer; /* Добавляем курсор-указатель */
 }
 
 .post:hover {
