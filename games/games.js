@@ -10,21 +10,22 @@ let highScore = localStorage.getItem('highScore') || 0;
 // Добавляем отображение рекорда
 score.innerHTML = `Score: ${counter} | High Score: ${highScore}`;
 
-// Улучшенная функция прыжка с физикой
+// Улучшенная функция прыжка
 function jump() {
     if (!isJumping && !isGameOver) {
         isJumping = true;
         let jumpForce = 15;
         let gravity = 0.6;
         let velocity = jumpForce;
+        let maxHeight = 150; // Максимальная высота прыжка
 
         let jumpInterval = setInterval(function() {
-            // Применяем физику
-            let currentBottom = parseInt(character.style.bottom || 0);
+            let currentBottom = parseInt(character.style.bottom || "0");
             
-            if (currentBottom > 0 || velocity > 0) {
+            if ((currentBottom > 0 || velocity > 0) && currentBottom < maxHeight) {
                 velocity -= gravity;
-                character.style.bottom = (currentBottom + velocity) + "px";
+                currentBottom += velocity;
+                character.style.bottom = Math.max(0, currentBottom) + "px";
             } else {
                 character.style.bottom = "0px";
                 clearInterval(jumpInterval);
@@ -53,7 +54,7 @@ document.addEventListener("touchstart", function(event) {
     }
 });
 
-// Функция окончания игры
+// Обновленная функция gameOver
 function gameOver() {
     isGameOver = true;
     if (counter > highScore) {
@@ -61,18 +62,23 @@ function gameOver() {
         localStorage.setItem('highScore', highScore);
     }
     
-    obstacle.style.animationPlayState = 'paused';
-    alert(`Game Over!\nScore: ${counter}\nHigh Score: ${highScore}\n\nPress R to restart`);
+    character.classList.add('game-over');
+    obstacle.classList.add('game-over');
+    setTimeout(() => {
+        alert(`Game Over!\nScore: ${counter}\nHigh Score: ${highScore}\n\nPress R to restart`);
+    }, 100);
 }
 
-// Функция перезапуска игры
+// Обновленная функция resetGame
 function resetGame() {
     isGameOver = false;
     counter = 0;
     gameSpeed = 3;
     score.innerHTML = `Score: ${counter} | High Score: ${highScore}`;
     obstacle.style.left = "600px";
-    obstacle.style.animationPlayState = 'running';
+    character.classList.remove('game-over');
+    obstacle.classList.remove('game-over');
+    character.style.bottom = "0px";
 }
 
 // Улучшенный игровой цикл
