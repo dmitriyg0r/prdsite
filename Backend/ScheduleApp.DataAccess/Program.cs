@@ -69,7 +69,7 @@ class Program
         app.UseCors("AllowAll");
 
         app.Urls.Clear();
-        app.Urls.Add("https://localhost:5001");
+        app.Urls.Add("http://127.0.0.1:5002");
 
         app.UseRouting();
         app.UseHttpsRedirection();
