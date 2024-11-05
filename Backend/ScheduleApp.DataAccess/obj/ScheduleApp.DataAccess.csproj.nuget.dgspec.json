@@ -10,7 +10,7 @@
         "projectUniqueName": "/home/mrgodgames/Документы/GitHub/prdsite/Backend/ScheduleApp.DataAccess/ScheduleApp.DataAccess.csproj",
         "projectName": "ScheduleApp.DataAccess",
         "projectPath": "/home/mrgodgames/Документы/GitHub/prdsite/Backend/ScheduleApp.DataAccess/ScheduleApp.DataAccess.csproj",
-        "packagesPath": "/home/mrgodgames/Документы/GitHub/prdsite/Backend/ScheduleApp.DataAccess/$HOME/.nuget/packages",
+        "packagesPath": "/home/mrgodgames/.nuget/packages/",
         "outputPath": "/home/mrgodgames/Документы/GitHub/prdsite/Backend/ScheduleApp.DataAccess/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
@@ -21,7 +21,8 @@
           "net8.0"
         ],
         "sources": {
-          "https://api.nuget.org/v3/index.json": {}
+          "https://api.nuget.org/v3/index.json": {},
+          "https://nuget.cdn.azure.cn/v3/index.json": {}
         },
         "frameworks": {
           "net8.0": {
