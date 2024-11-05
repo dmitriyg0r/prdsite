@@ -71,7 +71,6 @@ async function loadUsers() {
 }
 
 function displayUsers(users) {
-    console.log('DisplayUsers called with:', users);
     const tableBody = document.getElementById('users-table-body');
     if (!tableBody) {
         console.error('Table body element not found!');
@@ -82,16 +81,16 @@ function displayUsers(users) {
     
     users.forEach(user => {
         const row = document.createElement('tr');
+        const lastLoginDate = user.lastLogin ? new Date(user.lastLogin).toLocaleString() : 'Никогда';
+        
         row.innerHTML = `
             <td>${user.id}</td>
             <td>${user.username}</td>
             <td>${user.role}</td>
+            <td>${lastLoginDate}</td>
             <td>
-                <button class="action-btn edit-btn" onclick="editUser(${user.id})">
-                    <i class="fas fa-edit"></i>
-                </button>
                 <button class="action-btn delete-btn" onclick="deleteUser(${user.id})">
-                    <i class="fas fa-trash"></i>
+                    <i class="fas fa-trash"></i> Удалить
                 </button>
             </td>
         `;

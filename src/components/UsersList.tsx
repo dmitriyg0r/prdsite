@@ -1,20 +1,22 @@
 import React, { useState, useEffect } from 'react';
 
+// Определяем интерфейс для пользователя
 interface User {
     id: number;
     username: string;
     role: string;
-    lastLogin: string;
+    lastLogin?: string;
+    email?: string;
 }
 
 const UsersList: React.FC = () => {
     const [users, setUsers] = useState<User[]>([]);
-    const [error, setError] = useState<string>('');
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                const response = await fetch('https://adminflow.ru/api/users', {
+                const response = await fetch('https://adminflow.ru:5002/api/users', {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }
@@ -34,9 +36,9 @@ const UsersList: React.FC = () => {
         fetchUsers();
     }, []);
 
-    const handleDeleteUser = async (id: number) => {
+    const handleDelete = async (id: number) => {
         try {
-            const response = await fetch(`https://adminflow.ru/api/users/${id}`, {
+            const response = await fetch(`https://adminflow.ru:5002/api/users/${id}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -53,13 +55,9 @@ const UsersList: React.FC = () => {
         }
     };
 
-    if (error) {
-        return <div className="error">{error}</div>;
-    }
-
     return (
         <div className="users-list">
-            <h2>Users</h2>
+            {error ? <p className="error">{error}</p> : null}
             <table>
                 <thead>
                     <tr>
@@ -74,11 +72,11 @@ const UsersList: React.FC = () => {
                         <tr key={user.id}>
                             <td>{user.username}</td>
                             <td>{user.role}</td>
-                            <td>{new Date(user.lastLogin).toLocaleString()}</td>
+                            <td>{user.lastLogin ? new Date(user.lastLogin).toLocaleString() : 'Never'}</td>
                             <td>
                                 <button 
-                                    onClick={() => handleDeleteUser(user.id)}
                                     className="delete-button"
+                                    onClick={() => handleDelete(user.id)}
                                 >
                                     Delete
                                 </button>
@@ -91,4 +89,4 @@ const UsersList: React.FC = () => {
     );
 };
 
-export default UsersList;
+export default UsersList; 
