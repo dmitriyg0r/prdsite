@@ -26,43 +26,38 @@ async function handleAnonymousLogin() {
             }
         });
 
-        console.log('Response status:', response.status);
-
         if (response.ok) {
-            const text = await response.text();
-            console.log('Response text:', text);
-            
-            if (!text) {
-                throw new Error('Empty response from server');
-            }
-            
-            const data = JSON.parse(text);
+            const data = await response.json();
             localStorage.setItem('user', JSON.stringify(data));
-            window.location.href = '/index.html';
+            showProfile(data);
         } else {
-            console.log('Response not OK:', response.status);
-            const text = await response.text();
-            console.log('Error response:', text);
-            
-            let errorMessage = 'Ошибка входа';
-            try {
-                const error = JSON.parse(text);
-                errorMessage = error.message || errorMessage;
-            } catch (e) {
-                console.error('Error parsing error response:', e);
-            }
-            
-            showError(errorMessage);
+            const error = await response.json();
+            showError(error.message || 'Ошибка входа');
         }
     } catch (error) {
-        console.error('Fetch error:', error);
         showError('Ошибка сервера. Попробуйте позже.');
     }
 }
 
+function showProfile(userData) {
+    document.getElementById('login-container').style.display = 'none';
+    document.getElementById('profile-container').style.display = 'block';
+    
+    // Обновляем информацию профиля
+    document.getElementById('profile-username').textContent = userData.username || 'Анонимный пользователь';
+    document.getElementById('profile-role').textContent = userData.role || 'Гость';
+    document.getElementById('profile-email').textContent = userData.email || 'Не указан';
+    document.getElementById('last-login').textContent = 'Последний вход: ' + new Date().toLocaleString();
+}
+
+function handleLogout() {
+    localStorage.removeItem('user');
+    document.getElementById('profile-container').style.display = 'none';
+    document.getElementById('login-container').style.display = 'block';
+}
+
 async function handleLogin(event) {
     event.preventDefault();
-    console.log('Login form submitted');
     
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
@@ -79,7 +74,7 @@ async function handleLogin(event) {
         if (response.ok) {
             const data = await response.json();
             localStorage.setItem('user', JSON.stringify(data));
-            window.location.href = '/index.html';
+            showProfile(data);
         } else {
             const error = await response.json();
             showError(error.message || 'Ошибка входа');
@@ -90,21 +85,18 @@ async function handleLogin(event) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM loaded');
-
-    const loginForm = document.getElementById('login-form');
-    const anonymousLoginBtn = document.getElementById('anonymous-login-btn');
-
-    console.log('Login form:', loginForm);
-    console.log('Anonymous button:', anonymousLoginBtn);
-
-    if (loginForm) {
-        loginForm.addEventListener('submit', handleLogin);
-        console.log('Login form handler attached');
+    const userData = localStorage.getItem('user');
+    if (userData) {
+        showProfile(JSON.parse(userData));
     }
 
+    const loginForm = document.getElementById('login-form');
+    if (loginForm) {
+        loginForm.addEventListener('submit', handleLogin);
+    }
+
+    const anonymousLoginBtn = document.getElementById('anonymous-login-btn');
     if (anonymousLoginBtn) {
         anonymousLoginBtn.addEventListener('click', handleAnonymousLogin);
-        console.log('Anonymous login handler attached');
     }
 });

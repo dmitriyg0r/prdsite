@@ -52,7 +52,7 @@
         <!-- Переключатель темы после навигации -->
         <div class="theme-switch-wrapper">
             <div class="theme-toggle-container">
-                <!-- Добавляем иконку для закрытого меню -->
+                <!-- Добавляем иконку для закры��ого меню -->
                 <i class="fas fa-sun theme-icon"></i>
                 <input type="checkbox" id="theme-toggle" class="theme-checkbox">
                 <label for="theme-toggle" class="theme-label">
@@ -64,7 +64,7 @@
     </nav>
     <h1 class="zagolovok">Профиль</h1>
     <main>
-        <div class="login-container">
+        <div class="login-container" id="login-container">
             <form class="login-form" onsubmit="handleLogin(event)">
                 <h2 class="form-title">Вход в систему</h2>
                 
@@ -96,6 +96,32 @@
                     <a href="#">Забыли пароль?</a>
                 </div>
             </form>
+        </div>
+
+        <div class="profile-container" id="profile-container" style="display: none;">
+            <div class="profile-card">
+                <div class="profile-header">
+                    <div class="profile-avatar">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <h2 class="profile-name" id="profile-username">Имя пользователя</h2>
+                    <p class="profile-role" id="profile-role">Роль пользователя</p>
+                </div>
+                <div class="profile-info">
+                    <div class="info-item">
+                        <i class="fas fa-envelope"></i>
+                        <span id="profile-email">email@example.com</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-clock"></i>
+                        <span id="last-login">Последний вход: </span>
+                    </div>
+                </div>
+                <button class="logout-btn" onclick="handleLogout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Выйти
+                </button>
+            </div>
         </div>
     </main>
 </body>
