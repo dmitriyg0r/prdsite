@@ -13,7 +13,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Показать/скрыть форму загрузки
     showUploadFormBtn.addEventListener('click', () => {
-        uploadFormContainer.classList.toggle('active');
+        const password = prompt('Введите пароль для добавления задания:');
+        if (password === 'Gg3985502') {
+            uploadFormContainer.classList.toggle('active');
+        } else {
+            showNotification('Неверный пароль', 'error');
+        }
     });
 
     // Обработка отправки формы
@@ -105,10 +110,17 @@ document.addEventListener('DOMContentLoaded', function() {
         // Добавляем обработчик для кнопки удаления
         const deleteBtn = card.querySelector('.delete-btn');
         deleteBtn.addEventListener('click', async () => {
+            const password = prompt('Введите пароль для удаления задания:');
+            if (password !== 'Gg3985502') {
+                showNotification('Неверный пароль', 'error');
+                return;
+            }
+
             if (confirm('Вы уверены, что хотите удалить это задание?')) {
                 try {
                     const formData = new FormData();
                     formData.append('id', homework.id);
+                    formData.append('password', password);
                     
                     const response = await fetch('delete_homework.php', {
                         method: 'POST',
