@@ -48,6 +48,8 @@ class Program
         // Configure the HTTP request pipeline.
         app.UseCors("AllowAll");
 
+        app.Urls.Clear();
+        app.Urls.Add("https://0.0.0.0:5001");
         app.Urls.Add("http://0.0.0.0:5001");
 
         app.UseRouting();
