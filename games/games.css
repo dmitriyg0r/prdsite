@@ -228,3 +228,15 @@
     0%, 100% { background: linear-gradient(#87CEEB, #4EC0CA); }
     50% { background: linear-gradient(#6CA0C7, #3A8F98); }
 }
+
+#start-screen {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: white;
+    font-size: 24px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    z-index: 4;
+}
