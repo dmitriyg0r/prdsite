@@ -7,6 +7,7 @@
     <link rel="icon" type="image/x-icon" href="../flow.ico">
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="../downloads/downstyle.css">
+    <link rel="stylesheet" href="homestyle.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
@@ -62,43 +63,39 @@
         <span></span>
         <span></span>
     </button>
-
-    <nav class="mobile-menu">
-        <ul>
-            <li><a href="homework.html"><i class="fas fa-book"></i> Задания</a></li>
-            <li><a href="../index.html"><i class="fas fa-calendar"></i> Расписание</a></li>
-            <li><a href="../downloads/downloads.html"><i class="fas fa-download"></i> Загрузки</a></li>
-            <li><a href="../memes/memes.html"><i class="fas fa-smile"></i> Мемы</a></li>
-            <li><a href="../about/about.html"><i class="fas fa-info-circle"></i> О нас</a></li>
-        </ul>
-    </nav>
         <h1 class="zagolovok">Задания</h1>
     <main>
         <button id="show-upload-form" class="icon-button">
             <img src="../downloads/addbutton.png" alt="Add file" class="icon">
         </button>
+        
         <div id="upload-form-container" class="upload-form-container">
-            <h2>Загрузить файл</h2>
+            <h2>Добавить задание</h2>
             <form id="upload-form" enctype="multipart/form-data" action="homework.php" method="POST">
-                <select id="category-select" name="category" required>
-                    <option value="">Выберите категорию</option>
-                </select>
-                <select id="folder-select" name="folder" required>
-                    <option value="">Выберите папку</option>
+                <input type="text" name="title" placeholder="Название задания" required>
+                <textarea name="description" placeholder="Описание задания" required></textarea>
+                <input type="date" name="deadline" required>
+                <select id="subject-select" name="subject" required>
+                    <option value="">Выберите предмет</option>
+                    <option value="math">Матан</option>
+                    <option value="proga">Прога</option>
+                    <option value="POZI">ПОЗИ</option>
+                    <option value="cisco">Выч сист</option>
+                    <option value="bd">Базы данных</option>
+                    <option value="nauch">Научные исследования</option>
+                    <option value="eco">Экономика</option>
                 </select>
                 <label for="file-input" class="file-input-label">
-                    Выберите файл или перетащите его сюда
+                    Прикрепить файлы (необязательно)
                 </label>
+                <input type="file" name="files[]" id="file-input" multiple>
                 <div id="file-name"></div>
-                <input type="file" name="files[]" id="file-input" multiple required>
-                <button type="submit">Загрузить</button>
+                <button type="submit">Добавить задание</button>
             </form>
         </div>
-        <div class="download-section">
-            <h2>Доступные файлы</h2>
-            <div id="file-categories">
-                <!-- Категории файлов будут добавлены здесь динамически -->
-            </div>
+
+        <div class="homework-feed">
+            <!-- Здесь будут отображаться задания -->
         </div>
     </main>
     <script src="../main.js"></script>
