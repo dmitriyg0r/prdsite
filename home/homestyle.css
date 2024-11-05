@@ -9,7 +9,13 @@
     border-radius: 10px;
     padding: 20px;
     margin-bottom: 20px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.homework-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
 .homework-card h3 {
@@ -39,24 +45,38 @@
 .file-attachment {
     background: var(--accent-color);
     color: white;
-    padding: 5px 10px;
+    padding: 8px 15px;
     border-radius: 5px;
     font-size: 0.9em;
     text-decoration: none;
+    transition: background 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.file-attachment:hover {
+    background: var(--accent-color-hover);
 }
 
 /* Стили для формы */
 .upload-form-container {
     max-width: 600px;
     margin: 20px auto;
-    padding: 20px;
+    padding: 30px;
     background: var(--card-bg);
-    border-radius: 10px;
+    border-radius: 15px;
     display: none;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    transform: translateY(-20px);
+    opacity: 0;
+    transition: all 0.3s ease;
 }
 
 .upload-form-container.active {
     display: block;
+    transform: translateY(0);
+    opacity: 1;
 }
 
 #upload-form input[type="text"],

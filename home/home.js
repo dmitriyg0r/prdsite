@@ -33,9 +33,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 addHomeworkToFeed(result);
                 uploadForm.reset();
                 uploadFormContainer.classList.remove('active');
+                showNotification('Задание успешно добавлено!');
+            } else {
+                throw new Error('Ошибка при добавлении задания');
             }
         } catch (error) {
             console.error('Error:', error);
+            showNotification('Произошла ошибка при добавлении задания', 'error');
         }
     });
 
@@ -44,11 +48,19 @@ document.addEventListener('DOMContentLoaded', function() {
         const card = document.createElement('div');
         card.className = 'homework-card';
         
+        // Форматируем дату
+        const deadline = new Date(homework.deadline).toLocaleDateString('ru-RU', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+        
+        // Добавляем иконки и улучшаем разметку
         card.innerHTML = `
             <h3>${homework.title}</h3>
             <div class="homework-info">
-                <span>${homework.subject}</span>
-                <span>Срок сдачи: ${homework.deadline}</span>
+                <span><i class="fas fa-book"></i> ${homework.subject}</span>
+                <span><i class="fas fa-calendar"></i> Срок сдачи: ${deadline}</span>
             </div>
             <div class="homework-description">
                 ${homework.description}
@@ -57,6 +69,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="homework-files">
                     ${homework.files.map(file => `
                         <a href="${file.url}" class="file-attachment" download>
+                            <i class="fas fa-file"></i>
                             ${file.name}
                         </a>
                     `).join('')}
@@ -65,6 +78,18 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         
         homeworkFeed.insertBefore(card, homeworkFeed.firstChild);
+    }
+
+    // Добавляем функцию уведомлений
+    function showNotification(message, type = 'success') {
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
     }
 
     // Загрузка существующих заданий при загрузке страницы
