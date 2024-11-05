@@ -41,9 +41,10 @@ async function handleAnonymousLogin() {
 
 async function loadUsers() {
     try {
+        const userData = JSON.parse(localStorage.getItem('user'));
         const response = await fetch('/api/users', {
             headers: {
-                'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).token}`
+                'Authorization': `Bearer ${userData.token}`
             }
         });
         
@@ -89,10 +90,11 @@ async function editUser(userId) {
 async function deleteUser(userId) {
     if (confirm('Вы уверены, что хотите удалить этого пользователя?')) {
         try {
+            const userData = JSON.parse(localStorage.getItem('user'));
             const response = await fetch(`/api/users/${userId}`, {
                 method: 'DELETE',
                 headers: {
-                    'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).token}`
+                    'Authorization': `Bearer ${userData.token}`
                 }
             });
             
