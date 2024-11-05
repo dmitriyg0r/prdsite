@@ -21,11 +21,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Обработка отправки формы
+    // Обработка отправки ��ормы
     uploadForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
         const formData = new FormData(uploadForm);
+        
+        // Добавляем пароль, который был введен при открытии формы
+        formData.append('password', 'Gg3985502');
         
         // Проверяем заполнение обязательных полей
         const title = formData.get('title');

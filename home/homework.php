@@ -4,9 +4,16 @@ header('Content-Type: application/json');
 $VALID_PASSWORD = 'Gg3985502';
 
 try {
+    // Отладочная информация
+    error_log('Received POST data: ' . print_r($_POST, true));
+    
     // Проверка пароля
-    if (!isset($_POST['password']) || $_POST['password'] !== $VALID_PASSWORD) {
-        throw new Exception('Неверный пароль');
+    if (!isset($_POST['password'])) {
+        throw new Exception('Пароль не был передан');
+    }
+    
+    if ($_POST['password'] !== $VALID_PASSWORD) {
+        throw new Exception('Неверный пароль: ' . $_POST['password']);
     }
 
     $dataDir = '../home/homework_data';
@@ -73,6 +80,7 @@ try {
     ]);
     
 } catch (Exception $e) {
+    error_log('Error: ' . $e->getMessage());
     http_response_code(400);
     echo json_encode([
         'success' => false,
