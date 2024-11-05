@@ -23,6 +23,16 @@ const API_BASE_URL = 'https://adminflow.ru:5002/api'; // Используйте 
 async function handleAnonymousLogin() {
     try {
         console.log('Attempting anonymous login...');
+        
+        // Сначала делаем preflight запрос
+        const preflightResponse = await fetch(`${API_BASE_URL}/auth/anonymous-login`, {
+            method: 'OPTIONS',
+            mode: 'cors'
+        });
+        
+        console.log('Preflight response:', preflightResponse);
+
+        // Затем делаем основной запрос
         const response = await fetch(`${API_BASE_URL}/auth/anonymous-login`, {
             method: 'POST',
             mode: 'cors',
@@ -32,8 +42,7 @@ async function handleAnonymousLogin() {
             }
         });
 
-        console.log('Response status:', response.status);
-        console.log('Response headers:', [...response.headers.entries()]);
+        console.log('Main response:', response);
 
         if (response.ok) {
             const data = await response.json();
@@ -41,13 +50,13 @@ async function handleAnonymousLogin() {
             localStorage.setItem('user', JSON.stringify(data));
             showProfile(data);
         } else {
-            console.error('Server returned error:', response.status);
-            const error = await response.text();
-            console.error('Error details:', error);
-            showError('Ошибка входа: ' + (error || response.statusText));
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
     } catch (error) {
-        console.error('Network error:', error);
+        console.error('Full error:', error);
+        console.error('Error name:', error.name);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
         showError('Ошибка сети. Проверьте подключение.');
     }
 }
@@ -218,6 +227,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const anonymousLoginBtn = document.getElementById('anonymous-login-btn');
     if (anonymousLoginBtn) {
-        anonymousLoginBtn.addEventListener('click', handleAnonymousLogin);
+        anonymousLoginBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            console.log('Anonymous login button clicked');
+            handleAnonymousLogin();
+        });
     }
 });

@@ -17,30 +17,12 @@ class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        // Добавьте эту конфигурацию
-        builder.WebHost.ConfigureKestrel(serverOptions =>
-        {
-            serverOptions.ListenAnyIP(5002); // Прослушивание HTTP
-            serverOptions.ListenAnyIP(5002, listenOptions =>
-            {
-                listenOptions.UseHttps(); // Прослушивание HTTPS
-            });
-        });
+        // Добавляем CORS до других сервисов
+        builder.Services.AddCors();
 
-        // Add services to the container.
+        // Остальные сервисы
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
-
-        builder.Services.AddCors(options =>
-        {
-            options.AddPolicy("AllowAll", builder =>
-            {
-                builder
-                    .AllowAnyOrigin()
-                    .AllowAnyMethod()
-                    .AllowAnyHeader();
-            });
-        });
 
         builder.Services.AddLogging(logging =>
         {
@@ -71,15 +53,33 @@ class Program
 
         var app = builder.Build();
 
-        // Убедимся, что CORS идет первым
-        app.UseCors("AllowAll");
+        // Настраиваем CORS middleware первым
+        app.UseCors(builder => builder
+            .SetIsOriginAllowed(_ => true) // Разрешаем все источники
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials()
+        );
 
-        // Настраиваем HTTPS
-        app.UseHttpsRedirection();
+        // Остальные middleware
         app.UseRouting();
         app.UseAuthentication();
         app.UseAuthorization();
         app.MapControllers();
+
+        // Добавляем глобальную обработку OPTIONS запросов
+        app.Use(async (context, next) =>
+        {
+            if (context.Request.Method == "OPTIONS")
+            {
+                context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
+                context.Response.Headers.Add("Access-Control-Allow-Headers", "Content-Type, Accept, Authorization");
+                context.Response.Headers.Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+                context.Response.StatusCode = 200;
+                return;
+            }
+            await next();
+        });
 
         app.MapGet("/api/users", async (ApplicationDbContext db) =>
         {
