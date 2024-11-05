@@ -3,6 +3,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const uploadFormContainer = document.getElementById('upload-form-container');
     const uploadForm = document.getElementById('upload-form');
     const homeworkFeed = document.querySelector('.homework-feed');
+    const fileInput = document.getElementById('file-input');
+    const fileNameDisplay = document.getElementById('file-name');
+
+    fileInput.addEventListener('change', function() {
+        const fileNames = Array.from(this.files).map(file => file.name);
+        fileNameDisplay.textContent = fileNames.join(', ');
+    });
 
     // Показать/скрыть форму загрузки
     showUploadFormBtn.addEventListener('click', () => {
