@@ -44,7 +44,7 @@
             },
             "Microsoft.AspNetCore.Authentication.JwtBearer": {
               "target": "Package",
-              "version": "[8.0.10, )"
+              "version": "[7.0.13, )"
             },
             "Microsoft.AspNetCore.OpenApi": {
               "target": "Package",
@@ -64,7 +64,7 @@
             },
             "System.IdentityModel.Tokens.Jwt": {
               "target": "Package",
-              "version": "[8.2.0, )"
+              "version": "[7.0.3, )"
             }
           },
           "imports": [
