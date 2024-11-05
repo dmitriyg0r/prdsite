@@ -37,15 +37,23 @@ async function handleAnonymousLogin() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json'
             },
-            credentials: 'include' // Добавляем это для поддержки cookies
+            mode: 'cors',
+            credentials: 'include'
         });
 
-        console.log('Response status:', response.status);
-        
+        console.log('Response received:', response.status);
+
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+            let errorMessage = 'Ошибка сервера';
+            try {
+                const errorData = await response.json();
+                errorMessage = errorData.message || errorMessage;
+            } catch (e) {
+                console.error('Error parsing error response:', e);
+            }
+            throw new Error(errorMessage);
         }
 
         const data = await response.json();
@@ -54,12 +62,8 @@ async function handleAnonymousLogin() {
         localStorage.setItem('user', JSON.stringify(data));
         showProfile(data);
     } catch (error) {
-        console.error('Full error:', error);
-        console.error('Error name:', error.name);
-        console.error('Error message:', error.message);
-        console.error('Error stack:', error.stack);
-        
-        showError('Ошибка входа. Пожалуйста, попробуйте позже.');
+        console.error('Login error:', error);
+        showError('Ошибка входа: ' + (error.message || 'Неизвестная ошибка'));
     }
 }
 
@@ -211,6 +215,30 @@ async function handleLogin(event) {
         showError('Ошибка сети. Проверьте подключение.');
     }
 }
+
+// Добавьте функцию для проверки состояния сервера
+async function checkServerStatus() {
+    try {
+        const response = await fetch('https://adminflow.ru:5002/api/health', {
+            method: 'GET',
+            mode: 'cors',
+            credentials: 'include'
+        });
+        
+        console.log('Server status:', response.status);
+        return response.ok;
+    } catch (error) {
+        console.error('Server check failed:', error);
+        return false;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    const serverIsUp = await checkServerStatus();
+    if (!serverIsUp) {
+        showError('Сервер недоступен. Пожалуйста, попробуйте позже.');
+    }
+});
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log('DOMContentLoaded event fired');
