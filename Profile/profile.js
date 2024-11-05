@@ -24,8 +24,10 @@ async function handleAnonymousLogin() {
     try {
         const response = await fetch(`${API_BASE_URL}/auth/anonymous-login`, {
             method: 'POST',
+            credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json'
             }
         });
 
@@ -38,6 +40,7 @@ async function handleAnonymousLogin() {
             showError(error.message || 'Ошибка входа');
         }
     } catch (error) {
+        console.error('Error details:', error);
         showError('Ошибка сервера. Попробуйте позже.');
     }
 }
