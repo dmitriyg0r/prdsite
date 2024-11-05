@@ -97,24 +97,50 @@
 }
 
 .icon-button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 10px;
     position: fixed;
     bottom: 20px;
     right: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: var(--button-background);
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     z-index: 1000;
 }
 
-.icon {
-    width: 40px;
-    height: 40px;
-    transition: transform 0.2s;
+.icon-button::before {
+    content: '';
+    position: absolute;
+    top: -20px;
+    left: -20px;
+    right: -20px;
+    bottom: -20px;
+    border-radius: 50%;
 }
 
-.icon:hover {
+.icon-button:hover {
     transform: scale(1.1);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.icon-button .icon {
+    width: 30px;
+    height: 30px;
+    pointer-events: none;
+}
+
+/* Медиа-запросы для мобильных устройств */
+@media screen and (max-width: 768px) {
+    .icon-button {
+        width: 50px;
+        height: 50px;
+    }
 }
 
 #file-input {
