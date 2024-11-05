@@ -56,10 +56,21 @@ public class AuthController : ControllerBase
     [HttpPost("anonymous-login")]
     public IActionResult AnonymousLogin()
     {
-        return Ok(new { 
-            username = "anonymous",
-            role = "Anonymous"
-        });
+        Console.WriteLine("Anonymous login endpoint hit");
+        try 
+        {
+            var response = new { 
+                username = "anonymous",
+                role = "Anonymous"
+            };
+            Console.WriteLine($"Returning response: {System.Text.Json.JsonSerializer.Serialize(response)}");
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error in AnonymousLogin: {ex}");
+            return StatusCode(500, new { message = "Internal server error" });
+        }
     }
 }
 

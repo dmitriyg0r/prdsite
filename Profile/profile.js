@@ -18,9 +18,8 @@ const showError = (message) => {
 };
 
 async function handleAnonymousLogin() {
-    console.log('Anonymous login clicked'); // Добавим для отладки
     try {
-        const response = await fetch('/api/auth/anonymous-login', {
+        const response = await fetch('http://localhost:5001/api/auth/anonymous-login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -36,13 +35,14 @@ async function handleAnonymousLogin() {
             showError(error.message || 'Ошибка входа');
         }
     } catch (error) {
+        console.error('Error:', error);
         showError('Ошибка сервера. Попробуйте позже.');
     }
 }
 
 async function handleLogin(event) {
     event.preventDefault();
-    console.log('Login form submitted'); // Добавим для отладки
+    console.log('Login form submitted');
     
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
@@ -69,14 +69,13 @@ async function handleLogin(event) {
     }
 }
 
-// Добавляем обработчики событий когда DOM загружен
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM loaded'); // Добавим для отладки
+    console.log('DOM loaded');
 
     const loginForm = document.getElementById('login-form');
     const anonymousLoginBtn = document.getElementById('anonymous-login-btn');
 
-    console.log('Login form:', loginForm); // Проверим, находит ли элементы
+    console.log('Login form:', loginForm);
     console.log('Anonymous button:', anonymousLoginBtn);
 
     if (loginForm) {
