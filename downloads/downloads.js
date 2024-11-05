@@ -109,6 +109,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     const fileName = document.createElement('span');
                     fileName.textContent = file;
+                    fileName.onclick = () => {
+                        const filePath = encodeURI(`../downloads/uploads/${category}/${folder}/${file}`);
+                        previewFile(filePath);
+                    };
                     fileItemContent.appendChild(fileName);
 
                     const downloadButton = document.createElement('a');
@@ -287,6 +291,45 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    function createPreviewModal() {
+        const modal = document.createElement('div');
+        modal.className = 'preview-modal';
+        modal.innerHTML = `
+            <div class="preview-content">
+                <span class="preview-close">&times;</span>
+                <iframe class="preview-iframe"></iframe>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        const closeBtn = modal.querySelector('.preview-close');
+        closeBtn.onclick = () => modal.style.display = 'none';
+        
+        modal.onclick = (e) => {
+            if (e.target === modal) modal.style.display = 'none';
+        };
+        
+        return modal;
+    }
+
+    function previewFile(filePath) {
+        const modal = document.querySelector('.preview-modal') || createPreviewModal();
+        const iframe = modal.querySelector('.preview-iframe');
+        
+        // Получаем расширение файла
+        const extension = filePath.split('.').pop().toLowerCase();
+        
+        // Список поддерживаемых форматов для предпросмотра
+        const previewableExtensions = ['pdf', 'txt', 'jpg', 'jpeg', 'png', 'gif'];
+        
+        if (previewableExtensions.includes(extension)) {
+            iframe.src = filePath;
+            modal.style.display = 'flex';
+        } else {
+            alert('Предпросмотр для данного типа файла не поддерживается');
+        }
+    }
+
     function displayFiles() {
         if (!fileStorage || Object.keys(fileStorage).length === 0) {
             console.log('No files to display');
@@ -343,6 +386,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     const fileName = document.createElement('span');
                     fileName.textContent = file;
+                    fileName.onclick = () => {
+                        const filePath = encodeURI(`../downloads/uploads/${category}/${folder}/${file}`);
+                        previewFile(filePath);
+                    };
                     fileItemContent.appendChild(fileName);
 
                     const downloadButton = document.createElement('a');
