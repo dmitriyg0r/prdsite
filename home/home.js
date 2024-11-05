@@ -76,9 +76,13 @@ document.addEventListener('DOMContentLoaded', function() {
             day: 'numeric'
         });
         
-        // Добавляем иконки и улучшаем разметку
         card.innerHTML = `
-            <h3>${homework.title}</h3>
+            <div class="homework-header">
+                <h3>${homework.title}</h3>
+                <button class="delete-btn" data-id="${homework.id}">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
             <div class="homework-info">
                 <span><i class="fas fa-book"></i> ${homework.subject}</span>
                 <span><i class="fas fa-calendar"></i> Срок сдачи: ${deadline}</span>
@@ -97,6 +101,34 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             ` : ''}
         `;
+        
+        // Добавляем обработчик для кнопки удаления
+        const deleteBtn = card.querySelector('.delete-btn');
+        deleteBtn.addEventListener('click', async () => {
+            if (confirm('Вы уверены, что хотите удалить это задание?')) {
+                try {
+                    const formData = new FormData();
+                    formData.append('id', homework.id);
+                    
+                    const response = await fetch('delete_homework.php', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok && result.success) {
+                        card.remove();
+                        showNotification('Задание успешно удалено', 'success');
+                    } else {
+                        throw new Error(result.message || 'Ошибка при удалении задания');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    showNotification(error.message, 'error');
+                }
+            }
+        });
         
         homeworkFeed.insertBefore(card, homeworkFeed.firstChild);
     }
