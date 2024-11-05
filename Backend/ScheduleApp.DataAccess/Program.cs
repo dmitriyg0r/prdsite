@@ -38,7 +38,12 @@ class Program
             options.AddPolicy("AllowAll", builder =>
             {
                 builder
-                    .SetIsOriginAllowed(_ => true)
+                    .WithOrigins(
+                        "https://adminflow.ru",
+                        "https://www.adminflow.ru",
+                        "http://adminflow.ru",
+                        "http://www.adminflow.ru"
+                    )
                     .AllowAnyMethod()
                     .AllowAnyHeader()
                     .AllowCredentials();
@@ -76,22 +81,6 @@ class Program
 
         // Переместите UseCors перед всеми остальными middleware
         app.UseCors("AllowAll");
-
-        // Добавьте обработку OPTIONS запросов
-        app.Use(async (context, next) =>
-        {
-            if (context.Request.Method == "OPTIONS")
-            {
-                context.Response.Headers.Add("Access-Control-Allow-Origin", context.Request.Headers["Origin"]);
-                context.Response.Headers.Add("Access-Control-Allow-Headers", "Content-Type, Authorization");
-                context.Response.Headers.Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-                context.Response.Headers.Add("Access-Control-Allow-Credentials", "true");
-                context.Response.StatusCode = 200;
-                return;
-            }
-
-            await next();
-        });
 
         app.UseRouting();
         app.UseAuthentication();
