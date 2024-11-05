@@ -26,16 +26,36 @@ async function handleAnonymousLogin() {
             }
         });
 
+        console.log('Response status:', response.status);
+
         if (response.ok) {
-            const data = await response.json();
+            const text = await response.text();
+            console.log('Response text:', text);
+            
+            if (!text) {
+                throw new Error('Empty response from server');
+            }
+            
+            const data = JSON.parse(text);
             localStorage.setItem('user', JSON.stringify(data));
             window.location.href = '/index.html';
         } else {
-            const error = await response.json();
-            showError(error.message || 'Ошибка входа');
+            console.log('Response not OK:', response.status);
+            const text = await response.text();
+            console.log('Error response:', text);
+            
+            let errorMessage = 'Ошибка входа';
+            try {
+                const error = JSON.parse(text);
+                errorMessage = error.message || errorMessage;
+            } catch (e) {
+                console.error('Error parsing error response:', e);
+            }
+            
+            showError(errorMessage);
         }
     } catch (error) {
-        console.error('Error:', error);
+        console.error('Fetch error:', error);
         showError('Ошибка сервера. Попробуйте позже.');
     }
 }
