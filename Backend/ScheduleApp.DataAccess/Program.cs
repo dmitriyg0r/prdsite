@@ -22,7 +22,10 @@ class Program
         {
             serverOptions.ListenAnyIP(5002, listenOptions =>
             {
-                listenOptions.UseHttps();
+                listenOptions.UseHttps(httpsOptions =>
+                {
+                    httpsOptions.AllowAnyClientCertificate();
+                });
             });
         });
 
@@ -135,7 +138,15 @@ class Program
                 try
                 {
                     var context = services.GetRequiredService<ApplicationDbContext>();
+                    
+                    // Удаляем базу если она существует и создаем заново
+                    await context.Database.EnsureDeletedAsync();
+                    await context.Database.EnsureCreatedAsync();
+                    
+                    // Применяем миграции
                     await context.Database.MigrateAsync();
+                    
+                    // Инициализируем пользователей
                     await context.InitializeUsers();
                 }
                 catch (Exception ex)
