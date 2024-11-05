@@ -17,7 +17,8 @@ const showError = (message) => {
     errorMessage.style.display = 'block';
 };
 
-async function handleAnonymousLogin() {
+// Делаем функцию глобальной через window
+window.handleAnonymousLogin = async function() {
     try {
         const response = await fetch('/api/auth/anonymous-login', {
             method: 'POST',
