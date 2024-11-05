@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using ScheduleApp.DataAccess.Data;
 using ScheduleApp.DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace ScheduleApp.DataAccess;
 
@@ -38,6 +39,7 @@ class Program
         {
             logging.AddConsole();
             logging.AddDebug();
+            logging.SetMinimumLevel(LogLevel.Debug);
         });
 
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -48,8 +50,20 @@ class Program
         // Configure the HTTP request pipeline.
         app.Use(async (context, next) =>
         {
-            Console.WriteLine($"Received request: {context.Request.Method} {context.Request.Path}");
+            var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+            logger.LogInformation(
+                "Request {Method} {Path} started at {Time}",
+                context.Request.Method,
+                context.Request.Path,
+                DateTime.Now);
+            
             await next();
+            
+            logger.LogInformation(
+                "Request {Method} {Path} completed with status {Status}",
+                context.Request.Method,
+                context.Request.Path,
+                context.Response.StatusCode);
         });
 
         app.UseCors("AllowAll");
@@ -61,6 +75,14 @@ class Program
         app.UseHttpsRedirection();
         app.UseAuthorization();
         app.MapControllers();
+
+        var logger = app.Services.GetRequiredService<ILogger<Program>>();
+        var endpoints = app.Services.GetRequiredService<IEnumerable<EndpointDataSource>>()
+            .SelectMany(source => source.Endpoints);
+        foreach (var endpoint in endpoints)
+        {
+            logger.LogInformation("Registered endpoint: {Endpoint}", endpoint.DisplayName);
+        }
 
         if (app.Environment.IsDevelopment())
         {
