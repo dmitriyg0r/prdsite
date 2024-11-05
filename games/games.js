@@ -14,8 +14,8 @@ score.innerHTML = `Score: ${counter} | High Score: ${highScore}`;
 function jump() {
     if (!isJumping && !isGameOver) {
         isJumping = true;
-        let jumpForce = 20;
-        let gravity = 0.9;
+        let jumpForce = 15;
+        let gravity = 0.6;
         let velocity = jumpForce;
 
         let jumpInterval = setInterval(function() {
@@ -30,7 +30,7 @@ function jump() {
                 clearInterval(jumpInterval);
                 isJumping = false;
             }
-        }, 10);
+        }, 8);
     }
 }
 
