@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let birdY = 300;
     let velocity = 0;
     let gravity = 0.5;
-    let jumpForce = -8;
+    let jumpForce = -10;
     let pipeX = 300;
     let score = 0;
     let isGameOver = false;
@@ -120,12 +120,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateBirdPosition() {
-        velocity += gravity * (frameTime / 1000);
-        birdY += velocity * (frameTime / 1000) * 50;
+        velocity += gravity;
+        birdY += velocity;
         
-        if (birdY > GAME_HEIGHT - GROUND_HEIGHT - 40) { // 40 - высота птицы
+        if (birdY > GAME_HEIGHT - GROUND_HEIGHT - 40) {
             gameOver();
-            birdY = GAME_HEIGHT - GROUND_HEIGHT - 40; // Фиксируем птицу на земле
+            birdY = GAME_HEIGHT - GROUND_HEIGHT - 40;
         }
         
         if (birdY < 0) {
@@ -169,6 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
             gameStarted = true;
             startScreen.style.display = 'none';
             resetGame();
+            velocity = 0;
             requestAnimationFrame(gameLoop);
         }
     }
