@@ -3,55 +3,108 @@ let obstacle = document.getElementById("obstacle");
 let score = document.getElementById("score");
 let counter = 0;
 let isJumping = false;
+let gameSpeed = 3;
+let isGameOver = false;
+let highScore = localStorage.getItem('highScore') || 0;
 
-// Функция прыжка
+// Добавляем отображение рекорда
+score.innerHTML = `Score: ${counter} | High Score: ${highScore}`;
+
+// Улучшенная функция прыжка с физикой
 function jump() {
-    if (!isJumping) {
+    if (!isJumping && !isGameOver) {
         isJumping = true;
-        let jumpCount = 0;
+        let jumpForce = 20;
+        let gravity = 0.9;
+        let velocity = jumpForce;
+
         let jumpInterval = setInterval(function() {
-            if (jumpCount < 15) {
-                character.style.bottom = (parseInt(character.style.bottom || 0) + 10) + "px";
-            } else if (jumpCount < 30) {
-                character.style.bottom = (parseInt(character.style.bottom || 0) - 10) + "px";
+            // Применяем физику
+            let currentBottom = parseInt(character.style.bottom || 0);
+            
+            if (currentBottom > 0 || velocity > 0) {
+                velocity -= gravity;
+                character.style.bottom = (currentBottom + velocity) + "px";
             } else {
+                character.style.bottom = "0px";
                 clearInterval(jumpInterval);
                 isJumping = false;
-                character.style.bottom = "0px";
             }
-            jumpCount++;
-        }, 20);
+        }, 10);
     }
 }
 
 // Обработчик нажатия клавиш
 document.addEventListener("keydown", function(event) {
-    if (event.code === "Space") {
+    if ((event.code === "Space" || event.code === "ArrowUp") && !isGameOver) {
         jump();
+    }
+    // Добавляем перезапуск игры на R
+    if (event.code === "KeyR" && isGameOver) {
+        resetGame();
     }
 });
 
-// Движение препятствия
-let gameLoop = setInterval(function() {
-    let obstacleLeft = parseInt(window.getComputedStyle(obstacle).getPropertyValue("left"));
-    
-    if (obstacleLeft < -20) {
-        obstacle.style.left = "600px";
-        counter++;
-        score.textContent = "Score: " + counter;
-    } else {
-        obstacle.style.left = (obstacleLeft - 5) + "px";
+// Добавляем поддержку тач-устройств
+document.addEventListener("touchstart", function(event) {
+    if (!isGameOver) {
+        jump();
+        event.preventDefault();
     }
+});
 
-    // Проверка столкновения
-    let characterBottom = parseInt(character.style.bottom || 0);
-    if (obstacleLeft < 50 && obstacleLeft > 0 && characterBottom < 40) {
-        alert("Game Over! Score: " + counter);
-        counter = 0;
-        score.textContent = "Score: 0";
-        obstacle.style.left = "600px";
+// Функция окончания игры
+function gameOver() {
+    isGameOver = true;
+    if (counter > highScore) {
+        highScore = counter;
+        localStorage.setItem('highScore', highScore);
     }
-}, 20);
+    
+    obstacle.style.animationPlayState = 'paused';
+    alert(`Game Over!\nScore: ${counter}\nHigh Score: ${highScore}\n\nPress R to restart`);
+}
+
+// Функция перезапуска игры
+function resetGame() {
+    isGameOver = false;
+    counter = 0;
+    gameSpeed = 3;
+    score.innerHTML = `Score: ${counter} | High Score: ${highScore}`;
+    obstacle.style.left = "600px";
+    obstacle.style.animationPlayState = 'running';
+}
+
+// Улучшенный игровой цикл
+let gameLoop = setInterval(function() {
+    if (!isGameOver) {
+        let obstacleLeft = parseInt(window.getComputedStyle(obstacle).getPropertyValue("left"));
+        let characterBottom = parseInt(character.style.bottom || 0);
+        
+        // Увеличиваем сложность с ростом очков
+        if (counter > 0 && counter % 10 === 0) {
+            gameSpeed = Math.min(gameSpeed + 0.1, 8);
+        }
+
+        if (obstacleLeft < -30) {
+            obstacle.style.left = "600px";
+            counter++;
+            score.innerHTML = `Score: ${counter} | High Score: ${highScore}`;
+        } else {
+            obstacle.style.left = (obstacleLeft - gameSpeed) + "px";
+        }
+
+        // Улучшенная система коллизий
+        let characterRect = character.getBoundingClientRect();
+        let obstacleRect = obstacle.getBoundingClientRect();
+
+        if (characterRect.right > obstacleRect.left + 10 && 
+            characterRect.left < obstacleRect.right - 10 && 
+            characterRect.bottom > obstacleRect.top + 10) {
+            gameOver();
+        }
+    }
+}, 15);
 
 // Начальная позиция препятствия
 obstacle.style.left = "600px";
