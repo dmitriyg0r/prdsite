@@ -17,9 +17,12 @@ const showError = (message) => {
     errorMessage.style.display = 'block';
 };
 
+// Обновляем URL для API запросов
+const API_BASE_URL = 'https://adminflow.ru:5002/api'; // Используйте ваш домен и порт
+
 async function handleAnonymousLogin() {
     try {
-        const response = await fetch('/api/auth/anonymous-login', {
+        const response = await fetch(`${API_BASE_URL}/auth/anonymous-login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -45,7 +48,7 @@ async function loadUsers() {
         const userData = JSON.parse(localStorage.getItem('user'));
         console.log('Token:', userData.token);
 
-        const response = await fetch('/api/users', {
+        const response = await fetch(`${API_BASE_URL}/users`, {
             headers: {
                 'Authorization': `Bearer ${userData.token}`,
                 'Content-Type': 'application/json'
@@ -68,7 +71,6 @@ async function loadUsers() {
 }
 
 function displayUsers(users) {
-    console.log('DisplayUsers called with:', users);
     const tableBody = document.getElementById('users-table-body');
     if (!tableBody) {
         console.error('Table body element not found!');
@@ -79,16 +81,16 @@ function displayUsers(users) {
     
     users.forEach(user => {
         const row = document.createElement('tr');
+        const lastLoginDate = user.lastLogin ? new Date(user.lastLogin).toLocaleString() : 'Никогда';
+        
         row.innerHTML = `
             <td>${user.id}</td>
             <td>${user.username}</td>
             <td>${user.role}</td>
+            <td>${lastLoginDate}</td>
             <td>
-                <button class="action-btn edit-btn" onclick="editUser(${user.id})">
-                    <i class="fas fa-edit"></i>
-                </button>
                 <button class="action-btn delete-btn" onclick="deleteUser(${user.id})">
-                    <i class="fas fa-trash"></i>
+                    <i class="fas fa-trash"></i> Удалить
                 </button>
             </td>
         `;
@@ -105,7 +107,7 @@ async function deleteUser(userId) {
     if (confirm('Вы уверены, что хотите удалить этого пользователя?')) {
         try {
             const userData = JSON.parse(localStorage.getItem('user'));
-            const response = await fetch(`/api/users/${userId}`, {
+            const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${userData.token}`
@@ -156,16 +158,16 @@ function handleLogout() {
 async function handleLogin(event) {
     event.preventDefault();
     
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
-    
     try {
-        const response = await fetch('/api/auth/login', {
+        const response = await fetch(`${API_BASE_URL}/auth/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ username, password })
+            body: JSON.stringify({ 
+                username: document.getElementById('username').value,
+                password: document.getElementById('password').value 
+            })
         });
 
         if (response.ok) {
@@ -178,6 +180,7 @@ async function handleLogin(event) {
         }
     } catch (error) {
         showError('Ошибка сервера. Попробуйте позже.');
+        console.error('Login error:', error);
     }
 }
 
