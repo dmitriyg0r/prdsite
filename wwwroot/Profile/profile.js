@@ -17,19 +17,13 @@ const showError = (message) => {
     errorMessage.style.display = 'block';
 };
 
-async function handleLogin(event) {
-    event.preventDefault();
-    
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
-    
+async function handleAnonymousLogin() {
     try {
-        const response = await fetch('/api/auth/login', {
+        const response = await fetch('/api/auth/anonymous-login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ username, password })
+            }
         });
 
         if (response.ok) {
@@ -45,13 +39,19 @@ async function handleLogin(event) {
     }
 }
 
-async function handleAnonymousLogin() {
+async function handleLogin(event) {
+    event.preventDefault();
+    
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    
     try {
-        const response = await fetch('/api/auth/anonymous-login', {
+        const response = await fetch('/api/auth/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-            }
+            },
+            body: JSON.stringify({ username, password })
         });
 
         if (response.ok) {
