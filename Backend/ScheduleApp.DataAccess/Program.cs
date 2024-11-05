@@ -14,6 +14,12 @@ class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
+        // Добавьте эту конфигурацию
+        builder.WebHost.ConfigureKestrel(serverOptions =>
+        {
+            serverOptions.ListenLocalhost(5002);
+        });
+
         // Add services to the container.
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
