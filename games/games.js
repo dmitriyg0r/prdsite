@@ -24,6 +24,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const frameTime = 1000 / FPS;
     let accumulator = 0;
 
+    let gameStarted = false;
+    const startScreen = document.getElementById('start-screen');
+
     function createPipes() {
         const gap = 170;
         const minHeight = 50;
@@ -69,9 +72,14 @@ document.addEventListener('DOMContentLoaded', () => {
         pipePassed = false;
         scoreElement.textContent = `Счёт: ${score}`;
         restartButton.style.display = 'none';
+        startScreen.style.display = 'none';
         bird.style.transform = 'rotate(0deg)';
         createPipes();
-        gameLoop();
+        
+        if (!gameStarted) {
+            gameStarted = true;
+            requestAnimationFrame(gameLoop);
+        }
     }
 
     function checkCollision() {
@@ -95,6 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function gameOver() {
         if (!isGameOver) {
             isGameOver = true;
+            gameStarted = false;
             restartButton.style.display = 'block';
             
             if (score > bestScore) {
@@ -131,6 +140,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function gameLoop(currentTime) {
+        if (!gameStarted) {
+            lastTime = 0;
+            return;
+        }
+        
         if (!isGameOver) {
             if (!lastTime) lastTime = currentTime;
             
@@ -150,32 +164,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function startGame() {
+        if (!gameStarted) {
+            gameStarted = true;
+            startScreen.style.display = 'none';
+            resetGame();
+            requestAnimationFrame(gameLoop);
+        }
+    }
+
     document.addEventListener('keydown', (e) => {
-        if (e.code === 'Space' && !isGameOver) {
+        if (e.code === 'Space') {
             e.preventDefault();
-            velocity = jumpForce;
+            if (!gameStarted) {
+                startGame();
+            } else if (!isGameOver) {
+                velocity = jumpForce;
+            }
         }
     });
 
     restartButton.addEventListener('click', resetGame);
 
     createPipes();
-    gameLoop();
-
-    function createCloud() {
-        const cloud = document.createElement('div');
-        cloud.className = `cloud cloud${Math.floor(Math.random() * 3) + 1}`;
-        cloud.style.top = `${Math.random() * 300}px`;
-        document.querySelector('.clouds').appendChild(cloud);
-
-        cloud.addEventListener('animationend', () => {
-            cloud.remove();
-        });
-    }
-
-    function startCloudGeneration() {
-        setInterval(createCloud, 10000);
-    }
-
-    startCloudGeneration();
+    startScreen.style.display = 'block';
 });
