@@ -52,6 +52,15 @@ public class AuthController : ControllerBase
         
         return Ok(endpoints.Select(e => e.DisplayName));
     }
+
+    [HttpPost("anonymous-login")]
+    public IActionResult AnonymousLogin()
+    {
+        return Ok(new { 
+            username = "anonymous",
+            role = "Anonymous"
+        });
+    }
 }
 
 public class LoginRequest

@@ -202,3 +202,24 @@ main {
     display: none;
     text-align: center;
 }
+
+.anonymous-login {
+    text-align: center;
+    margin-top: 15px;
+}
+
+.anonymous-btn {
+    background: transparent;
+    color: var(--text-color);
+    border: 2px solid var(--primary-color);
+    padding: 10px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+}
+
+.anonymous-btn:hover {
+    background: var(--primary-color);
+    color: var(--button-text);
+}
