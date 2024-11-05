@@ -92,6 +92,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("anonymous-login")]
+    [EnableCors("AllowAll")]
     public IActionResult AnonymousLogin()
     {
         _logger.LogInformation("Anonymous login endpoint hit at {Time}", DateTime.Now);

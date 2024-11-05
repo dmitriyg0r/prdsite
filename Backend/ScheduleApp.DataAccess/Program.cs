@@ -20,12 +20,10 @@ class Program
         // Добавьте эту конфигурацию
         builder.WebHost.ConfigureKestrel(serverOptions =>
         {
+            serverOptions.ListenAnyIP(5002); // Прослушивание HTTP
             serverOptions.ListenAnyIP(5002, listenOptions =>
             {
-                listenOptions.UseHttps(httpsOptions =>
-                {
-                    httpsOptions.AllowAnyClientCertificate();
-                });
+                listenOptions.UseHttps(); // Прослушивание HTTPS
             });
         });
 
@@ -38,12 +36,7 @@ class Program
             options.AddPolicy("AllowAll", builder =>
             {
                 builder
-                    .WithOrigins(
-                        "https://adminflow.ru",
-                        "https://www.adminflow.ru",
-                        "http://adminflow.ru",
-                        "http://www.adminflow.ru"
-                    )
+                    .SetIsOriginAllowed(_ => true)
                     .AllowAnyMethod()
                     .AllowAnyHeader()
                     .AllowCredentials();
@@ -79,7 +72,7 @@ class Program
 
         var app = builder.Build();
 
-        // Переместите UseCors перед всеми остальными middleware
+        // ВАЖНО: UseCors должен быть первым в цепочке middleware
         app.UseCors("AllowAll");
 
         app.UseRouting();
