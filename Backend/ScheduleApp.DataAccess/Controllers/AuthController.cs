@@ -92,18 +92,20 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("anonymous-login")]
-    [EnableCors("AllowAll")]
     public IActionResult AnonymousLogin()
     {
-        _logger.LogInformation("Anonymous login endpoint hit at {Time}", DateTime.Now);
         try 
         {
+            _logger.LogInformation("Anonymous login attempt from: {Origin}", Request.Headers["Origin"]);
+            
             var response = new { 
                 username = "anonymous",
                 role = "Anonymous"
             };
-            _logger.LogInformation("Returning response: {Response}", 
+            
+            _logger.LogInformation("Sending response: {Response}", 
                 System.Text.Json.JsonSerializer.Serialize(response));
+                
             return Ok(response);
         }
         catch (Exception ex)
@@ -117,6 +119,12 @@ public class AuthController : ControllerBase
     public IActionResult Test()
     {
         return Ok(new { message = "API is working" });
+    }
+
+    [HttpOptions]
+    public IActionResult PreflightRoute()
+    {
+        return Ok();
     }
 }
 
