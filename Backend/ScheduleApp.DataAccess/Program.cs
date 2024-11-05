@@ -20,12 +20,14 @@ class Program
         // Добавляем CORS до других сервисов
         builder.Services.AddCors(options =>
         {
-            options.AddDefaultPolicy(policy =>
+            options.AddDefaultPolicy(builder =>
             {
-                policy.WithOrigins("https://adminflow.ru", "http://adminflow.ru")
-                      .AllowAnyMethod()
-                      .AllowAnyHeader()
-                      .AllowCredentials();
+                builder
+                    .SetIsOriginAllowed(origin => true) // Разрешаем все источники в режиме разработки
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials()
+                    .WithExposedHeaders("Content-Disposition");
             });
         });
 
@@ -70,20 +72,6 @@ class Program
         app.UseAuthentication();
         app.UseAuthorization();
         app.MapControllers();
-
-        // Добавляем глобальную обработку OPTIONS запросов
-        app.Use(async (context, next) =>
-        {
-            if (context.Request.Method == "OPTIONS")
-            {
-                context.Response.Headers.Append("Access-Control-Allow-Origin", "*");
-                context.Response.Headers.Append("Access-Control-Allow-Headers", "Content-Type, Accept, Authorization");
-                context.Response.Headers.Append("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-                context.Response.StatusCode = 200;
-                return;
-            }
-            await next();
-        });
 
         app.MapGet("/api/users", async (ApplicationDbContext db) =>
         {
