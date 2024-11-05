@@ -139,6 +139,6 @@ class Program
         // Вызываем инициализацию
         await InitializeDatabase();
 
-        app.Run();
+        await app.RunAsync();
     }
 }
