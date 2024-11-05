@@ -36,7 +36,11 @@ class Program
             options.AddPolicy("AllowAll", builder =>
             {
                 builder
-                    .SetIsOriginAllowed(_ => true)
+                    .SetIsOriginAllowed(origin => 
+                    {
+                        Console.WriteLine($"Checking origin: {origin}");
+                        return true;
+                    })
                     .AllowAnyMethod()
                     .AllowAnyHeader()
                     .AllowCredentials();
