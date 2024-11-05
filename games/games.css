@@ -1,1 +1,40 @@
-/* Файл пуст, так как все предыдущие стили были связаны с игрой */
+.pixel-battle-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 20px;
+}
+
+.controls {
+    display: flex;
+    gap: 10px;
+}
+
+#pixelCanvas {
+    display: grid;
+    grid-template-columns: repeat(50, 10px);
+    gap: 1px;
+    background-color: #ccc;
+    border: 1px solid #999;
+}
+
+.pixel {
+    width: 10px;
+    height: 10px;
+    background-color: white;
+    cursor: pointer;
+}
+
+#clearButton {
+    padding: 5px 15px;
+    cursor: pointer;
+    background-color: #ff4444;
+    color: white;
+    border: none;
+    border-radius: 4px;
+}
+
+#clearButton:hover {
+    background-color: #ff6666;
+}
