@@ -117,54 +117,51 @@ body {
     left: 0;
     top: 0;
     padding: 20px 0;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden;
-    box-shadow: 4px 0 15px rgba(0, 0, 0, 0.15);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 4px 0 25px rgba(0, 0, 0, 0.15);
 }
 
 .sidebar-link {
     display: flex;
     align-items: center;
-    padding: 14px 8px;
+    padding: 12px 8px;
     text-decoration: none;
-    color: rgba(232, 234, 237, 0.95);
+    color: rgba(255, 255, 255, 0.85);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     white-space: nowrap;
-    margin: 4px 8px;
+    margin: 4px 12px;
     border-radius: 16px;
     position: relative;
     overflow: hidden;
+    font-weight: 500;
 }
 
 .sidebar-link::before {
     content: '';
     position: absolute;
     top: 0;
-    left: 0;
+    left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, 
-        rgba(255, 255, 255, 0.1), 
-        rgba(255, 255, 255, 0.05));
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.sidebar-link:hover {
-    background-color: var(--sidebar-hover);
-    transform: translateX(5px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+    );
+    transition: 0.5s;
 }
 
 .sidebar-link:hover::before {
-    opacity: 1;
+    left: 100%;
 }
 
 .sidebar-link.active {
-    background: var(--primary-color);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    background: var(--sidebar-hover);
+    color: #ffffff;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    border-left: 3px solid #ffffff;
 }
 
 .sidebar-link i {
@@ -172,11 +169,13 @@ body {
     font-size: 20px;
     text-align: center;
     margin: 0 auto;
-    transition: transform 0.3s ease, margin 0.3s ease;
+    transition: all 0.4s ease;
+    position: relative;
+    z-index: 2;
 }
 
 .sidebar-link:hover i {
-    transform: scale(1.1);
+    transform: scale(1.1) rotate(5deg);
 }
 
 .sidebar-link span {
@@ -187,53 +186,43 @@ body {
     font-weight: 500;
 }
 
-/* Анимация при аведении на sidebar */
+/* Анимация при наведении на sidebar */
 .sidebar:hover {
     width: 250px;
-    box-shadow: 6px 0 20px rgba(0, 0, 0, 0.2);
 }
 
-.sidebar-nav {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 0;
-}
-
-.sidebar-link {
-    display: flex;
-    align-items: center;
+.sidebar:hover .sidebar-link {
     padding: 12px 24px;
-    text-decoration: none;
-    color: #e8eaed;
-    transition: background-color 0.3s ease;
-    white-space: nowrap;
-    margin: 4px 8px;
-    border-radius: 8px;
+    margin: 4px 16px;
+    background: rgba(255, 255, 255, 0.05);
 }
 
-.sidebar-link:hover {
-    background-color: var(--sidebar-hover);
-}
-
-.sidebar-link.active {
-    background-color: #6e5cc2;
-}
-
-.sidebar-link i {
-    min-width: 24px;
-    font-size: 20px;
-    text-align: center;
-}
-
-.sidebar-link span {
-    font-size: 15px;
-    opacity: 0;
-    margin-left: 32px;
-    transition: opacity 0.2s ease;
+.sidebar:hover .sidebar-link i {
+    margin: 0;
+    margin-right: 16px;
 }
 
 .sidebar:hover .sidebar-link span {
     opacity: 1;
+}
+
+/* Стили для темной темы */
+[data-theme="dark"] .sidebar {
+    background: var(--primary-color);
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .sidebar-link {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .sidebar-link:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .sidebar-link.active {
+    background: var(--sidebar-hover);
+    border-left: 3px solid var(--primary-light);
 }
 
 /* Стили для заголовка */
@@ -315,6 +304,7 @@ main {
     padding: 14px 8px;
     margin: 4px 8px;
     position: relative;
+    margin-bottom: auto;
 }
 
 .theme-icon {
@@ -327,7 +317,7 @@ main {
     margin: 0 auto;
 }
 
-/* Полностью скрываем слайдер и текст в закрытом меню */
+/* Полнотью скрываем слайдер и текст в закрытом меню */
 .theme-label, 
 .theme-toggle-container span {
     display: none;
@@ -517,12 +507,12 @@ tr:hover {
 }
 
 [data-theme="dark"] .sidebar-link:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--sidebar-hover);
     color: white;
 }
 
 [data-theme="dark"] .sidebar-link.active {
-    background: rgba(255, 255, 255, 0.15);
+    background: var(--sidebar-hover);
     color: white;
 }
 
@@ -653,7 +643,7 @@ tr:hover {
     margin: 0 auto;
 }
 
-/* При наведении на sidebar для контейнера темы */
+/* При наведени на sidebar ля контейнера темы */
 .sidebar:hover .theme-toggle-container {
     padding: 14px 24px;
     justify-content: flex-start;
@@ -666,7 +656,7 @@ tr:hover {
 }
 
 .theme-label {
-    background-color: #111;
+    background-color: rgba(255, 255, 255, 0.2);
     border-radius: 50px;
     cursor: pointer;
     display: inline-block;
@@ -794,16 +784,119 @@ table {
 
 /* Стили для активного пункта при наведении */
 .sidebar-link.active:hover {
-    background: rgba(255, 255, 255, 0.25); /* Чуть светлее при наведении */
+    background: rgba(255, 255, 255, 0.25); /* Чуть светлее при наведнии */
     transform: translateX(5px);
 }
 
 /* Стили для темной темы */
 [data-theme="dark"] .sidebar-link.active {
-    background: rgba(255, 255, 255, 0.15); /* Более темный оттенок для темной темы */
+    background: var(--sidebar-hover);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 [data-theme="dark"] .sidebar-link.active:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: var(--sidebar-hover);
+}
+
+/* Обновленные стили для контейнера переключателя темы */
+.theme-switch-wrapper {
+    margin-bottom: 20px;
+}
+
+.theme-toggle-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 14px 8px;
+    margin: 4px 8px;
+    position: relative;
+    margin-bottom: auto;
+}
+
+/* Обновляем стили для sidebar, чтобы лучше контролировать расположение элементов */
+.sidebar {
+    position: fixed;
+    width: 70px;
+    height: 100vh;
+    background: var(--sidebar-background);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    left: 0;
+    top: 0;
+    padding: 20px 0;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    box-shadow: 4px 0 25px rgba(0, 0, 0, 0.15);
+}
+
+.sidebar-nav {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 60px;
+}
+
+/* Стили для переключателя темы */
+.theme-label {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 50px;
+    cursor: pointer;
+    display: inline-block;
+    position: absolute;
+    height: 26px;
+    width: 50px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.theme-label .ball {
+    background-color: #fff;
+    border-radius: 50%;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    height: 22px;
+    width: 22px;
+    transform: translateX(0px);
+    transition: transform 0.2s linear;
+}
+
+/* Стили для активной страницы */
+.sidebar-link.active {
+    background: var(--sidebar-hover);
+    color: #ffffff;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+.sidebar-link.active::after {
+    content: '';
+    position: absolute;
+    left: -12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 70%;
+    background: #ffffff;
+    border-radius: 0 4px 4px 0;
+}
+
+/* Стили для темной темы */
+[data-theme="dark"] .theme-label {
+    background-color: rgba(0, 0, 0, 0.4); /* Более тёмный фон для переключателя */
+}
+
+[data-theme="dark"] .theme-checkbox:checked + .theme-label .ball {
+    background-color: var(--primary-light); /* Цвет шарика в активном состоянии */
+}
+
+[data-theme="dark"] .sidebar-link.active {
+    background: var(--primary-dark);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .sidebar-link.active::after {
+    background: var(--primary-light); /* Цвет индикатора активной страницы */
 }
