@@ -27,13 +27,13 @@ const showError = (message) => {
 };
 
 // Обновляем URL для API запросов
-const API_BASE_URL = 'https://adminflow.ru:5002/api'; // Используйте ваш домен и порт
+const API_BASE_URL = 'https://adminflow.ru:5002';
 
 async function handleAnonymousLogin() {
     try {
         console.log('Attempting anonymous login...');
         
-        const response = await fetch('https://localhost:5002/api/auth/anonymous-login', {
+        const response = await fetch(`${API_BASE_URL}/api/auth/anonymous-login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -46,7 +46,8 @@ async function handleAnonymousLogin() {
         console.log('Response status:', response.status);
         
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
         }
 
         const data = await response.json();
@@ -56,7 +57,7 @@ async function handleAnonymousLogin() {
         showProfile(data);
     } catch (error) {
         console.error('Login error:', error);
-        showError('Ошибка входа. Пожалуйста, попробуйте позже.');
+        showError('Ошибка входа: ' + error.message);
     }
 }
 
@@ -193,7 +194,7 @@ async function handleLogin(event) {
     
     try {
         console.log('Attempting login...');
-        const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
             method: 'POST',
             mode: 'cors',
             headers: {
