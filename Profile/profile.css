@@ -303,3 +303,91 @@ main {
     transform: translateY(-2px);
     box-shadow: 0 4px 15px rgba(var(--button-background-rgb), 0.3);
 }
+
+/* Стили для админ-панели */
+.admin-divider {
+    margin: 30px 0;
+    border: none;
+    border-top: 2px solid var(--border-color);
+}
+
+.admin-title {
+    color: var(--text-color);
+    font-size: 20px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.database-section {
+    margin-top: 20px;
+}
+
+.database-section h4 {
+    color: var(--text-color);
+    margin-bottom: 15px;
+}
+
+.users-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    background: var(--text-container-background);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.users-table th,
+.users-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-color);
+}
+
+.users-table th {
+    background: var(--primary-color);
+    color: var(--button-text);
+    font-weight: 500;
+}
+
+.users-table tr:hover {
+    background: rgba(var(--primary-color-rgb), 0.1);
+}
+
+.action-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 0 5px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.edit-btn {
+    background: var(--primary-color);
+    color: var(--button-text);
+}
+
+.delete-btn {
+    background: #ff4444;
+    color: white;
+}
+
+.action-btn:hover {
+    opacity: 0.8;
+    transform: translateY(-2px);
+}
+
+/* Добавим адаптивность */
+@media screen and (max-width: 768px) {
+    .users-table {
+        display: block;
+        overflow-x: auto;
+    }
+    
+    .users-table th,
+    .users-table td {
+        min-width: 120px;
+    }
+}
