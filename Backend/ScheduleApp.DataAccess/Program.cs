@@ -13,36 +13,16 @@ namespace ScheduleApp.DataAccess;
 
 class Program
 {
-    static void Main(string[] args)
+    static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        // Добавьте эту конфигурацию
-        builder.WebHost.ConfigureKestrel(serverOptions =>
-        {
-            serverOptions.ListenLocalhost(5002);
-        });
+        // Добавляем CORS до других сервисов
+        builder.Services.AddCors();
 
-        // Add services to the container.
+        // Остальные сервисы
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
-
-        builder.Services.AddCors(options =>
-        {
-            options.AddPolicy("AllowAll", builder =>
-            {
-                builder
-                    .WithOrigins(
-                        "https://adminflow.ru",
-                        "http://adminflow.ru",
-                        "https://www.adminflow.ru",
-                        "http://www.adminflow.ru"
-                    )
-                    .AllowAnyMethod()
-                    .AllowAnyHeader()
-                    .AllowCredentials();
-            });
-        });
 
         builder.Services.AddLogging(logging =>
         {
@@ -73,31 +53,47 @@ class Program
 
         var app = builder.Build();
 
-        // Configure the HTTP request pipeline.
-        app.Use(async (context, next) =>
-        {
-            var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
-            logger.LogInformation(
-                "Request {Method} {Path} started at {Time}",
-                context.Request.Method,
-                context.Request.Path,
-                DateTime.Now);
-            
-            await next();
-            
-            logger.LogInformation(
-                "Request {Method} {Path} completed with status {Status}",
-                context.Request.Method,
-                context.Request.Path,
-                context.Response.StatusCode);
-        });
+        // Настраиваем CORS middleware первым
+        app.UseCors(builder => builder
+            .SetIsOriginAllowed(_ => true) // Разрешаем все источники
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials()
+        );
 
-        app.UseCors("AllowAll");
-
+        // Остальные middleware
         app.UseRouting();
         app.UseAuthentication();
         app.UseAuthorization();
         app.MapControllers();
+
+        // Добавляем глобальную обработку OPTIONS запросов
+        app.Use(async (context, next) =>
+        {
+            if (context.Request.Method == "OPTIONS")
+            {
+                context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
+                context.Response.Headers.Add("Access-Control-Allow-Headers", "Content-Type, Accept, Authorization");
+                context.Response.Headers.Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+                context.Response.StatusCode = 200;
+                return;
+            }
+            await next();
+        });
+
+        app.MapGet("/api/users", async (ApplicationDbContext db) =>
+        {
+            var users = await db.Users.ToListAsync();
+            return Results.Ok(users);
+        });
+
+        app.MapGet("/api/users/{id}", async (int id, ApplicationDbContext db) =>
+        {
+            var user = await db.Users.FindAsync(id);
+            if (user == null)
+                return Results.NotFound();
+            return Results.Ok(user);
+        });
 
         var logger = app.Services.GetRequiredService<ILogger<Program>>();
         var endpoints = app.Services.GetRequiredService<IEnumerable<EndpointDataSource>>()
@@ -125,7 +121,15 @@ class Program
                 try
                 {
                     var context = services.GetRequiredService<ApplicationDbContext>();
+                    
+                    // Удаляем базу если она существует и создаем заново
+                    await context.Database.EnsureDeletedAsync();
+                    await context.Database.EnsureCreatedAsync();
+                    
+                    // Применяем миграции
                     await context.Database.MigrateAsync();
+                    
+                    // Инициализируем пользователей
                     await context.InitializeUsers();
                 }
                 catch (Exception ex)
@@ -139,6 +143,6 @@ class Program
         // Вызываем инициализацию
         await InitializeDatabase();
 
-        app.Run();
+        await app.RunAsync();
     }
 }
