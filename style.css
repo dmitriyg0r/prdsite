@@ -546,7 +546,7 @@ tr:hover {
     background-color: rgba(123, 44, 191, 0.08) !important;
 }
 
-/* Обновляем стили для прошедших пар */
+/* Обновляем стили для прошедших па�� */
 [data-theme="dark"] .past-lesson {
     background-color: rgba(123, 44, 191, 0.03) !important;
 }
@@ -744,7 +744,7 @@ table {
     min-width: 800px;
 }
 
-/* Добавить медиа-запрос для мобильных устройств */
+/* Добавить медиа-запрос для мобильных ус��ройств */
 @media screen and (max-width: 768px) {
     .sidebar {
         width: 0;
@@ -899,4 +899,15 @@ table {
 
 [data-theme="dark"] .sidebar-link.active::after {
     background: var(--primary-light); /* Цвет индикатора активной страницы */
+}
+
+.sidebar-logo {
+    text-align: center;
+    padding: 20px 0;
+}
+
+.sidebar-icon {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto;
 }
