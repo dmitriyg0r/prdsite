@@ -56,7 +56,7 @@ public class AuthController : ControllerBase
     [HttpPost("anonymous-login")]
     public IActionResult AnonymousLogin()
     {
-        Console.WriteLine("Anonymous login endpoint hit");
+        Console.WriteLine($"Anonymous login endpoint hit at {DateTime.Now}");
         try 
         {
             var response = new { 

@@ -46,11 +46,16 @@ class Program
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
+        app.Use(async (context, next) =>
+        {
+            Console.WriteLine($"Received request: {context.Request.Method} {context.Request.Path}");
+            await next();
+        });
+
         app.UseCors("AllowAll");
 
         app.Urls.Clear();
-        app.Urls.Add("https://0.0.0.0:5001");
-        app.Urls.Add("http://0.0.0.0:5001");
+        app.Urls.Add("http://localhost:5001");
 
         app.UseRouting();
         app.UseHttpsRedirection();
