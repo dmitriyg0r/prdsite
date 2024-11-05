@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="../buildMultiTargeting/ScheduleApp.DataAccess.props" />
-</Project>
