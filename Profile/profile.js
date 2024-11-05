@@ -29,9 +29,31 @@ const showError = (message) => {
 // Обновляем URL для API запросов
 const API_BASE_URL = 'https://adminflow.ru:5002';
 
+// Функция для проверки состояния сервера
+async function checkServerStatus() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/health`, {
+            method: 'GET',
+            mode: 'cors'
+        });
+        console.log('Server health check status:', response.status);
+        return response.ok;
+    } catch (error) {
+        console.error('Server health check failed:', error);
+        return false;
+    }
+}
+
+// Функция для анонимного входа
 async function handleAnonymousLogin() {
     try {
         console.log('Attempting anonymous login...');
+        
+        // Сначала проверяем доступность сервера
+        const serverIsUp = await checkServerStatus();
+        if (!serverIsUp) {
+            throw new Error('Сервер недоступен');
+        }
         
         const response = await fetch(`${API_BASE_URL}/api/auth/anonymous-login`, {
             method: 'POST',
@@ -39,11 +61,10 @@ async function handleAnonymousLogin() {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
-            mode: 'cors',
-            credentials: 'include'
+            mode: 'cors'
         });
 
-        console.log('Response status:', response.status);
+        console.log('Anonymous login response:', response);
         
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
@@ -51,28 +72,13 @@ async function handleAnonymousLogin() {
         }
 
         const data = await response.json();
-        console.log('Login successful:', data);
+        console.log('Anonymous login successful:', data);
         
         localStorage.setItem('user', JSON.stringify(data));
         showProfile(data);
     } catch (error) {
-        console.error('Login error:', error);
-        showError('Ошибка входа: ' + error.message);
-    }
-}
-
-async function checkServerStatus() {
-    try {
-        const response = await fetch('https://adminflow.ru:5002/api/health', {
-            method: 'GET',
-            mode: 'cors'  // Убрали credentials
-        });
-        
-        console.log('Server status:', response.status);
-        return response.ok;
-    } catch (error) {
-        console.error('Server check failed:', error);
-        return false;
+        console.error('Anonymous login error:', error);
+        showError(`Ошибка анонимного входа: ${error.message}`);
     }
 }
 
