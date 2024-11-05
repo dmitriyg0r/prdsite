@@ -13,8 +13,17 @@ const togglePassword = () => {
 
 const showError = (message) => {
     const errorMessage = document.getElementById('error-message');
-    errorMessage.textContent = message;
-    errorMessage.style.display = 'block';
+    if (errorMessage) {
+        errorMessage.textContent = message;
+        errorMessage.style.display = 'block';
+        
+        // Автоматически скрываем сообщение через 5 секунд
+        setTimeout(() => {
+            errorMessage.style.display = 'none';
+        }, 5000);
+    } else {
+        console.error('Error element not found:', message);
+    }
 };
 
 // Обновляем URL для API запросов
@@ -24,40 +33,33 @@ async function handleAnonymousLogin() {
     try {
         console.log('Attempting anonymous login...');
         
-        // Сначала делаем preflight запрос
-        const preflightResponse = await fetch(`${API_BASE_URL}/auth/anonymous-login`, {
-            method: 'OPTIONS',
-            mode: 'cors'
-        });
-        
-        console.log('Preflight response:', preflightResponse);
-
-        // Затем делаем основной запрос
-        const response = await fetch(`${API_BASE_URL}/auth/anonymous-login`, {
+        const response = await fetch('https://adminflow.ru:5002/api/auth/anonymous-login', {
             method: 'POST',
-            mode: 'cors',
             headers: {
                 'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            }
+            },
+            credentials: 'include' // Добавляем это для поддержки cookies
         });
 
-        console.log('Main response:', response);
-
-        if (response.ok) {
-            const data = await response.json();
-            console.log('Response data:', data);
-            localStorage.setItem('user', JSON.stringify(data));
-            showProfile(data);
-        } else {
-            throw new Error(`HTTP error! status: ${response.status}`);
+        console.log('Response status:', response.status);
+        
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
         }
+
+        const data = await response.json();
+        console.log('Login successful:', data);
+        
+        localStorage.setItem('user', JSON.stringify(data));
+        showProfile(data);
     } catch (error) {
         console.error('Full error:', error);
         console.error('Error name:', error.name);
         console.error('Error message:', error.message);
         console.error('Error stack:', error.stack);
-        showError('Ошибка сети. Проверьте подключение.');
+        
+        showError('Ошибка входа. Пожалуйста, попробуйте позже.');
     }
 }
 
