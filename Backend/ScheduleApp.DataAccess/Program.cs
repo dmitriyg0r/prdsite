@@ -35,14 +35,10 @@ class Program
         {
             options.AddPolicy("AllowAll", builder =>
             {
-                builder.SetIsOriginAllowed(origin =>
-                {
-                    Console.WriteLine($"Checking CORS origin: {origin}");
-                    return true;
-                })
-                .AllowAnyMethod()
-                .AllowAnyHeader()
-                .AllowCredentials();
+                builder
+                    .AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader();
             });
         });
 
@@ -75,9 +71,11 @@ class Program
 
         var app = builder.Build();
 
-        // ВАЖНО: UseCors должен быть первым в цепочке middleware
+        // Убедимся, что CORS идет первым
         app.UseCors("AllowAll");
 
+        // Настраиваем HTTPS
+        app.UseHttpsRedirection();
         app.UseRouting();
         app.UseAuthentication();
         app.UseAuthorization();

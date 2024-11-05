@@ -22,31 +22,33 @@ const API_BASE_URL = 'https://adminflow.ru:5002/api'; // Используйте 
 
 async function handleAnonymousLogin() {
     try {
+        console.log('Attempting anonymous login...');
         const response = await fetch(`${API_BASE_URL}/auth/anonymous-login`, {
             method: 'POST',
-            credentials: 'include',
             mode: 'cors',
             headers: {
                 'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'Origin': window.location.origin
+                'Accept': 'application/json'
             }
         });
 
-        console.log('Anonymous login response:', response);
+        console.log('Response status:', response.status);
+        console.log('Response headers:', [...response.headers.entries()]);
 
         if (response.ok) {
             const data = await response.json();
+            console.log('Response data:', data);
             localStorage.setItem('user', JSON.stringify(data));
             showProfile(data);
         } else {
-            const error = await response.json();
-            showError(error.message || 'Ошибка входа');
+            console.error('Server returned error:', response.status);
+            const error = await response.text();
+            console.error('Error details:', error);
+            showError('Ошибка входа: ' + (error || response.statusText));
         }
     } catch (error) {
-        console.error('Error details:', error);
-        console.error('Error stack:', error.stack);
-        showError('Ошибка сервера. Попробуйте позже.');
+        console.error('Network error:', error);
+        showError('Ошибка сети. Проверьте подключение.');
     }
 }
 
@@ -167,14 +169,13 @@ async function handleLogin(event) {
     event.preventDefault();
     
     try {
+        console.log('Attempting login...');
         const response = await fetch(`${API_BASE_URL}/auth/login`, {
             method: 'POST',
-            credentials: 'include',
             mode: 'cors',
             headers: {
                 'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'Origin': window.location.origin
+                'Accept': 'application/json'
             },
             body: JSON.stringify({ 
                 username: document.getElementById('username').value,
@@ -182,20 +183,21 @@ async function handleLogin(event) {
             })
         });
 
-        console.log('Login response:', response);
+        console.log('Response status:', response.status);
 
         if (response.ok) {
             const data = await response.json();
+            console.log('Login successful:', data);
             localStorage.setItem('user', JSON.stringify(data));
             showProfile(data);
         } else {
-            const error = await response.json();
-            showError(error.message || 'Ошибка входа');
+            console.error('Login failed:', response.status);
+            const error = await response.text();
+            showError('Ошибка входа: ' + (error || response.statusText));
         }
     } catch (error) {
-        console.error('Login error details:', error);
-        console.error('Error stack:', error.stack);
-        showError('Ошибка сервера. Попробуйте позже.');
+        console.error('Login error:', error);
+        showError('Ошибка сети. Проверьте подключение.');
     }
 }
 
