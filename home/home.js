@@ -86,6 +86,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 addHomeworkToFeed(result.data);
                 resetForm();
                 showNotification('Задание успешно добавлено!', 'success');
+                uploadFormContainer.classList.remove('active'); // Скрываем форму после успешной отправки
             } else {
                 throw new Error(result.message);
             }

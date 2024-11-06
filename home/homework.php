@@ -38,7 +38,7 @@ class HomeworkHandler {
     }
     
     private function validateRequest() {
-        if (!isset($_POST['password']) || !password_verify($_POST['password'], PASSWORD_HASH)) {
+        if (!isset($_POST['password']) || $_POST['password'] !== PASSWORD_HASH) {
             throw new Exception('Неверный пароль');
         }
         
