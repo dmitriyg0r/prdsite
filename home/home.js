@@ -6,6 +6,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const fileInput = document.getElementById('file-input');
     const fileNameDisplay = document.getElementById('file-name');
 
+    let currentPassword = '';
+
     fileInput.addEventListener('change', function() {
         const fileNames = Array.from(this.files).map(file => file.name);
         fileNameDisplay.textContent = fileNames.join(', ');
@@ -15,6 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
     showUploadFormBtn.addEventListener('click', () => {
         const password = prompt('Введите пароль для добавления задания:');
         if (password === 'Gg3985502') {
+            currentPassword = password;
             uploadFormContainer.classList.toggle('active');
         } else {
             showNotification('Неверный пароль', 'error');
@@ -53,14 +56,8 @@ document.addEventListener('DOMContentLoaded', function() {
     uploadForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        const password = prompt('Введите пароль для добавления задания:');
-        if (!password) {
-            showNotification('Необходимо ввести пароль', 'error');
-            return;
-        }
-        
         const formData = new FormData(uploadForm);
-        formData.append('password', password);
+        formData.append('password', currentPassword);
         
         const errors = validateForm(formData);
         
@@ -86,7 +83,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 addHomeworkToFeed(result.data);
                 resetForm();
                 showNotification('Задание успешно добавлено!', 'success');
-                uploadFormContainer.classList.remove('active'); // Скрываем форму после успешной отправки
+                uploadFormContainer.classList.remove('active');
             } else {
                 throw new Error(result.message);
             }
