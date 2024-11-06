@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "dgSpecHash": "8kKDws/Vwfew3ZmceptqfKzY+dfb15kROSBPK/DU1BE3GW9paIWGqglGPY5kEKnmi/TBnlpxTQl5VuCAp/b72g==",
-  "success": true,
+  "dgSpecHash": "ERZGW1OoZfpr3RoX0okCaKiL+Ls32/JESHvoykO+MADKXEfdPHHL0G2uoKF92okmWPR0jbiqmHagfT0SztQL3g==",
+  "success": false,
   "projectFilePath": "/home/mrgodgames/Документы/GitHub/prdsite/Backend/ScheduleApp.DataAccess/ScheduleApp.DataAccess.csproj",
   "expectedPackageFiles": [
     "/home/mrgodgames/.nuget/packages/bcrypt.net-next/4.0.3/bcrypt.net-next.4.0.3.nupkg.sha512",
@@ -19,10 +19,10 @@
     "/home/mrgodgames/.nuget/packages/microsoft.codeanalysis.workspaces.common/4.5.0/microsoft.codeanalysis.workspaces.common.4.5.0.nupkg.sha512",
     "/home/mrgodgames/.nuget/packages/microsoft.data.sqlite.core/8.0.0/microsoft.data.sqlite.core.8.0.0.nupkg.sha512",
     "/home/mrgodgames/.nuget/packages/microsoft.entityframeworkcore/8.0.0/microsoft.entityframeworkcore.8.0.0.nupkg.sha512",
-    "/home/mrgodgames/.nuget/packages/microsoft.entityframeworkcore.abstractions/8.0.0/microsoft.entityframeworkcore.abstractions.8.0.0.nupkg.sha512",
+    "/home/mrgodgames/.nuget/packages/microsoft.entityframeworkcore.abstractions/8.0.10/microsoft.entityframeworkcore.abstractions.8.0.10.nupkg.sha512",
     "/home/mrgodgames/.nuget/packages/microsoft.entityframeworkcore.analyzers/8.0.0/microsoft.entityframeworkcore.analyzers.8.0.0.nupkg.sha512",
     "/home/mrgodgames/.nuget/packages/microsoft.entityframeworkcore.design/8.0.0/microsoft.entityframeworkcore.design.8.0.0.nupkg.sha512",
-    "/home/mrgodgames/.nuget/packages/microsoft.entityframeworkcore.relational/8.0.0/microsoft.entityframeworkcore.relational.8.0.0.nupkg.sha512",
+    "/home/mrgodgames/.nuget/packages/microsoft.entityframeworkcore.relational/8.0.10/microsoft.entityframeworkcore.relational.8.0.10.nupkg.sha512",
     "/home/mrgodgames/.nuget/packages/microsoft.entityframeworkcore.sqlite/8.0.0/microsoft.entityframeworkcore.sqlite.8.0.0.nupkg.sha512",
     "/home/mrgodgames/.nuget/packages/microsoft.entityframeworkcore.sqlite.core/8.0.0/microsoft.entityframeworkcore.sqlite.core.8.0.0.nupkg.sha512",
     "/home/mrgodgames/.nuget/packages/microsoft.entityframeworkcore.tools/8.0.0/microsoft.entityframeworkcore.tools.8.0.0.nupkg.sha512",
@@ -50,6 +50,8 @@
     "/home/mrgodgames/.nuget/packages/microsoft.net.http.headers/2.2.0/microsoft.net.http.headers.2.2.0.nupkg.sha512",
     "/home/mrgodgames/.nuget/packages/microsoft.openapi/1.6.14/microsoft.openapi.1.6.14.nupkg.sha512",
     "/home/mrgodgames/.nuget/packages/mono.texttemplating/2.2.1/mono.texttemplating.2.2.1.nupkg.sha512",
+    "/home/mrgodgames/.nuget/packages/npgsql/8.0.5/npgsql.8.0.5.nupkg.sha512",
+    "/home/mrgodgames/.nuget/packages/npgsql.entityframeworkcore.postgresql/8.0.10/npgsql.entityframeworkcore.postgresql.8.0.10.nupkg.sha512",
     "/home/mrgodgames/.nuget/packages/serilog/3.1.1/serilog.3.1.1.nupkg.sha512",
     "/home/mrgodgames/.nuget/packages/serilog.aspnetcore/8.0.0/serilog.aspnetcore.8.0.0.nupkg.sha512",
     "/home/mrgodgames/.nuget/packages/serilog.extensions.hosting/8.0.0/serilog.extensions.hosting.8.0.0.nupkg.sha512",
@@ -87,5 +89,15 @@
     "/home/mrgodgames/.nuget/packages/system.text.json/8.0.0/system.text.json.8.0.0.nupkg.sha512",
     "/home/mrgodgames/.nuget/packages/system.threading.channels/6.0.0/system.threading.channels.6.0.0.nupkg.sha512"
   ],
-  "logs": []
+  "logs": [
+    {
+      "code": "NU1605",
+      "level": "Error",
+      "message": "Warning As Error: Detected package downgrade: Microsoft.EntityFrameworkCore from 8.0.10 to 8.0.0. Reference the package directly from the project to select a different version. \n ScheduleApp.DataAccess -> Npgsql.EntityFrameworkCore.PostgreSQL 8.0.10 -> Microsoft.EntityFrameworkCore (>= 8.0.10) \n ScheduleApp.DataAccess -> Microsoft.EntityFrameworkCore (>= 8.0.0)",
+      "libraryId": "Microsoft.EntityFrameworkCore",
+      "targetGraphs": [
+        "net8.0"
+      ]
+    }
+  ]
 }

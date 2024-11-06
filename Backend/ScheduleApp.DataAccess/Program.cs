@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
+using Npgsql.EntityFrameworkCore.PostgreSQL;
 
 namespace ScheduleApp.DataAccess;
 
@@ -81,19 +82,18 @@ class Program
             using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
-                var context = services.GetRequiredService<ApplicationDbContext>();
-                var logger = services.GetRequiredService<ILogger<Program>>();
+                var dbContext = services.GetRequiredService<ApplicationDbContext>();
+                var dbLogger = services.GetRequiredService<ILogger<Program>>();
 
-                logger.LogInformation("Attempting to migrate database...");
-                context.Database.Migrate();
-                logger.LogInformation("Database migration completed");
+                dbLogger.LogInformation("Attempting to migrate database...");
+                dbContext.Database.Migrate();
+                dbLogger.LogInformation("Database migration completed");
             }
         }
         catch (Exception ex)
         {
-            var logger = app.Services.GetRequiredService<ILogger<Program>>();
-            logger.LogError(ex, "An error occurred while migrating the database");
-            // Продолжаем работу даже при ошибке миграции
+            var startupLogger = app.Services.GetRequiredService<ILogger<Program>>();
+            startupLogger.LogError(ex, "An error occurred while migrating the database");
         }
 
         // Configure the HTTP request pipeline.
@@ -109,12 +109,13 @@ class Program
         app.MapControllers();
 
         // Логируем все зарегистрированные маршруты
-        var logger = app.Services.GetRequiredService<ILogger<Program>>();
+        var routeLogger = app.Services.GetRequiredService<ILogger<Program>>();
         var endpoints = app.Services.GetRequiredService<IEnumerable<EndpointDataSource>>()
             .SelectMany(source => source.Endpoints);
+
         foreach (var endpoint in endpoints)
         {
-            logger.LogInformation("Registered endpoint: {Endpoint}", endpoint.DisplayName);
+            routeLogger.LogInformation("Registered endpoint: {Endpoint}", endpoint.DisplayName);
         }
 
         app.Run();
