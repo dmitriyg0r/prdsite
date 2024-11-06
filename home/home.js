@@ -21,54 +21,74 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Обработка отправки ��ормы
+    function validateForm(formData) {
+        const errors = {};
+        
+        // Title validation
+        const title = formData.get('title').trim();
+        if (!title) {
+            errors.title = 'Название задания обязательно';
+        } else if (title.length < 3) {
+            errors.title = 'Название должно содержать минимум 3 символа';
+        }
+        
+        // Subject validation
+        if (!formData.get('subject')) {
+            errors.subject = 'Выберите предмет';
+        }
+        
+        // Deadline validation
+        const deadline = new Date(formData.get('deadline'));
+        const today = new Date();
+        if (!formData.get('deadline')) {
+            errors.deadline = 'Укажите срок сдачи';
+        } else if (deadline < today) {
+            errors.deadline = 'Срок сдачи не может быть в прошлом';
+        }
+        
+        return errors;
+    }
+
+    // Обработка отправки ормы
     uploadForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
         const formData = new FormData(uploadForm);
+        const errors = validateForm(formData);
         
-        // Добавляем пароль, который был введен при открытии формы
-        formData.append('password', 'Gg3985502');
-        
-        // Проверяем заполнение обязательных полей
-        const title = formData.get('title');
-        const subject = formData.get('subject');
-        const deadline = formData.get('deadline');
-        
-        if (!title || !subject || !deadline) {
-            showNotification('Пожалуйста, заполните все обязательные поля', 'error');
+        if (Object.keys(errors).length > 0) {
+            Object.entries(errors).forEach(([field, message]) => {
+                showFieldError(field, message);
+            });
             return;
         }
         
-        // Добавляем индикатор загрузки
+        // Show loading state
         const submitButton = uploadForm.querySelector('button[type="submit"]');
-        const originalButtonText = submitButton.textContent;
-        submitButton.disabled = true;
-        submitButton.textContent = 'Загрузка...';
+        setLoadingState(submitButton, true);
         
         try {
             const response = await fetch('homework.php', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                headers: {
+                    'X-CSRF-Token': getCsrfToken()
+                }
             });
             
             const result = await response.json();
             
             if (response.ok && result.success) {
                 addHomeworkToFeed(result.data);
-                uploadForm.reset();
-                fileNameDisplay.textContent = '';
-                uploadFormContainer.classList.remove('active');
+                resetForm();
                 showNotification('Задание успешно добавлено!', 'success');
             } else {
-                throw new Error(result.message || 'Ошибка при добавлении задания');
+                throw new Error(result.message);
             }
         } catch (error) {
-            console.error('Error:', error);
-            showNotification(error.message || 'Произошла ошибка при добавлении задания', 'error');
+            showNotification(error.message, 'error');
         } finally {
-            submitButton.disabled = false;
-            submitButton.textContent = originalButtonText;
+            setLoadingState(submitButton, false);
         }
     });
 
@@ -201,4 +221,25 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     loadHomework();
+
+    function initializeFilters() {
+        const filterForm = document.createElement('form');
+        filterForm.className = 'homework-filters';
+        filterForm.innerHTML = `
+            <select name="subject" id="filter-subject">
+                <option value="">Все предметы</option>
+                <!-- Add subject options -->
+            </select>
+            <select name="sort" id="filter-sort">
+                <option value="deadline">По сроку сдачи</option>
+                <option value="created">По дате создания</option>
+            </select>
+        `;
+        
+        homeworkFeed.insertAdjacentElement('beforebegin', filterForm);
+        
+        filterForm.addEventListener('change', () => {
+            refreshHomeworkFeed();
+        });
+    }
 });

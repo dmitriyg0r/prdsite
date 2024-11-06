@@ -1,86 +1,71 @@
 <?php
+require_once 'config.php';
 header('Content-Type: application/json');
 
-$VALID_PASSWORD = 'Gg3985502';
-
-try {
-    // Отладочная информация
-    error_log('Received POST data: ' . print_r($_POST, true));
+class HomeworkHandler {
+    private $dataDir;
+    private $uploadsDir;
     
-    // Проверка пароля
-    if (!isset($_POST['password'])) {
-        throw new Exception('Пароль не был передан');
-    }
-    
-    if ($_POST['password'] !== $VALID_PASSWORD) {
-        throw new Exception('Неверный пароль: ' . $_POST['password']);
-    }
-
-    $dataDir = '../home/homework_data';
-    $uploadsDir = '../home/uploads';
-
-    // Создаем директории, если они не существуют
-    if (!file_exists($dataDir)) {
-        mkdir($dataDir, 0777, true);
-    }
-    if (!file_exists($uploadsDir)) {
-        mkdir($uploadsDir, 0777, true);
-    }
-
-    // Проверка обязательных полей
-    if (empty($_POST['title']) || empty($_POST['subject']) || empty($_POST['deadline'])) {
-        throw new Exception('Не все обязательные поля заполнены');
+    public function __construct() {
+        $this->dataDir = '../home/homework_data';
+        $this->uploadsDir = '../home/uploads';
+        $this->ensureDirectoriesExist();
     }
     
-    $files = [];
-    // Обработка загруженных файлов
-    if (!empty($_FILES['files'])) {
-        foreach ($_FILES['files']['tmp_name'] as $key => $tmp_name) {
-            if ($_FILES['files']['error'][$key] === UPLOAD_ERR_OK) {
-                $fileName = $_FILES['files']['name'][$key];
-                $safeFileName = time() . '_' . preg_replace("/[^a-zA-Z0-9.]/", "_", $fileName);
-                $filePath = $uploadsDir . '/' . $safeFileName;
-                
-                if (move_uploaded_file($tmp_name, $filePath)) {
-                    $files[] = [
-                        'name' => $fileName,
-                        'url' => 'uploads/' . $safeFileName
-                    ];
-                }
+    private function ensureDirectoriesExist() {
+        foreach ([$this->dataDir, $this->uploadsDir] as $dir) {
+            if (!file_exists($dir)) {
+                mkdir($dir, 0777, true);
             }
         }
     }
     
-    // Создаем запись о задании
-    $homework = [
-        'id' => uniqid(),
-        'title' => $_POST['title'],
-        'subject' => $_POST['subject'],
-        'deadline' => $_POST['deadline'],
-        'description' => $_POST['description'] ?? '',
-        'files' => $files,
-        'created_at' => date('Y-m-d H:i:s')
-    ];
-    
-    // Сохраняем задание в JSON файл
-    $homeworkFile = $dataDir . '/homework.json';
-    $existingData = [];
-    
-    if (file_exists($homeworkFile)) {
-        $existingData = json_decode(file_get_contents($homeworkFile), true) ?? [];
+    public function handleRequest() {
+        try {
+            $this->validateRequest();
+            $files = $this->handleFileUploads();
+            $homework = $this->createHomeworkEntry($files);
+            $this->saveHomework($homework);
+            
+            return [
+                'success' => true,
+                'data' => $homework,
+                'message' => 'Задание успешно добавлено'
+            ];
+        } catch (Exception $e) {
+            throw $e;
+        }
     }
     
-    array_unshift($existingData, $homework); // Добавляем новое задание в начало массива
-    file_put_contents($homeworkFile, json_encode($existingData, JSON_PRETTY_PRINT));
+    private function validateRequest() {
+        if (!isset($_POST['password']) || !password_verify($_POST['password'], PASSWORD_HASH)) {
+            throw new Exception('Неверный пароль');
+        }
+        
+        if (empty($_POST['title']) || empty($_POST['subject']) || empty($_POST['deadline'])) {
+            throw new Exception('Не все обязательные поля заполнены');
+        }
+    }
     
-    echo json_encode([
-        'success' => true,
-        'data' => $homework,
-        'message' => 'Задание успешно добавлено'
-    ]);
+    private function handleFileUploads() {
+        $files = [];
+        if (!empty($_FILES['files'])) {
+            foreach ($_FILES['files']['tmp_name'] as $key => $tmp_name) {
+                $this->validateFile($_FILES['files'], $key);
+                $files[] = $this->saveFile($_FILES['files'], $key);
+            }
+        }
+        return $files;
+    }
     
+    // ... Additional methods for file handling and data saving
+}
+
+try {
+    $handler = new HomeworkHandler();
+    $result = $handler->handleRequest();
+    echo json_encode($result);
 } catch (Exception $e) {
-    error_log('Error: ' . $e->getMessage());
     http_response_code(400);
     echo json_encode([
         'success' => false,
