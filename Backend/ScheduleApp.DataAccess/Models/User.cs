@@ -4,18 +4,8 @@ using System.ComponentModel.DataAnnotations;
 public class User
 {
     public int Id { get; set; }
-    
-    [Required]
-    [StringLength(50, MinimumLength = 3)]
-    public required string Username { get; set; }
-    
-    [Required]
-    public required string PasswordHash { get; set; }
-    
-    [Required]
-    [RegularExpression("^(Admin|User|Anonymous)$")]
-    public required string Role { get; set; }
-    
+    public string Username { get; set; } = string.Empty;
+    public string PasswordHash { get; set; } = string.Empty;
+    public string Role { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
-    public DateTime? LastLogin { get; set; }
 }

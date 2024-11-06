@@ -1,45 +1,30 @@
 using Microsoft.EntityFrameworkCore;
 using ScheduleApp.DataAccess.Models;
-using BCrypt.Net;
 
 namespace ScheduleApp.DataAccess.Data;
 
 public class ApplicationDbContext : DbContext
 {
-    public DbSet<User> Users { get; set; }
-
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+        : base(options)
     {
     }
 
-    public async Task InitializeUsers()
-    {
-        if (!await Users.AnyAsync())
-        {
-            var users = new List<User>
-            {
-                new User
-                {
-                    Username = "admin",
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin"),
-                    Role = "Admin"
-                },
-                new User
-                {
-                    Username = "user1",
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("user1"),
-                    Role = "User"
-                },
-                new User
-                {
-                    Username = "user2",
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("user2"),
-                    Role = "User"
-                }
-            };
+    public DbSet<User> Users { get; set; } = null!;
 
-            Users.AddRange(users);
-            await SaveChangesAsync();
-        }
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Username).IsRequired();
+            entity.Property(e => e.PasswordHash).IsRequired();
+            entity.Property(e => e.Role).IsRequired();
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+            entity.HasIndex(e => e.Username).IsUnique();
+        });
     }
 } 
