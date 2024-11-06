@@ -70,10 +70,7 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const response = await fetch('homework.php', {
                 method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRF-Token': getCsrfToken()
-                }
+                body: formData
             });
             
             const result = await response.json();
@@ -139,7 +136,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            if (confirm('Вы уверены, что хотите удалить это задание?')) {
+            if (confirm('Вы уверены, что хотите удть это задание?')) {
                 try {
                     const formData = new FormData();
                     formData.append('id', homework.id);
