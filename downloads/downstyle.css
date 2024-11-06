@@ -361,6 +361,7 @@ body.dark-theme .upload-form-container {
     color: var(--text-color);
     font-size: 16px;
     line-height: 1.6;
+    text-align: center;
 }
 
 .links a {
