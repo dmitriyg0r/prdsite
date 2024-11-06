@@ -26,8 +26,8 @@ const showError = (message) => {
     }
 };
 
-// Обновляем URL для API запросов
-const API_BASE_URL = 'https://adminflow.ru:5002';
+// Обновляем константу API_BASE_URL
+const API_BASE_URL = 'https://adminflow.ru/api'; // Убираем порт 5002
 
 // Функция для проверки состояния сервера
 async function checkServerStatus() {
@@ -49,17 +49,16 @@ async function handleAnonymousLogin() {
     try {
         console.log('Attempting anonymous login...');
         
-        const response = await fetch(`${API_BASE_URL}/api/auth/anonymous-login`, {
+        const response = await fetch(`${API_BASE_URL}/auth/anonymous-login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
-            mode: 'cors'
+            credentials: 'include'
         });
 
         console.log('Response status:', response.status);
-        console.log('Response headers:', response.headers);
         
         if (!response.ok) {
             const errorText = await response.text();
