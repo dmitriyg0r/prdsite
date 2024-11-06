@@ -66,6 +66,25 @@ public class AuthController : ControllerBase
         {
             _logger.LogInformation("Login attempt for user: {Username}", request.Username);
 
+            // Проверяем подключение к базе данных
+            if (_context.Database.CanConnect())
+            {
+                _logger.LogInformation("Database connection successful");
+            }
+            else
+            {
+                _logger.LogError("Cannot connect to database");
+                return StatusCode(500, new { success = false, message = "Database connection error" });
+            }
+
+            // Проверяем входные данные
+            if (string.IsNullOrEmpty(request.Username) || string.IsNullOrEmpty(request.Password))
+            {
+                _logger.LogWarning("Invalid login attempt: Username or password is empty");
+                return BadRequest(new { success = false, message = "Username and password are required" });
+            }
+
+            // Ищем пользователя
             var user = await _context.Users
                 .FirstOrDefaultAsync(u => u.Username == request.Username);
 
@@ -75,11 +94,22 @@ public class AuthController : ControllerBase
                 return BadRequest(new { success = false, message = "Invalid username or password" });
             }
 
+            _logger.LogInformation("User found, verifying password");
+
             // Проверка пароля
             if (!BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
             {
                 _logger.LogWarning("Invalid password for user: {Username}", request.Username);
                 return BadRequest(new { success = false, message = "Invalid username or password" });
+            }
+
+            _logger.LogInformation("Password verified, generating token");
+
+            // Проверяем настройки JWT
+            if (string.IsNullOrEmpty(_configuration["Jwt:Key"]))
+            {
+                _logger.LogError("JWT Key is not configured");
+                return StatusCode(500, new { success = false, message = "JWT configuration error" });
             }
 
             var token = GenerateJwtToken(user);
@@ -99,8 +129,8 @@ public class AuthController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error in Login endpoint");
-            return StatusCode(500, new { success = false, message = "Internal server error" });
+            _logger.LogError(ex, "Error in Login endpoint: {Message}", ex.Message);
+            return StatusCode(500, new { success = false, message = "Internal server error", details = ex.Message });
         }
     }
 
