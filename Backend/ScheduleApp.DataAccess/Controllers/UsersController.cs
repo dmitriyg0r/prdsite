@@ -3,12 +3,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ScheduleApp.DataAccess.Data;
 using ScheduleApp.DataAccess.Models;
+using Microsoft.AspNetCore.Cors;
 
 namespace ScheduleApp.DataAccess.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
-    [Authorize(Roles = "Admin")]
+    [Route("users")]
+    [EnableCors("AllowAll")]
     public class UsersController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -21,33 +22,27 @@ namespace ScheduleApp.DataAccess.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
+        public async Task<IActionResult> GetUsers()
         {
-            _logger.LogInformation("Getting all users");
             try
             {
                 var users = await _context.Users
-                    .Select(u => new {
+                    .Select(u => new
+                    {
                         u.Id,
                         u.Username,
                         u.Role,
-                        u.LastLogin
+                        u.CreatedAt,
+                        LastLogin = u.LastLogin ?? u.CreatedAt
                     })
                     .ToListAsync();
 
-                _logger.LogInformation($"Found {users.Count()} users");
-                
-                foreach (var user in users)
-                {
-                    _logger.LogInformation($"User: {user.Username}, Role: {user.Role}");
-                }
-
-                return Ok(users);
+                return Ok(new { success = true, data = users });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error getting users");
-                return StatusCode(500, new { message = "Internal server error" });
+                return StatusCode(500, new { success = false, message = "Internal server error" });
             }
         }
 
