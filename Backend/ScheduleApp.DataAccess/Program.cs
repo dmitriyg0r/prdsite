@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Microsoft.OpenApi.Models;
 
 namespace ScheduleApp.DataAccess;
 
@@ -17,7 +18,45 @@ class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        // Настройка CORS до всех остальных сервисов
+        // Add services to the container.
+        builder.Services.AddControllers();
+        builder.Services.AddEndpointsApiExplorer();
+        
+        // Настройка Swagger
+        builder.Services.AddSwaggerGen(c =>
+        {
+            c.SwaggerDoc("v1", new OpenApiInfo { 
+                Title = "ScheduleApp API", 
+                Version = "v1" 
+            });
+            
+            // Настройка авторизации в Swagger
+            c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                Description = "JWT Authorization header using the Bearer scheme.",
+                Name = "Authorization",
+                In = ParameterLocation.Header,
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer"
+            });
+
+            c.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        }
+                    },
+                    Array.Empty<string>()
+                }
+            });
+        });
+
+        // Настройка CORS
         builder.Services.AddCors(options =>
         {
             options.AddPolicy("AllowAll", policy =>
@@ -26,66 +65,50 @@ class Program
                     .WithOrigins("https://adminflow.ru")
                     .AllowAnyMethod()
                     .AllowAnyHeader()
-                    .AllowCredentials()
-                    .SetIsOriginAllowed(_ => true);
+                    .AllowCredentials();
             });
         });
 
-        // Остальные сервисы
-        builder.Services.AddControllers();
-        builder.Services.AddEndpointsApiExplorer();
-
-        builder.Services.AddLogging(logging =>
-        {
-            logging.AddConsole();
-            logging.AddDebug();
-            logging.SetMinimumLevel(LogLevel.Debug);
-        });
-
+        // Добавляем DbContext
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseSqlite("Data Source=schedule.db"));
-
-        // Add JWT authentication
-        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddJwtBearer(options =>
-            {
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    ValidIssuer = builder.Configuration["Jwt:Issuer"],
-                    ValidAudience = builder.Configuration["Jwt:Audience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? "your-default-key-here-min-16-chars"))
-                };
-            });
+            options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
         var app = builder.Build();
 
-        // Вклчаем CORS до всех остальных middleware
-        app.UseCors("AllowAll");
+        // Инициализация базы данных
+        try
+        {
+            using (var scope = app.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+                var context = services.GetRequiredService<ApplicationDbContext>();
+                var logger = services.GetRequiredService<ILogger<Program>>();
+
+                logger.LogInformation("Attempting to migrate database...");
+                context.Database.Migrate();
+                logger.LogInformation("Database migration completed");
+            }
+        }
+        catch (Exception ex)
+        {
+            var logger = app.Services.GetRequiredService<ILogger<Program>>();
+            logger.LogError(ex, "An error occurred while migrating the database");
+            // Продолжаем работу даже при ошибке миграции
+        }
+
+        // Configure the HTTP request pipeline.
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI();
+        }
 
         app.UseRouting();
-        app.UseAuthentication();
-        app.UseAuthorization();
+        app.UseCors("AllowAll");
+
         app.MapControllers();
 
-        app.MapGet("/api/users", async (ApplicationDbContext db) =>
-        {
-            var users = await db.Users.ToListAsync();
-            return Results.Ok(users);
-        });
-
-        app.MapGet("/api/users/{id}", async (int id, ApplicationDbContext db) =>
-        {
-            var user = await db.Users.FindAsync(id);
-            if (user == null)
-                return Results.NotFound();
-            return Results.Ok(user);
-        });
-
+        // Логируем все зарегистрированные маршруты
         var logger = app.Services.GetRequiredService<ILogger<Program>>();
         var endpoints = app.Services.GetRequiredService<IEnumerable<EndpointDataSource>>()
             .SelectMany(source => source.Endpoints);
@@ -94,46 +117,6 @@ class Program
             logger.LogInformation("Registered endpoint: {Endpoint}", endpoint.DisplayName);
         }
 
-        if (app.Environment.IsDevelopment())
-        {
-            app.UseDeveloperExceptionPage();
-        }
-        else
-        {
-            app.UseExceptionHandler("/Error");
-        }
-
-        // Создаем асинхронную функцию для инициализации базы данных
-        async Task InitializeDatabase()
-        {
-            using (var scope = app.Services.CreateScope())
-            {
-                var services = scope.ServiceProvider;
-                try
-                {
-                    var context = services.GetRequiredService<ApplicationDbContext>();
-                    
-                    // Удаляем базу если она существует и создаем заново
-                    await context.Database.EnsureDeletedAsync();
-                    await context.Database.EnsureCreatedAsync();
-                    
-                    // Применяем миграции
-                    await context.Database.MigrateAsync();
-                    
-                    // Инициализируем пользователей
-                    await context.InitializeUsers();
-                }
-                catch (Exception ex)
-                {
-                    var logger = services.GetRequiredService<ILogger<Program>>();
-                    logger.LogError(ex, "An error occurred while initializing the database.");
-                }
-            }
-        }
-
-        // Вызываем инициализацию
-        await InitializeDatabase();
-
-        await app.RunAsync();
+        app.Run();
     }
 }
