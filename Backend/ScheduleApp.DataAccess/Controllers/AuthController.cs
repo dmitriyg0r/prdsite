@@ -98,11 +98,21 @@ public class AuthController : ControllerBase
         {
             _logger.LogInformation("Anonymous login attempt");
             
+            // Создаем анонимного пользователя со всеми required полями
+            var anonymousUser = new User { 
+                Username = "anonymous", 
+                Role = "Anonymous", 
+                Id = 0,
+                PasswordHash = "anonymous", // Добавляем required поле
+                CreatedAt = DateTime.UtcNow // Если это поле тоже required
+            };
+
             var response = new { 
                 success = true,
                 data = new {
-                    username = "anonymous",
-                    role = "Anonymous"
+                    username = anonymousUser.Username,
+                    role = anonymousUser.Role,
+                    token = GenerateJwtToken(anonymousUser)
                 }
             };
             
