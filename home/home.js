@@ -49,11 +49,19 @@ document.addEventListener('DOMContentLoaded', function() {
         return errors;
     }
 
-    // Обработка отправки ормы
+    // Обработка отправки формы
     uploadForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
+        const password = prompt('Введите пароль для добавления задания:');
+        if (!password) {
+            showNotification('Необходимо ввести пароль', 'error');
+            return;
+        }
+        
         const formData = new FormData(uploadForm);
+        formData.append('password', password);
+        
         const errors = validateForm(formData);
         
         if (Object.keys(errors).length > 0) {
@@ -63,17 +71,13 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Show loading state
         const submitButton = uploadForm.querySelector('button[type="submit"]');
         setLoadingState(submitButton, true);
         
         try {
             const response = await fetch('homework.php', {
                 method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRF-Token': getCsrfToken()
-                }
+                body: formData
             });
             
             const result = await response.json();
@@ -82,6 +86,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 addHomeworkToFeed(result.data);
                 resetForm();
                 showNotification('Задание успешно добавлено!', 'success');
+                uploadFormContainer.classList.remove('active'); // Скрываем форму после успешной отправки
             } else {
                 throw new Error(result.message);
             }
@@ -139,7 +144,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            if (confirm('Вы уверены, что хотите удалить это задание?')) {
+            if (confirm('Вы уверены, что хотите удть это задание?')) {
                 try {
                     const formData = new FormData();
                     formData.append('id', homework.id);
