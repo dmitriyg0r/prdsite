@@ -69,8 +69,12 @@ async function handleAnonymousLogin() {
         const data = await response.json();
         console.log('Login successful:', data);
         
-        localStorage.setItem('user', JSON.stringify(data));
-        showProfile(data);
+        if (data.success) {
+            localStorage.setItem('user', JSON.stringify(data.data));
+            showProfile(data.data);
+        } else {
+            throw new Error(data.message || 'Unknown error');
+        }
     } catch (error) {
         console.error('Anonymous login error:', error);
         showError(`Ошибка анонимного входа: ${error.message}`);
@@ -193,9 +197,8 @@ function handleLogout() {
 // Функция для проверки доступности сервера
 async function checkServerAvailability() {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/health`, {
+        const response = await fetch(`${API_BASE_URL}/health`, {
             method: 'GET',
-            mode: 'cors',
             credentials: 'include'
         });
         return response.ok;
