@@ -49,7 +49,7 @@ class HomeworkHandler {
     
     private function handleFileUploads() {
         $files = [];
-        if (!empty($_FILES['files'])) {
+        if (!empty($_FILES['files']) && $_FILES['files']['error'][0] !== UPLOAD_ERR_NO_FILE) {
             foreach ($_FILES['files']['tmp_name'] as $key => $tmp_name) {
                 $this->validateFile($_FILES['files'], $key);
                 $files[] = $this->saveFile($_FILES['files'], $key);
@@ -83,6 +83,10 @@ class HomeworkHandler {
     }
     
     private function validateFile($files, $key) {
+        if ($files['error'][$key] === UPLOAD_ERR_NO_FILE) {
+            return; // Пропускаем проверку если файл не был загружен
+        }
+        
         if ($files['error'][$key] !== UPLOAD_ERR_OK) {
             throw new Exception('Ошибка при загрузке файла');
         }

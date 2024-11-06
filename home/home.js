@@ -188,7 +188,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         document.body.appendChild(notification);
         
-        // Добавляем класс для анимации появления
+        // Добавляем класс для анимации п��вления
         setTimeout(() => notification.classList.add('show'), 10);
         
         // Удаляем уведомление через 3 секунды
@@ -263,5 +263,21 @@ document.addEventListener('DOMContentLoaded', function() {
             button.textContent = originalText;
             button.removeAttribute('data-original-text');
         }
+    }
+
+    function resetForm() {
+        // Очищаем все поля формы
+        uploadForm.reset();
+        
+        // Очищаем отображение имен файлов
+        fileNameDisplay.textContent = '';
+        
+        // Убираем все сообщения об ошибках, если они есть
+        const errorMessages = uploadForm.querySelectorAll('.error-message');
+        errorMessages.forEach(error => error.remove());
+        
+        // Убираем красные границы с полей, если они есть
+        const inputs = uploadForm.querySelectorAll('input, textarea, select');
+        inputs.forEach(input => input.classList.remove('error'));
     }
 });
