@@ -58,7 +58,58 @@ class HomeworkHandler {
         return $files;
     }
     
-    // ... Additional methods for file handling and data saving
+    private function createHomeworkEntry($files) {
+        return [
+            'id' => uniqid(),
+            'title' => htmlspecialchars($_POST['title']),
+            'description' => htmlspecialchars($_POST['description']),
+            'subject' => htmlspecialchars($_POST['subject']),
+            'deadline' => htmlspecialchars($_POST['deadline']),
+            'files' => $files,
+            'created_at' => date('Y-m-d H:i:s')
+        ];
+    }
+    
+    private function saveHomework($homework) {
+        $homeworkFile = $this->dataDir . '/homework.json';
+        $existingHomework = [];
+        
+        if (file_exists($homeworkFile)) {
+            $existingHomework = json_decode(file_get_contents($homeworkFile), true) ?? [];
+        }
+        
+        array_unshift($existingHomework, $homework);
+        file_put_contents($homeworkFile, json_encode($existingHomework, JSON_PRETTY_PRINT));
+    }
+    
+    private function validateFile($files, $key) {
+        if ($files['error'][$key] !== UPLOAD_ERR_OK) {
+            throw new Exception('Ошибка при загрузке файла');
+        }
+
+        $fileType = mime_content_type($files['tmp_name'][$key]);
+        if (!in_array($fileType, ALLOWED_FILE_TYPES)) {
+            throw new Exception('Недопустимый тип файла');
+        }
+
+        if ($files['size'][$key] > MAX_FILE_SIZE) {
+            throw new Exception('Файл слишком большой');
+        }
+    }
+    
+    private function saveFile($files, $key) {
+        $fileName = uniqid() . '_' . basename($files['name'][$key]);
+        $filePath = $this->uploadsDir . '/' . $fileName;
+        
+        if (!move_uploaded_file($files['tmp_name'][$key], $filePath)) {
+            throw new Exception('Ошибка при сохранении файла');
+        }
+        
+        return [
+            'name' => $files['name'][$key],
+            'url' => 'uploads/' . $fileName
+        ];
+    }
 }
 
 try {

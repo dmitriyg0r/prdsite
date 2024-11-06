@@ -207,16 +207,19 @@ document.addEventListener('DOMContentLoaded', function() {
             const homework = await response.json();
             
             if (homework.length === 0) {
-                homeworkFeed.innerHTML = '<div class="no-homework">Нет доступных заданий</div>';
+                homeworkFeed.innerHTML = `
+                    <div class="no-homework">
+                        <i class="fas fa-tasks"></i>
+                        <p>Нет активных заданий</p>
+                    </div>
+                `;
                 return;
             }
             
-            homework.forEach(item => {
-                addHomeworkToFeed(item);
-            });
+            homework.forEach(item => addHomeworkToFeed(item));
         } catch (error) {
-            console.error('Error loading homework:', error);
-            showNotification('Ошибка при загрузке заданий', 'error');
+            console.error('Error:', error);
+            showNotification(error.message, 'error');
         }
     }
 
