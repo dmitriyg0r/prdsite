@@ -26,8 +26,8 @@ const showError = (message) => {
     }
 };
 
-// Обновляем URL для API запросов
-const API_BASE_URL = 'https://adminflow.ru:5002';
+// Обновляем константу API_BASE_URL
+const API_BASE_URL = 'https://adminflow.ru/api'; // Убираем порт 5002
 
 // Функция для проверки состояния сервера
 async function checkServerStatus() {
@@ -49,17 +49,16 @@ async function handleAnonymousLogin() {
     try {
         console.log('Attempting anonymous login...');
         
-        const response = await fetch(`${API_BASE_URL}/api/auth/anonymous-login`, {
+        const response = await fetch(`${API_BASE_URL}/auth/anonymous-login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
-            mode: 'cors'
+            credentials: 'include'
         });
 
         console.log('Response status:', response.status);
-        console.log('Response headers:', response.headers);
         
         if (!response.ok) {
             const errorText = await response.text();
@@ -191,14 +190,37 @@ function handleLogout() {
     document.getElementById('login-container').style.display = 'block';
 }
 
+// Функция для проверки доступности сервера
+async function checkServerAvailability() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/health`, {
+            method: 'GET',
+            mode: 'cors',
+            credentials: 'include'
+        });
+        return response.ok;
+    } catch (error) {
+        console.error('Server check failed:', error);
+        return false;
+    }
+}
+
+// Обновляем функцию handleLogin
 async function handleLogin(event) {
     event.preventDefault();
     
     try {
+        // Проверяем доступность сервера
+        const isServerAvailable = await checkServerAvailability();
+        if (!isServerAvailable) {
+            showError('Сервер недоступен. Пожалуйста, попробуйте позже.');
+            return;
+        }
+
         console.log('Attempting login...');
         const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
             method: 'POST',
-            mode: 'cors',
+            credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
@@ -217,13 +239,12 @@ async function handleLogin(event) {
             localStorage.setItem('user', JSON.stringify(data));
             showProfile(data);
         } else {
-            console.error('Login failed:', response.status);
             const error = await response.text();
             showError('Ошибка входа: ' + (error || response.statusText));
         }
     } catch (error) {
         console.error('Login error:', error);
-        showError('Ошибка сети. Проверьте подключение.');
+        showError('Ошибка сети. Проверьте подключение к серверу.');
     }
 }
 

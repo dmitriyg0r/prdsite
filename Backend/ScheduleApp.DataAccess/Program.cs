@@ -23,9 +23,11 @@ class Program
             options.AddPolicy("AllowAll", policy =>
             {
                 policy
-                    .AllowAnyOrigin() // Разрешаем все источники
+                    .WithOrigins("https://adminflow.ru")
                     .AllowAnyMethod()
-                    .AllowAnyHeader();
+                    .AllowAnyHeader()
+                    .AllowCredentials()
+                    .SetIsOriginAllowed(_ => true);
             });
         });
 
@@ -62,7 +64,7 @@ class Program
 
         var app = builder.Build();
 
-        // Вкл��чаем CORS до всех остальных middleware
+        // Вклчаем CORS до всех остальных middleware
         app.UseCors("AllowAll");
 
         app.UseRouting();
