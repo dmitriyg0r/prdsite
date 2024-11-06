@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Cors;
 namespace ScheduleApp.DataAccess.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("auth")]
 [EnableCors("AllowAll")]
 public class AuthController : ControllerBase
 {
@@ -98,21 +98,25 @@ public class AuthController : ControllerBase
         {
             _logger.LogInformation("Anonymous login attempt");
             
-            // Создаем анонимного пользователя со всеми required полями
             var anonymousUser = new User { 
                 Username = "anonymous", 
                 Role = "Anonymous", 
                 Id = 0,
-                PasswordHash = "anonymous", // Добавляем required поле
-                CreatedAt = DateTime.UtcNow // Если это поле тоже required
+                PasswordHash = "anonymous",
+                CreatedAt = DateTime.UtcNow
             };
+
+            _logger.LogInformation("Created anonymous user");
+
+            var token = GenerateJwtToken(anonymousUser);
+            _logger.LogInformation("Generated token for anonymous user");
 
             var response = new { 
                 success = true,
                 data = new {
                     username = anonymousUser.Username,
                     role = anonymousUser.Role,
-                    token = GenerateJwtToken(anonymousUser)
+                    token = token
                 }
             };
             
@@ -121,7 +125,7 @@ public class AuthController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error in AnonymousLogin");
-            return StatusCode(500, new { success = false, message = "Internal server error" });
+            return StatusCode(500, new { success = false, message = ex.Message });
         }
     }
 
