@@ -18,77 +18,13 @@ namespace ScheduleApp.DataAccess.Controllers;
 [EnableCors("AllowAll")]
 public class AuthController : ControllerBase
 {
-    private readonly ApplicationDbContext _db;
     private readonly ILogger<AuthController> _logger;
     private readonly IConfiguration _configuration;
 
-    public AuthController(ApplicationDbContext db, ILogger<AuthController> logger, IConfiguration configuration)
+    public AuthController(ILogger<AuthController> logger, IConfiguration configuration)
     {
-        _db = db;
         _logger = logger;
         _configuration = configuration;
-    }
-
-    private string GenerateJwtToken(User user)
-    {
-        var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.Name, user.Username),
-            new Claim(ClaimTypes.Role, user.Role),
-            new Claim("UserId", user.Id.ToString())
-        };
-
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? "your-default-key-here-min-16-chars"));
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-        var token = new JwtSecurityToken(
-            issuer: _configuration["Jwt:Issuer"],
-            audience: _configuration["Jwt:Audience"],
-            claims: claims,
-            expires: DateTime.Now.AddDays(1),
-            signingCredentials: creds
-        );
-
-        return new JwtSecurityTokenHandler().WriteToken(token);
-    }
-
-    [HttpPost("login")]
-    public IActionResult Login([FromBody] LoginRequest request)
-    {
-        if (string.IsNullOrEmpty(request.Username) || string.IsNullOrEmpty(request.Password))
-        {
-            return BadRequest(new { message = "Логин и пароль обязательны" });
-        }
-        
-        var user = _db.Users.FirstOrDefault(u => u.Username == request.Username);
-        
-        if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
-        {
-            return Unauthorized(new { message = "Неверный логин или пароль" });
-        }
-
-        // Генерируем JWT токен
-        var token = GenerateJwtToken(user);
-
-        // Обновляем время последнего входа
-        user.LastLogin = DateTime.UtcNow;
-        _db.SaveChanges();
-
-        return Ok(new { 
-            username = user.Username,
-            role = user.Role,
-            token = token
-        });
-    }
-
-    [HttpGet("routes")]
-    public IActionResult GetRoutes()
-    {
-        var endpoints = HttpContext.RequestServices
-            .GetRequiredService<IEnumerable<EndpointDataSource>>()
-            .SelectMany(source => source.Endpoints);
-        
-        return Ok(endpoints.Select(e => e.DisplayName));
     }
 
     [HttpPost("anonymous-login")]
@@ -96,49 +32,78 @@ public class AuthController : ControllerBase
     {
         try 
         {
-            _logger.LogInformation("Anonymous login attempt");
+            _logger.LogInformation("Anonymous login attempt started");
             
-            var anonymousUser = new User { 
-                Username = "anonymous", 
-                Role = "Anonymous", 
+            // Создаем анонимного пользователя
+            var anonymousUser = new User 
+            { 
                 Id = 0,
+                Username = "anonymous",
+                Role = "Anonymous",
                 PasswordHash = "anonymous",
                 CreatedAt = DateTime.UtcNow
             };
 
-            _logger.LogInformation("Created anonymous user");
+            _logger.LogInformation("Created anonymous user object");
 
-            var token = GenerateJwtToken(anonymousUser);
-            _logger.LogInformation("Generated token for anonymous user");
+            // Генерируем JWT токен
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"] ?? 
+                throw new InvalidOperationException("JWT Key is not configured"));
+            
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new[]
+                {
+                    new Claim(ClaimTypes.Name, anonymousUser.Username),
+                    new Claim(ClaimTypes.Role, anonymousUser.Role),
+                    new Claim("UserId", anonymousUser.Id.ToString())
+                }),
+                Expires = DateTime.UtcNow.AddDays(7),
+                SigningCredentials = new SigningCredentials(
+                    new SymmetricSecurityKey(key),
+                    SecurityAlgorithms.HmacSha256Signature),
+                Issuer = _configuration["Jwt:Issuer"],
+                Audience = _configuration["Jwt:Audience"]
+            };
 
-            var response = new { 
+            _logger.LogInformation("Created token descriptor");
+
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            var tokenString = tokenHandler.WriteToken(token);
+
+            _logger.LogInformation("Generated JWT token");
+
+            var response = new 
+            { 
                 success = true,
-                data = new {
+                data = new 
+                {
                     username = anonymousUser.Username,
                     role = anonymousUser.Role,
-                    token = token
+                    token = tokenString
                 }
             };
-            
+
+            _logger.LogInformation("Returning successful response");
             return Ok(response);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error in AnonymousLogin");
-            return StatusCode(500, new { success = false, message = ex.Message });
+            _logger.LogError(ex, "Error in AnonymousLogin: {Message}", ex.Message);
+            return StatusCode(500, new { 
+                success = false, 
+                message = "Internal server error", 
+                details = ex.Message 
+            });
         }
     }
 
+    // Тестовый метод
     [HttpGet("test")]
     public IActionResult Test()
     {
-        return Ok(new { message = "API is working" });
-    }
-
-    [HttpOptions]
-    public IActionResult Options()
-    {
-        return Ok();
+        return Ok(new { message = "Auth controller is working" });
     }
 }
 
