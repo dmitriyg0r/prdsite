@@ -49,11 +49,19 @@ document.addEventListener('DOMContentLoaded', function() {
         return errors;
     }
 
-    // Обработка отправки ормы
+    // Обработка отправки формы
     uploadForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
+        const password = prompt('Введите пароль для добавления задания:');
+        if (!password) {
+            showNotification('Необходимо ввести пароль', 'error');
+            return;
+        }
+        
         const formData = new FormData(uploadForm);
+        formData.append('password', password);
+        
         const errors = validateForm(formData);
         
         if (Object.keys(errors).length > 0) {
@@ -63,7 +71,6 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Show loading state
         const submitButton = uploadForm.querySelector('button[type="submit"]');
         setLoadingState(submitButton, true);
         
