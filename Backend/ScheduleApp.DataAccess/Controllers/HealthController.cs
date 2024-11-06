@@ -19,8 +19,16 @@ namespace ScheduleApp.DataAccess.Controllers
         [HttpGet]
         public IActionResult Check()
         {
-            _logger.LogInformation("Health check requested");
-            return Ok(new { status = "healthy" });
+            try
+            {
+                _logger.LogInformation("Health check requested");
+                return Ok(new { status = "healthy", timestamp = DateTime.UtcNow });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in health check");
+                return StatusCode(500, new { status = "error", message = ex.Message });
+            }
         }
     }
 } 
