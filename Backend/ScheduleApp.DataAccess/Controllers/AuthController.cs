@@ -10,6 +10,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Cors;
+using Microsoft.EntityFrameworkCore;
 
 namespace ScheduleApp.DataAccess.Controllers;
 
@@ -20,11 +21,87 @@ public class AuthController : ControllerBase
 {
     private readonly ILogger<AuthController> _logger;
     private readonly IConfiguration _configuration;
+    private readonly ApplicationDbContext _context;
 
-    public AuthController(ILogger<AuthController> logger, IConfiguration configuration)
+    public AuthController(
+        ILogger<AuthController> logger,
+        IConfiguration configuration,
+        ApplicationDbContext context)
     {
         _logger = logger;
         _configuration = configuration;
+        _context = context;
+    }
+
+    private string GenerateJwtToken(User user)
+    {
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"] ?? 
+            throw new InvalidOperationException("JWT Key is not configured"));
+
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity(new[]
+            {
+                new Claim(ClaimTypes.Name, user.Username),
+                new Claim(ClaimTypes.Role, user.Role),
+                new Claim("UserId", user.Id.ToString())
+            }),
+            Expires = DateTime.UtcNow.AddDays(7),
+            SigningCredentials = new SigningCredentials(
+                new SymmetricSecurityKey(key),
+                SecurityAlgorithms.HmacSha256Signature),
+            Issuer = _configuration["Jwt:Issuer"],
+            Audience = _configuration["Jwt:Audience"]
+        };
+
+        var token = tokenHandler.CreateToken(tokenDescriptor);
+        return tokenHandler.WriteToken(token);
+    }
+
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] LoginRequest request)
+    {
+        try
+        {
+            _logger.LogInformation("Login attempt for user: {Username}", request.Username);
+
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Username == request.Username);
+
+            if (user == null)
+            {
+                _logger.LogWarning("User not found: {Username}", request.Username);
+                return BadRequest(new { success = false, message = "Invalid username or password" });
+            }
+
+            // Проверка пароля
+            if (!BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
+            {
+                _logger.LogWarning("Invalid password for user: {Username}", request.Username);
+                return BadRequest(new { success = false, message = "Invalid username or password" });
+            }
+
+            var token = GenerateJwtToken(user);
+
+            _logger.LogInformation("User logged in successfully: {Username}", request.Username);
+
+            return Ok(new
+            {
+                success = true,
+                data = new
+                {
+                    username = user.Username,
+                    role = user.Role,
+                    token = token
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error in Login endpoint");
+            return StatusCode(500, new { success = false, message = "Internal server error" });
+        }
     }
 
     [HttpPost("anonymous-login")]
@@ -109,6 +186,6 @@ public class AuthController : ControllerBase
 
 public class LoginRequest
 {
-    public required string Username { get; set; }
-    public required string Password { get; set; }
+    public string Username { get; set; }
+    public string Password { get; set; }
 } 

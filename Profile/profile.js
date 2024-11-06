@@ -211,43 +211,40 @@ async function checkServerAvailability() {
 // Обновляем функцию handleLogin
 async function handleLogin(event) {
     event.preventDefault();
-    
-    try {
-        // Проверяем доступность сервера
-        const isServerAvailable = await checkServerAvailability();
-        if (!isServerAvailable) {
-            showError('Сервер недоступен. Пожалуйста, попробуйте позже.');
-            return;
-        }
+    console.log('Attempting login...');
 
-        console.log('Attempting login...');
-        const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/login`, {
             method: 'POST',
-            credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
-            body: JSON.stringify({ 
-                username: document.getElementById('username').value,
-                password: document.getElementById('password').value 
-            })
+            body: JSON.stringify({ username, password }),
+            credentials: 'include'
         });
 
         console.log('Response status:', response.status);
 
         if (response.ok) {
             const data = await response.json();
-            console.log('Login successful:', data);
-            localStorage.setItem('user', JSON.stringify(data));
-            showProfile(data);
+            if (data.success) {
+                localStorage.setItem('user', JSON.stringify(data.data));
+                showProfile(data.data);
+            } else {
+                showError(data.message || 'Login failed');
+            }
         } else {
-            const error = await response.text();
-            showError('Ошибка входа: ' + (error || response.statusText));
+            const errorText = await response.text();
+            console.log('Error response:', errorText);
+            showError(`Login failed: ${response.status}`);
         }
     } catch (error) {
         console.error('Login error:', error);
-        showError('Ошибка сети. Проверьте подключение к серверу.');
+        showError(`Login error: ${error.message}`);
     }
 }
 
