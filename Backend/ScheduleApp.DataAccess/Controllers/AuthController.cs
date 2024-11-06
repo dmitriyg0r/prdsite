@@ -61,22 +61,11 @@ namespace ScheduleApp.DataAccess.Controllers
             try
             {
                 _logger.LogInformation("Login attempt for user: {Username}", request.Username);
-
-                if (_context.Database.CanConnect())
-                {
-                    _logger.LogInformation("Database connection successful");
-                }
-                else
-                {
-                    _logger.LogError("Cannot connect to database");
-                    return StatusCode(500, new { success = false, message = "Database connection error" });
-                }
-
-                if (string.IsNullOrEmpty(request.Username) || string.IsNullOrEmpty(request.Password))
-                {
-                    _logger.LogWarning("Invalid login attempt: Username or password is empty");
-                    return BadRequest(new { success = false, message = "Username and password are required" });
-                }
+                
+                // Проверяем входные данные
+                _logger.LogInformation("Request data - Username: {Username}, Password length: {PasswordLength}", 
+                    request.Username, 
+                    request.Password?.Length ?? 0);
 
                 var user = await _context.Users
                     .FirstOrDefaultAsync(u => u.Username == request.Username);
@@ -87,25 +76,21 @@ namespace ScheduleApp.DataAccess.Controllers
                     return BadRequest(new { success = false, message = "Invalid username or password" });
                 }
 
-                _logger.LogInformation("User found, verifying password");
+                _logger.LogInformation("Found user: {Username}, Role: {Role}", user.Username, user.Role);
+                _logger.LogInformation("Stored password hash: {PasswordHash}", user.PasswordHash);
 
-                if (!BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
+                // Проверка пароля
+                bool isPasswordValid = BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash);
+                _logger.LogInformation("Password verification result: {Result}", isPasswordValid);
+
+                if (!isPasswordValid)
                 {
                     _logger.LogWarning("Invalid password for user: {Username}", request.Username);
                     return BadRequest(new { success = false, message = "Invalid username or password" });
                 }
 
-                _logger.LogInformation("Password verified, generating token");
-
-                if (string.IsNullOrEmpty(_configuration["Jwt:Key"]))
-                {
-                    _logger.LogError("JWT Key is not configured");
-                    return StatusCode(500, new { success = false, message = "JWT configuration error" });
-                }
-
                 var token = GenerateJwtToken(user);
-
-                _logger.LogInformation("User logged in successfully: {Username}", request.Username);
+                _logger.LogInformation("Generated token for user: {Username}", user.Username);
 
                 return Ok(new
                 {
