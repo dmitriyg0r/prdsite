@@ -248,11 +248,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function setLoadingState(button, isLoading) {
         if (isLoading) {
-            // Сохраняем оригинальный текст кнопки
+            // Сохраняем оригинальный текст кнопки и отключаем её
             button.disabled = true;
             const originalText = button.textContent;
             button.setAttribute('data-original-text', originalText);
-            // Показываем спиннер и текст "Загрузка..."
+            // Показываем спиннер загрузки
             button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Загрузка...';
         } else {
             // Возвращаем кнопку в исходное состояние
