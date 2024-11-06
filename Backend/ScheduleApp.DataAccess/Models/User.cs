@@ -1,12 +1,14 @@
-namespace ScheduleApp.DataAccess.Models;
-using System.ComponentModel.DataAnnotations;
+using System;
 
-public class User
+namespace ScheduleApp.DataAccess.Models
 {
-    public int Id { get; set; }
-    public string Username { get; set; } = string.Empty;
-    public string PasswordHash { get; set; } = string.Empty;
-    public string Role { get; set; } = string.Empty;
-    public DateTime CreatedAt { get; set; }
-    public DateTime? LastLogin { get; set; }
+    public class User
+    {
+        public int Id { get; set; }
+        public string Username { get; set; } = string.Empty;
+        public string PasswordHash { get; set; } = string.Empty;
+        public string Role { get; set; } = string.Empty;
+        public DateTime CreatedAt { get; set; }
+        public DateTime? LastLogin { get; set; }
+    }
 }
