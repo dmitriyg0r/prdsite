@@ -245,4 +245,21 @@ document.addEventListener('DOMContentLoaded', function() {
             refreshHomeworkFeed();
         });
     }
+
+    function setLoadingState(button, isLoading) {
+        if (isLoading) {
+            // Сохраняем оригинальный текст кнопки
+            button.disabled = true;
+            const originalText = button.textContent;
+            button.setAttribute('data-original-text', originalText);
+            // Показываем спиннер и текст "Загрузка..."
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Загрузка...';
+        } else {
+            // Возвращаем кнопку в исходное состояние
+            button.disabled = false;
+            const originalText = button.getAttribute('data-original-text');
+            button.textContent = originalText;
+            button.removeAttribute('data-original-text');
+        }
+    }
 });
