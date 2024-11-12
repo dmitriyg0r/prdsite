@@ -58,35 +58,33 @@ document.addEventListener('DOMContentLoaded', () => {
 //document.addEventListener('DOMContentLoaded', checkAuth);
 
 // Мобильное меню
-document.addEventListener('DOMContentLoaded', function() {
-    const menuToggle = document.querySelector('.mobile-menu-toggle');
-    const sidebar = document.querySelector('.sidebar');
-    const overlay = document.createElement('div');
-    overlay.className = 'overlay';
-    document.body.appendChild(overlay);
+const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+const mobileMenu = document.querySelector('.mobile-menu');
 
-    menuToggle.addEventListener('click', function() {
-        menuToggle.classList.toggle('active');
-        sidebar.classList.toggle('active');
-        overlay.classList.toggle('active');
-        document.body.style.overflow = sidebar.classList.contains('active') ? 'hidden' : '';
-    });
+mobileMenuToggle.addEventListener('click', () => {
+    mobileMenuToggle.classList.toggle('active');
+    mobileMenu.classList.toggle('active');
+    document.body.classList.toggle('menu-open');
+});
 
-    overlay.addEventListener('click', function() {
-        menuToggle.classList.remove('active');
-        sidebar.classList.remove('active');
-        overlay.classList.remove('active');
-        document.body.style.overflow = '';
+// Закрытие меню при клике на ссылку
+const mobileMenuLinks = document.querySelectorAll('.mobile-menu .sidebar-link');
+mobileMenuLinks.forEach(link => {
+    link.addEventListener('click', () => {
+        mobileMenuToggle.classList.remove('active');
+        mobileMenu.classList.remove('active');
+        document.body.classList.remove('menu-open');
     });
+});
 
-    // Закрытие меню при клике на ссылку
-    const sidebarLinks = document.querySelectorAll('.sidebar-link');
-    sidebarLinks.forEach(link => {
-        link.addEventListener('click', function() {
-            menuToggle.classList.remove('active');
-            sidebar.classList.remove('active');
-            overlay.classList.remove('active');
-            document.body.style.overflow = '';
-        });
-    });
+// Синхронизация переключателей темы
+const desktopThemeToggle = document.getElementById('theme-toggle');
+const mobileThemeToggle = document.getElementById('mobile-theme-toggle');
+
+desktopThemeToggle.addEventListener('change', () => {
+    mobileThemeToggle.checked = desktopThemeToggle.checked;
+});
+
+mobileThemeToggle.addEventListener('change', () => {
+    desktopThemeToggle.checked = mobileThemeToggle.checked;
 });
