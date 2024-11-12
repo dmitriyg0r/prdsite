@@ -380,3 +380,79 @@
         padding-top: 60px;
     }
 }
+
+/* По умолчанию скрываем все мобильные элементы */
+.mobile-menu-toggle,
+.mobile-menu {
+    display: none;
+}
+
+/* Стили для мобильных устройств */
+@media (max-width: 768px) and (hover: none) and (pointer: coarse), 
+       (max-width: 768px) and (-webkit-min-device-pixel-ratio: 2) {
+    /* Скрываем десктопное боковое меню */
+    .sidebar {
+        display: none;
+    }
+
+    /* Показываем кнопку мобильного меню */
+    .mobile-menu-toggle {
+        display: block;
+        position: fixed;
+        top: 15px;
+        right: 15px;
+        z-index: 1002;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 10px;
+        width: 40px;
+        height: 40px;
+    }
+
+    /* Стили для мобильного меню */
+    .mobile-menu {
+        display: none; /* По умолчанию скрыто */
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: var(--sidebar-background);
+        z-index: 1001;
+        padding: 60px 20px 20px;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Активное мобильное меню */
+    .mobile-menu.active {
+        display: block;
+    }
+
+    /* Основной контент */
+    main {
+        margin-left: 0;
+        padding-top: 60px;
+    }
+}
+
+/* Для планшетов в альбомной ориентации оставляем десктопное меню */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .sidebar {
+        display: block;
+    }
+
+    .mobile-menu-toggle,
+    .mobile-menu {
+        display: none !important;
+    }
+}
+
+/* Для устройств без сенсорного экрана (десктопы) всегда скрываем мобильное меню */
+@media (hover: hover) and (pointer: fine) {
+    .mobile-menu-toggle,
+    .mobile-menu {
+        display: none !important;
+    }
+}

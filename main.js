@@ -57,24 +57,44 @@ document.addEventListener('DOMContentLoaded', () => {
 // Проверяем при загрузке каждой страницы
 //document.addEventListener('DOMContentLoaded', checkAuth);
 
-// Мобильное меню
-const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
-const mobileMenu = document.querySelector('.mobile-menu');
+// Проверка на мобильное устройство
+function isMobileDevice() {
+    return (
+        ('ontouchstart' in window) ||
+        (navigator.maxTouchPoints > 0) ||
+        (navigator.msMaxTouchPoints > 0)
+    );
+}
 
-mobileMenuToggle.addEventListener('click', () => {
-    mobileMenuToggle.classList.toggle('active');
-    mobileMenu.classList.toggle('active');
-    document.body.classList.toggle('menu-open');
-});
+// Инициализация мобильного меню только на мобильных устройствах
+document.addEventListener('DOMContentLoaded', () => {
+    const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+    const mobileMenu = document.querySelector('.mobile-menu');
 
-// Закрытие меню при клике на ссылку
-const mobileMenuLinks = document.querySelectorAll('.mobile-menu .sidebar-link');
-mobileMenuLinks.forEach(link => {
-    link.addEventListener('click', () => {
-        mobileMenuToggle.classList.remove('active');
-        mobileMenu.classList.remove('active');
-        document.body.classList.remove('menu-open');
-    });
+    if (isMobileDevice()) {
+        // Показываем мобильные элементы управления
+        if (mobileMenuToggle) {
+            mobileMenuToggle.addEventListener('click', () => {
+                mobileMenuToggle.classList.toggle('active');
+                mobileMenu.classList.toggle('active');
+                document.body.classList.toggle('menu-open');
+            });
+        }
+
+        // Закрытие меню при клике на ссылку
+        const mobileMenuLinks = document.querySelectorAll('.mobile-menu .sidebar-link');
+        mobileMenuLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenuToggle.classList.remove('active');
+                mobileMenu.classList.remove('active');
+                document.body.classList.remove('menu-open');
+            });
+        });
+    } else {
+        // Удаляем мобильные элементы на десктопе
+        mobileMenuToggle?.remove();
+        mobileMenu?.remove();
+    }
 });
 
 // Синхронизация переключателей темы
