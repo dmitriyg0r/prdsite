@@ -90,12 +90,31 @@
             </div>
         </div>
     </nav>
-    <button class="mobile-menu-toggle">
+
+    <!-- Мобильное меню -->
+    <div class="mobile-menu-toggle">
         <span></span>
         <span></span>
         <span></span>
-    </button>
-        <h1 class="zagolovok">Задания</h1>
+    </div>
+
+    <div class="overlay"></div>
+
+    <div class="mobile-menu">
+        <nav>
+            <ul>
+                <li><a href="../index.html"><i class="fas fa-home"></i>Расписание</a></li>
+                <li><a href="../home/homework.html"><i class="fas fa-book"></i>Задания</a></li>
+                <li><a href="../downloads/downloads.html"><i class="fas fa-download"></i>Загрузки</a></li>
+                <li><a href="../memes/memes.html"><i class="fas fa-smile"></i>Мемы</a></li>
+                <li><a href="../about/about.html"><i class="fas fa-info-circle"></i>О нас</a></li>
+                <li><a href="../games/games.html"><i class="fas fa-gamepad"></i>Игры</a></li>
+                <li><a href="../Profile/profile.html"><i class="fas fa-user"></i>Профиль</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <h1 class="zagolovok">Задания</h1>
     <main>
         <button id="show-upload-form" class="icon-button">
             <img src="../downloads/addbutton.png" alt="Add file" class="icon">
@@ -132,28 +151,5 @@
     </main>
     <script src="../main.js"></script>
     <script src="home.js"></script>
-
-    <!-- Мобильное меню -->
-    <div class="mobile-menu-toggle">
-        <span></span>
-        <span></span>
-        <span></span>
-    </div>
-
-    <div class="overlay"></div>
-
-    <div class="mobile-menu">
-        <nav>
-            <ul>
-                <li><a href="../index.html"><i class="fas fa-home"></i>Расписание</a></li>
-                <li><a href="../home/homework.html"><i class="fas fa-book"></i>Задания</a></li>
-                <li><a href="../downloads/downloads.html"><i class="fas fa-download"></i>Загрузки</a></li>
-                <li><a href="../memes/memes.html"><i class="fas fa-smile"></i>Мемы</a></li>
-                <li><a href="../about/about.html"><i class="fas fa-info-circle"></i>О нас</a></li>
-                <li><a href="../games/games.html"><i class="fas fa-gamepad"></i>Игры</a></li>
-                <li><a href="../Profile/profile.html"><i class="fas fa-user"></i>Профиль</a></li>
-            </ul>
-        </nav>
-    </div>
 </body>
 </html>
