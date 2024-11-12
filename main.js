@@ -70,31 +70,55 @@ function isMobileDevice() {
 document.addEventListener('DOMContentLoaded', () => {
     const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
     const mobileMenu = document.querySelector('.mobile-menu');
+    const overlay = document.querySelector('.overlay');
 
-    if (isMobileDevice()) {
-        // Показываем мобильные элементы управления
-        if (mobileMenuToggle) {
-            mobileMenuToggle.addEventListener('click', () => {
-                mobileMenuToggle.classList.toggle('active');
-                mobileMenu.classList.toggle('active');
-                document.body.classList.toggle('menu-open');
-            });
-        }
+    if (mobileMenuToggle && mobileMenu) {
+        // Обработчик для кнопки меню
+        mobileMenuToggle.addEventListener('click', () => {
+            mobileMenuToggle.classList.toggle('active');
+            mobileMenu.classList.toggle('active');
+            if (overlay) {
+                overlay.classList.toggle('active');
+            }
+            // Блокируем прокрутку body при открытом меню
+            document.body.style.overflow = mobileMenu.classList.contains('active') ? 'hidden' : '';
+        });
 
         // Закрытие меню при клике на ссылку
-        const mobileMenuLinks = document.querySelectorAll('.mobile-menu .sidebar-link');
+        const mobileMenuLinks = mobileMenu.querySelectorAll('a');
         mobileMenuLinks.forEach(link => {
             link.addEventListener('click', () => {
                 mobileMenuToggle.classList.remove('active');
                 mobileMenu.classList.remove('active');
-                document.body.classList.remove('menu-open');
+                if (overlay) {
+                    overlay.classList.remove('active');
+                }
+                document.body.style.overflow = '';
             });
         });
-    } else {
-        // Удаляем мобильные элементы на десктопе
-        mobileMenuToggle?.remove();
-        mobileMenu?.remove();
+
+        // Закрытие меню при клике на overlay
+        if (overlay) {
+            overlay.addEventListener('click', () => {
+                mobileMenuToggle.classList.remove('active');
+                mobileMenu.classList.remove('active');
+                overlay.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+        }
     }
+
+    // Закрытие меню при изменении размера окна
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 768) {
+            mobileMenuToggle?.classList.remove('active');
+            mobileMenu?.classList.remove('active');
+            if (overlay) {
+                overlay.classList.remove('active');
+            }
+            document.body.style.overflow = '';
+        }
+    });
 });
 
 // Синхронизация переключателей темы

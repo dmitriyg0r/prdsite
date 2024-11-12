@@ -308,7 +308,12 @@
 
 /* Стили для мобильного меню */
 @media (max-width: 768px) {
-    /* Кнопка меню-бургер */
+    /* Скрываем десктопное меню */
+    .sidebar {
+        display: none;
+    }
+
+    /* Показываем кнопку мобильного меню */
     .mobile-menu-toggle {
         display: block;
         position: fixed;
@@ -327,38 +332,52 @@
         display: block;
         width: 25px;
         height: 3px;
-        background-color: var(--text-color);
         margin: 5px 0;
+        background: var(--text-color);
         transition: 0.3s;
         border-radius: 3px;
     }
 
-    /* Боковое меню для мобильных */
-    .sidebar {
-        transform: translateX(-100%);
-        width: 250px;
-        transition: transform 0.3s ease;
-    }
-
-    /* Класс для открытого меню */
-    .sidebar.active {
-        transform: translateX(0);
-    }
-
-    /* Затемнение фона при открытом меню */
-    .overlay {
+    /* Стили для мобильного меню */
+    .mobile-menu {
         display: none;
         position: fixed;
         top: 0;
         left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.5);
+        width: 100%;
+        height: 100%;
+        background: var(--sidebar-background);
         z-index: 1001;
+        padding-top: 80px;
     }
 
-    .overlay.active {
-        display: block;
+    .mobile-menu.active {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .mobile-menu ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        width: 100%;
+    }
+
+    .mobile-menu ul li {
+        margin: 10px 0;
+    }
+
+    .mobile-menu ul li a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 15px;
+        color: var(--text-color);
+        text-decoration: none;
+        font-size: 18px;
+        transition: 0.3s;
     }
 
     /* Анимация кнопки меню */
@@ -374,7 +393,7 @@
         transform: rotate(-45deg) translate(7px, -7px);
     }
 
-    /* Корректировка отступов основного контента */
+    /* Основной контент */
     main {
         margin-left: 0;
         padding-top: 60px;
@@ -455,4 +474,20 @@
     .mobile-menu {
         display: none !important;
     }
+}
+
+/* Затемнение фона при открытом меню */
+.overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1001;
+}
+
+.overlay.active {
+    display: block;
 }
