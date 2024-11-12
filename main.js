@@ -56,3 +56,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Проверяем при загрузке каждой страницы
 //document.addEventListener('DOMContentLoaded', checkAuth);
+
+// Мобильное меню
+document.addEventListener('DOMContentLoaded', function() {
+    const menuToggle = document.querySelector('.mobile-menu-toggle');
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.createElement('div');
+    overlay.className = 'overlay';
+    document.body.appendChild(overlay);
+
+    menuToggle.addEventListener('click', function() {
+        menuToggle.classList.toggle('active');
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+        document.body.style.overflow = sidebar.classList.contains('active') ? 'hidden' : '';
+    });
+
+    overlay.addEventListener('click', function() {
+        menuToggle.classList.remove('active');
+        sidebar.classList.remove('active');
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+    });
+
+    // Закрытие меню при клике на ссылку
+    const sidebarLinks = document.querySelectorAll('.sidebar-link');
+    sidebarLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            menuToggle.classList.remove('active');
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+        });
+    });
+});
