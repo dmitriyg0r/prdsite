@@ -491,3 +491,49 @@
 .overlay.active {
     display: block;
 }
+
+/* Стили для страницы новостей на мобильных устройствах */
+@media (max-width: 768px) {
+    .news-content {
+        grid-template-columns: 1fr; /* Один пост в ряд */
+        gap: 1rem; /* Уменьшенный отступ между постами */
+        padding: 10px; /* Меньшие отступы по краям */
+    }
+
+    .post {
+        min-height: auto; /* Автоматическая высота */
+        margin-bottom: 15px;
+        padding: 12px;
+    }
+
+    .post img {
+        height: 180px; /* Оптимальная высота для мобильных */
+        border-radius: 8px;
+    }
+
+    .post-info {
+        padding: 10px 5px;
+    }
+
+    .post-info p {
+        font-size: 14px;
+        line-height: 1.4;
+        margin-bottom: 8px;
+    }
+
+    .timestamp {
+        font-size: 12px;
+    }
+
+    /* Стили для модального окна предпросмотра на мобильных */
+    .preview-content {
+        width: 95%;
+        max-height: 85vh;
+        padding: 15px;
+        margin: 10px;
+    }
+
+    .preview-image {
+        max-height: 40vh;
+    }
+}
