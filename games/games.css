@@ -8,23 +8,75 @@
     background-color: #f0f0f0;
 }
 
-#game {
+/* Добавляем землю */
+.ground {
+    position: absolute;
+    bottom: 0;
     width: 100%;
-    height: 100%;
-    position: relative;
+    height: 2px;
+    background-color: #333;
+}
+
+/* Добавляем точки на земле */
+.ground::before {
+    content: '';
+    position: absolute;
+    width: 200%;
+    height: 20px;
+    bottom: 2px;
+    background: repeating-linear-gradient(
+        90deg,
+        #333 0,
+        #333 1px,
+        transparent 1px,
+        transparent 30px
+    );
+    animation: moveGround 1s linear infinite;
+}
+
+/* Анимация бега динозавра */
+@keyframes run {
+    0% { background-position: 0 0; }
+    50% { background-position: -70px 0; }
+    100% { background-position: -140px 0; }
 }
 
 #character {
     width: 70px;
     height: 70px;
-    background-image: url('../images/dino.png');
-    background-size: contain;
+    background-image: url('../images/dino-run.png'); /* Нужен спрайт с анимацией бега */
+    background-size: auto 70px;
     background-repeat: no-repeat;
     position: absolute;
     bottom: 0;
     left: 50px;
-    transition: bottom 0.08s linear;
-    transform-origin: bottom center;
+    animation: run 0.3s steps(2) infinite;
+}
+
+#character.jump {
+    animation: none;
+}
+
+/* Анимация движения земли */
+@keyframes moveGround {
+    from { transform: translateX(0); }
+    to { transform: translateX(-30px); }
+}
+
+/* Добавляем облака */
+.cloud {
+    position: absolute;
+    background-image: url('../images/cloud.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    width: 70px;
+    height: 30px;
+    animation: moveCloud linear infinite;
+}
+
+@keyframes moveCloud {
+    from { right: -70px; }
+    to { right: 100%; }
 }
 
 #obstacle {
