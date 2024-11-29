@@ -60,10 +60,34 @@ async function handleLogin(event) {
         });
 
         console.log('Login response status:', response.status);
-        const data = await response.json();
-        console.log('Login response data:', data);
 
-        if (response.ok && data.success) {
+        // Проверяем статус ответа
+        if (!response.ok) {
+            if (response.status === 502) {
+                throw new Error('Сервер временно недоступен. Пожалуйста, попробуйте позже.');
+            }
+            
+            // Пытаемся получить текст ошибки из ответа
+            let errorMessage;
+            try {
+                const errorData = await response.json();
+                errorMessage = errorData.message;
+            } catch (e) {
+                errorMessage = 'Ошибка при попытке входа';
+            }
+            throw new Error(errorMessage);
+        }
+
+        // Пытаемся распарсить JSON только если ответ успешный
+        let data;
+        try {
+            data = await response.json();
+        } catch (e) {
+            console.error('Error parsing response:', e);
+            throw new Error('Некорректный ответ от сервера');
+        }
+
+        if (data.success) {
             localStorage.setItem('user', JSON.stringify(data));
             showSuccess('Успешный вход');
             
@@ -80,7 +104,13 @@ async function handleLogin(event) {
         }
     } catch (error) {
         console.error('Login error:', error);
-        showError(error.message || 'Ошибка при попытке входа');
+        showError(error.message || 'Произошла ошибка при попытке входа');
+        
+        // Очищаем поле пароля при ошибке
+        const passwordInput = document.getElementById('login-password');
+        if (passwordInput) {
+            passwordInput.value = '';
+        }
     }
 }
 
@@ -109,7 +139,7 @@ async function handleAnonymousLogin() {
     }
 }
 
-// Функция отображен��я профиля
+// Функция отображеня профиля
 function showProfile(userData) {
     // Скрываем все контейнеры авторизации
     const authContainers = document.querySelectorAll('#login-container, #register-container');
@@ -141,7 +171,7 @@ function showProfile(userData) {
     }
 }
 
-// Функция загрузки списка ��ользователей
+// Функция загрузки списка ользователей
 async function loadUsers() {
     try {
         const user = JSON.parse(localStorage.getItem('user'));
