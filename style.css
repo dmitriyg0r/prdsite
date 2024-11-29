@@ -40,55 +40,52 @@
 
 /* Темная тема - улучшенная тёмная тема */
 [data-theme="dark"] {
-    /* Основные цвета - улучшенная тёмная тема */
-    --primary-color: #7B2CBF;
-    --primary-color-rgb: 123, 44, 191;
-    --text-color: #ffffff;
-    --background-color: #242424;
-    --sidebar-background: #7B2CBF;
-    --sidebar-hover: #9D4EDA;
+    /* Основные цвета - обновленная тёмная тема */
+    --primary-color: #9D4EDA;
+    --primary-color-rgb: 157, 78, 218;
+    --text-color: #E8EAED;
+    --background-color: #1A1B1E;
+    --sidebar-background: #9D4EDA;
+    --sidebar-hover: #B76FEE;
     
     /* Дополнительные цвета */
-    --button-text: #ffffff;
-    --button-background: #7B2CBF;
-    --button-hover: #5A1E8C;
-    --button-secondary: #2d2d2d;
-    --button-background-rgb: 123, 44, 191;
-    --button-hover-rgb: 90, 30, 145;
+    --button-text: #FFFFFF;
+    --button-background: #9D4EDA;
+    --button-hover: #B76FEE;
+    --button-secondary: #2D2E32;
+    --button-background-rgb: 157, 78, 218;
+    --button-hover-rgb: 183, 111, 238;
     
     /* Контейнеры */
-    --text-container-background: #2a2a2a;
-    --text-container-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-    --table-background: #2d2d2d;
-    --input-background: #333333;
-    --border-color: #404040;
+    --text-container-background: #25262A;
+    --text-container-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+    --table-background: #2D2E32;
+    --input-background: #2D2E32;
+    --border-color: #3A3B3F;
     
     /* Текст */
-    --text-secondary: rgba(255, 255, 255, 0.7);
-    --header-text: #ffffff;
-    --header-gradient: #9D4EDA;
-    --accent-color: #7B2CBF;
+    --text-secondary: rgba(232, 234, 237, 0.7);
+    --header-text: #FFFFFF;
+    --header-gradient: #B76FEE;
+    --accent-color: #9D4EDA;
     
     /* Таблицы */
-    --table-header-bg: var(--primary-color);
-    --table-header-text: var(--header-text);
-    --table-hover: rgba(123, 44, 191, 0.1);
-    --table-today: rgba(123, 44, 191, 0.15);
-    --table-border: #333333;
-    --table-background: var(--text-container-background);
-    --table-text: var(--text-color);
-    --table-text-secondary: rgba(255, 255, 255, 0.5);
+    --table-header-bg: #2D2E32;
+    --table-header-text: #E8EAED;
+    --table-hover: rgba(157, 78, 218, 0.15);
+    --table-today: rgba(157, 78, 218, 0.2);
+    --table-border: #3A3B3F;
     
-    /* Дополнительные оттенки для градиентов и эффектов */
-    --primary-dark: #5A1E8C;
-    --primary-light: #9D4EDA;
+    /* Дополнительные оттенки */
+    --primary-dark: #8445BB;
+    --primary-light: #B76FEE;
     
     /* Новые цвета фона */
-    --background: #242424;
-    --surface: #2d2d2d;
-    --card-background: #333333;
-    --hover-background: #383838;
-    --today-highlight: rgba(123, 44, 191, 0.05);
+    --background: #1A1B1E;
+    --surface: #25262A;
+    --card-background: #2D2E32;
+    --hover-background: #3A3B3F;
+    --today-highlight: rgba(157, 78, 218, 0.1);
 }
 
 /* Добавим общее правило для всего текста */
@@ -1065,4 +1062,31 @@ table {
     .sidebar.active {
         transform: translateX(0);
     }
+}
+
+/* Дополнительные стили для тёмной темы */
+[data-theme="dark"] .sidebar-link {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .sidebar-link:hover {
+    background: rgba(255, 255, 255, 0.12);
+    transform: translateX(5px);
+}
+
+[data-theme="dark"] .form-input {
+    border-color: #3A3B3F;
+}
+
+[data-theme="dark"] .form-input:focus {
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 3px rgba(183, 111, 238, 0.2);
+}
+
+[data-theme="dark"] .add-post-btn {
+    background: linear-gradient(45deg, var(--primary-color), var(--primary-light));
+}
+
+[data-theme="dark"] .zagolovok::after {
+    background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
 }
