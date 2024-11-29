@@ -217,7 +217,7 @@ function displayUsers(users) {
 function handleLogout() {
     console.log('Logging out...');
     try {
-        // Очищаем данные пользователя
+        // Очищ��ем данные пользователя
         localStorage.removeItem('user');
         
         // Показываем форму входа и скрываем профиль
@@ -277,3 +277,101 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Logout handler attached');
     }
 });
+
+// Функция для удаления пользователя
+async function deleteUser(userId) {
+    if (!confirm('Вы уверены, что хотите удалить этого пользователя?')) {
+        return;
+    }
+
+    try {
+        const userData = JSON.parse(localStorage.getItem('user'));
+        
+        if (!userData || !userData.token) {
+            throw new Error('No authentication token found');
+        }
+
+        const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${userData.token}`,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            credentials: 'include'
+        });
+
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+            showSuccess('Пользователь успешно удален');
+            loadUsers(); // Перезагружаем список пользователей
+        } else {
+            throw new Error(data.message || 'Failed to delete user');
+        }
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        showError('Ошибка при удалении пользователя');
+    }
+}
+
+// Функция для редактирования пользователя
+async function editUser(userId) {
+    try {
+        // Получаем данные пользователя
+        const userData = JSON.parse(localStorage.getItem('user'));
+        
+        if (!userData || !userData.token) {
+            throw new Error('No authentication token found');
+        }
+
+        // Здесь можно добавить модальное окно или форму для редактирования
+        const newUsername = prompt('Введите новое имя пользователя:');
+        const newRole = prompt('Введите новую роль (Admin/User):');
+        
+        if (!newUsername || !newRole) {
+            return; // Пользователь отменил редактирование
+        }
+
+        const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${userData.token}`,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                username: newUsername,
+                role: newRole
+            }),
+            credentials: 'include'
+        });
+
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+            showSuccess('Пользователь успешно обновлен');
+            loadUsers(); // Перезагружаем список пользователей
+        } else {
+            throw new Error(data.message || 'Failed to update user');
+        }
+    } catch (error) {
+        console.error('Error updating user:', error);
+        showError('Ошибка при обновлении пользователя');
+    }
+}
+
+// Функция для отображения сообщения об успехе
+function showSuccess(message) {
+    // Можно использовать существующий элемент для ошибок или создать новый для успешных сообщений
+    const errorMessage = document.getElementById('error-message');
+    if (errorMessage) {
+        errorMessage.textContent = message;
+        errorMessage.style.display = 'block';
+        errorMessage.style.backgroundColor = '#4CAF50'; // Зеленый цвет для успеха
+        
+        setTimeout(() => {
+            errorMessage.style.display = 'none';
+        }, 3000);
+    }
+}
