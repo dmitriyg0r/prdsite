@@ -142,7 +142,6 @@ body {
 .close {
     position: absolute;
     right: 20px;
-    top: 15px;
     font-size: 24px;
     cursor: pointer;
     color: var(--text-color);
