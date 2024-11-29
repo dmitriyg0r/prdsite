@@ -83,17 +83,22 @@ function resetGame() {
     character.style.bottom = "0px";
 }
 
-// Улучшенный игровой цикл
+// Обновляем систему коллизий
+function checkCollision() {
+    let characterRect = character.getBoundingClientRect();
+    let obstacleRect = obstacle.getBoundingClientRect();
+    
+    // Уменьшаем зону коллизии для более точного определения
+    return (characterRect.right - 10 > obstacleRect.left && 
+            characterRect.left + 10 < obstacleRect.right && 
+            characterRect.bottom - 5 > obstacleRect.top);
+}
+
+// Обновляем игровой цикл
 let gameLoop = setInterval(function() {
     if (!isGameOver) {
         let obstacleLeft = parseInt(window.getComputedStyle(obstacle).getPropertyValue("left"));
-        let characterBottom = parseInt(character.style.bottom || 0);
         
-        // Увеличиваем сложность с ростом очков
-        if (counter > 0 && counter % 10 === 0) {
-            gameSpeed = Math.min(gameSpeed + 0.1, 8);
-        }
-
         if (obstacleLeft < -30) {
             obstacle.style.left = "600px";
             counter++;
@@ -102,13 +107,7 @@ let gameLoop = setInterval(function() {
             obstacle.style.left = (obstacleLeft - gameSpeed) + "px";
         }
 
-        // Улучшенная система коллизий
-        let characterRect = character.getBoundingClientRect();
-        let obstacleRect = obstacle.getBoundingClientRect();
-
-        if (characterRect.right > obstacleRect.left + 10 && 
-            characterRect.left < obstacleRect.right - 10 && 
-            characterRect.bottom > obstacleRect.top + 10) {
+        if (checkCollision()) {
             gameOver();
         }
     }
