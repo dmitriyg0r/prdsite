@@ -209,10 +209,26 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Found saved session');
         try {
             const parsedUserData = JSON.parse(userData);
+            // Сразу скрываем контейнер входа и показываем профиль
+            const loginContainer = document.getElementById('login-container');
+            if (loginContainer) {
+                loginContainer.style.display = 'none';
+            }
             showProfile(parsedUserData);
         } catch (e) {
             console.error('Error parsing saved session:', e);
             localStorage.removeItem('user');
+            // В случае ошибки показываем форму входа
+            const loginContainer = document.getElementById('login-container');
+            if (loginContainer) {
+                loginContainer.style.display = 'block';
+            }
+        }
+    } else {
+        // Если нет сохраненной сессии, показываем форму входа
+        const loginContainer = document.getElementById('login-container');
+        if (loginContainer) {
+            loginContainer.style.display = 'block';
         }
     }
 
