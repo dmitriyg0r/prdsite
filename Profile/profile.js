@@ -358,9 +358,7 @@ async function editUser(userId) {
 
 // Функция для показа модального окна создания пользователя
 async function showCreateUserModal() {
-    console.log('Opening create user modal');
     try {
-        // В будущем здесь можно использовать модальное окно вместо prompt
         const username = prompt('Введите имя пользователя:');
         if (!username) return;
 
@@ -369,25 +367,13 @@ async function showCreateUserModal() {
 
         const role = prompt('Введите роль (Admin/User):');
         if (!role || !['Admin', 'User'].includes(role)) {
-            showError('Некорректная роль. Допустимые начения: Admin, User');
+            showError('Некорректная роль. Допустимые значения: Admin, User');
             return;
         }
 
-        await createUser(username, password, role);
-    } catch (error) {
-        console.error('Error in showCreateUserModal:', error);
-        showError('Ошибка при создании пользователя');
-    }
-}
-
-// Функция для создания нового пользователя
-async function createUser(username, password, role) {
-    console.log('Creating new user:', { username, role });
-    try {
         const userData = JSON.parse(localStorage.getItem('user'));
-        
         if (!userData?.data?.token) {
-            throw new Error('No authentication token found');
+            throw new Error('Требуется авторизация');
         }
 
         const response = await fetch(`${API_BASE_URL}/users`, {
@@ -404,16 +390,15 @@ async function createUser(username, password, role) {
         });
 
         const data = await response.json();
-        console.log('Create user response:', data);
         
         if (response.ok && data.success) {
             showSuccess('Пользователь успешно создан');
             await loadUsers(); // Перезагружаем список пользователей
         } else {
-            throw new Error(data.message || 'Failed to create user');
+            throw new Error(data.message || 'Ошибка при создании пользователя');
         }
     } catch (error) {
         console.error('Error creating user:', error);
-        showError('Ошибка при создании пользователя: ' + error.message);
+        showError(error.message);
     }
 }
