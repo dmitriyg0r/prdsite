@@ -9,8 +9,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
-using Npgsql.EntityFrameworkCore.PostgreSQL;
-using Microsoft.EntityFrameworkCore.SqlServer;
 
 namespace ScheduleApp.DataAccess;
 
@@ -31,56 +29,28 @@ class Program
                 Title = "ScheduleApp API", 
                 Version = "v1" 
             });
-            
-            // Настройка авторизации в Swagger
-            c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-            {
-                Description = "JWT Authorization header using the Bearer scheme.",
-                Name = "Authorization",
-                In = ParameterLocation.Header,
-                Type = SecuritySchemeType.Http,
-                Scheme = "bearer"
-            });
-
-            c.AddSecurityRequirement(new OpenApiSecurityRequirement
-            {
-                {
-                    new OpenApiSecurityScheme
-                    {
-                        Reference = new OpenApiReference
-                        {
-                            Type = ReferenceType.SecurityScheme,
-                            Id = "Bearer"
-                        }
-                    },
-                    Array.Empty<string>()
-                }
-            });
         });
 
-        // Настройка CORS
+        // Add CORS
         builder.Services.AddCors(options =>
         {
-            options.AddPolicy("AllowAll", policy =>
+            options.AddPolicy("AllowAll", builder =>
             {
-                policy
-                    .WithOrigins("https://adminflow.ru")
-                    .AllowAnyMethod()
-                    .AllowAnyHeader()
-                    .AllowCredentials();
+                builder.AllowAnyOrigin()
+                       .AllowAnyMethod()
+                       .AllowAnyHeader();
             });
         });
 
-        // Добавляем DbContext
+        // Add DbContext
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(
-                builder.Configuration.GetConnectionString("DefaultConnection"),
-                b => b.MigrationsAssembly("ScheduleApp.DataAccess")
+                builder.Configuration.GetConnectionString("DefaultConnection")
             ));
 
         var app = builder.Build();
 
-        // Инициализация базы данных
+        // Применяем миграции при запуске
         try
         {
             using (var scope = app.Services.CreateScope())
