@@ -85,14 +85,31 @@
     </div>
     <h1 class="zagolovok">Игры</h1>
     <main>
-        <div class="game-container">
-            <canvas id="game" width="600" height="150"></canvas>
-            <div class="game-info">
-                <span class="score">Счёт: 0</span>
-                <span class="high-score">Рекорд: 0</span>
+        <div class="game-wrapper">
+            <div class="game-container">
+                <canvas id="game" width="600" height="150"></canvas>
+                <div class="game-info">
+                    <span class="score">Счёт: 0</span>
+                    <span class="high-score">Рекорд: 0</span>
+                </div>
+                <div class="game-start">
+                    Нажмите пробел чтобы начать
+                </div>
             </div>
-            <div class="game-start">
-                Нажмите пробел чтобы начать
+            <div class="leaderboard">
+                <h2>Таблица рекордов</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Место</th>
+                            <th>Имя</th>
+                            <th>Счёт</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboardBody">
+                        <!-- Здесь будут рекорды -->
+                    </tbody>
+                </table>
             </div>
         </div>
     </main>
