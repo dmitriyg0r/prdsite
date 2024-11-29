@@ -2,12 +2,22 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="yandex-verification" content="b6188094da1a1aed" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Расписание</title>
+    <!-- Google АНАЛИТИКА -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-F504WEHYLW"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-F504WEHYLW');
+    </script>
     <link rel="icon" type="image/x-icon" href="flow.ico">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="schedule.css">
     <link rel="stylesheet" href="../rasp_news/news.css">
+    <link rel="stylesheet" href="mobile.css">
     <meta name="description" content="расписание">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -62,6 +72,27 @@
             </div>
         </div>
     </nav>
+    <div class="mobile-menu-toggle">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+
+    <div class="overlay"></div>
+
+    <div class="mobile-menu">
+        <nav>
+            <ul>
+                <li><a href="../index.html"><i class="fas fa-home"></i>Расписание</a></li>
+                <li><a href="../home/homework.html"><i class="fas fa-book"></i>Задания</a></li>
+                <li><a href="../downloads/downloads.html"><i class="fas fa-download"></i>Загрузки</a></li>
+                <li><a href="../memes/memes.html"><i class="fas fa-smile"></i>Мемы</a></li>
+                <li><a href="../about/about.html"><i class="fas fa-info-circle"></i>О нас</a></li>
+                <li><a href="../games/games.html"><i class="fas fa-gamepad"></i>Игры</a></li>
+                <li><a href="../Profile/profile.html"><i class="fas fa-user"></i>Профиль</a></li>
+            </ul>
+        </nav>
+    </div>
     <h1 class="zagolovok">Расписание</h1>
     <main>
         <div class="table-container" id="odd-week-schedule">
@@ -145,7 +176,7 @@
                         <td>Понедельник</td>
                         <td>-</td>
                         <td>-</td>
-                        <td>-</td>
+                        <td>Английский 5.09</td>
                         <td>Экономика 5.06</td>
                         <td>Экономика 5.06</td>
                         <td>Экономика 5.06</td>
@@ -175,15 +206,15 @@
                         <td>ПОЗИ 4.07</td>
                         <td>ПОЗИ 4.07</td>
                         <td>Физическая культура 4.15</td>
-                        <td>выч сист 4.08</td>
+                        <td>-</td>
                     </tr>
                     <tr>
                         <td>Пятница</td>
                         <td>Научные исследования 5.12</td>
                         <td>Научные исследования 5.12</td>
                         <td>Физическая культура 4.15</td>
-                        <td>ПОЗИ 4.07</td>
-                        <td>-</td>
+                        <td>ПОЗИ 4.08</td>
+                        <td>ПОЗИ 4.08</td>
                         <td>-</td>
                     </tr> 
                 </tbody>

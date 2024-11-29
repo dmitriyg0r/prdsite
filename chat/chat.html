@@ -3,17 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Загрузки</title>
+    <title>ЧАТ</title>
     <link rel="icon" type="image/x-icon" href="../flow.ico">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&family=Montserrat:wght@300&display=swap">
     <link rel="stylesheet" href="../style.css">
-    <link rel="stylesheet" href="downstyle.css">
+    <link rel="stylesheet" href="chat.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="../mobile.css">
-    <meta name="description" content="Страница загрузок учебных материалов">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com;">
 </head>
 <body>
-    <!-- Боковое меню -->
+    <!-- Добавляем боковое меню -->
     <nav class="sidebar">
         <!-- Добавляем иконку -->
         <div class="sidebar-logo">
@@ -25,10 +24,10 @@
                 <span>Расписание</span>
             </a>
             <a href="../home/homework.html" class="sidebar-link">
-                <i class="fas fa-tasks"></i>
+                <i class="fas fa-book"></i>
                 <span>Задания</span>
             </a>
-            <a href="../downloads/downloads.html" class="sidebar-link active">
+            <a href="../downloads/downloads.html" class="sidebar-link">
                 <i class="fas fa-download"></i>
                 <span>Загрузки</span>
             </a>
@@ -36,7 +35,7 @@
                 <i class="fas fa-smile"></i>
                 <span>Мемы</span>
             </a>
-            <a href="../about/about.html" class="sidebar-link">
+            <a href="about.html" class="sidebar-link active">
                 <i class="fas fa-info-circle"></i>
                 <span>О нас</span>
             </a>
@@ -52,7 +51,6 @@
         <!-- Переключатель темы после навигации -->
         <div class="theme-switch-wrapper">
             <div class="theme-toggle-container">
-                <!-- Add sun icon -->
                 <i class="fas fa-sun theme-icon"></i>
                 <input type="checkbox" id="theme-toggle" class="theme-checkbox">
                 <label for="theme-toggle" class="theme-label">
@@ -84,42 +82,21 @@
             </ul>
         </nav>
     </div>
+    <!-- Остальной контент -->
     <main>
-        <h1 class="zagolovok">Загрузки</h1>
-        <button id="show-upload-form" class="icon-button">
-            <img src="addbutton.png" alt="Add file" class="icon">
-        </button>
-        <div id="upload-form-container" class="upload-form-container">
-            <h2>Загрузить файл</h2>
-            <form id="upload-form" enctype="multipart/form-data" action="downloads.php" method="POST">
-                <select id="category-select" name="category" required>
-                    <option value="">Выберите категорию</option>
-                </select>
-                <select id="folder-select" name="folder" required>
-                    <option value="">Выберите папку</option>
-                </select>
-                <label for="file-input" class="file-input-label">
-                    Выберите файл или перетащите его сюда
-                </label>
-                <div id="file-name"></div>
-                <input type="file" name="files[]" id="file-input" multiple required>
-                <button type="submit">Загрузить</button>
-            </form>
-            <div id="upload-message"></div>
-        </div>
-        <div class="download-section">
-            <h2>Доступные файлы</h2>
-            <div id="file-categories">
-                <!-- Категории файлов будут добавлены здесь динамически -->
+        <section id="about-us">
+            <h1 class="zagolovok">Чат</h1>
+            <div class="chat-container">
+                <div id="messages" class="messages-area"></div>
+                <div class="input-area">
+                    <input type="text" id="messageInput" placeholder="Введите сообщение...">
+                    <button id="sendMessage">Отправить</button>
+                </div>
             </div>
-        </div>
+        </section>
     </main>
-    <div class="links">
-        <h2>Ссылки</h2>
-        <p>Программирование: <a href="https://disk.yandex.ru/d/K2o2_tom2Gx6IA" target="_blank" rel="noopener noreferrer">Ссылка на Яндекс.Диск</a></p>
-        <p>Базы данных: <a href="https://disk.yandex.ru/d/fXkL_NOGOf7Esg" target="_blank" rel="noopener noreferrer">Ссылка на Яндекс.Диск</a></p>
-    </div>
+    <!-- Добавляем скрипты перед закрывающим тегом body -->
     <script src="../main.js"></script>
-    <script src="downloads.js"></script>
+    <script src="chat.js"></script>
 </body>
 </html>

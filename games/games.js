@@ -14,10 +14,11 @@ score.innerHTML = `Score: ${counter} | High Score: ${highScore}`;
 function jump() {
     if (!isJumping && !isGameOver) {
         isJumping = true;
+        character.classList.add('jump');
         let jumpForce = 15;
         let gravity = 0.6;
         let velocity = jumpForce;
-        let maxHeight = 150; // Максимальная высота прыжка
+        let maxHeight = 150;
 
         let jumpInterval = setInterval(function() {
             let currentBottom = parseInt(character.style.bottom || "0");
@@ -30,6 +31,7 @@ function jump() {
                 character.style.bottom = "0px";
                 clearInterval(jumpInterval);
                 isJumping = false;
+                character.classList.remove('jump');
             }
         }, 8);
     }
@@ -114,3 +116,18 @@ let gameLoop = setInterval(function() {
 
 // Начальная позиция препятствия
 obstacle.style.left = "600px";
+
+// Добавляем создание облаков
+function createCloud() {
+    const cloud = document.createElement('div');
+    cloud.className = 'cloud';
+    cloud.style.top = Math.random() * 100 + 50 + 'px';
+    cloud.style.animationDuration = (Math.random() * 10 + 10) + 's';
+    document.querySelector('#game').appendChild(cloud);
+    
+    // Удаляем облако после завершения анимации
+    cloud.addEventListener('animationend', () => cloud.remove());
+}
+
+// Создаем облака периодически
+setInterval(createCloud, 10000);
