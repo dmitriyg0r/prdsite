@@ -1,78 +1,56 @@
 const express = require('express');
 const cors = require('cors');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-require('dotenv').config();
+const bodyParser = require('body-parser');
 
 const app = express();
 
-// Middleware для парсинга JSON
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// CORS middleware
+// Middleware
+app.use(bodyParser.json());
 app.use(cors({
-    origin: ['https://adminflow.ru', 'http://localhost:3000'],
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    origin: 'https://adminflow.ru',
     credentials: true
 }));
 
-// Логирование всех запросов
+// Логирование
 app.use((req, res, next) => {
     console.log('=== Новый запрос ===');
     console.log('Время:', new Date().toISOString());
     console.log('Метод:', req.method);
     console.log('URL:', req.url);
     console.log('Тело:', req.body);
-    console.log('Заголовки:', req.headers);
-    console.log('==================');
     next();
 });
 
-// Тестовый маршрут
+// Базовый маршрут
 app.get('/', (req, res) => {
-    console.log('Получен GET запрос на /');
+    console.log('GET / вызван');
     res.json({ message: 'API работает' });
 });
 
-// Маршрут регистрации
-app.post('/register', async (req, res) => {
-    console.log('Получен POST запрос на /register');
+// Маршрут регистрации (без /api префикса)
+app.post('/register', (req, res) => {
+    console.log('POST /register вызван');
     console.log('Тело запроса:', req.body);
     
-    try {
-        const { username, password } = req.body;
-        
-        if (!username || !password) {
-            console.log('Отсутствует username или password');
-            return res.status(400).json({
-                success: false,
-                message: 'Необходимо указать имя пользователя и пароль'
-            });
-        }
-
-        // Для тестирования
-        console.log('Отправка успешного ответа');
-        res.status(201).json({
-            success: true,
-            message: 'Регистрация успешна',
-            data: {
-                username,
-                role: 'User'
-            }
-        });
-    } catch (error) {
-        console.error('Ошибка при регистрации:', error);
-        res.status(500).json({
+    const { username, password } = req.body;
+    
+    if (!username || !password) {
+        return res.status(400).json({
             success: false,
-            message: 'Ошибка при регистрации пользователя'
+            message: 'Необходимо указать имя пользователя и пароль'
         });
     }
-});
 
-// Обработка OPTIONS запросов
-app.options('*', cors());
+    // Временно для тестирования
+    res.status(201).json({
+        success: true,
+        message: 'Регистрация успешна',
+        data: {
+            username,
+            role: 'User'
+        }
+    });
+});
 
 // Обработка 404
 app.use((req, res) => {
@@ -83,16 +61,7 @@ app.use((req, res) => {
     });
 });
 
-// Обработка ошибок
-app.use((err, req, res, next) => {
-    console.error('Ошибка сервера:', err);
-    res.status(500).json({
-        success: false,
-        message: 'Внутренняя ошибка сервера'
-    });
-});
-
-const PORT = process.env.PORT || 5003;
+const PORT = 5003;
 app.listen(PORT, () => {
     console.log(`Сервер запущен на порту ${PORT}`);
     console.log('Доступные маршруты:');
