@@ -350,7 +350,7 @@ async function editUser(userId) {
         const newRole = prompt('Введите новую роль (Admin/User):');
         
         if (!newUsername || !newRole) {
-            return; // Пользователь отменил редактирование
+            return; // По��ьзователь отменил редактирование
         }
 
         const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
@@ -377,6 +377,62 @@ async function editUser(userId) {
         }
     } catch (error) {
         console.error('Error updating user:', error);
-        showError('Ошибк�� при обновлении пользователя');
+        showError('Ошибк при обновлении пользователя');
+    }
+}
+
+// Функция для показа модального окна создания пользователя
+function showCreateUserModal() {
+    try {
+        const username = prompt('Введите имя пользователя:');
+        const password = prompt('Введите пароль:');
+        const role = prompt('Введите роль (Admin/User):');
+
+        if (!username || !password || !role) {
+            return; // Пользователь отменил создание
+        }
+
+        createUser(username, password, role);
+    } catch (error) {
+        console.error('Error showing create user modal:', error);
+        showError('Ошибка при открытии формы создания пользователя');
+    }
+}
+
+// Функция для создания нового пользователя
+async function createUser(username, password, role) {
+    try {
+        const userData = JSON.parse(localStorage.getItem('user'));
+        
+        if (!userData?.data?.token) {
+            throw new Error('No authentication token found');
+        }
+
+        const response = await fetch(`${API_BASE_URL}/users`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${userData.data.token}`,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                username,
+                password,
+                role
+            }),
+            credentials: 'include'
+        });
+
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+            showSuccess('Пользователь успешно создан');
+            loadUsers(); // Перезагружаем список пользователей
+        } else {
+            throw new Error(data.message || 'Failed to create user');
+        }
+    } catch (error) {
+        console.error('Error creating user:', error);
+        showError('Ошибка при создании пользователя');
     }
 }
