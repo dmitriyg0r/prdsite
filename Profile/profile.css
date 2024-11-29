@@ -41,7 +41,7 @@
 
 .form-group input {
     width: 100%;
-    padding: 12px 15px;
+    padding: 12px 0px;
     border: 2px solid var(--border-color);
     border-radius: 10px;
     background: var(--input-background);
