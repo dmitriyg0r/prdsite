@@ -7,7 +7,9 @@ const cors = require('cors');
 const app = express();
 app.use(express.json());
 app.use(cors({
-    origin: 'https://adminflow.ru',
+    origin: ['https://adminflow.ru', 'http://localhost:3000'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true
 }));
 
@@ -20,9 +22,17 @@ const pool = new Pool({
     port: 5432,
 });
 
+// Добавим endpoint для проверки работоспособности API
+app.get('/api/health', (req, res) => {
+    res.json({ status: 'OK' });
+});
+
 // Регистрация
 app.post('/api/auth/register', async (req, res) => {
     try {
+        // Добавим логирование
+        console.log('Получен запрос на регистрацию:', req.body);
+        
         const { username, password } = req.body;
         
         if (!username || !password) {
@@ -39,6 +49,9 @@ app.post('/api/auth/register', async (req, res) => {
             [username, hashedPassword]
         );
         
+        // Добавим логирование успешной регистрации
+        console.log('Пользователь успешно зарегистрирован:', result.rows[0]);
+        
         res.status(201).json({
             success: true,
             message: 'Регистрация успешна',
@@ -49,13 +62,14 @@ app.post('/api/auth/register', async (req, res) => {
             }
         });
     } catch (error) {
-        if (error.code === '23505') { // Код ошибки уникального ограничения PostgreSQL
+        console.error('Ошибка при регистрации:', error);
+        
+        if (error.code === '23505') {
             res.status(400).json({
                 success: false,
                 message: 'Пользователь с таким именем уже существует'
             });
         } else {
-            console.error('Ошибка регистрации:', error);
             res.status(500).json({
                 success: false,
                 message: 'Ошибка при регистрации пользователя'
@@ -126,3 +140,9 @@ function authenticateToken(req, res, next) {
         res.status(403).json({ success: false, message: 'Неверный токен' });
     }
 } 
+
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+    console.log(`Сервер запущен на порту ${PORT}`);
+});

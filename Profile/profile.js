@@ -398,7 +398,7 @@ async function showCreateUserModal() {
         
         if (response.ok && data.success) {
             showSuccess('Пользователь успешно создан');
-            await loadUsers(); // Перезагр��жаем список пользователей
+            await loadUsers(); // Перезагржаем список пользователей
         } else {
             throw new Error(data.message || 'Ошибка при создании пользователя');
         }
@@ -425,17 +425,38 @@ async function handleRegister(event) {
     const password = document.getElementById('reg-password').value;
     
     try {
+        // Добавим логирование для отладки
+        console.log('Отправка запроса на:', `${API_BASE_URL}/auth/register`);
+        
         const response = await fetch(`${API_BASE_URL}/auth/register`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
             },
-            body: JSON.stringify({ username, password })
+            body: JSON.stringify({ 
+                username: username,
+                password: password 
+            })
         });
         
-        const data = await response.json();
+        // Добавим проверку статуса ответа
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         
-        if (response.ok) {
+        // Проверим содержимое ответа
+        const text = await response.text();
+        console.log('Ответ сервера:', text);
+        
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
+            throw new Error('Некорректный формат ответа от сервера');
+        }
+        
+        if (data.success) {
             showSuccess('Регистрация успешна! Теперь вы можете войти.');
             showLoginForm();
             document.getElementById('register-form').reset();
@@ -460,3 +481,13 @@ const toggleRegPassword = () => {
         eyeIcon.classList.remove('show');
     }
 };
+
+// Добавим функцию для проверки доступности API
+async function checkApiAvailability() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/health`);
+        console.log('API Status:', response.status);
+    } catch (error) {
+        console.error('API не доступен:', error);
+    }
+}
