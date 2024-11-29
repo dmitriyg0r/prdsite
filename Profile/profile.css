@@ -4,6 +4,7 @@
     max-width: 800px;
     margin: 20px auto;
     padding: 20px;
+    animation: fadeIn 0.6s ease-out;
 }
 
 /* Стили для админ-панели */
@@ -11,64 +12,75 @@
     margin: 20px 0;
     display: flex;
     justify-content: flex-end;
+    gap: 10px;
 }
 
 /* Стили для таблицы пользователей */
 .users-table-container {
     background: var(--text-container-background);
-    border-radius: 8px;
+    border-radius: 25px;
     padding: 20px;
     box-shadow: var(--text-container-shadow);
     margin-top: 20px;
     overflow-x: auto;
+    animation: slideIn 0.4s ease-out;
 }
 
 .users-table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 15px;
-}
-
-.users-table th,
-.users-table td {
-    padding: 12px;
-    text-align: left;
-    border-bottom: 1px solid var(--border-color);
+    min-width: 800px;
 }
 
 .users-table th {
     background: var(--primary-color);
-    color: var(--button-text);
+    color: var(--header-text);
     font-weight: 500;
+    padding: 15px;
+    text-align: left;
+}
+
+.users-table td {
+    padding: 15px;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-color);
+}
+
+.users-table tr {
+    transition: all 0.3s ease;
 }
 
 .users-table tr:hover {
     background: var(--table-hover);
+    transform: scale(1.01);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
-/* Стили для кнопок действий в таблице */
+/* Стили для кнопок */
 .action-btn {
-    padding: 6px 12px;
+    padding: 10px 20px;
     border: none;
-    border-radius: 4px;
+    border-radius: 50px;
     cursor: pointer;
-    margin: 0 4px;
+    font-weight: 500;
     transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .edit-btn {
-    background: var(--primary-color);
+    background: linear-gradient(45deg, var(--button-background), var(--header-gradient));
     color: var(--button-text);
 }
 
 .delete-btn {
-    background: #ff4444;
-    color: var(--button-text);
+    background: linear-gradient(45deg, #ff4444, #cc0000);
+    color: white;
 }
 
 .action-btn:hover {
-    opacity: 0.8;
-    transform: translateY(-1px);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
 }
 
 /* Стили для модальных окон */
@@ -81,26 +93,64 @@
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
     z-index: 1000;
+    backdrop-filter: blur(5px);
 }
 
 .modal-content {
     position: relative;
     background-color: var(--text-container-background);
     margin: 10% auto;
-    padding: 20px;
-    border-radius: 8px;
+    padding: 30px;
+    border-radius: 25px;
     width: 80%;
     max-width: 500px;
     box-shadow: var(--text-container-shadow);
+    animation: fadeIn 0.3s ease-out;
 }
 
 .close {
     position: absolute;
-    right: 20px;
-    top: 10px;
+    right: 25px;
+    top: 15px;
     font-size: 24px;
     cursor: pointer;
     color: var(--text-color);
+    transition: all 0.3s ease;
+}
+
+.close:hover {
+    transform: rotate(90deg);
+    color: var(--primary-color);
+}
+
+/* Стили для форм в модальном окне */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    background-color: var(--input-background);
+    color: var(--text-color);
+    transition: all 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(var(--button-background-rgb), 0.2);
 }
 
 /* Адаптивность */
@@ -110,12 +160,17 @@
     }
     
     .action-btn {
-        padding: 4px 8px;
-        margin: 2px;
+        padding: 8px 16px;
+        font-size: 14px;
     }
     
     .modal-content {
         width: 95%;
         margin: 5% auto;
+        padding: 20px;
+    }
+    
+    #profile-container {
+        padding: 10px;
     }
 }
