@@ -19,7 +19,7 @@ const showSuccess = (message) => {
     if (errorMessage) {
         errorMessage.textContent = message;
         errorMessage.style.display = 'block';
-        errorMessage.style.backgroundColor = '#4CAF50'; // Зеленый цвет для успеха
+        errorMessage.style.backgroundColor = '#4CAF50';
         
         setTimeout(() => {
             errorMessage.style.display = 'none';
@@ -337,7 +337,7 @@ async function deleteUser(userId) {
     }
 }
 
-// Функция для редактирования пользователя
+// ��ункция для ре��актирования пользователя
 async function editUser(userId) {
     try {
         const userData = JSON.parse(localStorage.getItem('user'));
@@ -350,7 +350,7 @@ async function editUser(userId) {
         const newRole = prompt('Введите новую роль (Admin/User):');
         
         if (!newUsername || !newRole) {
-            return; // По��ьзователь отменил редактирование
+            return; // Поьзователь отменил редактирование
         }
 
         const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
@@ -382,25 +382,32 @@ async function editUser(userId) {
 }
 
 // Функция для показа модального окна создания пользователя
-function showCreateUserModal() {
+async function showCreateUserModal() {
+    console.log('Opening create user modal');
     try {
+        // В будущем здесь можно использовать модальное окно вместо prompt
         const username = prompt('Введите имя пользователя:');
-        const password = prompt('Введите пароль:');
-        const role = prompt('Введите роль (Admin/User):');
+        if (!username) return;
 
-        if (!username || !password || !role) {
-            return; // Пользователь отменил создание
+        const password = prompt('Введите пароль:');
+        if (!password) return;
+
+        const role = prompt('Введите роль (Admin/User):');
+        if (!role || !['Admin', 'User'].includes(role)) {
+            showError('Некорректная роль. Допустимые значения: Admin, User');
+            return;
         }
 
-        createUser(username, password, role);
+        await createUser(username, password, role);
     } catch (error) {
-        console.error('Error showing create user modal:', error);
-        showError('Ошибка при открытии формы создания пользователя');
+        console.error('Error in showCreateUserModal:', error);
+        showError('Ошибка при создании пользователя');
     }
 }
 
 // Функция для создания нового пользователя
 async function createUser(username, password, role) {
+    console.log('Creating new user:', { username, role });
     try {
         const userData = JSON.parse(localStorage.getItem('user'));
         
@@ -424,15 +431,16 @@ async function createUser(username, password, role) {
         });
 
         const data = await response.json();
+        console.log('Create user response:', data);
         
         if (response.ok && data.success) {
             showSuccess('Пользователь успешно создан');
-            loadUsers(); // Перезагружаем список пользователей
+            await loadUsers(); // Перезагружаем список пользователей
         } else {
             throw new Error(data.message || 'Failed to create user');
         }
     } catch (error) {
         console.error('Error creating user:', error);
-        showError('Ошибка при создании пользователя');
+        showError('Ошибка при создании пользователя: ' + error.message);
     }
 }

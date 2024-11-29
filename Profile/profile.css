@@ -170,12 +170,15 @@
 }
 
 .action-btn {
-    padding: 6px 12px;
-    margin: 0 4px;
+    padding: 8px 16px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
+    font-size: 14px;
     transition: background-color 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .primary-btn {
@@ -297,15 +300,14 @@
 
 /* Стили для сообщений об ошибках и успехе */
 #error-message {
-    display: none;
     position: fixed;
     top: 20px;
     right: 20px;
     padding: 15px 20px;
-    border-radius: 5px;
+    border-radius: 4px;
     color: white;
-    background-color: #ff4444;
     z-index: 1000;
+    display: none;
     animation: slideIn 0.3s ease-out;
 }
 
