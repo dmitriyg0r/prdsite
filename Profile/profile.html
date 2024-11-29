@@ -73,16 +73,16 @@
             <!-- Форма входа -->
             <div id="login-container">
                 <h2>Вход в систему</h2>
-                <form id="login-form" style="display: none;">
+                <form id="login-form">
                     <div class="form-group">
-                        <label for="username">Имя пользователя:</label>
-                        <input type="text" id="username" required>
+                        <label for="login-username">Имя пользователя:</label>
+                        <input type="text" id="login-username" required>
                     </div>
                     <div class="form-group">
-                        <label for="password">Пароль:</label>
+                        <label for="login-password">Пароль:</label>
                         <div class="password-group">
-                            <input type="password" id="password" class="password-input" required>
-                            <i class="fas fa-eye eye-icon" onclick="togglePassword()"></i>
+                            <input type="password" id="login-password" class="password-input" required>
+                            <i class="fas fa-eye eye-icon" onclick="togglePassword('login')"></i>
                         </div>
                     </div>
                     <button type="submit" class="btn primary-btn">Войти</button>
@@ -95,10 +95,10 @@
                 </form>
             </div>
 
-            <!-- Добавьте после формы входа -->
-            <div id="register-container" style="display: none;">
+            <!-- Форма регистрации -->
+            <div id="register-container">
                 <h2>Регистрация</h2>
-                <form id="register-form" style="display: none;">
+                <form id="register-form">
                     <div class="form-group">
                         <label for="reg-username">Имя пользователя:</label>
                         <input type="text" id="reg-username" required>
@@ -107,11 +107,13 @@
                         <label for="reg-password">Пароль:</label>
                         <div class="password-group">
                             <input type="password" id="reg-password" class="password-input" required>
-                            <i class="fas fa-eye eye-icon" onclick="toggleRegPassword()"></i>
+                            <i class="fas fa-eye eye-icon" onclick="togglePassword('register')"></i>
                         </div>
                     </div>
                     <button type="submit" class="btn primary-btn">Зарегистрироваться</button>
-                    <button type="button" class="btn secondary-btn" onclick="showLoginForm()">Уже есть аккаунт?</button>
+                    <button type="button" class="btn secondary-btn" onclick="showLoginForm()">
+                        Уже есть аккаунт?
+                    </button>
                 </form>
             </div>
 

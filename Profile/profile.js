@@ -25,9 +25,11 @@ const showSuccess = (message) => {
     }
 };
 
-const togglePassword = () => {
-    const passwordInput = document.querySelector('.password-input');
-    const eyeIcon = document.querySelector('.eye-icon');
+const togglePassword = (formType) => {
+    const passwordInput = formType === 'login' 
+        ? document.getElementById('login-password')
+        : document.getElementById('reg-password');
+    const eyeIcon = passwordInput.nextElementSibling;
     
     if (passwordInput.type === 'password') {
         passwordInput.type = 'text';
@@ -109,7 +111,7 @@ async function handleAnonymousLogin() {
             showSuccess('Успешный анонимный вход');
             showProfile(data.data);
         } else {
-            showError(data.message || 'Ошибка анои��ного входа');
+            showError(data.message || 'Ошибка аноиного входа');
         }
     } catch (error) {
         console.error('Anonymous login error:', error);
@@ -326,7 +328,7 @@ async function editUser(userId) {
     try {
         const userData = JSON.parse(localStorage.getItem('user'));
         if (!userData?.data?.token) {
-            throw new Error('Треуе��ся авторизация');
+            throw new Error('Треуеся авторизация');
         }
 
         const newUsername = prompt('Введите новое имя пользователя:');
@@ -397,7 +399,7 @@ async function showCreateUserModal() {
         
         if (response.ok && data.success) {
             showSuccess('Пользователь успешно создан');
-            await loadUsers(); // Перезагржаем список по��ьзователей
+            await loadUsers(); // Перезагржаем список поьзователей
         } else {
             throw new Error(data.message || 'Ошибка при создании пользователя');
         }
@@ -527,12 +529,10 @@ function showError(message) {
 
 // Функция для переключения на форму входа
 function showLoginForm() {
-    const registerForm = document.getElementById('register-form');
-    const loginForm = document.getElementById('login-form');
-    if (registerForm && loginForm) {
-        registerForm.style.display = 'none';
-        loginForm.style.display = 'block';
-    }
+    document.getElementById('login-container').style.display = 'block';
+    document.getElementById('register-container').style.display = 'none';
+    document.getElementById('success-message').style.display = 'none';
+    document.getElementById('error-message').style.display = 'none';
 }
 
 // Добавляем обработчик события при загрузке страницы
@@ -545,15 +545,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Функции для переключения между формами
 function showLoginForm() {
-    document.getElementById('login-form').style.display = 'block';
-    document.getElementById('register-form').style.display = 'none';
+    document.getElementById('login-container').style.display = 'block';
+    document.getElementById('register-container').style.display = 'none';
     document.getElementById('success-message').style.display = 'none';
     document.getElementById('error-message').style.display = 'none';
 }
 
 function showRegisterForm() {
-    document.getElementById('login-form').style.display = 'none';
-    document.getElementById('register-form').style.display = 'block';
+    document.getElementById('login-container').style.display = 'none';
+    document.getElementById('register-container').style.display = 'block';
     document.getElementById('success-message').style.display = 'none';
     document.getElementById('error-message').style.display = 'none';
 }
