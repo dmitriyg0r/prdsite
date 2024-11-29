@@ -15,8 +15,16 @@ const showError = (message) => {
 };
 
 const showSuccess = (message) => {
-    // Можно добавить красивое уведомление
-    console.log('Success:', message);
+    const errorMessage = document.getElementById('error-message');
+    if (errorMessage) {
+        errorMessage.textContent = message;
+        errorMessage.style.display = 'block';
+        errorMessage.style.backgroundColor = '#4CAF50';
+        
+        setTimeout(() => {
+            errorMessage.style.display = 'none';
+        }, 3000);
+    }
 };
 
 const togglePassword = () => {
@@ -56,9 +64,21 @@ async function handleLogin(event) {
         console.log('Login response data:', data);
 
         if (response.ok && data.success) {
-            localStorage.setItem('user', JSON.stringify(data.data));
+            // Сохраняем данные в правильном формате
+            const userData = {
+                success: true,
+                data: {
+                    username: data.data.username,
+                    role: data.data.role,
+                    token: data.data.token
+                }
+            };
+            
+            console.log('Saving user data:', userData); // Для отладки
+            localStorage.setItem('user', JSON.stringify(userData));
+            
             showSuccess('Успешный вход');
-            showProfile(data.data);
+            showProfile(userData);
         } else {
             showError(data.message || 'Ошибка входа');
         }
@@ -103,7 +123,6 @@ async function handleAnonymousLogin() {
 function showProfile(userData) {
     console.log('Showing profile for:', userData);
 
-    // Получаем необходимые элементы
     const loginContainer = document.getElementById('login-container');
     const profileInfo = document.getElementById('profile-info');
     const adminSection = document.getElementById('admin-section');
@@ -116,19 +135,18 @@ function showProfile(userData) {
     }
 
     try {
-        // Скрываем форму входа и показываем информацию профиля
         loginContainer.style.display = 'none';
         profileInfo.style.display = 'block';
 
-        // Обновляем информацию профиля
-        if (profileUsername) profileUsername.textContent = userData.username || 'Гость';
-        if (profileRole) profileRole.textContent = userData.role || 'Пользователь';
+        if (profileUsername) profileUsername.textContent = userData.data.username || 'Гость';
+        if (profileRole) profileRole.textContent = userData.data.role || 'Пользователь';
 
         // Показываем админ-панель если пользователь админ
         if (adminSection) {
-            if (userData.role === 'Admin') {
+            if (userData.data.role === 'Admin') {
                 adminSection.style.display = 'block';
-                loadUsers(); // Загружаем пользователей для админа
+                console.log('Loading users for admin...'); // Для отладки
+                loadUsers();
             } else {
                 adminSection.style.display = 'none';
             }
@@ -144,10 +162,13 @@ function showProfile(userData) {
 async function loadUsers() {
     console.log('Loading users...');
     try {
-        const userData = JSON.parse(localStorage.getItem('user'));
-        console.log('User data from storage:', userData); // Для отладки
+        const userDataString = localStorage.getItem('user');
+        console.log('Raw user data from storage:', userDataString); // Для отладки
         
-        if (!userData || !userData.data || !userData.data.token) {
+        const userData = JSON.parse(userDataString);
+        console.log('Parsed user data:', userData); // Для отладки
+        
+        if (!userData?.data?.token) {
             throw new Error('No authentication token found');
         }
 
@@ -214,7 +235,7 @@ function displayUsers(users) {
     });
 }
 
-// Функция выхода и�� системы
+// Функция выхода и системы
 function handleLogout() {
     console.log('Logging out...');
     try {
@@ -316,7 +337,7 @@ async function deleteUser(userId) {
     }
 }
 
-// Функция для редактирования пользователя
+// ��ункция для ре��актирования пользователя
 async function editUser(userId) {
     try {
         const userData = JSON.parse(localStorage.getItem('user'));
@@ -329,7 +350,7 @@ async function editUser(userId) {
         const newRole = prompt('Введите новую роль (Admin/User):');
         
         if (!newUsername || !newRole) {
-            return; // Пользователь отменил редактирование
+            return; // Поьзователь отменил редактирование
         }
 
         const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
@@ -356,21 +377,70 @@ async function editUser(userId) {
         }
     } catch (error) {
         console.error('Error updating user:', error);
-        showError('Ошибка при обновлении пользователя');
+        showError('Ошибк при обновлении пользователя');
     }
 }
 
-// Функция для отображения сообщения об успехе
-function showSuccess(message) {
-    // Можно использовать существующий элемент для ошибок или создать новый для успешных сообщений
-    const errorMessage = document.getElementById('error-message');
-    if (errorMessage) {
-        errorMessage.textContent = message;
-        errorMessage.style.display = 'block';
-        errorMessage.style.backgroundColor = '#4CAF50'; // Зеленый цвет для успеха
+// Функция для показа модального окна создания пользователя
+async function showCreateUserModal() {
+    console.log('Opening create user modal');
+    try {
+        // В будущем здесь можно использовать модальное окно вместо prompt
+        const username = prompt('Введите имя пользователя:');
+        if (!username) return;
+
+        const password = prompt('Введите пароль:');
+        if (!password) return;
+
+        const role = prompt('Введите роль (Admin/User):');
+        if (!role || !['Admin', 'User'].includes(role)) {
+            showError('Некорректная роль. Допустимые значения: Admin, User');
+            return;
+        }
+
+        await createUser(username, password, role);
+    } catch (error) {
+        console.error('Error in showCreateUserModal:', error);
+        showError('Ошибка при создании пользователя');
+    }
+}
+
+// Функция для создания нового пользователя
+async function createUser(username, password, role) {
+    console.log('Creating new user:', { username, role });
+    try {
+        const userData = JSON.parse(localStorage.getItem('user'));
         
-        setTimeout(() => {
-            errorMessage.style.display = 'none';
-        }, 3000);
+        if (!userData?.data?.token) {
+            throw new Error('No authentication token found');
+        }
+
+        const response = await fetch(`${API_BASE_URL}/users`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${userData.data.token}`,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                username,
+                password,
+                role
+            }),
+            credentials: 'include'
+        });
+
+        const data = await response.json();
+        console.log('Create user response:', data);
+        
+        if (response.ok && data.success) {
+            showSuccess('Пользователь успешно создан');
+            await loadUsers(); // Перезагружаем список пользователей
+        } else {
+            throw new Error(data.message || 'Failed to create user');
+        }
+    } catch (error) {
+        console.error('Error creating user:', error);
+        showError('Ошибка при создании пользователя: ' + error.message);
     }
 }

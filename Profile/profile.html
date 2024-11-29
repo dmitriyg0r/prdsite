@@ -9,6 +9,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
+    <!-- В начале body или где-то в верхней части страницы -->
+    <div id="error-message"></div>
+
     <!-- Боковое меню -->
     <nav class="sidebar">
         <!-- Добавляем иконку -->
@@ -100,7 +103,7 @@
             <div id="admin-section" style="display: none;">
                 <div class="admin-controls">
                     <h3>Управление пользователями</h3>
-                    <button class="btn primary-btn" onclick="showCreateUserModal()">
+                    <button class="action-btn primary-btn" onclick="showCreateUserModal()">
                         <i class="fas fa-plus"></i> Добавить пользователя
                     </button>
                 </div>

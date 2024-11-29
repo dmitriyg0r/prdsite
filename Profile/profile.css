@@ -126,6 +126,15 @@
 
 .admin-controls {
     margin-bottom: 20px;
+    padding: 15px;
+    background: var(--text-container-background);
+    border-radius: 8px;
+    box-shadow: var(--text-container-shadow);
+}
+
+.admin-controls h3 {
+    margin: 0 0 15px 0;
+    color: var(--text-color);
 }
 
 /* Стили для таблицы пользователей */
@@ -161,27 +170,42 @@
 }
 
 .action-btn {
-    padding: 6px 12px;
+    padding: 8px 16px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    margin: 0 4px;
-    transition: all 0.3s ease;
+    font-size: 14px;
+    transition: background-color 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.primary-btn {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.primary-btn:hover {
+    background-color: #45a049;
 }
 
 .edit-btn {
-    background: var(--primary-color);
+    background-color: #2196F3;
     color: white;
+}
+
+.edit-btn:hover {
+    background-color: #1976D2;
 }
 
 .delete-btn {
-    background: #ff4444;
+    background-color: #f44336;
     color: white;
 }
 
-.action-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+.delete-btn:hover {
+    background-color: #d32f2f;
 }
 
 /* Темная тема */
@@ -276,15 +300,14 @@
 
 /* Стили для сообщений об ошибках и успехе */
 #error-message {
-    display: none;
     position: fixed;
     top: 20px;
     right: 20px;
     padding: 15px 20px;
-    border-radius: 5px;
+    border-radius: 4px;
     color: white;
-    background-color: #ff4444;
     z-index: 1000;
+    display: none;
     animation: slideIn 0.3s ease-out;
 }
 

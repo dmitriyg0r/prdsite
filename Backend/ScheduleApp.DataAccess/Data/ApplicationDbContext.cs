@@ -23,10 +23,10 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.PasswordHash).IsRequired();
             entity.Property(e => e.Role).IsRequired();
             entity.Property(e => e.CreatedAt)
-                .HasColumnType("timestamp with time zone")
-                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                .HasColumnType("datetime2")
+                .HasDefaultValueSql("GETUTCDATE()");
             entity.Property(e => e.LastLogin)
-                .HasColumnType("timestamp with time zone")
+                .HasColumnType("datetime2")
                 .IsRequired(false);
 
             entity.HasIndex(e => e.Username).IsUnique();
