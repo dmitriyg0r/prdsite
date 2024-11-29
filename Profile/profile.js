@@ -292,3 +292,139 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// Глобальные переменные для модальных окон
+let currentUserId = null;
+let deleteUserId = null;
+
+// Функции для работы с модальными окнами
+function showCreateUserModal() {
+    document.getElementById('modal-title').textContent = 'Добавить пользователя';
+    document.getElementById('userForm').reset();
+    document.getElementById('userId').value = '';
+    document.getElementById('password').required = true;
+    document.getElementById('userModal').style.display = 'block';
+}
+
+function showEditUserModal(user) {
+    document.getElementById('modal-title').textContent = 'Редактировать пользователя';
+    document.getElementById('userId').value = user.id;
+    document.getElementById('username').value = user.username;
+    document.getElementById('role').value = user.role;
+    document.getElementById('password').required = false;
+    document.getElementById('userModal').style.display = 'block';
+}
+
+function closeUserModal() {
+    document.getElementById('userModal').style.display = 'none';
+}
+
+function showDeleteModal(userId) {
+    deleteUserId = userId;
+    document.getElementById('deleteModal').style.display = 'block';
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteModal').style.display = 'none';
+    deleteUserId = null;
+}
+
+// CRUD операции
+async function handleUserSubmit(event) {
+    event.preventDefault();
+    
+    const userId = document.getElementById('userId').value;
+    const userData = {
+        username: document.getElementById('username').value,
+        role: document.getElementById('role').value,
+        password: document.getElementById('password').value
+    };
+
+    try {
+        const token = JSON.parse(localStorage.getItem('user')).token;
+        const url = userId 
+            ? `${API_BASE_URL}/users/${userId}`
+            : `${API_BASE_URL}/users`;
+        
+        const response = await fetch(url, {
+            method: userId ? 'PUT' : 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(userData)
+        });
+
+        if (response.ok) {
+            closeUserModal();
+            loadUsers();
+            showSuccess(userId ? 'Пользователь обновлен' : 'Пользователь создан');
+        } else {
+            const error = await response.json();
+            showError(error.message || 'Произошла ошибка');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showError('Произошла ошибка при сохранении');
+    }
+}
+
+async function editUser(userId) {
+    try {
+        const token = JSON.parse(localStorage.getItem('user')).token;
+        const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            if (result.success) {
+                showEditUserModal(result.data);
+            }
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showError('Ошибка при загрузке данных пользователя');
+    }
+}
+
+async function deleteUser(userId) {
+    showDeleteModal(userId);
+}
+
+async function confirmDelete() {
+    try {
+        const token = JSON.parse(localStorage.getItem('user')).token;
+        const response = await fetch(`${API_BASE_URL}/users/${deleteUserId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (response.ok) {
+            closeDeleteModal();
+            loadUsers();
+            showSuccess('Пользователь удален');
+        } else {
+            const error = await response.json();
+            showError(error.message || 'Произошла ошибка при удалении');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showError('Произошла ошибка при удалении');
+    }
+}
+
+// Вспомогательные функции для уведомлений
+function showSuccess(message) {
+    // Добавьте свою реализацию уведомлений
+    alert(message);
+}
+
+function showError(message) {
+    // Добавьте свою реализацию уведомлений
+    alert(message);
+}
