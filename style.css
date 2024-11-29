@@ -40,52 +40,52 @@
 
 /* Темная тема - улучшенная тёмная тема */
 [data-theme="dark"] {
-    /* Основные цвета - обновленная тёмная тема */
-    --primary-color: #9D4EDA;
-    --primary-color-rgb: 157, 78, 218;
-    --text-color: #E8EAED;
-    --background-color: #1A1B1E;
-    --sidebar-background: #9D4EDA;
-    --sidebar-hover: #B76FEE;
+    /* Основные цвета - более тёмные */
+    --primary-color: #8B44C4;           /* Темнее фиолетовый */
+    --primary-color-rgb: 139, 68, 196;
+    --text-color: #E0E2E5;              /* Чуть приглушенный белый */
+    --background-color: #121214;         /* Более тёмный фон */
+    --sidebar-background: #8B44C4;
+    --sidebar-hover: #9D4EDA;
     
     /* Дополнительные цвета */
     --button-text: #FFFFFF;
-    --button-background: #9D4EDA;
-    --button-hover: #B76FEE;
-    --button-secondary: #2D2E32;
-    --button-background-rgb: 157, 78, 218;
-    --button-hover-rgb: 183, 111, 238;
+    --button-background: #8B44C4;
+    --button-hover: #9D4EDA;
+    --button-secondary: #1E1F22;         /* Темнее */
+    --button-background-rgb: 139, 68, 196;
+    --button-hover-rgb: 157, 78, 218;
     
     /* Контейнеры */
-    --text-container-background: #25262A;
-    --text-container-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
-    --table-background: #2D2E32;
-    --input-background: #2D2E32;
-    --border-color: #3A3B3F;
+    --text-container-background: #1A1B1E; /* Темнее */
+    --text-container-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+    --table-background: #1E1F22;         /* Темнее */
+    --input-background: #1E1F22;         /* Темнее */
+    --border-color: #2A2B2F;             /* Темнее */
     
     /* Текст */
-    --text-secondary: rgba(232, 234, 237, 0.7);
+    --text-secondary: rgba(224, 226, 229, 0.7);
     --header-text: #FFFFFF;
-    --header-gradient: #B76FEE;
-    --accent-color: #9D4EDA;
+    --header-gradient: #9D4EDA;
+    --accent-color: #8B44C4;
     
     /* Таблицы */
-    --table-header-bg: #2D2E32;
-    --table-header-text: #E8EAED;
-    --table-hover: rgba(157, 78, 218, 0.15);
-    --table-today: rgba(157, 78, 218, 0.2);
-    --table-border: #3A3B3F;
+    --table-header-bg: #1E1F22;          /* Темнее */
+    --table-header-text: #E0E2E5;
+    --table-hover: rgba(139, 68, 196, 0.15);
+    --table-today: rgba(139, 68, 196, 0.2);
+    --table-border: #2A2B2F;             /* Темнее */
     
     /* Дополнительные оттенки */
-    --primary-dark: #8445BB;
-    --primary-light: #B76FEE;
+    --primary-dark: #733BA3;             /* Темнее */
+    --primary-light: #9D4EDA;
     
     /* Новые цвета фона */
-    --background: #1A1B1E;
-    --surface: #25262A;
-    --card-background: #2D2E32;
-    --hover-background: #3A3B3F;
-    --today-highlight: rgba(157, 78, 218, 0.1);
+    --background: #121214;               /* Самый тёмный фон */
+    --surface: #1A1B1E;                  /* Темнее */
+    --card-background: #1E1F22;          /* Темнее */
+    --hover-background: #2A2B2F;         /* Темнее */
+    --today-highlight: rgba(139, 68, 196, 0.1);
 }
 
 /* Добавим общее правило для всего текста */
@@ -1091,23 +1091,38 @@ table {
     background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
 }
 
-/* Стилизация ползунка для прокрутки */
+/* Стилизация ползунка прокрутки для тёмной темы */
 body[data-theme="dark"] ::-webkit-scrollbar {
     width: 8px;
-    background-color: #1A1B1E; /* Цвет фона ползунка */
+    background-color: #121214;  /* Очень тёмный фон */
 }
 
 body[data-theme="dark"] ::-webkit-scrollbar-thumb {
-    background-color: #3A3B3F; /* Цвет ползунка */
+    background-color: #1E1F22;  /* Тёмный ползунок */
     border-radius: 4px;
 }
 
 body[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
-    background-color: #5A5B5F; /* Цвет ползунка при наведении */
+    background-color: #2A2B2F;  /* Чуть светлее при наведении */
 }
 
 /* Для Firefox */
 body[data-theme="dark"] {
     scrollbar-width: thin;
-    scrollbar-color: #3A3B3F #1A1B1E;
+    scrollbar-color: #1E1F22 #121214;
+}
+
+/* Стилизация ползунка для элементов с прокруткой (например, текстовых областей) */
+body[data-theme="dark"] *::-webkit-scrollbar {
+    width: 8px;
+    background-color: #121214;
+}
+
+body[data-theme="dark"] *::-webkit-scrollbar-thumb {
+    background-color: #1E1F22;
+    border-radius: 4px;
+}
+
+body[data-theme="dark"] *::-webkit-scrollbar-thumb:hover {
+    background-color: #2A2B2F;
 }
