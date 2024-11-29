@@ -128,27 +128,22 @@ async function handleLogin(event) {
 async function loadUsers() {
     console.log('Loading users...');
     try {
-        const user = JSON.parse(localStorage.getItem('user'));
-        console.log('Current user data:', user);
+        const userData = JSON.parse(localStorage.getItem('user'));
         
-        if (!user || !user.data || !user.data.token) {
-            console.error('No authentication token found');
+        if (!userData || !userData.token) {
             throw new Error('No authentication token found');
         }
 
-        const response = await fetch('https://adminflow.ru/api/users', {
+        const response = await fetch('/api/users', {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${user.data.token}`,
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
+                'Authorization': `Bearer ${userData.token}`,
+                'Content-Type': 'application/json'
             }
         });
 
-        console.log('Users API response status:', response.status);
         const data = await response.json();
-        console.log('Users API response data:', data);
-
+        
         if (response.ok && data.success) {
             displayUsers(data.data);
         } else {
@@ -162,20 +157,18 @@ async function loadUsers() {
 
 // Функция для отображения пользователей в таблице
 function displayUsers(users) {
-    console.log('Displaying users:', users);
     const tableBody = document.getElementById('users-table-body');
     
     if (!tableBody) {
-        console.error('Table body element not found');
+        console.error('Users table body not found');
         return;
     }
 
     tableBody.innerHTML = '';
 
     if (!Array.isArray(users) || users.length === 0) {
-        console.log('No users to display');
         const row = document.createElement('tr');
-        row.innerHTML = '<td colspan="5" style="text-align: center;">Нет пользователей для отображения</td>';
+        row.innerHTML = '<td colspan="5" class="text-center">Нет пользователей для отображения</td>';
         tableBody.appendChild(row);
         return;
     }
