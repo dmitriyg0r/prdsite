@@ -11,20 +11,9 @@ const togglePassword = () => {
     }
 }
 
-const showError = (message) => {
-    const errorMessage = document.getElementById('error-message');
-    if (errorMessage) {
-        errorMessage.textContent = message;
-        errorMessage.style.display = 'block';
-        
-        // Автоматически скрываем сообщение через 5 секунд
-        setTimeout(() => {
-            errorMessage.style.display = 'none';
-        }, 5000);
-    } else {
-        console.error('Error element not found:', message);
-    }
-};
+function showError(message) {
+    alert(message);
+}
 
 // Обновляем константу API_BASE_URL
 const API_BASE_URL = 'https://adminflow.ru/api'; // Убираем порт 5002
@@ -85,27 +74,38 @@ async function loadUsers() {
     console.log('LoadUsers called');
     try {
         const userData = JSON.parse(localStorage.getItem('user'));
-        console.log('Token:', userData.token);
+        if (!userData || !userData.token) {
+            console.error('No token found');
+            return;
+        }
 
         const response = await fetch(`${API_BASE_URL}/users`, {
+            method: 'GET',
             headers: {
                 'Authorization': `Bearer ${userData.token}`,
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
             }
         });
         
         console.log('Response status:', response.status);
         
         if (response.ok) {
-            const users = await response.json();
-            console.log('Users data:', users);
-            displayUsers(users);
+            const result = await response.json();
+            if (result.success && result.data) {
+                console.log('Users data:', result.data);
+                displayUsers(result.data);
+            } else {
+                console.error('Error in response:', result);
+            }
         } else {
             const errorData = await response.json();
             console.error('Error loading users:', errorData);
+            showError('Ошибка загрузки пользователей');
         }
     } catch (error) {
         console.error('Error in loadUsers:', error);
+        showError('Ошибка при загрузке данных');
     }
 }
 
@@ -120,16 +120,27 @@ function displayUsers(users) {
     
     users.forEach(user => {
         const row = document.createElement('tr');
-        const lastLoginDate = user.lastLogin ? new Date(user.lastLogin).toLocaleString() : 'Никогда';
+        
+        // Форматируем дату
+        const createdAt = new Date(user.createdAt).toLocaleString('ru-RU', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
         
         row.innerHTML = `
             <td>${user.id}</td>
             <td>${user.username}</td>
             <td>${user.role}</td>
-            <td>${lastLoginDate}</td>
+            <td>${createdAt}</td>
             <td>
+                <button class="action-btn edit-btn" onclick="editUser(${user.id})">
+                    <i class="fas fa-edit"></i>
+                </button>
                 <button class="action-btn delete-btn" onclick="deleteUser(${user.id})">
-                    <i class="fas fa-trash"></i> Удалить
+                    <i class="fas fa-trash"></i>
                 </button>
             </td>
         `;
@@ -171,19 +182,16 @@ function showProfile(userData) {
     document.getElementById('profile-container').style.display = 'block';
     
     // Обновляем информацию профиля
-    document.getElementById('profile-username').textContent = userData.username || 'Анонимный пользователь';
-    document.getElementById('profile-role').textContent = userData.role || 'Гость';
+    document.getElementById('profile-username').textContent = userData.username;
+    document.getElementById('profile-role').textContent = userData.role;
     
-    // Показываем админ-панель, если пользователь админ
+    // Показываем админ-панель и загружаем пользователей, если пользователь админ
     const adminSection = document.getElementById('admin-section');
-    console.log('User role:', userData.role);
-    
     if (userData.role === 'Admin') {
-        console.log('Showing admin section');
+        console.log('Loading admin section');
         adminSection.style.display = 'block';
         loadUsers(); // Загружаем список пользователей
     } else {
-        console.log('Hiding admin section');
         adminSection.style.display = 'none';
     }
 }
@@ -272,3 +280,134 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// Глобальные переменные для модальных окон
+let currentUserId = null;
+let deleteUserId = null;
+
+// Функции для работы с модальными окнами
+function showCreateUserModal() {
+    document.getElementById('modal-title').textContent = 'Добавить пользователя';
+    document.getElementById('userForm').reset();
+    document.getElementById('userId').value = '';
+    document.getElementById('password').required = true;
+    document.getElementById('userModal').style.display = 'block';
+}
+
+function showEditUserModal(user) {
+    document.getElementById('modal-title').textContent = 'Редактировать пользователя';
+    document.getElementById('userId').value = user.id;
+    document.getElementById('username').value = user.username;
+    document.getElementById('role').value = user.role;
+    document.getElementById('password').required = false;
+    document.getElementById('userModal').style.display = 'block';
+}
+
+function closeUserModal() {
+    document.getElementById('userModal').style.display = 'none';
+}
+
+function showDeleteModal(userId) {
+    deleteUserId = userId;
+    document.getElementById('deleteModal').style.display = 'block';
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteModal').style.display = 'none';
+    deleteUserId = null;
+}
+
+// CRUD операции
+async function handleUserSubmit(event) {
+    event.preventDefault();
+    
+    const userId = document.getElementById('userId').value;
+    const userData = {
+        username: document.getElementById('username').value,
+        role: document.getElementById('role').value,
+        password: document.getElementById('password').value
+    };
+
+    try {
+        const token = JSON.parse(localStorage.getItem('user')).token;
+        const url = userId 
+            ? `${API_BASE_URL}/users/${userId}`
+            : `${API_BASE_URL}/users`;
+        
+        const response = await fetch(url, {
+            method: userId ? 'PUT' : 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(userData)
+        });
+
+        if (response.ok) {
+            closeUserModal();
+            loadUsers();
+            showSuccess(userId ? 'Пользователь обновлен' : 'Пользователь создан');
+        } else {
+            const error = await response.json();
+            showError(error.message || 'Произошла ошибка');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showError('Произошла ошибка при сохранении');
+    }
+}
+
+async function editUser(userId) {
+    try {
+        const token = JSON.parse(localStorage.getItem('user')).token;
+        const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            if (result.success) {
+                showEditUserModal(result.data);
+            }
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showError('Ошибка при загрузке данных пользователя');
+    }
+}
+
+async function deleteUser(userId) {
+    showDeleteModal(userId);
+}
+
+async function confirmDelete() {
+    try {
+        const token = JSON.parse(localStorage.getItem('user')).token;
+        const response = await fetch(`${API_BASE_URL}/users/${deleteUserId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (response.ok) {
+            closeDeleteModal();
+            loadUsers();
+            showSuccess('Пользователь удален');
+        } else {
+            const error = await response.json();
+            showError(error.message || 'Произошла ошибка при удалении');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showError('Произошла ошибка при удалении');
+    }
+}
+
+// Вспомогательные функции для уведомлений
+function showSuccess(message) {
+    // Добавьте свою реализацию уведомлений
+    alert(message);
+}
