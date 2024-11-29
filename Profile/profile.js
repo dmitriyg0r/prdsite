@@ -1,22 +1,8 @@
-const togglePassword = () => {
-    const passwordInput = document.querySelector('.password-input');
-    const eyeIcon = document.querySelector('.eye-icon');
-    
-    if (passwordInput.type === 'password') {
-        passwordInput.type = 'text';
-        eyeIcon.classList.add('show');
-    } else {
-        passwordInput.type = 'password';
-        eyeIcon.classList.remove('show');
-    }
-}
+const API_BASE_URL = 'https://adminflow.ru/api';
 
 function showError(message) {
     alert(message);
 }
-
-// Обновляем константу API_BASE_URL
-const API_BASE_URL = 'https://adminflow.ru/api'; // Убираем порт 5002
 
 // Функция для проверки состояния сервера
 async function checkServerStatus() {
