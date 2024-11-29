@@ -421,27 +421,24 @@ async function handleRegister(event) {
     event.preventDefault();
     
     try {
-        const registerUrl = `${API_BASE_URL}/register`;
-        console.log('Отправка запроса на:', registerUrl);
+        const username = document.getElementById('reg-username').value;
+        const password = document.getElementById('reg-password').value;
         
-        const response = await fetch(registerUrl, {
+        console.log('Отправка запроса регистрации:', { username });
+        
+        const response = await fetch('https://adminflow.ru/api/register', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
-            body: JSON.stringify({ 
-                username: document.getElementById('reg-username').value,
-                password: document.getElementById('reg-password').value
-            })
+            body: JSON.stringify({ username, password })
         });
         
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.message || `Ошибка HTTP: ${response.status}`);
-        }
+        console.log('Статус ответа:', response.status);
         
         const data = await response.json();
+        console.log('Ответ сервера:', data);
         
         if (data.success) {
             showSuccess('Регистрация успешна! Теперь вы можете войти.');
@@ -497,6 +494,52 @@ document.addEventListener('DOMContentLoaded', async () => {
     const apiAvailable = await checkApiHealth();
     if (!apiAvailable) {
         showError('API сервер недоступен. Пожалуйста, попробуйте позже.');
+    }
+});
+
+// Функция для отображения сообщения об успехе
+function showSuccess(message) {
+    const successElement = document.getElementById('success-message');
+    if (successElement) {
+        successElement.textContent = message;
+        successElement.style.display = 'block';
+        setTimeout(() => {
+            successElement.style.display = 'none';
+        }, 5000);
+    } else {
+        alert(message);
+    }
+}
+
+// Функция для отображения ошибки
+function showError(message) {
+    const errorElement = document.getElementById('error-message');
+    if (errorElement) {
+        errorElement.textContent = message;
+        errorElement.style.display = 'block';
+        setTimeout(() => {
+            errorElement.style.display = 'none';
+        }, 5000);
+    } else {
+        alert(message);
+    }
+}
+
+// Функция для переключения на форму входа
+function showLoginForm() {
+    const registerForm = document.getElementById('register-form');
+    const loginForm = document.getElementById('login-form');
+    if (registerForm && loginForm) {
+        registerForm.style.display = 'none';
+        loginForm.style.display = 'block';
+    }
+}
+
+// Добавляем обработчик события при загрузке страницы
+document.addEventListener('DOMContentLoaded', () => {
+    const registerForm = document.getElementById('register-form');
+    if (registerForm) {
+        registerForm.addEventListener('submit', handleRegister);
     }
 });
 
