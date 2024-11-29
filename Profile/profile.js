@@ -7,7 +7,6 @@ const showError = (message) => {
         errorMessage.textContent = message;
         errorMessage.style.display = 'block';
         
-        // Автоматически скрываем ошибку через 5 секунд
         setTimeout(() => {
             errorMessage.style.display = 'none';
         }, 5000);
@@ -395,15 +394,13 @@ async function createUser(username, password, role) {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${userData.data.token}`,
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 username,
                 password,
                 role
-            }),
-            credentials: 'include'
+            })
         });
 
         const data = await response.json();
@@ -411,7 +408,7 @@ async function createUser(username, password, role) {
         
         if (response.ok && data.success) {
             showSuccess('Пользователь успешно создан');
-            await loadUsers(); // Перезагружаем список пользователй
+            await loadUsers(); // Перезагружаем список пользователей
         } else {
             throw new Error(data.message || 'Failed to create user');
         }

@@ -122,26 +122,15 @@ app.post('/api/users', authenticateToken, async (req, res) => {
 
         const { username, password, role } = req.body;
         
-        // Проверка обязательных полей
         if (!username || !password || !role) {
             return res.status(400).json({ 
                 success: false, 
-                message: 'Все поля обязательны для заполнения' 
+                message: 'Все поля обязательны' 
             });
         }
 
-        // Проверка роли
-        if (!['Admin', 'User'].includes(role)) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Недопустимая роль' 
-            });
-        }
-
-        // Хеширование пароля
         const passwordHash = await bcrypt.hash(password, 10);
 
-        // Создание пользователя
         const result = await pool.query(
             'INSERT INTO users (username, password_hash, role) VALUES ($1, $2, $3) RETURNING id, username, role',
             [username, passwordHash, role]
@@ -156,7 +145,6 @@ app.post('/api/users', authenticateToken, async (req, res) => {
     } catch (error) {
         console.error('Error creating user:', error);
         
-        // Проверка на дубликат имени пользователя
         if (error.code === '23505') { // unique_violation
             return res.status(400).json({ 
                 success: false, 
