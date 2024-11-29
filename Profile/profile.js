@@ -105,12 +105,11 @@ async function handleAnonymousLogin() {
 function showProfile(userData) {
     const loginContainer = document.getElementById('login-container');
     const registerContainer = document.getElementById('register-container');
-    const profileContainer = document.getElementById('profile-container');
-    const usersList = document.getElementById('users-list');
+    const profileInfo = document.getElementById('profile-info');
     
     if (loginContainer) loginContainer.style.display = 'none';
     if (registerContainer) registerContainer.style.display = 'none';
-    if (profileContainer) profileContainer.style.display = 'block';
+    if (profileInfo) profileInfo.style.display = 'block';
     
     // Отображаем информацию о пользователе
     const userDetails = document.querySelector('.user-details');
@@ -413,4 +412,43 @@ document.addEventListener('DOMContentLoaded', () => {
     // По умолчанию показываем форму входа
     showLoginForm();
 });
+
+// Обработчик загрузки аватара
+function initializeAvatarUpload() {
+    const avatarUpload = document.getElementById('avatar-upload');
+    const userAvatar = document.getElementById('user-avatar');
+
+    avatarUpload.addEventListener('change', async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+            showError('Пожалуйста, выберите изображение');
+            return;
+        }
+
+        try {
+            // Создаем превью изображения
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                userAvatar.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+
+            // Здесь можно добавить логику загрузки на сервер
+            // const formData = new FormData();
+            // formData.append('avatar', file);
+            // const response = await fetch(`${API_BASE_URL}/upload-avatar`, {
+            //     method: 'POST',
+            //     body: formData,
+            //     credentials: 'include'
+            // });
+
+            showSuccess('Аватар успешно обновлен');
+        } catch (error) {
+            console.error('Error uploading avatar:', error);
+            showError('Ошибка при загрузке аватара');
+        }
+    });
+}
 

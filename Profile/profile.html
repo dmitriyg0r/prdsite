@@ -120,9 +120,26 @@
             <!-- Информация о профиле -->
             <div id="profile-info" style="display: none;">
                 <h2>Профиль пользователя</h2>
-                <p>Имя пользователя: <span id="profile-username"></span></p>
-                <p>Роль: <span id="profile-role"></span></p>
-                <button class="btn danger-btn" onclick="handleLogout()">Выйти</button>
+                <div class="profile-content">
+                    <div class="avatar-section">
+                        <div class="avatar-container">
+                            <img id="user-avatar" src="../assets/default-avatar.png" alt="Аватар пользователя">
+                            <div class="avatar-overlay">
+                                <label for="avatar-upload" class="avatar-upload-label">
+                                    <i class="fas fa-camera"></i>
+                                </label>
+                                <input type="file" id="avatar-upload" accept="image/*" style="display: none;">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="user-details">
+                        <p>Имя пользователя: <span id="profile-username"></span></p>
+                        <p>Роль: <span id="profile-role"></span></p>
+                        <button class="btn danger-btn" onclick="handleLogout()">
+                            <i class="fas fa-sign-out-alt"></i> Выйти
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <!-- Админ-панель -->
