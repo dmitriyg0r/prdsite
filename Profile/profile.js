@@ -1,3 +1,31 @@
+const API_BASE_URL = 'https://adminflow.ru/api';
+
+// Вспомогательные функции
+const showError = (message) => {
+    const errorMessage = document.getElementById('error-message');
+    if (errorMessage) {
+        errorMessage.textContent = message;
+        errorMessage.style.display = 'block';
+        
+        setTimeout(() => {
+            errorMessage.style.display = 'none';
+        }, 5000);
+    }
+};
+
+const showSuccess = (message) => {
+    const errorMessage = document.getElementById('error-message');
+    if (errorMessage) {
+        errorMessage.textContent = message;
+        errorMessage.style.display = 'block';
+        errorMessage.style.backgroundColor = '#4CAF50';
+        
+        setTimeout(() => {
+            errorMessage.style.display = 'none';
+        }, 3000);
+    }
+};
+
 const togglePassword = () => {
     const passwordInput = document.querySelector('.password-input');
     const eyeIcon = document.querySelector('.eye-icon');
@@ -9,209 +37,12 @@ const togglePassword = () => {
         passwordInput.type = 'password';
         eyeIcon.classList.remove('show');
     }
-}
-
-const showError = (message) => {
-    const errorMessage = document.getElementById('error-message');
-    if (errorMessage) {
-        errorMessage.textContent = message;
-        errorMessage.style.display = 'block';
-        
-        // Автоматически скрываем сообщение через 5 секунд
-        setTimeout(() => {
-            errorMessage.style.display = 'none';
-        }, 5000);
-    } else {
-        console.error('Error element not found:', message);
-    }
 };
 
-// Обновляем константу API_BASE_URL
-const API_BASE_URL = 'https://adminflow.ru/api'; // Убираем порт 5002
-
-// Функция для проверки состояния сервера
-async function checkServerStatus() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/health`, {
-            method: 'GET',
-            mode: 'cors'
-        });
-        console.log('Server health check status:', response.status);
-        return response.ok;
-    } catch (error) {
-        console.error('Server health check failed:', error);
-        return false;
-    }
-}
-
-// Функция для анонимного входа
-async function handleAnonymousLogin() {
-    try {
-        console.log('Attempting anonymous login...');
-        
-        const response = await fetch(`${API_BASE_URL}/auth/anonymous-login`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            credentials: 'include'
-        });
-
-        console.log('Response status:', response.status);
-        
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Error response:', errorText);
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        console.log('Login successful:', data);
-        
-        if (data.success) {
-            localStorage.setItem('user', JSON.stringify(data.data));
-            showProfile(data.data);
-        } else {
-            throw new Error(data.message || 'Unknown error');
-        }
-    } catch (error) {
-        console.error('Anonymous login error:', error);
-        showError(`Ошибка анонимного входа: ${error.message}`);
-    }
-}
-
-async function loadUsers() {
-    console.log('LoadUsers called');
-    try {
-        const userData = JSON.parse(localStorage.getItem('user'));
-        console.log('Token:', userData.token);
-
-        const response = await fetch(`${API_BASE_URL}/users`, {
-            headers: {
-                'Authorization': `Bearer ${userData.token}`,
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        console.log('Response status:', response.status);
-        
-        if (response.ok) {
-            const users = await response.json();
-            console.log('Users data:', users);
-            displayUsers(users);
-        } else {
-            const errorData = await response.json();
-            console.error('Error loading users:', errorData);
-        }
-    } catch (error) {
-        console.error('Error in loadUsers:', error);
-    }
-}
-
-function displayUsers(users) {
-    const tableBody = document.getElementById('users-table-body');
-    if (!tableBody) {
-        console.error('Table body element not found!');
-        return;
-    }
-    
-    tableBody.innerHTML = '';
-    
-    users.forEach(user => {
-        const row = document.createElement('tr');
-        const lastLoginDate = user.lastLogin ? new Date(user.lastLogin).toLocaleString() : 'Никогда';
-        
-        row.innerHTML = `
-            <td>${user.id}</td>
-            <td>${user.username}</td>
-            <td>${user.role}</td>
-            <td>${lastLoginDate}</td>
-            <td>
-                <button class="action-btn delete-btn" onclick="deleteUser(${user.id})">
-                    <i class="fas fa-trash"></i> Удалить
-                </button>
-            </td>
-        `;
-        tableBody.appendChild(row);
-    });
-}
-
-async function editUser(userId) {
-    // Реализация редактирования пользователя
-    console.log('Редактирование пользователя:', userId);
-}
-
-async function deleteUser(userId) {
-    if (confirm('Вы уверены, что хотите удалить этого пользователя?')) {
-        try {
-            const userData = JSON.parse(localStorage.getItem('user'));
-            const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${userData.token}`
-                }
-            });
-            
-            if (response.ok) {
-                loadUsers(); // Перезагружаем список пользователей
-            } else {
-                console.error('Ошибка удаления пользователя');
-            }
-        } catch (error) {
-            console.error('Ошибка:', error);
-        }
-    }
-}
-
-function showProfile(userData) {
-    console.log('ShowProfile called with userData:', userData);
-
-    document.getElementById('login-container').style.display = 'none';
-    document.getElementById('profile-container').style.display = 'block';
-    
-    // Обновляем информацию профиля
-    document.getElementById('profile-username').textContent = userData.username || 'Анонимный пользователь';
-    document.getElementById('profile-role').textContent = userData.role || 'Гость';
-    
-    // Показываем админ-панель, если пользователь админ
-    const adminSection = document.getElementById('admin-section');
-    console.log('User role:', userData.role);
-    
-    if (userData.role === 'Admin') {
-        console.log('Showing admin section');
-        adminSection.style.display = 'block';
-        loadUsers(); // Загружаем список пользователей
-    } else {
-        console.log('Hiding admin section');
-        adminSection.style.display = 'none';
-    }
-}
-
-function handleLogout() {
-    localStorage.removeItem('user');
-    document.getElementById('profile-container').style.display = 'none';
-    document.getElementById('login-container').style.display = 'block';
-}
-
-// Функция для проверки доступности сервера
-async function checkServerAvailability() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/health`, {
-            method: 'GET',
-            credentials: 'include'
-        });
-        return response.ok;
-    } catch (error) {
-        console.error('Server check failed:', error);
-        return false;
-    }
-}
-
-// Обновляем функцию handleLogin
+// Функция для входа
 async function handleLogin(event) {
     event.preventDefault();
-    console.log('Attempting login...');
+    console.log('Login attempt started');
 
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
@@ -227,48 +58,347 @@ async function handleLogin(event) {
             credentials: 'include'
         });
 
-        console.log('Response status:', response.status);
+        console.log('Login response status:', response.status);
+        const data = await response.json();
+        console.log('Login response data:', data);
 
-        if (response.ok) {
-            const data = await response.json();
-            if (data.success) {
-                localStorage.setItem('user', JSON.stringify(data.data));
-                showProfile(data.data);
-            } else {
-                showError(data.message || 'Login failed');
-            }
+        if (response.ok && data.success) {
+            // Сохраняем данные в правильном формате
+            const userData = {
+                success: true,
+                data: {
+                    username: data.data.username,
+                    role: data.data.role,
+                    token: data.data.token
+                }
+            };
+            
+            console.log('Saving user data:', userData); // Для отладки
+            localStorage.setItem('user', JSON.stringify(userData));
+            
+            showSuccess('Успешный вход');
+            showProfile(userData);
         } else {
-            const errorText = await response.text();
-            console.log('Error response:', errorText);
-            showError(`Login failed: ${response.status}`);
+            showError(data.message || 'Ошибка входа');
         }
     } catch (error) {
         console.error('Login error:', error);
-        showError(`Login error: ${error.message}`);
+        showError('Ошибка при попытке входа');
     }
 }
 
+// Функция для анонимного входа
+async function handleAnonymousLogin() {
+    console.log('Anonymous login attempt started');
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/anonymous-login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            credentials: 'include'
+        });
+
+        console.log('Anonymous login response status:', response.status);
+        const data = await response.json();
+        console.log('Anonymous login response data:', data);
+
+        if (response.ok && data.success) {
+            localStorage.setItem('user', JSON.stringify(data.data));
+            showSuccess('Успешный анонимный вход');
+            showProfile(data.data);
+        } else {
+            showError(data.message || 'Ошибка анонимного входа');
+        }
+    } catch (error) {
+        console.error('Anonymous login error:', error);
+        showError('Ошибка при попытке анонимного входа');
+    }
+}
+
+// Функция отображения профиля
+function showProfile(userData) {
+    console.log('Showing profile for:', userData);
+
+    const loginContainer = document.getElementById('login-container');
+    const profileInfo = document.getElementById('profile-info');
+    const adminSection = document.getElementById('admin-section');
+    const profileUsername = document.getElementById('profile-username');
+    const profileRole = document.getElementById('profile-role');
+
+    if (!loginContainer || !profileInfo) {
+        console.error('Required containers not found');
+        return;
+    }
+
+    try {
+        loginContainer.style.display = 'none';
+        profileInfo.style.display = 'block';
+
+        if (profileUsername) profileUsername.textContent = userData.data.username || 'Гость';
+        if (profileRole) profileRole.textContent = userData.data.role || 'Пользователь';
+
+        // Показываем админ-панель если пользователь админ
+        if (adminSection) {
+            if (userData.data.role === 'Admin') {
+                adminSection.style.display = 'block';
+                console.log('Loading users for admin...'); // Для отладки
+                loadUsers();
+            } else {
+                adminSection.style.display = 'none';
+            }
+        }
+
+        console.log('Profile displayed successfully');
+    } catch (error) {
+        console.error('Error displaying profile:', error);
+        showError('Ошибка при отображении профиля');
+    }
+}
+
+async function loadUsers() {
+    console.log('Loading users...');
+    try {
+        const userDataString = localStorage.getItem('user');
+        const userData = JSON.parse(userDataString);
+        
+        if (!userData?.data?.token) {
+            throw new Error('No authentication token found');
+        }
+
+        const response = await fetch(`${API_BASE_URL}/users`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${userData.data.token}`,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            credentials: 'include'
+        });
+
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+            displayUsers(data.data);
+        } else {
+            throw new Error(data.message || 'Failed to load users');
+        }
+    } catch (error) {
+        console.error('Error loading users:', error);
+        showError('Ошибка при загрузке пользователей');
+    }
+}
+
+function displayUsers(users) {
+    const usersList = document.getElementById('users-list');
+    if (!usersList) return;
+
+    usersList.innerHTML = '';
+    
+    users.forEach(user => {
+        const userDiv = document.createElement('div');
+        userDiv.className = 'user-item';
+        userDiv.innerHTML = `
+            <div class="user-info">
+                <span class="username">${user.username}</span>
+                <span class="role">${user.role}</span>
+                <span class="created-at">${new Date(user.created_at).toLocaleString()}</span>
+            </div>
+            <div class="user-actions">
+                <button onclick="editUser(${user.id})" class="edit-btn">Редактировать</button>
+                <button onclick="deleteUser(${user.id})" class="delete-btn">Удалить</button>
+            </div>
+        `;
+        usersList.appendChild(userDiv);
+    });
+}
+
+// Функция выхода и системы
+function handleLogout() {
+    console.log('Logging out...');
+    try {
+        // Очищем данные пользователя
+        localStorage.removeItem('user');
+        
+        // Показываем форму входа и скрываем профиль
+        const loginContainer = document.getElementById('login-container');
+        const profileInfo = document.getElementById('profile-info');
+        const adminSection = document.getElementById('admin-section');
+
+        if (loginContainer) loginContainer.style.display = 'block';
+        if (profileInfo) profileInfo.style.display = 'none';
+        if (adminSection) adminSection.style.display = 'none';
+
+        // Очищаем поля формы
+        const loginForm = document.getElementById('login-form');
+        if (loginForm) loginForm.reset();
+
+        console.log('Logout successful');
+    } catch (error) {
+        console.error('Error during logout:', error);
+        showError('Ошибка при выходе из системы');
+    }
+}
+
+// Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOMContentLoaded event fired');
+    console.log('Page loaded, initializing...');
+
+    // Проверяем сохраненную сессию
     const userData = localStorage.getItem('user');
     if (userData) {
-        console.log('Found user data in localStorage:', userData);
-        showProfile(JSON.parse(userData));
-    } else {
-        console.log('No user data found in localStorage');
+        console.log('Found saved session');
+        try {
+            const parsedUserData = JSON.parse(userData);
+            showProfile(parsedUserData);
+        } catch (e) {
+            console.error('Error parsing saved session:', e);
+            localStorage.removeItem('user');
+        }
     }
 
+    // Привязываем обработчики событий
     const loginForm = document.getElementById('login-form');
+    const anonymousLoginBtn = document.getElementById('anonymous-login-btn');
+    const logoutBtn = document.querySelector('.danger-btn'); // Кнопка выхода
+
     if (loginForm) {
         loginForm.addEventListener('submit', handleLogin);
+        console.log('Login form handler attached');
     }
 
-    const anonymousLoginBtn = document.getElementById('anonymous-login-btn');
     if (anonymousLoginBtn) {
-        anonymousLoginBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            console.log('Anonymous login button clicked');
-            handleAnonymousLogin();
-        });
+        anonymousLoginBtn.addEventListener('click', handleAnonymousLogin);
+        console.log('Anonymous login handler attached');
+    }
+
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', handleLogout);
+        console.log('Logout handler attached');
     }
 });
+
+// Функция для удаления пользователя
+async function deleteUser(userId) {
+    if (!confirm('Вы уверены, что хотите удалить этого пользователя?')) {
+        return;
+    }
+
+    try {
+        const userData = JSON.parse(localStorage.getItem('user'));
+        
+        if (!userData || !userData.data || !userData.data.token) {
+            throw new Error('No authentication token found');
+        }
+
+        const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${userData.data.token}`,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            credentials: 'include'
+        });
+
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+            showSuccess('Пользователь успешно удален');
+            loadUsers(); // Перезагружаем список пользователей
+        } else {
+            throw new Error(data.message || 'Failed to delete user');
+        }
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        showError('Ошибка при удалении пользователя');
+    }
+}
+
+// ункция для реактирования пользователя
+async function editUser(userId) {
+    try {
+        const userData = JSON.parse(localStorage.getItem('user'));
+        if (!userData?.data?.token) {
+            throw new Error('Требуется авторизация');
+        }
+
+        const newUsername = prompt('Введите новое имя пользователя:');
+        const newRole = prompt('Введите новую роль (Admin/User):');
+
+        if (!newUsername || !newRole) return;
+
+        const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${userData.data.token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                username: newUsername,
+                role: newRole
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            showSuccess('Пользователь успешно обновлен');
+            loadUsers(); // Перезагружаем список пользователей
+        } else {
+            throw new Error(data.message || 'Failed to update user');
+        }
+    } catch (error) {
+        console.error('Error updating user:', error);
+        showError('Ошибк при обновлении пользователя');
+    }
+}
+
+// Функция для показа модального окна создания пользователя
+async function showCreateUserModal() {
+    try {
+        const username = prompt('Введите имя пользователя:');
+        if (!username) return;
+
+        const password = prompt('Введите пароль:');
+        if (!password) return;
+
+        const role = prompt('Введите роль (Admin/User):');
+        if (!role || !['Admin', 'User'].includes(role)) {
+            showError('Некорректная роль. Допустимые значения: Admin, User');
+            return;
+        }
+
+        const userData = JSON.parse(localStorage.getItem('user'));
+        if (!userData?.data?.token) {
+            throw new Error('Требуется авторизация');
+        }
+
+        const response = await fetch(`${API_BASE_URL}/users`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${userData.data.token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                username,
+                password,
+                role
+            })
+        });
+
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+            showSuccess('Пользователь успешно создан');
+            await loadUsers(); // Перезагружаем список пользователей
+        } else {
+            throw new Error(data.message || 'Ошибка при создании пользователя');
+        }
+    } catch (error) {
+        console.error('Error creating user:', error);
+        showError(error.message);
+    }
+}

@@ -1,116 +1,189 @@
-let character = document.getElementById("character");
-let obstacle = document.getElementById("obstacle");
-let score = document.getElementById("score");
-let counter = 0;
-let isJumping = false;
-let gameSpeed = 3;
-let isGameOver = false;
-let highScore = localStorage.getItem('highScore') || 0;
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
 
-// Добавляем отображение рекорда
-score.innerHTML = `Score: ${counter} | High Score: ${highScore}`;
+const dino = {
+    x: 50,
+    y: canvas.height - 40,
+    width: 40,
+    height: 40,
+    jumping: false,
+    velocity: 0,
+    gravity: 0.6
+};
 
-// Улучшенная функция прыжка
+let obstacles = [];
+let score = 0;
+let highScore = localStorage.getItem('dinoHighScore') || 0;
+let gameSpeed = 5;
+let gameStarted = false;
+let leaderboard = JSON.parse(localStorage.getItem('dinoLeaderboard')) || [];
+
+function drawDino() {
+    ctx.fillStyle = document.body.getAttribute('data-theme') === 'dark' ? '#fff' : '#000';
+    ctx.fillRect(dino.x, dino.y, dino.width, dino.height);
+}
+
+function createObstacle() {
+    return {
+        x: canvas.width,
+        y: canvas.height - 40,
+        width: 20,
+        height: 40
+    };
+}
+
+function drawObstacle(obstacle) {
+    ctx.fillStyle = document.body.getAttribute('data-theme') === 'dark' ? '#fff' : '#000';
+    ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+}
+
+function updateScore() {
+    document.querySelector('.score').textContent = `Счёт: ${Math.floor(score)}`;
+    document.querySelector('.high-score').textContent = `Рекорд: ${Math.floor(highScore)}`;
+}
+
 function jump() {
-    if (!isJumping && !isGameOver) {
-        isJumping = true;
-        let jumpForce = 15;
-        let gravity = 0.6;
-        let velocity = jumpForce;
-        let maxHeight = 150; // Максимальная высота прыжка
-
-        let jumpInterval = setInterval(function() {
-            let currentBottom = parseInt(character.style.bottom || "0");
-            
-            if ((currentBottom > 0 || velocity > 0) && currentBottom < maxHeight) {
-                velocity -= gravity;
-                currentBottom += velocity;
-                character.style.bottom = Math.max(0, currentBottom) + "px";
-            } else {
-                character.style.bottom = "0px";
-                clearInterval(jumpInterval);
-                isJumping = false;
-            }
-        }, 8);
+    if (!dino.jumping) {
+        dino.jumping = true;
+        dino.velocity = -12;
     }
 }
 
-// Обработчик нажатия клавиш
-document.addEventListener("keydown", function(event) {
-    if ((event.code === "Space" || event.code === "ArrowUp") && !isGameOver) {
-        jump();
-    }
-    // Добавляем перезапуск игры на R
-    if (event.code === "KeyR" && isGameOver) {
-        resetGame();
-    }
-});
-
-// Добавляем поддержку тач-устройств
-document.addEventListener("touchstart", function(event) {
-    if (!isGameOver) {
-        jump();
-        event.preventDefault();
-    }
-});
-
-// Обновленная функция gameOver
-function gameOver() {
-    isGameOver = true;
-    if (counter > highScore) {
-        highScore = counter;
-        localStorage.setItem('highScore', highScore);
+function gameLoop() {
+    if (!gameStarted) return;
+    
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Обновление динозавра
+    if (dino.jumping) {
+        dino.velocity += dino.gravity;
+        dino.y += dino.velocity;
+        
+        if (dino.y > canvas.height - 40) {
+            dino.y = canvas.height - 40;
+            dino.jumping = false;
+        }
     }
     
-    character.classList.add('game-over');
-    obstacle.classList.add('game-over');
-    setTimeout(() => {
-        alert(`Game Over!\nScore: ${counter}\nHigh Score: ${highScore}\n\nPress R to restart`);
-    }, 100);
-}
-
-// Обновленная функция resetGame
-function resetGame() {
-    isGameOver = false;
-    counter = 0;
-    gameSpeed = 3;
-    score.innerHTML = `Score: ${counter} | High Score: ${highScore}`;
-    obstacle.style.left = "600px";
-    character.classList.remove('game-over');
-    obstacle.classList.remove('game-over');
-    character.style.bottom = "0px";
-}
-
-// Улучшенный игровой цикл
-let gameLoop = setInterval(function() {
-    if (!isGameOver) {
-        let obstacleLeft = parseInt(window.getComputedStyle(obstacle).getPropertyValue("left"));
-        let characterBottom = parseInt(character.style.bottom || 0);
+    // Создание препятствий с проверкой минимального расстояния
+    const minDistance = 150; // Уменьшили минимальное расстояние до 150
+    const lastObstacle = obstacles[obstacles.length - 1];
+    const canCreateObstacle = !lastObstacle || 
+                             (canvas.width - lastObstacle.x) >= minDistance;
+    
+    // Увеличиваем вероятность появления препятствий в зависимости от счёта
+    const baseSpawnChance = 0.01;
+    const scoreMultiplier = 1 + (score / 50); // Каждые 50 очков увеличивают шанс на 100%
+    const spawnChance = Math.min(baseSpawnChance * scoreMultiplier, 0.05); // Максимальный шанс 5%
+    
+    if (Math.random() < spawnChance && canCreateObstacle) {
+        obstacles.push(createObstacle());
+    }
+    
+    // Обновление препятствий
+    obstacles = obstacles.filter(obstacle => {
+        obstacle.x -= gameSpeed;
         
-        // Увеличиваем сложность с ростом очков
-        if (counter > 0 && counter % 10 === 0) {
-            gameSpeed = Math.min(gameSpeed + 0.1, 8);
-        }
-
-        if (obstacleLeft < -30) {
-            obstacle.style.left = "600px";
-            counter++;
-            score.innerHTML = `Score: ${counter} | High Score: ${highScore}`;
-        } else {
-            obstacle.style.left = (obstacleLeft - gameSpeed) + "px";
-        }
-
-        // Улучшенная система коллизий
-        let characterRect = character.getBoundingClientRect();
-        let obstacleRect = obstacle.getBoundingClientRect();
-
-        if (characterRect.right > obstacleRect.left + 10 && 
-            characterRect.left < obstacleRect.right - 10 && 
-            characterRect.bottom > obstacleRect.top + 10) {
+        // Проверка столкновений
+        if (dino.x < obstacle.x + obstacle.width &&
+            dino.x + dino.width > obstacle.x &&
+            dino.y < obstacle.y + obstacle.height &&
+            dino.y + dino.height > obstacle.y) {
             gameOver();
+            return false;
+        }
+        
+        return obstacle.x > -obstacle.width;
+    });
+    
+    // Отрисовка
+    drawDino();
+    obstacles.forEach(drawObstacle);
+    
+    // Обновление счета
+    score += 0.1;
+    if (score > highScore) {
+        highScore = score;
+        localStorage.setItem('dinoHighScore', highScore);
+    }
+    updateScore();
+    
+    requestAnimationFrame(gameLoop);
+}
+
+function gameOver() {
+    gameStarted = false;
+    updateLeaderboard(score);
+    score = 0;
+    obstacles = [];
+    document.querySelector('.game-start').style.display = 'block';
+}
+
+function startGame() {
+    if (!gameStarted) {
+        gameStarted = true;
+        document.querySelector('.game-start').style.display = 'none';
+        gameLoop();
+    }
+}
+
+document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space') {
+        e.preventDefault();
+        if (!gameStarted) {
+            startGame();
+        } else {
+            jump();
         }
     }
-}, 15);
+});
 
-// Начальная позиция препятствия
-obstacle.style.left = "600px";
+// Мобильное управление
+canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    if (!gameStarted) {
+        startGame();
+    } else {
+        jump();
+    }
+});
+
+function updateLeaderboard(newScore) {
+    const playerName = localStorage.getItem('username') || 'Гость';
+    
+    leaderboard.push({
+        name: playerName,
+        score: Math.floor(newScore)
+    });
+    
+    // Сортируем по убыванию счёта
+    leaderboard.sort((a, b) => b.score - a.score);
+    
+    // Оставляем только топ-10
+    leaderboard = leaderboard.slice(0, 10);
+    
+    // Сохраняем в localStorage
+    localStorage.setItem('dinoLeaderboard', JSON.stringify(leaderboard));
+    
+    // Обновляем отображение
+    displayLeaderboard();
+}
+
+function displayLeaderboard() {
+    const tbody = document.getElementById('leaderboardBody');
+    tbody.innerHTML = '';
+    
+    leaderboard.forEach((record, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${index + 1}</td>
+            <td>${record.name}</td>
+            <td>${record.score}</td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    displayLeaderboard();
+});

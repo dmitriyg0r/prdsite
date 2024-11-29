@@ -115,36 +115,6 @@ body {
     text-align: center; /* Центрирование контента */
 }
 
-/* Медиа-запрос для планшетов */
-@media (max-width: 1024px) {
-    .post {
-        width: calc(50% - 40px); /* Два поста в ряд */
-    }
-}
-
-/* Медиа-запрос для мобильных устройств */
-@media (max-width: 768px) {
-    body {
-        padding: 0 20px; /* Меньшие отступы на мобильных */
-    }
-    
-    .news-content {
-        gap: 1.5rem; /* Уменьшаем отступы на мобильных */
-        padding: 1rem;
-    }
-    
-    .post {
-        padding: 1rem;
-        height: 350px; /* Меньшая высота на мобильных */
-    }
-    
-    .post img {
-        height: 160px; /* Меньшая высота изображений на мобильных */
-    }
-}
-
-/* Добавьте эти стили в конец файла news.css */
-
 /* Стили для модального окна */
 .modal {
     display: none;
@@ -172,7 +142,6 @@ body {
 .close {
     position: absolute;
     right: 20px;
-    top: 15px;
     font-size: 24px;
     cursor: pointer;
     color: var(--text-color);
@@ -318,16 +287,4 @@ body {
 
 .dark-theme .preview-timestamp {
     color: #aaa;
-}
-
-/* Медиа-запросы для адаптивности */
-@media (max-width: 768px) {
-    .preview-content {
-        padding: 15px;
-        width: 95%;
-    }
-
-    .preview-image {
-        max-height: 50vh;
-    }
 }

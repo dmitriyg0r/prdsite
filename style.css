@@ -40,55 +40,52 @@
 
 /* Темная тема - улучшенная тёмная тема */
 [data-theme="dark"] {
-    /* Основные цвета - улучшенная тёмная тема */
-    --primary-color: #7B2CBF;
-    --primary-color-rgb: 123, 44, 191;
-    --text-color: #ffffff;
-    --background-color: #242424;
-    --sidebar-background: #7B2CBF;
+    /* Основные цвета - более тёмные */
+    --primary-color: #8B44C4;           /* Темнее фиолетовый */
+    --primary-color-rgb: 139, 68, 196;
+    --text-color: #E0E2E5;              /* Чуть приглушенный белый */
+    --background-color: #121214;         /* Более тёмный фон */
+    --sidebar-background: #8B44C4;
     --sidebar-hover: #9D4EDA;
     
     /* Дополнительные цвета */
-    --button-text: #ffffff;
-    --button-background: #7B2CBF;
-    --button-hover: #5A1E8C;
-    --button-secondary: #2d2d2d;
-    --button-background-rgb: 123, 44, 191;
-    --button-hover-rgb: 90, 30, 145;
+    --button-text: #FFFFFF;
+    --button-background: #8B44C4;
+    --button-hover: #9D4EDA;
+    --button-secondary: #1E1F22;         /* Темнее */
+    --button-background-rgb: 139, 68, 196;
+    --button-hover-rgb: 157, 78, 218;
     
     /* Контейнеры */
-    --text-container-background: #2a2a2a;
-    --text-container-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-    --table-background: #2d2d2d;
-    --input-background: #333333;
-    --border-color: #404040;
+    --text-container-background: #1A1B1E; /* Темнее */
+    --text-container-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+    --table-background: #1E1F22;         /* Темнее */
+    --input-background: #1E1F22;         /* Темнее */
+    --border-color: #2A2B2F;             /* Темнее */
     
     /* Текст */
-    --text-secondary: rgba(255, 255, 255, 0.7);
-    --header-text: #ffffff;
+    --text-secondary: rgba(224, 226, 229, 0.7);
+    --header-text: #FFFFFF;
     --header-gradient: #9D4EDA;
-    --accent-color: #7B2CBF;
+    --accent-color: #8B44C4;
     
     /* Таблицы */
-    --table-header-bg: var(--primary-color);
-    --table-header-text: var(--header-text);
-    --table-hover: rgba(123, 44, 191, 0.1);
-    --table-today: rgba(123, 44, 191, 0.15);
-    --table-border: #333333;
-    --table-background: var(--text-container-background);
-    --table-text: var(--text-color);
-    --table-text-secondary: rgba(255, 255, 255, 0.5);
+    --table-header-bg: #1E1F22;          /* Темнее */
+    --table-header-text: #E0E2E5;
+    --table-hover: rgba(139, 68, 196, 0.15);
+    --table-today: rgba(139, 68, 196, 0.2);
+    --table-border: #2A2B2F;             /* Темнее */
     
-    /* Дополнительные оттенки для градиентов и эффектов */
-    --primary-dark: #5A1E8C;
+    /* Дополнительные оттенки */
+    --primary-dark: #733BA3;             /* Темнее */
     --primary-light: #9D4EDA;
     
     /* Новые цвета фона */
-    --background: #242424;
-    --surface: #2d2d2d;
-    --card-background: #333333;
-    --hover-background: #383838;
-    --today-highlight: rgba(123, 44, 191, 0.05);
+    --background: #121214;               /* Самый тёмный фон */
+    --surface: #1A1B1E;                  /* Темнее */
+    --card-background: #1E1F22;          /* Темнее */
+    --hover-background: #2A2B2F;         /* Темнее */
+    --today-highlight: rgba(139, 68, 196, 0.1);
 }
 
 /* Добавим общее правило для всего текста */
@@ -911,3 +908,224 @@ table {
     height: 56px;
     margin: 0 auto;
 }
+
+/* Стили для боковой панели */
+.sidebar {
+    position: fixed;
+    width: 70px;
+    height: 100vh;
+    background: var(--sidebar-background);
+    padding: 20px 0;
+    transition: width 0.3s ease;
+    overflow-x: hidden;
+    z-index: 1000;
+}
+
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    margin-bottom: 20px;
+}
+
+.sidebar-header img {
+    width: 40px;
+    height: 40px;
+}
+
+.sidebar-header h2 {
+    color: white;
+    margin-left: 12px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.nav-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.nav-links li a {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    color: white;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.nav-links li a i {
+    min-width: 24px;
+    font-size: 20px;
+}
+
+.nav-links li a span {
+    margin-left: 12px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+/* Стили для основного контента */
+.main-content {
+    margin-left: 70px;
+    padding: 20px;
+    transition: margin-left 0.3s ease;
+}
+
+/* Стили для верхней панели */
+.top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background: var(--text-container-background);
+    box-shadow: var(--text-container-shadow);
+    margin-bottom: 20px;
+    border-radius: 8px;
+}
+
+/* Стили для формы входа */
+#login-container {
+    max-width: 400px;
+    margin: 40px auto;
+    padding: 20px;
+    background: var(--text-container-background);
+    border-radius: 8px;
+    box-shadow: var(--text-container-shadow);
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text-color);
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: var(--input-background);
+    color: var(--text-color);
+}
+
+/* Стили для кнопок */
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.primary-btn {
+    background: var(--primary-color);
+    color: white;
+}
+
+.secondary-btn {
+    background: var(--button-secondary);
+    color: var(--text-color);
+}
+
+.danger-btn {
+    background: #ff4444;
+    color: white;
+}
+
+/* Анимации при наведении */
+.sidebar:hover {
+    width: 250px;
+}
+
+.sidebar:hover .sidebar-header h2,
+.sidebar:hover .nav-links li a span {
+    opacity: 1;
+}
+
+/* Медиа-запросы */
+@media screen and (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
+    }
+    
+    .main-content {
+        margin-left: 0;
+    }
+    
+    .sidebar.active {
+        transform: translateX(0);
+    }
+}
+
+/* Дополнительные стили для тёмной темы */
+[data-theme="dark"] .sidebar-link {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .sidebar-link:hover {
+    background: rgba(255, 255, 255, 0.12);
+    transform: translateX(5px);
+}
+
+[data-theme="dark"] .form-input {
+    border-color: #3A3B3F;
+}
+
+[data-theme="dark"] .form-input:focus {
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 3px rgba(183, 111, 238, 0.2);
+}
+
+[data-theme="dark"] .add-post-btn {
+    background: linear-gradient(45deg, var(--primary-color), var(--primary-light));
+}
+
+[data-theme="dark"] .zagolovok::after {
+    background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
+}
+
+/* Стилизация ползунка прокрутки для тёмной темы */
+body[data-theme="dark"] ::-webkit-scrollbar {
+    width: 8px;
+    background-color: #121214;  /* Очень тёмный фон */
+}
+
+body[data-theme="dark"] ::-webkit-scrollbar-thumb {
+    background-color: #1E1F22;  /* Тёмный ползунок */
+    border-radius: 4px;
+}
+
+body[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+    background-color: #2A2B2F;  /* Чуть светлее при наведении */
+}
+
+/* Для Firefox */
+body[data-theme="dark"] {
+    scrollbar-width: thin;
+    scrollbar-color: #1E1F22 #121214;
+}
+
+/* Стилизация ползунка для элементов с прокруткой (например, текстовых областей) */
+body[data-theme="dark"] *::-webkit-scrollbar {
+    width: 8px;
+    background-color: #121214;
+}
+
+body[data-theme="dark"] *::-webkit-scrollbar-thumb {
+    background-color: #1E1F22;
+    border-radius: 4px;
+}
+
+body[data-theme="dark"] *::-webkit-scrollbar-thumb:hover {
+    background-color: #2A2B2F;
+}
+::-webkit-scrollbar {
+    width: 0;
+  }

@@ -3,25 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Профиль</title>
-    <link rel="icon" type="image/x-icon" href="../flow.ico">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&family=Montserrat:wght@300&display=swap">
+    <title>Профиль - AdminFlow</title>
     <link rel="stylesheet" href="../style.css">
-    <link rel="stylesheet" href="../mobile.css">
-    <link rel="stylesheet" href="profile.css">
+    <link rel="stylesheet" href="../Profile/profile.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="../main.js" defer></script>
-    <script src="profile.js" defer></script>
 </head>
 <body>
-    <!-- Добавляем боковое меню -->
+    <!-- В начале body или где-то в верхней части страницы -->
+    <div id="error-message"></div>
+
+    <!-- Боковое меню -->
     <nav class="sidebar">
         <!-- Добавляем иконку -->
         <div class="sidebar-logo">
             <img src="../flow.ico" alt="Flow Logo" class="sidebar-icon">
         </div>
         <div class="sidebar-nav">
-            <a href="../index.html" class="sidebar-link">
+            <a href="../index.html" class="sidebar-link active">
                 <i class="fas fa-home"></i>
                 <span>Расписание</span>
             </a>
@@ -45,7 +43,7 @@
                 <i class="fas fa-gamepad"></i>
                 <span>Игры</span>
             </a>
-            <a href="profile.html" class="sidebar-link active">
+            <a href="../Profile/profile.html" class="sidebar-link">
                 <i class="fas fa-user"></i>
                 <span>Профиль</span>
             </a>
@@ -53,7 +51,7 @@
         <!-- Переключатель темы после навигации -->
         <div class="theme-switch-wrapper">
             <div class="theme-toggle-container">
-                <!-- Добавляем иконку для закрыого меню -->
+                <!-- Добавляем иконку для закрытого меню -->
                 <i class="fas fa-sun theme-icon"></i>
                 <input type="checkbox" id="theme-toggle" class="theme-checkbox">
                 <label for="theme-toggle" class="theme-label">
@@ -64,114 +62,74 @@
         </div>
     </nav>
 
-    <!-- Мобильное меню -->
-    <div class="mobile-menu-toggle">
-        <span></span>
-        <span></span>
-        <span></span>
-    </div>
-
-    <div class="overlay"></div>
-
-    <div class="mobile-menu">
-        <nav>
-            <ul>
-                <li><a href="../index.html"><i class="fas fa-home"></i>Расписание</a></li>
-                <li><a href="../home/homework.html"><i class="fas fa-book"></i>Задания</a></li>
-                <li><a href="../downloads/downloads.html"><i class="fas fa-download"></i>Загрузки</a></li>
-                <li><a href="../memes/memes.html"><i class="fas fa-smile"></i>Мемы</a></li>
-                <li><a href="../about/about.html"><i class="fas fa-info-circle"></i>О нас</a></li>
-                <li><a href="../games/games.html"><i class="fas fa-gamepad"></i>Игры</a></li>
-                <li><a href="../Profile/profile.html"><i class="fas fa-user"></i>Профиль</a></li>
-            </ul>
-        </nav>
-    </div>
-
-    <h1 class="zagolovok">Профиль</h1>
-    <main>
-        <div class="login-container" id="login-container">
-            <form class="login-form" onsubmit="handleLogin(event)">
-                <h2 class="form-title">Вход в систему</h2>
-                
-                <div class="form-group">
-                    <label for="username">Логин</label>
-                    <input type="text" id="username" placeholder="Введите ваш логин" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="password">Пароль</label>
-                    <div class="password-wrapper">
-                        <input type="password" id="password" class="password-input" 
-                               placeholder="Введите ваш пароль" required>
-                        <span class="eye-icon" onclick="togglePassword()">👁️</span>
+    <!-- Основной контент -->
+    <main class="main-content">
+        <!-- Контейнер профиля -->
+        <div id="profile-container">
+            <!-- Добавляем контейнер для ошибок -->
+            <div id="error-message" class="error-message" style="display: none;"></div>
+            
+            <!-- Форма входа -->
+            <div id="login-container">
+                <h2>Вход в систему</h2>
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="username">Имя пользователя:</label>
+                        <input type="text" id="username" required>
                     </div>
-                </div>
-                
-                <div id="error-message" class="error-message"></div>
-                
-                <button type="submit" class="login-btn">Войти</button>
-                
-                <div class="anonymous-login">
-                    <button id="anonymous-login-btn" type="button" class="anonymous-btn">
-                        Войти анонимно
+                    <div class="form-group">
+                        <label for="password">Пароль:</label>
+                        <div class="password-group">
+                            <input type="password" id="password" class="password-input" required>
+                            <i class="fas fa-eye eye-icon" onclick="togglePassword()"></i>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn primary-btn">Войти</button>
+                    <button type="button" id="anonymous-login-btn" class="btn secondary-btn">
+                        Анонимный вход
+                    </button>
+                </form>
+            </div>
+
+            <!-- Информация о профиле -->
+            <div id="profile-info" style="display: none;">
+                <h2>Профиль пользователя</h2>
+                <p>Имя пользователя: <span id="profile-username"></span></p>
+                <p>Роль: <span id="profile-role"></span></p>
+                <button class="btn danger-btn" onclick="handleLogout()">Выйти</button>
+            </div>
+
+            <!-- Админ-панель -->
+            <div id="admin-section" style="display: none;">
+                <div class="admin-controls">
+                    <h3>Управление пользователями</h3>
+                    <button class="action-btn primary-btn" onclick="showCreateUserModal()">
+                        <i class="fas fa-plus"></i> Добавить пользователя
                     </button>
                 </div>
-                
-                <div class="forgot-password">
-                    <a href="#">Забыли пароль?</a>
-                </div>
-            </form>
-        </div>
-
-        <div class="profile-container" id="profile-container" style="display: none;">
-            <div class="profile-card">
-                <div class="profile-header">
-                    <div class="profile-avatar">
-                        <i class="fas fa-user-circle"></i>
-                    </div>
-                    <h2 class="profile-name" id="profile-username">Имя пользователя</h2>
-                    <p class="profile-role" id="profile-role">Роль пользователя</p>
-                </div>
-                <div class="profile-info">
-                    <div class="info-item">
-                        <i class="fas fa-envelope"></i>
-                        <span id="profile-email">email@example.com</span>
-                    </div>
-                    <div class="info-item">
-                        <i class="fas fa-clock"></i>
-                        <span id="last-login">Последний вход: </span>
-                    </div>
-                </div>
-                <button class="logout-btn" onclick="handleLogout()">
-                    <i class="fas fa-sign-out-alt"></i>
-                    Выйти
-                </button>
-
-                <!-- Добавляем секцию для администратора -->
-                <div id="admin-section" style="display: none;">
-                    <hr class="admin-divider">
-                    <h3 class="admin-title">Панель администратора</h3>
-                    
-                    <div class="database-section">
-                        <h4>База данных пользователей</h4>
-                        <table class="users-table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Имя пользователя</th>
-                                    <th>Роль</th>
-                                    <th>Последний вход</th>
-                                    <th>Действия</th>
-                                </tr>
-                            </thead>
-                            <tbody id="users-table-body">
-                                <!-- Данные будут добавлены через JavaScript -->
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="users-table-container">
+                    <table class="users-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Имя пользователя</th>
+                                <th>Роль</th>
+                                <th>Дата создания</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body">
+                            <!-- Данные будут добавлены через JavaScript -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </main>
+
+    <script src="../main.js"></script>
+    <script src="profile.js"></script>
+    <script src="../wwwroot/js/main.js"></script>
+    <script src="../wwwroot/Profile/profile.js"></script>
 </body>
 </html>

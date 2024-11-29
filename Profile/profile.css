@@ -1,75 +1,34 @@
-/* Стили для заголовка */
-.zagolovok {
-    text-align: center;
-    margin: 30px 0;
-    margin-left: 70px; /* Отступ для меню */
-    color: var(--text-color);
-    font-size: 32px;
-    font-weight: 700;
-}
-
-/* Контейнер для основного контента */
-main {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: calc(100vh - 100px); /* Высота минус высота заголовка */
-    margin-left: 70px; /* Отступ для свёрнутого меню */
-    padding: 0 20px;
-}
-
-/* Контейнер для формы входа */
-.login-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: calc(100% - 70px); /* Ширина минус ширина свёрнутого меню */
-    max-width: 500px;
-    margin: 0 auto;
-    padding: 20px;
-    position: absolute; /* Абсолютное позиционирование */
-    top: 50%; /* Центрирование по вертикали */
-    left: 50%; /* Центрирование по горизонтали */
-    transform: translate(-50%, -50%); /* Точное центрирование */
-    margin-left: 35px; /* Половина ширины свёрнутого меню */
-}
-
-.login-form {
-    background: var(--text-container-background);
-    padding: 40px;
-    border-radius: 20px;
-    box-shadow: var(--text-container-shadow);
+/* Основные стили для профиля */
+#profile-container {
     width: 100%;
-    max-width: 400px;
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
     animation: fadeIn 0.6s ease-out;
-    box-sizing: border-box; /* Важно для правильного расчета ширины */
 }
 
-.form-title {
+/* Стили для формы входа */
+#login-container {
+    max-width: 400px;
+    margin: 40px auto;
+    padding: 30px;
+    background: var(--text-container-background);
+    border-radius: 15px;
+    box-shadow: var(--text-container-shadow);
+}
+
+#login-container h2 {
+    color: var(--text-color);
     text-align: center;
     margin-bottom: 30px;
-    color: var(--text-color);
     font-size: 24px;
-    font-weight: 700;
-    position: relative;
-    padding-bottom: 15px;
+    font-weight: 600;
 }
 
-.form-title::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60px;
-    height: 3px;
-    background: linear-gradient(90deg, var(--primary-color), var(--header-gradient));
-    border-radius: 2px;
-}
-
+/* Стили для формы */
 .form-group {
     margin-bottom: 20px;
-    width: 100%; /* Занимаем всю доступную ширину */
+    position: relative;
 }
 
 .form-group label {
@@ -77,91 +36,212 @@ main {
     margin-bottom: 8px;
     color: var(--text-color);
     font-weight: 500;
+    font-size: 14px;
 }
 
 .form-group input {
     width: 100%;
-    padding: 12px 15px;
+    padding: 12px 0px;
     border: 2px solid var(--border-color);
     border-radius: 10px;
-    font-size: 16px;
-    background-color: var(--input-background);
+    background: var(--input-background);
     color: var(--text-color);
     transition: all 0.3s ease;
-    box-sizing: border-box; /* Важно для правильного расчета ширины */
+    font-size: 16px;
 }
 
 .form-group input:focus {
     border-color: var(--primary-color);
-    outline: none;
     box-shadow: 0 0 0 3px rgba(var(--button-background-rgb), 0.2);
+    outline: none;
 }
 
-.password-wrapper {
-    position: relative;
+/* Стили для кнопок */
+.btn {
     width: 100%;
-}
-
-.password-wrapper input {
-    width: 100%;
-    padding-right: 40px; /* Место для иконки глаза */
-}
-
-.eye-icon {
-    position: absolute;
-    right: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    cursor: pointer;
-    color: var(--text-secondary);
-    transition: color 0.3s ease;
-    z-index: 1;
-}
-
-.eye-icon:hover {
-    color: var(--primary-color);
-}
-
-.login-btn {
-    width: 100%;
-    padding: 12px 15px;
-    background: linear-gradient(45deg, var(--button-background), var(--header-gradient));
-    color: var(--button-text);
+    padding: 12px 20px;
     border: none;
     border-radius: 10px;
-    font-size: 16px;
-    font-weight: 500;
     cursor: pointer;
+    font-weight: 500;
     transition: all 0.3s ease;
-    margin-top: 20px;
-    box-sizing: border-box;
+    font-size: 16px;
+    margin-bottom: 10px;
 }
 
-.login-btn:hover {
+.primary-btn {
+    background: var(--primary-color);
+    color: var(--button-text);
+}
+
+.secondary-btn {
+    background: var(--button-secondary);
+    color: var(--text-color);
+}
+
+.danger-btn {
+    background: #ff4444;
+    color: white;
+}
+
+.btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(var(--button-background-rgb), 0.3);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
-.forgot-password {
-    text-align: center;
+/* Стили для информации профиля */
+#profile-info {
+    background: var(--text-container-background);
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 30px;
+    box-shadow: var(--text-container-shadow);
+}
+
+#profile-info h2 {
+    color: var(--text-color);
+    margin-bottom: 20px;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+#profile-info p {
+    color: var(--text-color);
+    margin: 10px 0;
+    font-size: 16px;
+}
+
+#profile-info span {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* Стили для админ-панели */
+#admin-section {
+    background: var(--text-container-background);
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: var(--text-container-shadow);
+}
+
+.admin-controls {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: var(--text-container-background);
+    border-radius: 8px;
+    box-shadow: var(--text-container-shadow);
+}
+
+.admin-controls h3 {
+    margin: 0 0 15px 0;
+    color: var(--text-color);
+}
+
+/* Стили для таблицы пользователей */
+.users-table-container {
     margin-top: 20px;
+    overflow-x: auto;
 }
 
-.forgot-password a {
-    color: var(--primary-color);
-    text-decoration: none;
+.users-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    background: var(--background-color);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.users-table th,
+.users-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.users-table th {
+    background: var(--primary-color);
+    color: white;
+    font-weight: 500;
+}
+
+.users-table tr:hover {
+    background: var(--hover-color);
+}
+
+.action-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
     font-size: 14px;
-    transition: all 0.3s ease;
+    transition: background-color 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
 }
 
-.forgot-password a:hover {
-    color: var(--button-hover);
-    text-decoration: underline;
+.primary-btn {
+    background-color: #4CAF50;
+    color: white;
 }
 
-/* Анимация появления */
+.primary-btn:hover {
+    background-color: #45a049;
+}
+
+.edit-btn {
+    background-color: #2196F3;
+    color: white;
+}
+
+.edit-btn:hover {
+    background-color: #1976D2;
+}
+
+.delete-btn {
+    background-color: #f44336;
+    color: white;
+}
+
+.delete-btn:hover {
+    background-color: #d32f2f;
+}
+
+/* Темная тема */
+[data-theme="dark"] {
+    --table-hover: rgba(139, 68, 196, 0.1);
+}
+
+[data-theme="dark"] .form-group input {
+    background: var(--input-background);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .form-group input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(139, 68, 196, 0.2);
+}
+
+[data-theme="dark"] .primary-btn {
+    background: linear-gradient(45deg, var(--primary-color), var(--primary-light));
+}
+
+[data-theme="dark"] .secondary-btn {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .users-table th {
+    background: var(--primary-color);
+}
+
+[data-theme="dark"] .edit-btn {
+    background: var(--primary-color);
+}
+
+/* Анимации */
 @keyframes fadeIn {
-    from {
+    from { 
         opacity: 0;
         transform: translateY(20px);
     }
@@ -171,219 +251,123 @@ main {
     }
 }
 
-/* Медиа-запросы */
+/* Адаптивность */
 @media screen and (max-width: 768px) {
-    .zagolovok {
-        margin-left: 0;
-        font-size: 28px;
+    #profile-container {
+        padding: 10px;
     }
 
-    main {
-        margin-left: 0;
+    .users-table {
+        font-size: 14px;
     }
 
-    .login-container {
-        width: 100%;
-        margin-left: 0;
-        padding: 15px;
+    .action-btn {
+        padding: 4px 8px;
     }
 
-    .login-form {
-        padding: 30px 20px;
+    .users-table th,
+    .users-table td {
+        padding: 8px 10px;
     }
 }
 
-.error-message {
-    color: #ff3333;
-    background-color: rgba(255, 51, 51, 0.1);
-    padding: 10px;
-    border-radius: 5px;
-    margin-bottom: 15px;
-    display: none;
-    text-align: center;
+/* Стилизация скроллбара */
+::-webkit-scrollbar {
+    width: 0;
 }
 
-.anonymous-login {
-    text-align: center;
-    margin-top: 15px;
+/* Адаптивность для мобильных устройств */
+@media screen and (max-width: 768px) {
+    .users-table {
+        font-size: 14px;
+    }
+
+    .users-table th,
+    .users-table td {
+        padding: 8px 10px;
+    }
+
+    .action-btn {
+        padding: 4px 8px;
+    }
 }
 
-.anonymous-btn {
-    background: transparent;
-    color: var(--text-color);
-    border: 2px solid var(--primary-color);
-    padding: 10px 20px;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 14px;
-}
-
-.anonymous-btn:hover {
-    background: var(--primary-color);
-    color: var(--button-text);
-}
-
-.profile-container {
-    width: 100%;
-    max-width: 600px;
-    margin: 0 auto;
+.users-table td[colspan="5"] {
     padding: 20px;
-    animation: fadeIn 0.6s ease-out;
-}
-
-.profile-card {
-    background: var(--text-container-background);
-    border-radius: 20px;
-    padding: 30px;
-    box-shadow: var(--text-container-shadow);
-}
-
-.profile-header {
     text-align: center;
-    margin-bottom: 30px;
-}
-
-.profile-avatar {
-    font-size: 80px;
-    color: var(--primary-color);
-    margin-bottom: 15px;
-}
-
-.profile-name {
-    font-size: 24px;
-    color: var(--text-color);
-    margin-bottom: 5px;
-}
-
-.profile-role {
     color: var(--text-secondary);
-    font-size: 16px;
 }
 
-.profile-info {
-    margin-top: 30px;
+/* Стили для сообщений об ошибках и успехе */
+#error-message {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 20px;
+    border-radius: 4px;
+    color: white;
+    z-index: 1000;
+    display: none;
+    animation: slideIn 0.3s ease-out;
 }
 
-.info-item {
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.user-item {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
-    color: var(--text-color);
+    padding: 10px;
+    margin: 5px 0;
+    background-color: #f5f5f5;
+    border-radius: 4px;
 }
 
-.info-item i {
-    margin-right: 15px;
-    color: var(--primary-color);
-    width: 20px;
-}
-
-.logout-btn {
-    width: 100%;
-    padding: 12px 15px;
-    background: linear-gradient(45deg, var(--button-background), var(--header-gradient));
-    color: var(--button-text);
-    border: none;
-    border-radius: 10px;
-    font-size: 16px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin-top: 30px;
+.user-info {
     display: flex;
-    align-items: center;
-    justify-content: center;
+    gap: 20px;
 }
 
-.logout-btn i {
-    margin-right: 10px;
+.user-actions {
+    display: flex;
+    gap: 10px;
 }
 
-.logout-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(var(--button-background-rgb), 0.3);
-}
-
-/* Стили для админ-панели */
-.admin-divider {
-    margin: 30px 0;
+.edit-btn, .delete-btn {
+    padding: 5px 10px;
     border: none;
-    border-top: 2px solid var(--border-color);
-}
-
-.admin-title {
-    color: var(--text-color);
-    font-size: 20px;
-    margin-bottom: 20px;
-    text-align: center;
-}
-
-.database-section {
-    margin-top: 20px;
-    overflow-x: auto;
-}
-
-.users-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 15px;
-    background: var(--text-container-background);
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-.users-table th,
-.users-table td {
-    padding: 12px;
-    text-align: left;
-    border-bottom: 1px solid var(--border-color);
-    color: var(--text-color);
-}
-
-.users-table th {
-    background: var(--primary-color);
-    color: var(--button-text);
-    font-weight: 500;
-}
-
-.users-table tr:hover {
-    background: rgba(var(--primary-color-rgb), 0.1);
-}
-
-.action-btn {
-    padding: 6px 12px;
-    border: none;
-    border-radius: 5px;
+    border-radius: 4px;
     cursor: pointer;
-    margin: 0 5px;
-    font-size: 14px;
-    transition: all 0.3s ease;
 }
 
 .edit-btn {
-    background: var(--primary-color);
-    color: var(--button-text);
-}
-
-.delete-btn {
-    background: #ff4444;
+    background-color: #4CAF50;
     color: white;
 }
 
-.action-btn:hover {
-    opacity: 0.8;
-    transform: translateY(-2px);
+.delete-btn {
+    background-color: #f44336;
+    color: white;
 }
 
-/* Добавим адаптивность */
-@media screen and (max-width: 768px) {
-    .users-table {
-        display: block;
-        overflow-x: auto;
-    }
-    
-    .users-table th,
-    .users-table td {
-        min-width: 120px;
-    }
+.username {
+    font-weight: bold;
+}
+
+.role {
+    color: #666;
+}
+
+.created-at {
+    color: #999;
+    font-size: 0.9em;
 }

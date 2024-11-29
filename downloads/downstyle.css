@@ -54,7 +54,6 @@
     align-items: center;
     justify-content: center;
     gap: 10px;
-    width: 100%;
     padding: 15px;
     background-color: var(--table-background);
     border: 2px dashed var(--button-background);
