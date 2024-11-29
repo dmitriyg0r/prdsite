@@ -17,7 +17,43 @@ const showError = (message) => {
     errorMessage.style.display = 'block';
 };
 
-// Делаем функцию глобальной через window
+// Добавляем функцию showProfile
+function showProfile(userData) {
+    console.log('Showing profile for:', userData);
+
+    const loginContainer = document.getElementById('login-container');
+    const profileInfo = document.getElementById('profile-info');
+    const adminSection = document.getElementById('admin-section');
+    const profileUsername = document.getElementById('profile-username');
+    const profileRole = document.getElementById('profile-role');
+
+    if (!loginContainer || !profileInfo) {
+        console.error('Required containers not found');
+        return;
+    }
+
+    try {
+        // Скрываем форму входа и показываем информацию профиля
+        loginContainer.style.display = 'none';
+        profileInfo.style.display = 'block';
+
+        // Обновляем информацию профиля
+        if (profileUsername) profileUsername.textContent = userData.data.username || 'Гость';
+        if (profileRole) profileRole.textContent = userData.data.role || 'Пользователь';
+
+        // Показываем админ-панель если пользователь админ
+        if (adminSection) {
+            adminSection.style.display = userData.data.role === 'Admin' ? 'block' : 'none';
+        }
+
+        console.log('Profile displayed successfully');
+    } catch (error) {
+        console.error('Error displaying profile:', error);
+        showError('Ошибка при отображении профиля');
+    }
+}
+
+// Обновляем функцию handleAnonymousLogin
 window.handleAnonymousLogin = async function() {
     try {
         const response = await fetch('/api/auth/anonymous-login', {
@@ -29,44 +65,55 @@ window.handleAnonymousLogin = async function() {
             }
         });
 
-        if (response.ok) {
-            const data = await response.json();
+        const data = await response.json();
+        console.log('Anonymous login response status:', response.status);
+        console.log('Anonymous login response data:', data);
+
+        if (response.ok && data.success) {
             localStorage.setItem('user', JSON.stringify(data));
-            window.location.href = '/index.html';
+            showSuccess('Успешный анонимный вход');
+            showProfile(data);
         } else {
-            const error = await response.json();
-            showError(error.message || 'Ошибка входа');
+            showError(data.message || 'Ошибка анонимного входа');
         }
     } catch (error) {
-        console.error('Error details:', error);
-        showError('Ошибка сервера. Попробуйте позже.');
+        console.error('Anonymous login error:', error);
+        showError('Ошибка при попытке анонимного входа');
     }
 }
 
+// Обновляем функцию handleLogin
 async function handleLogin(event) {
     event.preventDefault();
-    
+    console.log('Login attempt started');
+
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
-    
+
     try {
         const response = await fetch('/api/auth/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json'
             },
-            body: JSON.stringify({ username, password })
+            body: JSON.stringify({ username, password }),
+            credentials: 'include'
         });
 
-        if (response.ok) {
-            const data = await response.json();
+        const data = await response.json();
+        console.log('Login response status:', response.status);
+        console.log('Login response data:', data);
+
+        if (response.ok && data.success) {
             localStorage.setItem('user', JSON.stringify(data));
-            window.location.href = '/index.html';
+            showSuccess('Успешный вход');
+            showProfile(data);
         } else {
-            const error = await response.json();
-            showError(error.message || 'Ошибка входа');
+            showError(data.message || 'Ошибка входа');
         }
     } catch (error) {
+        console.error('Login error:', error);
         showError('Ошибка сервера. Попробуйте позже.');
     }
 }
