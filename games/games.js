@@ -16,6 +16,7 @@ let score = 0;
 let highScore = localStorage.getItem('dinoHighScore') || 0;
 let gameSpeed = 5;
 let gameStarted = false;
+let leaderboard = JSON.parse(localStorage.getItem('dinoLeaderboard')) || [];
 
 function drawDino() {
     ctx.fillStyle = document.body.getAttribute('data-theme') === 'dark' ? '#fff' : '#000';
@@ -112,6 +113,7 @@ function gameLoop() {
 
 function gameOver() {
     gameStarted = false;
+    updateLeaderboard(score);
     score = 0;
     obstacles = [];
     document.querySelector('.game-start').style.display = 'block';
@@ -144,4 +146,44 @@ canvas.addEventListener('touchstart', (e) => {
     } else {
         jump();
     }
+});
+
+function updateLeaderboard(newScore) {
+    const playerName = localStorage.getItem('username') || 'Гость';
+    
+    leaderboard.push({
+        name: playerName,
+        score: Math.floor(newScore)
+    });
+    
+    // Сортируем по убыванию счёта
+    leaderboard.sort((a, b) => b.score - a.score);
+    
+    // Оставляем только топ-10
+    leaderboard = leaderboard.slice(0, 10);
+    
+    // Сохраняем в localStorage
+    localStorage.setItem('dinoLeaderboard', JSON.stringify(leaderboard));
+    
+    // Обновляем отображение
+    displayLeaderboard();
+}
+
+function displayLeaderboard() {
+    const tbody = document.getElementById('leaderboardBody');
+    tbody.innerHTML = '';
+    
+    leaderboard.forEach((record, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${index + 1}</td>
+            <td>${record.name}</td>
+            <td>${record.score}</td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    displayLeaderboard();
 });
