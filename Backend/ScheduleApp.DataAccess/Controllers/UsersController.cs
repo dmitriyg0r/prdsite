@@ -56,7 +56,6 @@ namespace ScheduleApp.DataAccess.Controllers
             {
                 _logger.LogInformation("Creating new user: {Username}", request.Username);
 
-                // Проверка на существующего пользователя
                 var existingUser = await _context.Users
                     .FirstOrDefaultAsync(u => u.Username == request.Username);
 
@@ -65,7 +64,8 @@ namespace ScheduleApp.DataAccess.Controllers
                     return BadRequest(new { success = false, message = "Username already exists" });
                 }
 
-                var passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
+                string passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
+                
                 var user = new User
                 {
                     Username = request.Username,
@@ -76,8 +76,6 @@ namespace ScheduleApp.DataAccess.Controllers
 
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync();
-
-                _logger.LogInformation("User created successfully: {Username}", user.Username);
 
                 return Ok(new { 
                     success = true, 

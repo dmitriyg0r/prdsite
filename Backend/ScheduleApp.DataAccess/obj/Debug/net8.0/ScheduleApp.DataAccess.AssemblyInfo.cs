@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ScheduleApp.DataAccess")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+72efa3f919dbf38c6073239b628991a40e8ccedf")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bcfc9c60c850c7a9099a79cd374a3e49d8cfe488")]
 [assembly: System.Reflection.AssemblyProductAttribute("ScheduleApp.DataAccess")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ScheduleApp.DataAccess")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
