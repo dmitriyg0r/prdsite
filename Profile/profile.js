@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = 'https://adminflow.ru/api';
 
 // Вспомогательные функции
 const showError = (message) => {
@@ -389,7 +389,7 @@ async function showCreateUserModal() {
 
         const role = prompt('Введите роль (Admin/User):');
         if (!role || !['Admin', 'User'].includes(role)) {
-            showError('Некорректная роль. Допустимые значения: Admin, User');
+            showError('Некорректная роль. Допустимые ��начения: Admin, User');
             return;
         }
 
