@@ -66,6 +66,14 @@ async function handleLogin(event) {
         if (response.ok && data.success) {
             localStorage.setItem('user', JSON.stringify(data));
             showSuccess('Успешный вход');
+            
+            // Скрываем контейнер входа
+            const loginContainer = document.getElementById('login-container');
+            if (loginContainer) {
+                loginContainer.style.display = 'none';
+            }
+            
+            // Показываем профиль
             showProfile(data);
         } else {
             throw new Error(data.message || 'Ошибка входа');
@@ -103,32 +111,32 @@ async function handleAnonymousLogin() {
 
 // Функция отображения профиля
 function showProfile(userData) {
-    const loginContainer = document.getElementById('login-container');
-    const registerContainer = document.getElementById('register-container');
+    // Скрываем все контейнеры авторизации
+    const authContainers = document.querySelectorAll('#login-container, #register-container');
+    authContainers.forEach(container => {
+        if (container) container.style.display = 'none';
+    });
+    
+    // Показываем информацию профиля
     const profileInfo = document.getElementById('profile-info');
-    
-    if (loginContainer) loginContainer.style.display = 'none';
-    if (registerContainer) registerContainer.style.display = 'none';
-    if (profileInfo) profileInfo.style.display = 'block';
-    
-    // Отображаем информацию о пользователе
-    const userDetails = document.querySelector('.user-details');
-    if (userDetails) {
-        userDetails.innerHTML = `
-            <div class="user-detail">
-                <span class="detail-label">Имя пользователя:</span>
-                <span class="detail-value">${userData.data.username}</span>
-            </div>
-            <div class="user-detail">
-                <span class="detail-label">Роль:</span>
-                <span class="detail-value">${userData.data.role}</span>
-            </div>
-        `;
+    if (profileInfo) {
+        profileInfo.style.display = 'block';
     }
     
-    // Если пользователь админ, показываем список пользователей
-    if (userData.data.role === 'Admin' && usersList) {
-        usersList.style.display = 'block';
+    // Обновляем информацию профиля
+    const profileUsername = document.getElementById('profile-username');
+    const profileRole = document.getElementById('profile-role');
+    
+    if (profileUsername) profileUsername.textContent = userData.data.username;
+    if (profileRole) profileRole.textContent = userData.data.role;
+
+    // Инициализируем загрузку аватара
+    initializeAvatarUpload();
+    
+    // Показываем админ-панель для администраторов
+    const adminSection = document.getElementById('admin-section');
+    if (adminSection && userData.data.role === 'Admin') {
+        adminSection.style.display = 'block';
         loadUsers();
     }
 }
@@ -163,14 +171,14 @@ async function loadUsers() {
     }
 }
 
-// Функция выхода и системы
+// Функция выхода из системы
 function handleLogout() {
     console.log('Logging out...');
     try {
-        // Очщем данные пользователя
+        // Очищаем данные пользователя
         localStorage.removeItem('user');
         
-        // Показываем форму входа и скрываем профиль
+        // Скрываем профиль и показываем форму входа
         const loginContainer = document.getElementById('login-container');
         const profileInfo = document.getElementById('profile-info');
         const adminSection = document.getElementById('admin-section');
@@ -183,6 +191,7 @@ function handleLogout() {
         const loginForm = document.getElementById('login-form');
         if (loginForm) loginForm.reset();
 
+        showSuccess('Вы успешно вышли из системы');
         console.log('Logout successful');
     } catch (error) {
         console.error('Error during logout:', error);
