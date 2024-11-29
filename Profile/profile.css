@@ -1,0 +1,250 @@
+/* Основные стили для профиля */
+#profile-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+    animation: fadeIn 0.6s ease-out;
+}
+
+/* Стили для формы входа */
+#login-container {
+    max-width: 400px;
+    margin: 40px auto;
+    padding: 30px;
+    background: var(--text-container-background);
+    border-radius: 15px;
+    box-shadow: var(--text-container-shadow);
+}
+
+#login-container h2 {
+    color: var(--text-color);
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+/* Стили для формы */
+.form-group {
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text-color);
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    background: var(--input-background);
+    color: var(--text-color);
+    transition: all 0.3s ease;
+    font-size: 16px;
+}
+
+.form-group input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(var(--button-background-rgb), 0.2);
+    outline: none;
+}
+
+/* Стили для кнопок */
+.btn {
+    width: 100%;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+.primary-btn {
+    background: var(--primary-color);
+    color: var(--button-text);
+}
+
+.secondary-btn {
+    background: var(--button-secondary);
+    color: var(--text-color);
+}
+
+.danger-btn {
+    background: #ff4444;
+    color: white;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Стили для информации профиля */
+#profile-info {
+    background: var(--text-container-background);
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 30px;
+    box-shadow: var(--text-container-shadow);
+}
+
+#profile-info h2 {
+    color: var(--text-color);
+    margin-bottom: 20px;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+#profile-info p {
+    color: var(--text-color);
+    margin: 10px 0;
+    font-size: 16px;
+}
+
+#profile-info span {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* Стили для админ-панели */
+#admin-section {
+    background: var(--text-container-background);
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: var(--text-container-shadow);
+}
+
+.admin-controls {
+    margin-bottom: 20px;
+}
+
+/* Стили для таблицы пользователей */
+.users-table-container {
+    overflow-x: auto;
+}
+
+.users-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.users-table th,
+.users-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.users-table th {
+    background: var(--primary-color);
+    color: white;
+    font-weight: 500;
+}
+
+.users-table tr:hover {
+    background: var(--table-hover);
+}
+
+/* Стили для кнопок действий в таблице */
+.action-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    margin: 0 5px;
+    transition: all 0.3s ease;
+}
+
+.edit-btn {
+    background: var(--primary-color);
+    color: white;
+}
+
+.delete-btn {
+    background: #ff4444;
+    color: white;
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Темная тема */
+[data-theme="dark"] {
+    --table-hover: rgba(139, 68, 196, 0.1);
+}
+
+[data-theme="dark"] .form-group input {
+    background: var(--input-background);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .form-group input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(139, 68, 196, 0.2);
+}
+
+[data-theme="dark"] .primary-btn {
+    background: linear-gradient(45deg, var(--primary-color), var(--primary-light));
+}
+
+[data-theme="dark"] .secondary-btn {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .users-table th {
+    background: var(--primary-color);
+}
+
+[data-theme="dark"] .edit-btn {
+    background: var(--primary-color);
+}
+
+/* Анимации */
+@keyframes fadeIn {
+    from { 
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Адаптивность */
+@media screen and (max-width: 768px) {
+    #profile-container {
+        padding: 10px;
+    }
+
+    .users-table {
+        font-size: 14px;
+    }
+
+    .action-btn {
+        padding: 4px 8px;
+    }
+
+    .users-table th,
+    .users-table td {
+        padding: 8px 10px;
+    }
+}
+
+/* Стилизация скроллбара */
+::-webkit-scrollbar {
+    width: 0;
+}
