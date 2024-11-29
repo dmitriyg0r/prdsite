@@ -64,58 +64,40 @@ async function handleLogin(event) {
         console.log('Login response data:', data);
 
         if (response.ok && data.success) {
-            // Сохраняем данные в правильном формате
-            const userData = {
-                success: true,
-                data: {
-                    username: data.data.username,
-                    role: data.data.role,
-                    token: data.data.token
-                }
-            };
-            
-            console.log('Saving user data:', userData);
-            localStorage.setItem('user', JSON.stringify(userData));
-            
+            localStorage.setItem('user', JSON.stringify(data));
             showSuccess('Успешный вход');
-            showProfile(userData);
+            showProfile(data);
         } else {
-            showError(data.message || 'Ошибка входа');
+            throw new Error(data.message || 'Ошибка входа');
         }
     } catch (error) {
         console.error('Login error:', error);
-        showError('Ошибка при попытке входа');
+        showError(error.message || 'Ошибка при попытке входа');
     }
 }
 
 // Функция для анонимного входа
 async function handleAnonymousLogin() {
-    console.log('Anonymous login attempt started');
-
     try {
         const response = await fetch(`${API_BASE_URL}/auth/anonymous-login`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            credentials: 'include'
+                'Content-Type': 'application/json'
+            }
         });
 
-        console.log('Anonymous login response status:', response.status);
         const data = await response.json();
-        console.log('Anonymous login response data:', data);
 
         if (response.ok && data.success) {
-            localStorage.setItem('user', JSON.stringify(data.data));
-            showSuccess('Успешный анонимный вход');
-            showProfile(data.data);
+            localStorage.setItem('user', JSON.stringify(data));
+            showSuccess('Анонимный вход выполнен успешно');
+            showProfile(data);
         } else {
-            showError(data.message || 'Ошибка аноиного входа');
+            throw new Error(data.message || 'Ошибка при анонимном входе');
         }
     } catch (error) {
         console.error('Anonymous login error:', error);
-        showError('Ошибка при попытке анонимного входа');
+        showError(error.message || 'Ошибка при попытке анонимного входа');
     }
 }
 
@@ -401,7 +383,7 @@ async function showCreateUserModal() {
             showSuccess('Пользователь успешно создан');
             await loadUsers(); // Перезагржаем список поьзователей
         } else {
-            throw new Error(data.message || 'Ошибка при создании пользователя');
+            throw new Error(data.message || 'Ошибка при создании пользовате��я');
         }
     } catch (error) {
         console.error('Error creating user:', error);

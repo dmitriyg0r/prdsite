@@ -54,6 +54,50 @@ app.post('/api/register', (req, res) => {
     });
 });
 
+// Маршрут для входа
+app.post('/api/auth/login', (req, res) => {
+    console.log('POST /api/auth/login вызван');
+    console.log('Тело запроса:', req.body);
+    
+    const { username, password } = req.body;
+    
+    if (!username || !password) {
+        return res.status(400).json({
+            success: false,
+            message: 'Необходимо указать имя пользователя и пароль'
+        });
+    }
+
+    // Временно для тестирования
+    res.status(200).json({
+        success: true,
+        message: 'Вход выполнен успешно',
+        data: {
+            username,
+            role: 'User',
+            token: 'test-token-' + Date.now()
+        }
+    });
+});
+
+// Маршрут для анонимного входа
+app.post('/api/auth/anonymous-login', (req, res) => {
+    console.log('POST /api/auth/anonymous-login вызван');
+    
+    // Генерируем случайное имя пользователя
+    const guestUsername = 'guest_' + Math.random().toString(36).substring(7);
+    
+    res.status(200).json({
+        success: true,
+        message: 'Анонимный вход выполнен успешно',
+        data: {
+            username: guestUsername,
+            role: 'Guest',
+            token: 'guest-token-' + Date.now()
+        }
+    });
+});
+
 // Обработка 404
 app.use((req, res) => {
     console.log('404 для URL:', req.url);
@@ -69,4 +113,6 @@ app.listen(PORT, () => {
     console.log('Доступные маршруты:');
     console.log('GET  /');
     console.log('POST /api/register');
+    console.log('POST /api/auth/login');
+    console.log('POST /api/auth/anonymous-login');
 });
