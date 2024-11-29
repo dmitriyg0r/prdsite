@@ -1,22 +1,8 @@
-const togglePassword = () => {
-    const passwordInput = document.querySelector('.password-input');
-    const eyeIcon = document.querySelector('.eye-icon');
-    
-    if (passwordInput.type === 'password') {
-        passwordInput.type = 'text';
-        eyeIcon.classList.add('show');
-    } else {
-        passwordInput.type = 'password';
-        eyeIcon.classList.remove('show');
-    }
-}
+const API_BASE_URL = 'https://adminflow.ru/api';
 
 function showError(message) {
     alert(message);
 }
-
-// Обновляем константу API_BASE_URL
-const API_BASE_URL = 'https://adminflow.ru/api'; // Убираем порт 5002
 
 // Функция для проверки состояния сервера
 async function checkServerStatus() {
@@ -59,8 +45,27 @@ async function handleAnonymousLogin() {
         console.log('Login successful:', data);
         
         if (data.success) {
-            localStorage.setItem('user', JSON.stringify(data.data));
-            showProfile(data.data);
+            // Создаем объект с данными анонимного пользователя
+            const anonymousUser = {
+                username: 'Гость',
+                role: 'anonymous',
+                token: data.token || null
+            };
+            
+            // Сохраняем данные в localStorage
+            localStorage.setItem('user', JSON.stringify(anonymousUser));
+            
+            // Скрываем форму входа
+            document.getElementById('login-container').style.display = 'none';
+            
+            // Показываем информацию о профиле
+            const profileInfo = document.getElementById('profile-info');
+            profileInfo.style.display = 'block';
+            
+            // Обновляем информацию в профиле
+            document.getElementById('profile-username').textContent = anonymousUser.username;
+            document.getElementById('profile-role').textContent = anonymousUser.role;
+            
         } else {
             throw new Error(data.message || 'Unknown error');
         }
@@ -175,32 +180,46 @@ async function deleteUser(userId) {
     }
 }
 
+// Функция для отображения профиля
 function showProfile(userData) {
-    console.log('ShowProfile called with userData:', userData);
-
+    // Скрываем форму входа
     document.getElementById('login-container').style.display = 'none';
-    document.getElementById('profile-container').style.display = 'block';
     
-    // Обновляем информацию профиля
+    // Показываем информацию о профиле
+    const profileInfo = document.getElementById('profile-info');
+    profileInfo.style.display = 'block';
+    
+    // Обновляем информацию в профиле
     document.getElementById('profile-username').textContent = userData.username;
     document.getElementById('profile-role').textContent = userData.role;
     
-    // Показываем админ-панель и загружаем пользователей, если пользователь админ
-    const adminSection = document.getElementById('admin-section');
-    if (userData.role === 'Admin') {
-        console.log('Loading admin section');
-        adminSection.style.display = 'block';
+    // Если пользователь админ, показываем админ-панель
+    if (userData.role === 'admin') {
+        document.getElementById('admin-section').style.display = 'block';
         loadUsers(); // Загружаем список пользователей
-    } else {
-        adminSection.style.display = 'none';
     }
 }
 
+// Функция для выхода
 function handleLogout() {
+    // Очищаем данные пользователя
     localStorage.removeItem('user');
-    document.getElementById('profile-container').style.display = 'none';
+    
+    // Показываем форму входа
     document.getElementById('login-container').style.display = 'block';
+    
+    // Скрываем информацию о профиле и админ-панель
+    document.getElementById('profile-info').style.display = 'none';
+    document.getElementById('admin-section').style.display = 'none';
 }
+
+// При загрузке страницы проверяем, есть ли сохраненный пользователь
+document.addEventListener('DOMContentLoaded', () => {
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+        showProfile(JSON.parse(savedUser));
+    }
+});
 
 // Функция для проверки доступности сервера
 async function checkServerAvailability() {
