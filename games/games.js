@@ -65,12 +65,17 @@ function gameLoop() {
     }
     
     // Создание препятствий с проверкой минимального расстояния
-    const minDistance = 300; // Минимальное расстояние между препятствиями
+    const minDistance = 150; // Уменьшили минимальное расстояние до 150
     const lastObstacle = obstacles[obstacles.length - 1];
     const canCreateObstacle = !lastObstacle || 
                              (canvas.width - lastObstacle.x) >= minDistance;
     
-    if (Math.random() < 0.01 && canCreateObstacle) { // Уменьшили вероятность с 0.02 до 0.01
+    // Увеличиваем вероятность появления препятствий в зависимости от счёта
+    const baseSpawnChance = 0.01;
+    const scoreMultiplier = 1 + (score / 50); // Каждые 50 очков увеличивают шанс на 100%
+    const spawnChance = Math.min(baseSpawnChance * scoreMultiplier, 0.05); // Максимальный шанс 5%
+    
+    if (Math.random() < spawnChance && canCreateObstacle) {
         obstacles.push(createObstacle());
     }
     
