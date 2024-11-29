@@ -43,7 +43,11 @@ function showProfile(userData) {
 
         // Показываем админ-панель если пользователь админ
         if (adminSection) {
-            adminSection.style.display = userData.data.role === 'Admin' ? 'block' : 'none';
+            const isAdmin = userData.data.role === 'Admin';
+            adminSection.style.display = isAdmin ? 'block' : 'none';
+            if (isAdmin) {
+                loadUsers(); // Загружаем пользователей если админ
+            }
         }
 
         console.log('Profile displayed successfully');
@@ -118,6 +122,104 @@ async function handleLogin(event) {
     }
 }
 
+// Функция для загрузки пользователей
+async function loadUsers() {
+    try {
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user || !user.data.token) {
+            throw new Error('No authentication token found');
+        }
+
+        const response = await fetch('/api/users', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${user.data.token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+        console.log('Users data:', data);
+
+        if (response.ok && data.success) {
+            displayUsers(data.data);
+        } else {
+            throw new Error(data.message || 'Failed to load users');
+        }
+    } catch (error) {
+        console.error('Error loading users:', error);
+        showError('Ошибка при загрузке пользователей');
+    }
+}
+
+// Функция для отображения пользователей в таблице
+function displayUsers(users) {
+    const tableBody = document.getElementById('users-table-body');
+    if (!tableBody) return;
+
+    tableBody.innerHTML = '';
+
+    users.forEach(user => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${user.id}</td>
+            <td>${user.username}</td>
+            <td>${user.role}</td>
+            <td>${new Date(user.createdAt).toLocaleString()}</td>
+            <td>
+                <button class="action-btn edit-btn" onclick="editUser(${user.id})">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="action-btn delete-btn" onclick="deleteUser(${user.id})">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        `;
+        tableBody.appendChild(row);
+    });
+}
+
+// Функция для удаления пользователя
+async function deleteUser(userId) {
+    if (!confirm('Вы уверены, что хотите удалить этого пользователя?')) {
+        return;
+    }
+
+    try {
+        const user = JSON.parse(localStorage.getItem('user'));
+        const response = await fetch(`/api/users/${userId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${user.data.token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+        if (response.ok && data.success) {
+            showSuccess('Пользователь успешно удален');
+            loadUsers(); // Перезагружаем список пользователей
+        } else {
+            throw new Error(data.message || 'Failed to delete user');
+        }
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        showError('Ошибка при удалении пользователя');
+    }
+}
+
+// Функция для редактирования пользователя
+function editUser(userId) {
+    // Здесь можно добавить модальное окно для редактирования
+    alert('Редактирование пользователя будет добавлено позже');
+}
+
+// Добавляем функцию showSuccess если её нет
+function showSuccess(message) {
+    console.log('Success:', message);
+    // Можно добавить красивое уведомление об успехе
+}
+
 // Add event listeners when the document loads
 document.addEventListener('DOMContentLoaded', () => {
     // Bind regular login form submit
@@ -130,5 +232,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const anonymousLoginBtn = document.getElementById('anonymous-login-btn');
     if (anonymousLoginBtn) {
         anonymousLoginBtn.addEventListener('click', handleAnonymousLogin);
+    }
+
+    // Проверяем сохраненную сессию
+    const userData = localStorage.getItem('user');
+    if (userData) {
+        try {
+            const parsedUserData = JSON.parse(userData);
+            showProfile(parsedUserData);
+        } catch (e) {
+            console.error('Error parsing saved session:', e);
+            localStorage.removeItem('user');
+        }
     }
 }); 
