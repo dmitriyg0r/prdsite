@@ -4,6 +4,9 @@ const bodyParser = require('body-parser');
 
 const app = express();
 
+// Временное хранилище пользователей
+const users = new Map();
+
 // Middleware
 app.use(bodyParser.json());
 app.use(cors({
@@ -23,27 +26,40 @@ app.use((req, res, next) => {
     next();
 });
 
-// Базовый маршрут
-app.get('/', (req, res) => {
-    console.log('GET / вызван');
-    res.json({ message: 'API работает' });
-});
-
-// Маршрут регистрации с префиксом /api
+// Маршрут регистрации
 app.post('/api/register', (req, res) => {
     console.log('POST /api/register вызван');
     console.log('Тело запроса:', req.body);
     
     const { username, password } = req.body;
     
+    // Проверка наличия необходимых полей
     if (!username || !password) {
         return res.status(400).json({
             success: false,
             message: 'Необходимо указать имя пользователя и пароль'
         });
     }
+    
+    // Проверка существования пользователя
+    if (users.has(username)) {
+        return res.status(400).json({
+            success: false,
+            message: 'Пользователь с таким именем уже существует'
+        });
+    }
+    
+    // Сохраняем пользователя
+    users.set(username, {
+        username,
+        password, // В реальном приложении пароль нужно хешировать
+        role: 'User',
+        createdAt: new Date().toISOString()
+    });
+    
+    console.log('Зарегистрирован новый пользователь:', username);
+    console.log('Всего пользователей:', users.size);
 
-    // Временно для тестирования
     res.status(201).json({
         success: true,
         message: 'Регистрация успешна',
@@ -67,15 +83,23 @@ app.post('/api/auth/login', (req, res) => {
             message: 'Необходимо указать имя пользователя и пароль'
         });
     }
+    
+    // Проверяем существование пользователя и правильность пароля
+    const user = users.get(username);
+    if (!user || user.password !== password) {
+        return res.status(401).json({
+            success: false,
+            message: 'Неверное имя пользователя или пароль'
+        });
+    }
 
-    // Временно для тестирования
     res.status(200).json({
         success: true,
         message: 'Вход выполнен успешно',
         data: {
-            username,
-            role: 'User',
-            token: 'test-token-' + Date.now()
+            username: user.username,
+            role: user.role,
+            token: 'token-' + Date.now()
         }
     });
 });
@@ -84,7 +108,6 @@ app.post('/api/auth/login', (req, res) => {
 app.post('/api/auth/anonymous-login', (req, res) => {
     console.log('POST /api/auth/anonymous-login вызван');
     
-    // Генерируем случайное имя пользователя
     const guestUsername = 'guest_' + Math.random().toString(36).substring(7);
     
     res.status(200).json({
@@ -95,6 +118,20 @@ app.post('/api/auth/anonymous-login', (req, res) => {
             role: 'Guest',
             token: 'guest-token-' + Date.now()
         }
+    });
+});
+
+// Маршрут для получения списка пользователей (для отладки)
+app.get('/api/users', (req, res) => {
+    const usersList = Array.from(users.values()).map(user => ({
+        username: user.username,
+        role: user.role,
+        createdAt: user.createdAt
+    }));
+    
+    res.json({
+        success: true,
+        data: usersList
     });
 });
 
@@ -111,8 +148,8 @@ const PORT = 5003;
 app.listen(PORT, () => {
     console.log(`Сервер запущен на порту ${PORT}`);
     console.log('Доступные маршруты:');
-    console.log('GET  /');
     console.log('POST /api/register');
     console.log('POST /api/auth/login');
     console.log('POST /api/auth/anonymous-login');
+    console.log('GET  /api/users');
 });
