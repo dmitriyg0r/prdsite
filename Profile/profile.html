@@ -3,175 +3,164 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Профиль</title>
-    <link rel="icon" type="image/x-icon" href="../flow.ico">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&family=Montserrat:wght@300&display=swap">
-    <link rel="stylesheet" href="../style.css">
-    <link rel="stylesheet" href="../mobile.css">
+    <title>Профиль - AdminFlow</title>
+    <link rel="stylesheet" href="../styles.css">
     <link rel="stylesheet" href="profile.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="../main.js" defer></script>
-    <script src="profile.js" defer></script>
 </head>
 <body>
-    <!-- Добавляем боковое меню -->
+    <!-- Боковое меню -->
     <nav class="sidebar">
-        <!-- Добавляем иконку -->
-        <div class="sidebar-logo">
-            <img src="../flow.ico" alt="Flow Logo" class="sidebar-icon">
+        <div class="sidebar-header">
+            <img src="../images/logo.png" alt="Logo" class="logo">
+            <h2>AdminFlow</h2>
         </div>
-        <div class="sidebar-nav">
-            <a href="../index.html" class="sidebar-link">
-                <i class="fas fa-home"></i>
-                <span>Расписание</span>
-            </a>
-            <a href="../home/homework.html" class="sidebar-link">
-                <i class="fas fa-tasks"></i>
-                <span>Задания</span>
-            </a>
-            <a href="../downloads/downloads.html" class="sidebar-link">
-                <i class="fas fa-download"></i>
-                <span>Загрузки</span>
-            </a>
-            <a href="../memes/memes.html" class="sidebar-link">
-                <i class="fas fa-smile"></i>
-                <span>Мемы</span>
-            </a>
-            <a href="../about/about.html" class="sidebar-link">
-                <i class="fas fa-info-circle"></i>
-                <span>О нас</span>
-            </a>
-            <a href="../games/games.html" class="sidebar-link">
-                <i class="fas fa-gamepad"></i>
-                <span>Игры</span>
-            </a>
-            <a href="profile.html" class="sidebar-link active">
-                <i class="fas fa-user"></i>
-                <span>Профиль</span>
-            </a>
-        </div>
-        <!-- Переключатель темы после навигации -->
-        <div class="theme-switch-wrapper">
-            <div class="theme-toggle-container">
-                <!-- Добавляем иконку для закрыого меню -->
-                <i class="fas fa-sun theme-icon"></i>
-                <input type="checkbox" id="theme-toggle" class="theme-checkbox">
-                <label for="theme-toggle" class="theme-label">
-                    <div class="ball"></div>
-                </label>
-                <span>Тёмная тема</span>
-            </div>
+        <ul class="nav-links">
+            <li>
+                <a href="../index.html">
+                    <i class="fas fa-home"></i>
+                    <span class="link-text">Главная</span>
+                </a>
+            </li>
+            <li>
+                <a href="../Schedule/schedule.html">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span class="link-text">Расписание</span>
+                </a>
+            </li>
+            <li>
+                <a href="../Tasks/tasks.html">
+                    <i class="fas fa-tasks"></i>
+                    <span class="link-text">Задачи</span>
+                </a>
+            </li>
+            <li>
+                <a href="../Profile/profile.html" class="active">
+                    <i class="fas fa-user"></i>
+                    <span class="link-text">Профиль</span>
+                </a>
+            </li>
+        </ul>
+        <div class="sidebar-footer">
+            <button id="theme-toggle">
+                <i class="fas fa-moon"></i>
+                <span class="link-text">Тема</span>
+            </button>
         </div>
     </nav>
 
-    <!-- Мобильное меню -->
-    <div class="mobile-menu-toggle">
-        <span></span>
-        <span></span>
-        <span></span>
-    </div>
+    <!-- Основной контент -->
+    <main class="main-content">
+        <header class="top-bar">
+            <button id="sidebar-toggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="mobile-logo">
+                <img src="../images/logo.png" alt="Logo">
+                <h2>AdminFlow</h2>
+            </div>
+            <button id="mobile-theme-toggle">
+                <i class="fas fa-moon"></i>
+            </button>
+        </header>
 
-    <div class="overlay"></div>
-
-    <div class="mobile-menu">
-        <nav>
-            <ul>
-                <li><a href="../index.html"><i class="fas fa-home"></i>Расписание</a></li>
-                <li><a href="../home/homework.html"><i class="fas fa-book"></i>Задания</a></li>
-                <li><a href="../downloads/downloads.html"><i class="fas fa-download"></i>Загрузки</a></li>
-                <li><a href="../memes/memes.html"><i class="fas fa-smile"></i>Мемы</a></li>
-                <li><a href="../about/about.html"><i class="fas fa-info-circle"></i>О нас</a></li>
-                <li><a href="../games/games.html"><i class="fas fa-gamepad"></i>Игры</a></li>
-                <li><a href="../Profile/profile.html"><i class="fas fa-user"></i>Профиль</a></li>
-            </ul>
-        </nav>
-    </div>
-
-    <h1 class="zagolovok">Профиль</h1>
-    <main>
-        <div class="login-container" id="login-container">
-            <form class="login-form" onsubmit="handleLogin(event)">
-                <h2 class="form-title">Вход в систему</h2>
-                
+        <!-- Контейнер для входа -->
+        <div id="login-container">
+            <form id="loginForm">
+                <h2>Вход в систему</h2>
                 <div class="form-group">
-                    <label for="username">Логин</label>
-                    <input type="text" id="username" placeholder="Введите ваш логин" required>
+                    <label for="login-username">Имя пользователя:</label>
+                    <input type="text" id="login-username" required>
                 </div>
-                
                 <div class="form-group">
-                    <label for="password">Пароль</label>
-                    <div class="password-wrapper">
-                        <input type="password" id="password" class="password-input" 
-                               placeholder="Введите ваш пароль" required>
-                        <span class="eye-icon" onclick="togglePassword()">👁️</span>
-                    </div>
+                    <label for="login-password">Пароль:</label>
+                    <input type="password" id="login-password" required>
                 </div>
-                
-                <div id="error-message" class="error-message"></div>
-                
-                <button type="submit" class="login-btn">Войти</button>
-                
-                <div class="anonymous-login">
-                    <button id="anonymous-login-btn" type="button" class="anonymous-btn">
-                        Войти анонимно
-                    </button>
-                </div>
-                
-                <div class="forgot-password">
-                    <a href="#">Забыли пароль?</a>
-                </div>
+                <button type="submit" class="btn primary-btn">Войти</button>
+                <button type="button" class="btn secondary-btn" onclick="handleAnonymousLogin()">Анонимный вход</button>
             </form>
         </div>
 
-        <div class="profile-container" id="profile-container" style="display: none;">
-            <div class="profile-card">
-                <div class="profile-header">
-                    <div class="profile-avatar">
-                        <i class="fas fa-user-circle"></i>
-                    </div>
-                    <h2 class="profile-name" id="profile-username">Имя пользователя</h2>
-                    <p class="profile-role" id="profile-role">Роль пользователя</p>
-                </div>
-                <div class="profile-info">
-                    <div class="info-item">
-                        <i class="fas fa-envelope"></i>
-                        <span id="profile-email">email@example.com</span>
-                    </div>
-                    <div class="info-item">
-                        <i class="fas fa-clock"></i>
-                        <span id="last-login">Последний вход: </span>
-                    </div>
-                </div>
-                <button class="logout-btn" onclick="handleLogout()">
-                    <i class="fas fa-sign-out-alt"></i>
-                    Выйти
-                </button>
+        <!-- Контейнер профиля -->
+        <div id="profile-container" style="display: none;">
+            <div class="profile-info">
+                <h2>Профиль пользователя</h2>
+                <p>Имя пользователя: <span id="profile-username"></span></p>
+                <p>Роль: <span id="profile-role"></span></p>
+                <button class="btn danger-btn" onclick="handleLogout()">Выйти</button>
+            </div>
 
-                <!-- Добавляем секцию для администратора -->
-                <div id="admin-section" style="display: none;">
-                    <hr class="admin-divider">
-                    <h3 class="admin-title">Панель администратора</h3>
-                    
-                    <div class="database-section">
-                        <h4>База данных пользователей</h4>
-                        <table class="users-table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Имя пользователя</th>
-                                    <th>Роль</th>
-                                    <th>Последний вход</th>
-                                    <th>Действия</th>
-                                </tr>
-                            </thead>
-                            <tbody id="users-table-body">
-                                <!-- Данные будут добавлены через JavaScript -->
-                            </tbody>
-                        </table>
+            <!-- Админ-панель -->
+            <div id="admin-section" style="display: none;">
+                <div class="admin-controls">
+                    <button class="btn primary-btn" onclick="showCreateUserModal()">
+                        <i class="fas fa-plus"></i> Добавить пользователя
+                    </button>
+                </div>
+                <div class="users-table-container">
+                    <h3>Управление пользователями</h3>
+                    <table class="users-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Имя пользователя</th>
+                                <th>Роль</th>
+                                <th>Дата создания</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body">
+                            <!-- Данные будут добавлены через JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальные окна -->
+        <div id="userModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeUserModal()">&times;</span>
+                <h2 id="modal-title">Добавить пользователя</h2>
+                <form id="userForm" onsubmit="handleUserSubmit(event)">
+                    <input type="hidden" id="userId">
+                    <div class="form-group">
+                        <label for="username">Имя пользователя:</label>
+                        <input type="text" id="username" required>
                     </div>
+                    <div class="form-group">
+                        <label for="password">Пароль:</label>
+                        <input type="password" id="password">
+                        <small>Оставьте пустым, чтобы сохранить текущий пароль</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="role">Роль:</label>
+                        <select id="role" required>
+                            <option value="User">Пользователь</option>
+                            <option value="Admin">Администратор</option>
+                        </select>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn primary-btn">Сохранить</button>
+                        <button type="button" class="btn secondary-btn" onclick="closeUserModal()">Отмена</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="deleteModal" class="modal">
+            <div class="modal-content">
+                <h2>Подтверждение удаления</h2>
+                <p>Вы уверены, что хотите удалить этого пользователя?</p>
+                <div class="form-actions">
+                    <button class="btn danger-btn" onclick="confirmDelete()">Удалить</button>
+                    <button class="btn secondary-btn" onclick="closeDeleteModal()">Отмена</button>
                 </div>
             </div>
         </div>
     </main>
+
+    <script src="../main.js"></script>
+    <script src="profile.js"></script>
 </body>
 </html>
