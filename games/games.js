@@ -64,8 +64,13 @@ function gameLoop() {
         }
     }
     
-    // Создание препятствий
-    if (Math.random() < 0.02) {
+    // Создание препятствий с проверкой минимального расстояния
+    const minDistance = 300; // Минимальное расстояние между препятствиями
+    const lastObstacle = obstacles[obstacles.length - 1];
+    const canCreateObstacle = !lastObstacle || 
+                             (canvas.width - lastObstacle.x) >= minDistance;
+    
+    if (Math.random() < 0.01 && canCreateObstacle) { // Уменьшили вероятность с 0.02 до 0.01
         obstacles.push(createObstacle());
     }
     
