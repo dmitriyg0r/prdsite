@@ -15,8 +15,16 @@ const showError = (message) => {
 };
 
 const showSuccess = (message) => {
-    // Можно добавить красивое уведомление
-    console.log('Success:', message);
+    const errorMessage = document.getElementById('error-message');
+    if (errorMessage) {
+        errorMessage.textContent = message;
+        errorMessage.style.display = 'block';
+        errorMessage.style.backgroundColor = '#4CAF50'; // Зеленый цвет для успеха
+        
+        setTimeout(() => {
+            errorMessage.style.display = 'none';
+        }, 3000);
+    }
 };
 
 const togglePassword = () => {
@@ -369,21 +377,6 @@ async function editUser(userId) {
         }
     } catch (error) {
         console.error('Error updating user:', error);
-        showError('Ошибка при обновлении пользователя');
-    }
-}
-
-// Функция для отображения сообщения об успехе
-function showSuccess(message) {
-    // Можно использовать существующий элемент для ошибок или создать новый для успешных сообщений
-    const errorMessage = document.getElementById('error-message');
-    if (errorMessage) {
-        errorMessage.textContent = message;
-        errorMessage.style.display = 'block';
-        errorMessage.style.backgroundColor = '#4CAF50'; // Зеленый цвет для успеха
-        
-        setTimeout(() => {
-            errorMessage.style.display = 'none';
-        }, 3000);
+        showError('Ошибк�� при обновлении пользователя');
     }
 }
