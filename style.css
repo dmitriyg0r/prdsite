@@ -1090,3 +1090,24 @@ table {
 [data-theme="dark"] .zagolovok::after {
     background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
 }
+
+/* Стилизация ползунка для прокрутки */
+body[data-theme="dark"] ::-webkit-scrollbar {
+    width: 8px;
+    background-color: #1A1B1E; /* Цвет фона ползунка */
+}
+
+body[data-theme="dark"] ::-webkit-scrollbar-thumb {
+    background-color: #3A3B3F; /* Цвет ползунка */
+    border-radius: 4px;
+}
+
+body[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+    background-color: #5A5B5F; /* Цвет ползунка при наведении */
+}
+
+/* Для Firefox */
+body[data-theme="dark"] {
+    scrollbar-width: thin;
+    scrollbar-color: #3A3B3F #1A1B1E;
+}
