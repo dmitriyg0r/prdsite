@@ -23,6 +23,7 @@ namespace ScheduleApp.DataAccess.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetUsers()
         {
             try
@@ -53,6 +54,17 @@ namespace ScheduleApp.DataAccess.Controllers
         {
             try
             {
+                _logger.LogInformation("Creating new user: {Username}", request.Username);
+
+                // Проверка на существующего пользователя
+                var existingUser = await _context.Users
+                    .FirstOrDefaultAsync(u => u.Username == request.Username);
+
+                if (existingUser != null)
+                {
+                    return BadRequest(new { success = false, message = "Username already exists" });
+                }
+
                 var passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
                 var user = new User
                 {
@@ -65,11 +77,22 @@ namespace ScheduleApp.DataAccess.Controllers
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync();
 
-                return Ok(new { success = true, data = user });
+                _logger.LogInformation("User created successfully: {Username}", user.Username);
+
+                return Ok(new { 
+                    success = true, 
+                    data = new {
+                        id = user.Id,
+                        username = user.Username,
+                        role = user.Role,
+                        createdAt = user.CreatedAt
+                    }
+                });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { success = false, message = ex.Message });
+                _logger.LogError(ex, "Error creating user");
+                return StatusCode(500, new { success = false, message = "Internal server error" });
             }
         }
 
