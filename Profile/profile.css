@@ -45,32 +45,28 @@
 }
 
 /* Стили для кнопок */
-.login-btn, 
-.anonymous-login-btn {
-    width: 100%;
-    padding: 12px 20px;
+.btn {
+    padding: 10px 20px;
     border: none;
-    border-radius: 10px;
-    font-weight: 500;
+    border-radius: 4px;
     cursor: pointer;
+    font-weight: 500;
     transition: all 0.3s ease;
-    margin-bottom: 10px;
 }
 
-.login-btn {
-    background: linear-gradient(45deg, var(--button-background), var(--header-gradient));
-    color: var(--button-text);
+.primary-btn {
+    background: var(--primary-color);
+    color: white;
 }
 
-.anonymous-login-btn {
+.secondary-btn {
     background: var(--button-secondary);
     color: var(--text-color);
 }
 
-.login-btn:hover,
-.anonymous-login-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+.danger-btn {
+    background: #ff4444;
+    color: white;
 }
 
 /* Стили для информации профиля */
@@ -151,11 +147,28 @@
     box-shadow: 0 0 0 3px rgba(139, 68, 196, 0.2);
 }
 
-[data-theme="dark"] .login-btn {
+[data-theme="dark"] .btn.primary-btn {
     background: linear-gradient(45deg, var(--primary-color), var(--primary-light));
 }
 
-[data-theme="dark"] .anonymous-login-btn {
+[data-theme="dark"] .btn.secondary-btn {
     background: rgba(255, 255, 255, 0.1);
     color: var(--text-color);
+}
+
+/* Анимации */
+@keyframes fadeIn {
+    from { 
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Стилизация ползунка прокрутки */
+::-webkit-scrollbar {
+    width: 0;
 }
