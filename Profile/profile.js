@@ -1,8 +1,22 @@
-const API_BASE_URL = 'https://adminflow.ru/api';
+const togglePassword = () => {
+    const passwordInput = document.querySelector('.password-input');
+    const eyeIcon = document.querySelector('.eye-icon');
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        eyeIcon.classList.add('show');
+    } else {
+        passwordInput.type = 'password';
+        eyeIcon.classList.remove('show');
+    }
+}
 
 function showError(message) {
     alert(message);
 }
+
+// Обновляем константу API_BASE_URL
+const API_BASE_URL = 'https://adminflow.ru/api'; // Убираем порт 5002
 
 // Функция для проверки состояния сервера
 async function checkServerStatus() {
@@ -45,27 +59,8 @@ async function handleAnonymousLogin() {
         console.log('Login successful:', data);
         
         if (data.success) {
-            // Создаем объект с данными анонимного пользователя
-            const anonymousUser = {
-                username: 'Гость',
-                role: 'anonymous',
-                token: data.token || null
-            };
-            
-            // Сохраняем данные в localStorage
-            localStorage.setItem('user', JSON.stringify(anonymousUser));
-            
-            // Скрываем форму входа
-            document.getElementById('login-container').style.display = 'none';
-            
-            // Показываем информацию о профиле
-            const profileInfo = document.getElementById('profile-info');
-            profileInfo.style.display = 'block';
-            
-            // Обновляем информацию в профиле
-            document.getElementById('profile-username').textContent = anonymousUser.username;
-            document.getElementById('profile-role').textContent = anonymousUser.role;
-            
+            localStorage.setItem('user', JSON.stringify(data.data));
+            showProfile(data.data);
         } else {
             throw new Error(data.message || 'Unknown error');
         }
@@ -90,7 +85,8 @@ async function loadUsers() {
                 'Authorization': `Bearer ${userData.token}`,
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
-            }
+            },
+            credentials: 'include'
         });
         
         console.log('Response status:', response.status);
@@ -106,7 +102,7 @@ async function loadUsers() {
         } else {
             const errorData = await response.json();
             console.error('Error loading users:', errorData);
-            showError('Ошибка загрузки пользователей');
+            showError('Ошибка загрузк пользователей');
         }
     } catch (error) {
         console.error('Error in loadUsers:', error);
@@ -180,46 +176,32 @@ async function deleteUser(userId) {
     }
 }
 
-// Функция для отображения профиля
 function showProfile(userData) {
-    // Скрываем форму входа
+    console.log('ShowProfile called with userData:', userData);
+
     document.getElementById('login-container').style.display = 'none';
+    document.getElementById('profile-container').style.display = 'block';
     
-    // Показываем информацию о профиле
-    const profileInfo = document.getElementById('profile-info');
-    profileInfo.style.display = 'block';
-    
-    // Обновляем информацию в профиле
+    // Обновляем информацию профиля
     document.getElementById('profile-username').textContent = userData.username;
     document.getElementById('profile-role').textContent = userData.role;
     
-    // Если пользователь админ, показываем админ-панель
-    if (userData.role === 'admin') {
-        document.getElementById('admin-section').style.display = 'block';
+    // Показываем админ-панель и загружаем пользователей, если пользователь админ
+    const adminSection = document.getElementById('admin-section');
+    if (userData.role === 'Admin') {
+        console.log('Loading admin section');
+        adminSection.style.display = 'block';
         loadUsers(); // Загружаем список пользователей
+    } else {
+        adminSection.style.display = 'none';
     }
 }
 
-// Функция для выхода
 function handleLogout() {
-    // Очищаем данные пользователя
     localStorage.removeItem('user');
-    
-    // Показываем форму входа
+    document.getElementById('profile-container').style.display = 'none';
     document.getElementById('login-container').style.display = 'block';
-    
-    // Скрываем информацию о профиле и админ-панель
-    document.getElementById('profile-info').style.display = 'none';
-    document.getElementById('admin-section').style.display = 'none';
 }
-
-// При загрузке страницы проверяем, есть ли сохраненный пользователь
-document.addEventListener('DOMContentLoaded', () => {
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-        showProfile(JSON.parse(savedUser));
-    }
-});
 
 // Функция для проверки доступности сервера
 async function checkServerAvailability() {
@@ -429,91 +411,4 @@ async function confirmDelete() {
 function showSuccess(message) {
     // Добавьте свою реализацию уведомлений
     alert(message);
-}
-
-// Обработка входа в систему
-document.getElementById('loginForm').addEventListener('submit', async function(e) {
-    e.preventDefault(); // Предотвращаем стандартную отправку формы
-    
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
-
-    try {
-        const response = await fetch(`${API_BASE_URL}/auth/login`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({
-                username: username,
-                password: password
-            }),
-            credentials: 'include'
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-            // Сохраняем данные пользователя
-            localStorage.setItem('user', JSON.stringify(data.data));
-            
-            // Скрываем форму входа
-            document.getElementById('login-container').style.display = 'none';
-            
-            // Показываем информацию о профиле
-            const profileInfo = document.getElementById('profile-info');
-            profileInfo.style.display = 'block';
-            
-            // Обновляем информацию в профиле
-            document.getElementById('profile-username').textContent = data.data.username;
-            document.getElementById('profile-role').textContent = data.data.role;
-            
-            // Если пользователь админ, показываем админ-панель
-            if (data.data.role === 'admin') {
-                document.getElementById('admin-section').style.display = 'block';
-                loadUsers(); // Загружаем список пользователей
-            }
-        } else {
-            showError(data.message || 'Ошибка входа');
-        }
-    } catch (error) {
-        console.error('Login error:', error);
-        showError('Ошибка при входе в систему');
-    }
-});
-
-// Функция для отображения ошибок
-function showError(message) {
-    alert(message); // Можно заменить на более красивое уведомление
-}
-
-// При загрузке страницы проверяем, есть ли сохраненный пользователь
-document.addEventListener('DOMContentLoaded', () => {
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-        const userData = JSON.parse(savedUser);
-        // Скрываем форму входа
-        document.getElementById('login-container').style.display = 'none';
-        
-        // Показываем информацию о профиле
-        const profileInfo = document.getElementById('profile-info');
-        profileInfo.style.display = 'block';
-        
-        // Обновляем информацию в профиле
-        document.getElementById('profile-username').textContent = userData.username;
-        document.getElementById('profile-role').textContent = userData.role;
-        
-        // Если пользователь админ, показываем админ-панель
-        if (userData.role === 'admin') {
-            document.getElementById('admin-section').style.display = 'block';
-            loadUsers(); // Загружаем список пользователей
-        }
-    }
-});
-
-// Функция для выхода
-function handleLogout() {
-    localStorage.removeItem('user');
-    window.location.reload(); // Перезагружаем страницу после выхода
 }
