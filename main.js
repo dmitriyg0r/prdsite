@@ -5,33 +5,30 @@ const body = document.body;
 
 // Загрузка сохраненной темы
 const savedTheme = localStorage.getItem('theme');
-if (savedTheme) {
-    body.classList.add(savedTheme);
-    updateThemeIcon(savedTheme === 'dark-theme');
-}
-
-// Функция обновления иконки
-function updateThemeIcon(isDark) {
-    const icons = document.querySelectorAll('#theme-toggle i, #mobile-theme-toggle i');
-    icons.forEach(icon => {
-        icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
-    });
+if (savedTheme === 'dark') {
+    body.setAttribute('data-theme', 'dark');
+    if (themeToggle) themeToggle.checked = true;
 }
 
 // Функция переключения темы
 function toggleTheme() {
-    const isDark = body.classList.toggle('dark-theme');
-    localStorage.setItem('theme', isDark ? 'dark-theme' : '');
-    updateThemeIcon(isDark);
+    const isDark = themeToggle.checked;
+    if (isDark) {
+        body.setAttribute('data-theme', 'dark');
+        localStorage.setItem('theme', 'dark');
+    } else {
+        body.removeAttribute('data-theme');
+        localStorage.setItem('theme', 'light');
+    }
 }
 
 // Добавляем обработчики событий
 if (themeToggle) {
-    themeToggle.addEventListener('click', toggleTheme);
+    themeToggle.addEventListener('change', toggleTheme);
 }
 
 if (mobileThemeToggle) {
-    mobileThemeToggle.addEventListener('click', toggleTheme);
+    mobileThemeToggle.addEventListener('change', toggleTheme);
 }
 
 // Боковое меню
