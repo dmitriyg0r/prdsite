@@ -220,7 +220,7 @@ function displayUsers(users) {
 function handleLogout() {
     console.log('Logging out...');
     try {
-        // Очищем данные пользователя
+        // Оч��щем данные пользователя
         localStorage.removeItem('user');
         
         // Показываем форму входа и скрываем профиль
