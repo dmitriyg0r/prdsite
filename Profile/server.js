@@ -110,7 +110,7 @@ app.get('/api/users', authenticateToken, async (req, res) => {
     }
 });
 
-// Добавьте этот endpoint для создания пользователей
+// Создание нового пользователя
 app.post('/api/users', authenticateToken, async (req, res) => {
     try {
         if (req.user.role !== 'Admin') {
