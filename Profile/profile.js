@@ -145,15 +145,16 @@ async function loadUsers() {
     console.log('Loading users...');
     try {
         const userData = JSON.parse(localStorage.getItem('user'));
+        console.log('User data from storage:', userData); // Для отладки
         
-        if (!userData || !userData.token) {
+        if (!userData || !userData.data || !userData.data.token) {
             throw new Error('No authentication token found');
         }
 
         const response = await fetch(`${API_BASE_URL}/users`, {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${userData.token}`,
+                'Authorization': `Bearer ${userData.data.token}`,
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
@@ -213,11 +214,11 @@ function displayUsers(users) {
     });
 }
 
-// Функция выхода из системы
+// Функция выхода и�� системы
 function handleLogout() {
     console.log('Logging out...');
     try {
-        // Очищ��ем данные пользователя
+        // Очищем данные пользователя
         localStorage.removeItem('user');
         
         // Показываем форму входа и скрываем профиль
@@ -287,14 +288,14 @@ async function deleteUser(userId) {
     try {
         const userData = JSON.parse(localStorage.getItem('user'));
         
-        if (!userData || !userData.token) {
+        if (!userData || !userData.data || !userData.data.token) {
             throw new Error('No authentication token found');
         }
 
         const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
             method: 'DELETE',
             headers: {
-                'Authorization': `Bearer ${userData.token}`,
+                'Authorization': `Bearer ${userData.data.token}`,
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
@@ -318,14 +319,12 @@ async function deleteUser(userId) {
 // Функция для редактирования пользователя
 async function editUser(userId) {
     try {
-        // Получаем данные пользователя
         const userData = JSON.parse(localStorage.getItem('user'));
         
-        if (!userData || !userData.token) {
+        if (!userData || !userData.data || !userData.data.token) {
             throw new Error('No authentication token found');
         }
 
-        // Здесь можно добавить модальное окно или форму для редактирования
         const newUsername = prompt('Введите новое имя пользователя:');
         const newRole = prompt('Введите новую роль (Admin/User):');
         
@@ -336,7 +335,7 @@ async function editUser(userId) {
         const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
             method: 'PUT',
             headers: {
-                'Authorization': `Bearer ${userData.token}`,
+                'Authorization': `Bearer ${userData.data.token}`,
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
