@@ -103,99 +103,58 @@ async function handleAnonymousLogin() {
 
 // Функция отображения профиля
 function showProfile(userData) {
-    console.log('Showing profile for:', userData);
-
     const loginContainer = document.getElementById('login-container');
-    const profileInfo = document.getElementById('profile-info');
-    const adminSection = document.getElementById('admin-section');
-    const profileUsername = document.getElementById('profile-username');
-    const profileRole = document.getElementById('profile-role');
-
-    if (!loginContainer || !profileInfo) {
-        console.error('Required containers not found');
-        return;
+    const registerContainer = document.getElementById('register-container');
+    const profileContainer = document.getElementById('profile-container');
+    
+    if (loginContainer) loginContainer.style.display = 'none';
+    if (registerContainer) registerContainer.style.display = 'none';
+    if (profileContainer) profileContainer.style.display = 'block';
+    
+    // Отображаем информацию о пользователе
+    const userInfo = document.getElementById('user-info');
+    if (userInfo) {
+        userInfo.innerHTML = `
+            <h2>Профиль</h2>
+            <p>Имя пользователя: ${userData.data.username}</p>
+            <p>Роль: ${userData.data.role}</p>
+        `;
     }
-
-    try {
-        loginContainer.style.display = 'none';
-        profileInfo.style.display = 'block';
-
-        if (profileUsername) profileUsername.textContent = userData.data.username || 'Гость';
-        if (profileRole) profileRole.textContent = userData.data.role || 'Пользователь';
-
-        // Показываем админ-панель если пользователь админ
-        if (adminSection) {
-            if (userData.data.role === 'Admin') {
-                adminSection.style.display = 'block';
-                console.log('Loading users for admin...'); // Для отладки
-                loadUsers();
-            } else {
-                adminSection.style.display = 'none';
-            }
-        }
-
-        console.log('Profile displayed successfully');
-    } catch (error) {
-        console.error('Error displaying profile:', error);
-        showError('Ошибка при отображении профиля');
+    
+    // Если пользователь админ, загружаем список пользователей
+    if (userData.data.role === 'Admin') {
+        loadUsers();
     }
 }
 
+// Функция загрузки списка пользователей
 async function loadUsers() {
-    console.log('Loading users...');
     try {
-        const userDataString = localStorage.getItem('user');
-        const userData = JSON.parse(userDataString);
-        
-        if (!userData?.data?.token) {
-            throw new Error('No authentication token found');
-        }
-
+        const user = JSON.parse(localStorage.getItem('user'));
         const response = await fetch(`${API_BASE_URL}/users`, {
-            method: 'GET',
             headers: {
-                'Authorization': `Bearer ${userData.data.token}`,
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            credentials: 'include'
+                'Authorization': `Bearer ${user.data.username}`
+            }
         });
-
+        
         const data = await response.json();
         
-        if (response.ok && data.success) {
-            displayUsers(data.data);
-        } else {
-            throw new Error(data.message || 'Failed to load users');
+        if (data.success) {
+            const usersTableBody = document.getElementById('users-table-body');
+            if (usersTableBody) {
+                usersTableBody.innerHTML = data.data.map(user => `
+                    <tr>
+                        <td>${user.username}</td>
+                        <td>${user.role}</td>
+                        <td>${new Date(user.createdAt).toLocaleString()}</td>
+                    </tr>
+                `).join('');
+            }
         }
     } catch (error) {
         console.error('Error loading users:', error);
-        showError('Ошибка при загрузке пользователей');
+        showError('Ошибка при загрузке списка пользователей');
     }
-}
-
-function displayUsers(users) {
-    const usersList = document.getElementById('users-list');
-    if (!usersList) return;
-
-    usersList.innerHTML = '';
-    
-    users.forEach(user => {
-        const userDiv = document.createElement('div');
-        userDiv.className = 'user-item';
-        userDiv.innerHTML = `
-            <div class="user-info">
-                <span class="username">${user.username}</span>
-                <span class="role">${user.role}</span>
-                <span class="created-at">${new Date(user.created_at).toLocaleString()}</span>
-            </div>
-            <div class="user-actions">
-                <button onclick="editUser(${user.id})" class="edit-btn">Редактировать</button>
-                <button onclick="deleteUser(${user.id})" class="delete-btn">Удалить</button>
-            </div>
-        `;
-        usersList.appendChild(userDiv);
-    });
 }
 
 // Функция выхода и системы
@@ -383,7 +342,7 @@ async function showCreateUserModal() {
             showSuccess('Пользователь успешно создан');
             await loadUsers(); // Перезагржаем список поьзователей
         } else {
-            throw new Error(data.message || 'Ошибка при создании пользовате��я');
+            throw new Error(data.message || 'Ошибка при создании пользоватея');
         }
     } catch (error) {
         console.error('Error creating user:', error);

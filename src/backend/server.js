@@ -4,9 +4,6 @@ const bodyParser = require('body-parser');
 
 const app = express();
 
-// Временное хранилище пользователей
-const users = new Map();
-
 // Middleware
 app.use(bodyParser.json());
 app.use(cors({
@@ -26,14 +23,19 @@ app.use((req, res, next) => {
     next();
 });
 
-// Маршрут регистрации
+// Базовый маршрут
+app.get('/', (req, res) => {
+    console.log('GET / вызван');
+    res.json({ message: 'API работает' });
+});
+
+// Маршрут регистрации с префиксом /api
 app.post('/api/register', (req, res) => {
     console.log('POST /api/register вызван');
     console.log('Тело запроса:', req.body);
     
     const { username, password } = req.body;
     
-    // Проверка наличия необходимых полей
     if (!username || !password) {
         return res.status(400).json({
             success: false,
