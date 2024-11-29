@@ -56,9 +56,21 @@ async function handleLogin(event) {
         console.log('Login response data:', data);
 
         if (response.ok && data.success) {
-            localStorage.setItem('user', JSON.stringify(data.data));
+            // Сохраняем данные в правильном формате
+            const userData = {
+                success: true,
+                data: {
+                    username: data.data.username,
+                    role: data.data.role,
+                    token: data.data.token
+                }
+            };
+            
+            console.log('Saving user data:', userData); // Для отладки
+            localStorage.setItem('user', JSON.stringify(userData));
+            
             showSuccess('Успешный вход');
-            showProfile(data.data);
+            showProfile(userData);
         } else {
             showError(data.message || 'Ошибка входа');
         }
@@ -103,7 +115,6 @@ async function handleAnonymousLogin() {
 function showProfile(userData) {
     console.log('Showing profile for:', userData);
 
-    // Получаем необходимые элементы
     const loginContainer = document.getElementById('login-container');
     const profileInfo = document.getElementById('profile-info');
     const adminSection = document.getElementById('admin-section');
@@ -116,19 +127,18 @@ function showProfile(userData) {
     }
 
     try {
-        // Скрываем форму входа и показываем информацию профиля
         loginContainer.style.display = 'none';
         profileInfo.style.display = 'block';
 
-        // Обновляем информацию профиля
-        if (profileUsername) profileUsername.textContent = userData.username || 'Гость';
-        if (profileRole) profileRole.textContent = userData.role || 'Пользователь';
+        if (profileUsername) profileUsername.textContent = userData.data.username || 'Гость';
+        if (profileRole) profileRole.textContent = userData.data.role || 'Пользователь';
 
         // Показываем админ-панель если пользователь админ
         if (adminSection) {
-            if (userData.role === 'Admin') {
+            if (userData.data.role === 'Admin') {
                 adminSection.style.display = 'block';
-                loadUsers(); // Загружаем пользователей для админа
+                console.log('Loading users for admin...'); // Для отладки
+                loadUsers();
             } else {
                 adminSection.style.display = 'none';
             }
@@ -144,10 +154,13 @@ function showProfile(userData) {
 async function loadUsers() {
     console.log('Loading users...');
     try {
-        const userData = JSON.parse(localStorage.getItem('user'));
-        console.log('User data from storage:', userData); // Для отладки
+        const userDataString = localStorage.getItem('user');
+        console.log('Raw user data from storage:', userDataString); // Для отладки
         
-        if (!userData || !userData.data || !userData.data.token) {
+        const userData = JSON.parse(userDataString);
+        console.log('Parsed user data:', userData); // Для отладки
+        
+        if (!userData?.data?.token) {
             throw new Error('No authentication token found');
         }
 
@@ -214,7 +227,7 @@ function displayUsers(users) {
     });
 }
 
-// Функция выхода и�� системы
+// Функция выхода и системы
 function handleLogout() {
     console.log('Logging out...');
     try {
