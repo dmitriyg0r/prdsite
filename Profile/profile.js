@@ -220,7 +220,7 @@ function displayUsers(users) {
 function handleLogout() {
     console.log('Logging out...');
     try {
-        // Оч��щем данные пользователя
+        // Очщем данные пользователя
         localStorage.removeItem('user');
         
         // Показываем форму входа и скрываем профиль
@@ -409,155 +409,6 @@ async function showCreateUserModal() {
     }
 }
 
-function showRegisterForm() {
-    document.getElementById('login-container').style.display = 'none';
-    document.getElementById('register-container').style.display = 'block';
-}
-
-function showLoginForm() {
-    document.getElementById('login-container').style.display = 'block';
-    document.getElementById('register-container').style.display = 'none';
-}
-
-async function handleRegister(event) {
-    event.preventDefault();
-    
-    try {
-        const username = document.getElementById('reg-username').value;
-        const password = document.getElementById('reg-password').value;
-        
-        console.log('Отправка запроса регистрации:', { username });
-        
-        const response = await fetch('https://adminflow.ru/api/register', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({ username, password })
-        });
-        
-        console.log('Статус ответа:', response.status);
-        
-        const data = await response.json();
-        console.log('Ответ сервера:', data);
-        
-        if (data.success) {
-            showSuccess('Регистрация успешна! Теперь вы можете войти.');
-            showLoginForm();
-            document.getElementById('register-form').reset();
-        } else {
-            throw new Error(data.message || 'Ошибка при регистрации');
-        }
-    } catch (error) {
-        console.error('Ошибка регистрации:', error);
-        showError(error.message || 'Произошла ошибка при регистрации. Попробуйте позже.');
-    }
-}
-
-const toggleRegPassword = () => {
-    const passwordInput = document.getElementById('reg-password');
-    const eyeIcon = document.querySelector('#register-container .eye-icon');
-    
-    if (passwordInput.type === 'password') {
-        passwordInput.type = 'text';
-        eyeIcon.classList.add('show');
-    } else {
-        passwordInput.type = 'password';
-        eyeIcon.classList.remove('show');
-    }
-};
-
-// Добавим функцию для проверки доступности API
-async function checkApiAvailability() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/health`);
-        console.log('API Status:', response.status);
-    } catch (error) {
-        console.error('API не доступен:', error);
-    }
-}
-
-// Функция для проверки доступности API
-async function checkApiHealth() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/`);
-        const data = await response.json();
-        console.log('API Health Check:', data);
-        return true;
-    } catch (error) {
-        console.error('API Health Check Failed:', error);
-        return false;
-    }
-}
-
-// Проверяем API при загрузке страницы
-document.addEventListener('DOMContentLoaded', async () => {
-    const apiAvailable = await checkApiHealth();
-    if (!apiAvailable) {
-        showError('API сервер недоступен. Пожалуйста, попробуйте позже.');
-    }
-});
-
-// Функция для отображения сообщения об успехе
-function showSuccess(message) {
-    const successElement = document.getElementById('success-message');
-    if (successElement) {
-        successElement.textContent = message;
-        successElement.style.display = 'block';
-        setTimeout(() => {
-            successElement.style.display = 'none';
-        }, 5000);
-    } else {
-        alert(message);
-    }
-}
-
-// Функция для отображения ошибки
-function showError(message) {
-    const errorElement = document.getElementById('error-message');
-    if (errorElement) {
-        errorElement.textContent = message;
-        errorElement.style.display = 'block';
-        setTimeout(() => {
-            errorElement.style.display = 'none';
-        }, 5000);
-    } else {
-        alert(message);
-    }
-}
-
-// Функция для переключения на форму входа
-function showLoginForm() {
-    document.getElementById('login-container').style.display = 'block';
-    document.getElementById('register-container').style.display = 'none';
-    document.getElementById('success-message').style.display = 'none';
-    document.getElementById('error-message').style.display = 'none';
-}
-
-// Добавляем обработчик события при загрузке страницы
-document.addEventListener('DOMContentLoaded', () => {
-    const registerForm = document.getElementById('register-form');
-    if (registerForm) {
-        registerForm.addEventListener('submit', handleRegister);
-    }
-});
-
-// Функции для переключения между формами
-function showLoginForm() {
-    document.getElementById('login-container').style.display = 'block';
-    document.getElementById('register-container').style.display = 'none';
-    document.getElementById('success-message').style.display = 'none';
-    document.getElementById('error-message').style.display = 'none';
-}
-
-function showRegisterForm() {
-    document.getElementById('login-container').style.display = 'none';
-    document.getElementById('register-container').style.display = 'block';
-    document.getElementById('success-message').style.display = 'none';
-    document.getElementById('error-message').style.display = 'none';
-}
-
 // Обработчик регистрации
 async function handleRegister(event) {
     event.preventDefault();
@@ -592,42 +443,6 @@ async function handleRegister(event) {
     } catch (error) {
         console.error('Ошибка регистрации:', error);
         showError(error.message || 'Произошла ошибка при регистрации. Попробуйте позже.');
-    }
-}
-
-// Обработчик входа
-async function handleLogin(event) {
-    event.preventDefault();
-    
-    try {
-        const username = document.getElementById('login-username').value;
-        const password = document.getElementById('login-password').value;
-        
-        console.log('Отправка запроса входа:', { username });
-        
-        const response = await fetch('https://adminflow.ru/api/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({ username, password })
-        });
-        
-        console.log('Статус ответа:', response.status);
-        
-        const data = await response.json();
-        console.log('Ответ сервера:', data);
-        
-        if (data.success) {
-            showSuccess('Вход выполнен успешно!');
-            // Здесь можно добавить перенаправление или другую логику
-        } else {
-            throw new Error(data.message || 'Ошибка при входе');
-        }
-    } catch (error) {
-        console.error('Ошибка входа:', error);
-        showError(error.message || 'Произошла ошибка при входе. Попробуйте позже.');
     }
 }
 
