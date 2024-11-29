@@ -163,10 +163,7 @@ async function loadUsers() {
     console.log('Loading users...');
     try {
         const userDataString = localStorage.getItem('user');
-        console.log('Raw user data from storage:', userDataString); // Для отладки
-        
         const userData = JSON.parse(userDataString);
-        console.log('Parsed user data:', userData); // Для отладки
         
         if (!userData?.data?.token) {
             throw new Error('No authentication token found');
@@ -182,9 +179,7 @@ async function loadUsers() {
             credentials: 'include'
         });
 
-        console.log('Users response status:', response.status);
         const data = await response.json();
-        console.log('Users response data:', data);
         
         if (response.ok && data.success) {
             displayUsers(data.data);
@@ -337,7 +332,7 @@ async function deleteUser(userId) {
     }
 }
 
-// ��ункция для ре��актирования пользователя
+// ункция для реактирования пользователя
 async function editUser(userId) {
     try {
         const userData = JSON.parse(localStorage.getItem('user'));
@@ -435,7 +430,7 @@ async function createUser(username, password, role) {
         
         if (response.ok && data.success) {
             showSuccess('Пользователь успешно создан');
-            await loadUsers(); // Перезагружаем список пользователей
+            await loadUsers(); // Перезагружаем список пользовател��й
         } else {
             throw new Error(data.message || 'Failed to create user');
         }
@@ -444,3 +439,219 @@ async function createUser(username, password, role) {
         showError('Ошибка при создании пользователя: ' + error.message);
     }
 }
+
+// Добавляем подключение к базе данных
+const { Pool } = require('pg');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const express = require('express');
+const cors = require('cors');
+
+// Инициализация Express
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+// Конфигурация базы данных
+const pool = new Pool({
+    user: 'your_username',
+    host: 'localhost',
+    database: 'adminflow',
+    password: 'your_password',
+    port: 5432
+});
+
+// JWT секрет
+const JWT_SECRET = 'your_secret_key';
+
+// Middleware для проверки JWT
+const authenticateToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
+        return res.status(401).json({ success: false, message: 'Токен не предоставлен' });
+    }
+
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+        if (err) {
+            return res.status(403).json({ success: false, message: 'Недействительный токен' });
+        }
+        req.user = user;
+        next();
+    });
+};
+
+// API эндпоинты
+app.post('/api/auth/login', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        
+        const user = await pool.query(
+            'SELECT * FROM users WHERE username = $1',
+            [username]
+        );
+
+        if (user.rows.length === 0) {
+            return res.status(401).json({ 
+                success: false, 
+                message: 'Неверное имя пользователя или пароль' 
+            });
+        }
+
+        const validPassword = await bcrypt.compare(password, user.rows[0].password_hash);
+        if (!validPassword) {
+            return res.status(401).json({ 
+                success: false, 
+                message: 'Неверное имя пользователя или пароль' 
+            });
+        }
+
+        const token = jwt.sign(
+            { 
+                id: user.rows[0].id, 
+                username: user.rows[0].username,
+                role: user.rows[0].role 
+            },
+            JWT_SECRET
+        );
+
+        res.json({
+            success: true,
+            data: {
+                username: user.rows[0].username,
+                role: user.rows[0].role,
+                token: token
+            }
+        });
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({ success: false, message: 'Ошибка сервера' });
+    }
+});
+
+// Получение списка пользователей
+app.get('/api/users', authenticateToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'Admin') {
+            return res.status(403).json({ success: false, message: 'Доступ запрещен' });
+        }
+
+        const result = await pool.query(
+            'SELECT id, username, role, created_at FROM users'
+        );
+        
+        res.json({ success: true, data: result.rows });
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        res.status(500).json({ success: false, message: 'Ошибка сервера' });
+    }
+});
+
+// Создание пользователя
+app.post('/api/users', authenticateToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'Admin') {
+            return res.status(403).json({ success: false, message: 'Доступ запрещен' });
+        }
+
+        const { username, password, role } = req.body;
+        const passwordHash = await bcrypt.hash(password, 10);
+
+        const result = await pool.query(
+            'INSERT INTO users (username, password_hash, role) VALUES ($1, $2, $3) RETURNING id, username, role',
+            [username, passwordHash, role]
+        );
+
+        res.json({ success: true, data: result.rows[0] });
+    } catch (error) {
+        console.error('Error creating user:', error);
+        res.status(500).json({ success: false, message: 'Ошибка при создании пользователя' });
+    }
+});
+
+// Удаление пользователя
+app.delete('/api/users/:id', authenticateToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'Admin') {
+            return res.status(403).json({ success: false, message: 'Доступ запрещен' });
+        }
+
+        const { id } = req.params;
+        await pool.query('DELETE FROM users WHERE id = $1', [id]);
+        
+        res.json({ success: true, message: 'Пользователь успешно удален' });
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        res.status(500).json({ success: false, message: 'Ошибка при удалении пользователя' });
+    }
+});
+
+// Обновление пользователя
+app.put('/api/users/:id', authenticateToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'Admin') {
+            return res.status(403).json({ success: false, message: 'Доступ запрещен' });
+        }
+
+        const { id } = req.params;
+        const { username, role } = req.body;
+
+        const result = await pool.query(
+            'UPDATE users SET username = $1, role = $2 WHERE id = $3 RETURNING id, username, role',
+            [username, role, id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, message: 'Пользователь не найден' });
+        }
+
+        res.json({ success: true, data: result.rows[0] });
+    } catch (error) {
+        console.error('Error updating user:', error);
+        res.status(500).json({ success: false, message: 'Ошибка при обновлении пользователя' });
+    }
+});
+
+// Инициализация базы данных
+async function initDatabase() {
+    try {
+        // Создание таблицы пользователей
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                username VARCHAR(50) UNIQUE NOT NULL,
+                password_hash VARCHAR(255) NOT NULL,
+                role VARCHAR(20) NOT NULL DEFAULT 'User',
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        // Проверка наличия админа
+        const adminExists = await pool.query(
+            'SELECT * FROM users WHERE username = $1',
+            ['admin']
+        );
+
+        // Создание первого админа, если его нет
+        if (adminExists.rows.length === 0) {
+            const passwordHash = await bcrypt.hash('admin123', 10);
+            await pool.query(
+                'INSERT INTO users (username, password_hash, role) VALUES ($1, $2, $3)',
+                ['admin', passwordHash, 'Admin']
+            );
+            console.log('Admin user created');
+        }
+
+        console.log('Database initialized successfully');
+    } catch (error) {
+        console.error('Database initialization error:', error);
+    }
+}
+
+// Запуск сервера
+const PORT = 3000;
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+    initDatabase();
+});
