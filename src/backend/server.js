@@ -124,6 +124,39 @@ app.get('/api/users', (req, res) => {
     });
 });
 
+// Добавьте этот маршрут в server.js
+app.delete('/api/users/:username', (req, res) => {
+    console.log('DELETE /api/users/:username вызван');
+    const { username } = req.params;
+    
+    // Находим индекс пользователя
+    const userIndex = users.findIndex(u => u.username === username);
+    
+    if (userIndex === -1) {
+        return res.status(404).json({
+            success: false,
+            message: 'Пользователь не найден'
+        });
+    }
+    
+    // Не позволяем удалить последнего администратора
+    if (users[userIndex].role === 'Admin' && 
+        users.filter(u => u.role === 'Admin').length === 1) {
+        return res.status(400).json({
+            success: false,
+            message: 'Невозможно удалить последнего администратора'
+        });
+    }
+    
+    // Удаляем пользователя
+    users.splice(userIndex, 1);
+    
+    res.json({
+        success: true,
+        message: 'Пользователь успешно удален'
+    });
+});
+
 // Запуск сервера
 const PORT = process.env.PORT || 5003;
 app.listen(PORT, () => {
@@ -133,4 +166,5 @@ app.listen(PORT, () => {
     console.log('POST /api/auth/login');
     console.log('POST /api/auth/anonymous-login');
     console.log('GET  /api/users');
+    console.log('DELETE /api/users/:username');
 });

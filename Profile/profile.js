@@ -191,6 +191,11 @@ async function loadUsers() {
                         <td>${user.username}</td>
                         <td>${user.role}</td>
                         <td>${new Date(user.createdAt).toLocaleString()}</td>
+                        <td>
+                            <button class="action-btn delete-btn" onclick="deleteUser('${user.username}')">
+                                <i class="fas fa-trash"></i> Удалить
+                            </button>
+                        </td>
                     </tr>
                 `).join('');
             }
@@ -295,39 +300,35 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Функция для удаления пользователя
-async function deleteUser(userId) {
-    if (!confirm('Вы уверены, что хотите удалить этого пользователя?')) {
+async function deleteUser(username) {
+    if (!confirm(`Вы уверены, что хотите удалить пользователя ${username}?`)) {
         return;
     }
 
     try {
         const userData = JSON.parse(localStorage.getItem('user'));
-        
-        if (!userData || !userData.data || !userData.data.token) {
-            throw new Error('No authentication token found');
-        }
-
-        const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+        const response = await fetch(`${API_BASE_URL}/users/${username}`, {
             method: 'DELETE',
             headers: {
-                'Authorization': `Bearer ${userData.data.token}`,
                 'Content-Type': 'application/json',
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${userData.data.username}`
             },
             credentials: 'include'
         });
 
         const data = await response.json();
-        
+
         if (response.ok && data.success) {
             showSuccess('Пользователь успешно удален');
-            loadUsers(); // Перезагружаем список пользователей
+            // Перезагружаем список пользователей
+            loadUsers();
         } else {
-            throw new Error(data.message || 'Failed to delete user');
+            throw new Error(data.message || 'Ошибка при удалении пользователя');
         }
     } catch (error) {
         console.error('Error deleting user:', error);
-        showError('Ошибка при удалении пользователя');
+        showError(error.message || 'Произошла ошибка при удалении пользователя');
     }
 }
 

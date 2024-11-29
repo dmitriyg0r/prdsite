@@ -144,25 +144,19 @@
 
             <!-- Админ-панель -->
             <div id="admin-section" style="display: none;">
-                <div class="admin-controls">
-                    <h3>Управление пользователями</h3>
-                    <button class="action-btn primary-btn" onclick="showCreateUserModal()">
-                        <i class="fas fa-plus"></i> Добавить пользователя
-                    </button>
-                </div>
+                <h2>Управление пользователями</h2>
                 <div class="users-table-container">
                     <table class="users-table">
                         <thead>
                             <tr>
-                                <th>ID</th>
                                 <th>Имя пользователя</th>
                                 <th>Роль</th>
-                                <th>Дата создания</th>
+                                <th>Дата регистрации</th>
                                 <th>Действия</th>
                             </tr>
                         </thead>
                         <tbody id="users-table-body">
-                            <!-- Данные будут добавлены через JavaScript -->
+                            <!-- Данные будут добавлены динамически -->
                         </tbody>
                     </table>
                 </div>

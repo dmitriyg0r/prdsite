@@ -584,3 +584,8 @@
         height: 150px;
     }
 }
+
+/* Стили для иконок */
+.action-btn i {
+    font-size: 16px;
+}
