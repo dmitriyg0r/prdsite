@@ -421,40 +421,28 @@ function showLoginForm() {
 async function handleRegister(event) {
     event.preventDefault();
     
-    const username = document.getElementById('reg-username').value;
-    const password = document.getElementById('reg-password').value;
-    
     try {
         // Добавим логирование для отладки
-        console.log('Отправка запроса на:', `${API_BASE_URL}/auth/register`);
+        const registerUrl = `${API_BASE_URL}/auth/register`;
+        console.log('Отправка запроса на:', registerUrl);
         
-        const response = await fetch(`${API_BASE_URL}/auth/register`, {
+        const response = await fetch(registerUrl, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({ 
-                username: username,
-                password: password 
+                username: document.getElementById('reg-username').value,
+                password: document.getElementById('reg-password').value
             })
         });
         
-        // Добавим проверку статуса ответа
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `Ошибка HTTP: ${response.status}`);
         }
         
-        // Проверим содержимое ответа
-        const text = await response.text();
-        console.log('Ответ сервера:', text);
-        
-        let data;
-        try {
-            data = JSON.parse(text);
-        } catch (e) {
-            throw new Error('Некорректный формат ответа от сервера');
-        }
+        const data = await response.json();
         
         if (data.success) {
             showSuccess('Регистрация успешна! Теперь вы можете войти.');
@@ -491,3 +479,24 @@ async function checkApiAvailability() {
         console.error('API не доступен:', error);
     }
 }
+
+// Функция для проверки доступности API
+async function checkApiHealth() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/`);
+        const data = await response.json();
+        console.log('API Health Check:', data);
+        return true;
+    } catch (error) {
+        console.error('API Health Check Failed:', error);
+        return false;
+    }
+}
+
+// Проверяем API при загрузке страницы
+document.addEventListener('DOMContentLoaded', async () => {
+    const apiAvailable = await checkApiHealth();
+    if (!apiAvailable) {
+        showError('API сервер недоступен. Пожалуйста, попробуйте позже.');
+    }
+});
