@@ -1,320 +1,24 @@
-/* Стили для заголовка */
-.zagolovok {
-    text-align: center;
-    margin: 30px 0;
-    margin-left: 70px; /* Отступ для меню */
-    color: var(--text-color);
-    font-size: 32px;
-    font-weight: 700;
-}
-
-/* Контейнер для основного контента */
-main {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: calc(100vh - 100px); /* Высота минус высота заголовка */
-    margin-left: 70px; /* Отступ для свёрнутого меню */
-    padding: 0 20px;
-}
-
-/* Контейнер для формы входа */
-#login-container {
-    background: var(--text-container-background);
-    padding: 40px;
-    border-radius: 20px;
-    box-shadow: var(--text-container-shadow);
+/* Специфичные стили для профиля */
+#profile-container {
     width: 100%;
-    max-width: 400px;
-    margin: 100px auto;
-    animation: fadeIn 0.6s ease-out;
-}
-
-.login-form {
-    background: var(--text-container-background);
-    padding: 40px;
-    border-radius: 20px;
-    box-shadow: var(--text-container-shadow);
-    width: 100%;
-    max-width: 400px;
-    animation: fadeIn 0.6s ease-out;
-    box-sizing: border-box; /* Важно для правильного расчета ширины */
-}
-
-.form-title {
-    text-align: center;
-    margin-bottom: 30px;
-    color: var(--text-color);
-    font-size: 24px;
-    font-weight: 700;
-    position: relative;
-    padding-bottom: 15px;
-}
-
-.form-title::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60px;
-    height: 3px;
-    background: linear-gradient(90deg, var(--primary-color), var(--header-gradient));
-    border-radius: 2px;
-}
-
-.form-group {
-    margin-bottom: 20px;
-    width: 100%; /* Занимаем всю доступную ширину */
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 8px;
-    color: var(--text-color);
-    font-weight: 500;
-}
-
-.form-group input {
-    width: 100%;
-    padding: 12px 15px;
-    border: 2px solid var(--border-color);
-    border-radius: 10px;
-    font-size: 16px;
-    background-color: var(--input-background);
-    color: var(--text-color);
-    transition: all 0.3s ease;
-    box-sizing: border-box; /* Важно для правильного расчета ширины */
-}
-
-.form-group input:focus {
-    border-color: var(--primary-color);
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(var(--button-background-rgb), 0.2);
-}
-
-.password-wrapper {
-    position: relative;
-    width: 100%;
-}
-
-.password-wrapper input {
-    width: 100%;
-    padding-right: 40px; /* Место для иконки глаза */
-}
-
-.eye-icon {
-    position: absolute;
-    right: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    cursor: pointer;
-    color: var(--text-secondary);
-    transition: color 0.3s ease;
-    z-index: 1;
-}
-
-.eye-icon:hover {
-    color: var(--primary-color);
-}
-
-.login-btn {
-    width: 100%;
-    padding: 12px 15px;
-    background: linear-gradient(45deg, var(--button-background), var(--header-gradient));
-    color: var(--button-text);
-    border: none;
-    border-radius: 10px;
-    font-size: 16px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin-top: 20px;
-    box-sizing: border-box;
-}
-
-.login-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(var(--button-background-rgb), 0.3);
-}
-
-.forgot-password {
-    text-align: center;
-    margin-top: 20px;
-}
-
-.forgot-password a {
-    color: var(--primary-color);
-    text-decoration: none;
-    font-size: 14px;
-    transition: all 0.3s ease;
-}
-
-.forgot-password a:hover {
-    color: var(--button-hover);
-    text-decoration: underline;
-}
-
-/* Анимация появления */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Медиа-запросы */
-@media screen and (max-width: 768px) {
-    .zagolovok {
-        margin-left: 0;
-        font-size: 28px;
-    }
-
-    main {
-        margin-left: 0;
-    }
-
-    .login-container {
-        width: 100%;
-        margin-left: 0;
-        padding: 15px;
-    }
-
-    .login-form {
-        padding: 30px 20px;
-    }
-}
-
-.error-message {
-    color: #ff3333;
-    background-color: rgba(255, 51, 51, 0.1);
-    padding: 10px;
-    border-radius: 5px;
-    margin-bottom: 15px;
-    display: none;
-    text-align: center;
-}
-
-.anonymous-login {
-    text-align: center;
-    margin-top: 15px;
-}
-
-.anonymous-btn {
-    background: transparent;
-    color: var(--text-color);
-    border: 2px solid var(--primary-color);
-    padding: 10px 20px;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 14px;
-}
-
-.anonymous-btn:hover {
-    background: var(--primary-color);
-    color: var(--button-text);
-}
-
-.profile-container {
-    width: 100%;
-    max-width: 600px;
-    margin: 0 auto;
+    max-width: 800px;
+    margin: 20px auto;
     padding: 20px;
-    animation: fadeIn 0.6s ease-out;
-}
-
-.profile-card {
-    background: var(--text-container-background);
-    border-radius: 20px;
-    padding: 30px;
-    box-shadow: var(--text-container-shadow);
-}
-
-.profile-header {
-    text-align: center;
-    margin-bottom: 30px;
-}
-
-.profile-avatar {
-    font-size: 80px;
-    color: var(--primary-color);
-    margin-bottom: 15px;
-}
-
-.profile-name {
-    font-size: 24px;
-    color: var(--text-color);
-    margin-bottom: 5px;
-}
-
-.profile-role {
-    color: var(--text-secondary);
-    font-size: 16px;
-}
-
-.profile-info {
-    margin-top: 30px;
-}
-
-.info-item {
-    display: flex;
-    align-items: center;
-    margin-bottom: 15px;
-    color: var(--text-color);
-}
-
-.info-item i {
-    margin-right: 15px;
-    color: var(--primary-color);
-    width: 20px;
-}
-
-.logout-btn {
-    width: 100%;
-    padding: 12px 15px;
-    background: linear-gradient(45deg, var(--button-background), var(--header-gradient));
-    color: var(--button-text);
-    border: none;
-    border-radius: 10px;
-    font-size: 16px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin-top: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.logout-btn i {
-    margin-right: 10px;
-}
-
-.logout-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(var(--button-background-rgb), 0.3);
 }
 
 /* Стили для админ-панели */
-.admin-divider {
-    margin: 30px 0;
-    border: none;
-    border-top: 2px solid var(--border-color);
+.admin-controls {
+    margin: 20px 0;
+    display: flex;
+    justify-content: flex-end;
 }
 
-.admin-title {
-    color: var(--text-color);
-    font-size: 20px;
-    margin-bottom: 20px;
-    text-align: center;
-}
-
-.database-section {
+/* Стили для таблицы пользователей */
+.users-table-container {
+    background: var(--text-container-background);
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: var(--text-container-shadow);
     margin-top: 20px;
     overflow-x: auto;
 }
@@ -323,9 +27,6 @@ main {
     width: 100%;
     border-collapse: collapse;
     margin-top: 15px;
-    background: var(--text-container-background);
-    border-radius: 10px;
-    overflow: hidden;
 }
 
 .users-table th,
@@ -333,7 +34,6 @@ main {
     padding: 12px;
     text-align: left;
     border-bottom: 1px solid var(--border-color);
-    color: var(--text-color);
 }
 
 .users-table th {
@@ -343,157 +43,10 @@ main {
 }
 
 .users-table tr:hover {
-    background: rgba(var(--primary-color-rgb), 0.1);
+    background: var(--table-hover);
 }
 
-.action-btn {
-    padding: 6px 12px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    margin: 0 5px;
-    transition: all 0.3s ease;
-}
-
-.edit-btn {
-    background: var(--primary-color);
-    color: white;
-}
-
-.delete-btn {
-    background: #ff4444;
-    color: white;
-}
-
-.action-btn:hover {
-    opacity: 0.8;
-    transform: translateY(-1px);
-}
-
-.action-btn i {
-    margin-right: 0;
-}
-
-/* Добавьте стили для мобильной версии */
-@media screen and (max-width: 768px) {
-    .users-table {
-        font-size: 14px;
-    }
-    
-    .action-btn {
-        padding: 4px 8px;
-        margin: 2px;
-    }
-    
-    .action-btn i {
-        font-size: 12px;
-    }
-}
-
-/* Добавьте стили для модальных окон и форм */
-.modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
-}
-
-.modal-content {
-    position: relative;
-    background-color: #fff;
-    margin: 10% auto;
-    padding: 20px;
-    border-radius: 8px;
-    width: 80%;
-    max-width: 500px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.close {
-    position: absolute;
-    right: 20px;
-    top: 10px;
-    font-size: 24px;
-    cursor: pointer;
-}
-
-.form-group {
-    margin-bottom: 15px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-}
-
-.form-group input,
-.form-group select {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-}
-
-.form-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 20px;
-}
-
-.admin-controls {
-    margin-bottom: 20px;
-}
-
-.danger-btn {
-    background-color: #ff4444;
-    color: white;
-}
-
-.secondary-btn {
-    background-color: #6c757d;
-    color: white;
-}
-
-/* Стили для таблицы пользователей */
-.users-table-container {
-    margin: 20px;
-    background: var(--text-container-background);
-    border-radius: 8px;
-    padding: 20px;
-    box-shadow: var(--text-container-shadow);
-}
-
-.users-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 15px;
-}
-
-.users-table th,
-.users-table td {
-    padding: 12px;
-    text-align: left;
-    border-bottom: 1px solid var(--border-color);
-    color: var(--text-color);
-}
-
-.users-table th {
-    background: var(--primary-color);
-    color: white;
-    font-weight: 500;
-}
-
-.users-table tr:hover {
-    background: rgba(var(--primary-color-rgb), 0.1);
-}
-
-/* Стили для кнопок действий */
+/* Стили для кнопок действий в таблице */
 .action-btn {
     padding: 6px 12px;
     border: none;
@@ -505,12 +58,12 @@ main {
 
 .edit-btn {
     background: var(--primary-color);
-    color: white;
+    color: var(--button-text);
 }
 
 .delete-btn {
     background: #ff4444;
-    color: white;
+    color: var(--button-text);
 }
 
 .action-btn:hover {
@@ -547,83 +100,11 @@ main {
     top: 10px;
     font-size: 24px;
     cursor: pointer;
-    color: var(--text-primary);
-}
-
-/* Стили для форм */
-.form-group {
-    margin-bottom: 15px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 5px;
-    color: var(--text-primary);
-}
-
-.form-group input,
-.form-group select {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    background-color: var(--bg-secondary);
-    color: var(--text-primary);
-}
-
-.form-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 20px;
-}
-
-/* Стили для кнопок в админ-панели */
-.admin-controls {
-    margin: 20px;
-    display: flex;
-    justify-content: flex-end;
-}
-
-.btn {
-    width: 100%;
-    padding: 12px 15px;
-    border: none;
-    border-radius: 10px;
-    font-size: 16px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin-top: 10px;
-}
-
-.primary-btn {
-    background: var(--primary-color);
-    color: white;
-}
-
-.secondary-btn {
-    background: var(--button-secondary);
     color: var(--text-color);
 }
 
-.danger-btn {
-    background: #ff4444;
-    color: white;
-}
-
-.btn:hover {
-    opacity: 0.9;
-    transform: translateY(-1px);
-}
-
-/* Адаптивность для мобильных устройств */
+/* Адаптивность */
 @media screen and (max-width: 768px) {
-    #login-container {
-        margin: 50px auto;
-        padding: 20px;
-    }
-    
     .users-table {
         font-size: 14px;
     }
@@ -631,5 +112,10 @@ main {
     .action-btn {
         padding: 4px 8px;
         margin: 2px;
+    }
+    
+    .modal-content {
+        width: 95%;
+        margin: 5% auto;
     }
 }
