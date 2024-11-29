@@ -278,6 +278,11 @@ document.addEventListener('DOMContentLoaded', () => {
         logoutBtn.addEventListener('click', handleLogout);
         console.log('Logout handler attached');
     }
+
+    const registerForm = document.getElementById('register-form');
+    if (registerForm) {
+        registerForm.addEventListener('submit', handleRegister);
+    }
 });
 
 // Функция для удаления пользователя
@@ -400,5 +405,44 @@ async function showCreateUserModal() {
     } catch (error) {
         console.error('Error creating user:', error);
         showError(error.message);
+    }
+}
+
+function showRegisterForm() {
+    document.getElementById('login-container').style.display = 'none';
+    document.getElementById('register-container').style.display = 'block';
+}
+
+function showLoginForm() {
+    document.getElementById('login-container').style.display = 'block';
+    document.getElementById('register-container').style.display = 'none';
+}
+
+async function handleRegister(event) {
+    event.preventDefault();
+    
+    const username = document.getElementById('reg-username').value;
+    const password = document.getElementById('reg-password').value;
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/register`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username, password })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+            showSuccess('Регистрация успешна! Теперь вы можете войти.');
+            showLoginForm();
+        } else {
+            showError(data.message || 'Ошибка при регистрации');
+        }
+    } catch (error) {
+        console.error('Registration error:', error);
+        showError('Ошибка при регистрации');
     }
 }
