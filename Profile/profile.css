@@ -19,19 +19,15 @@ main {
 }
 
 /* Контейнер для формы входа */
-.login-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: calc(100% - 70px); /* Ширина минус ширина свёрнутого меню */
-    max-width: 500px;
-    margin: 0 auto;
-    padding: 20px;
-    position: absolute; /* Абсолютное позиционирование */
-    top: 50%; /* Центрирование по вертикали */
-    left: 50%; /* Центрирование по горизонтали */
-    transform: translate(-50%, -50%); /* Точное центрирование */
-    margin-left: 35px; /* Половина ширины свёрнутого меню */
+#login-container {
+    background: var(--text-container-background);
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: var(--text-container-shadow);
+    width: 100%;
+    max-width: 400px;
+    margin: 100px auto;
+    animation: fadeIn 0.6s ease-out;
 }
 
 .login-form {
@@ -467,10 +463,10 @@ main {
 /* Стили для таблицы пользователей */
 .users-table-container {
     margin: 20px;
-    background: var(--bg-secondary);
+    background: var(--text-container-background);
     border-radius: 8px;
     padding: 20px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--text-container-shadow);
 }
 
 .users-table {
@@ -484,16 +480,17 @@ main {
     padding: 12px;
     text-align: left;
     border-bottom: 1px solid var(--border-color);
+    color: var(--text-color);
 }
 
 .users-table th {
-    background-color: var(--bg-accent);
-    color: var(--text-primary);
-    font-weight: bold;
+    background: var(--primary-color);
+    color: white;
+    font-weight: 500;
 }
 
 .users-table tr:hover {
-    background-color: var(--bg-hover);
+    background: rgba(var(--primary-color-rgb), 0.1);
 }
 
 /* Стили для кнопок действий */
@@ -535,13 +532,13 @@ main {
 
 .modal-content {
     position: relative;
-    background-color: var(--bg-primary);
+    background-color: var(--text-container-background);
     margin: 10% auto;
     padding: 20px;
     border-radius: 8px;
     width: 80%;
     max-width: 500px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--text-container-shadow);
 }
 
 .close {
@@ -589,12 +586,15 @@ main {
 }
 
 .btn {
-    padding: 8px 16px;
+    width: 100%;
+    padding: 12px 15px;
     border: none;
-    border-radius: 4px;
-    cursor: pointer;
+    border-radius: 10px;
+    font-size: 16px;
     font-weight: 500;
+    cursor: pointer;
     transition: all 0.3s ease;
+    margin-top: 10px;
 }
 
 .primary-btn {
@@ -603,8 +603,8 @@ main {
 }
 
 .secondary-btn {
-    background: #6c757d;
-    color: white;
+    background: var(--button-secondary);
+    color: var(--text-color);
 }
 
 .danger-btn {
@@ -619,6 +619,11 @@ main {
 
 /* Адаптивность для мобильных устройств */
 @media screen and (max-width: 768px) {
+    #login-container {
+        margin: 50px auto;
+        padding: 20px;
+    }
+    
     .users-table {
         font-size: 14px;
     }
@@ -626,10 +631,5 @@ main {
     .action-btn {
         padding: 4px 8px;
         margin: 2px;
-    }
-    
-    .modal-content {
-        width: 95%;
-        margin: 5% auto;
     }
 }
