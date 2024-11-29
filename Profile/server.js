@@ -16,7 +16,7 @@ const pool = new Pool({
     user: 'admin',
     host: 'localhost',
     database: 'adminflow',
-    password: 'admin',
+    password: 'admin123',
     port: 5432
 });
 
