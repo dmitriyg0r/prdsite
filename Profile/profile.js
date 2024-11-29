@@ -45,8 +45,8 @@ async function handleLogin(event) {
     event.preventDefault();
     console.log('Login attempt started');
 
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
+    const username = document.getElementById('login-username').value;
+    const password = document.getElementById('login-password').value;
 
     try {
         const response = await fetch(`${API_BASE_URL}/auth/login`, {
@@ -74,7 +74,7 @@ async function handleLogin(event) {
                 }
             };
             
-            console.log('Saving user data:', userData); // Для отладки
+            console.log('Saving user data:', userData);
             localStorage.setItem('user', JSON.stringify(userData));
             
             showSuccess('Успешный вход');
@@ -454,10 +454,12 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if (registerForm) {
         registerForm.addEventListener('submit', handleRegister);
+        console.log('Register form handler attached');
     }
     
     if (loginForm) {
         loginForm.addEventListener('submit', handleLogin);
+        console.log('Login form handler attached');
     }
     
     // По умолчанию показываем форму входа
