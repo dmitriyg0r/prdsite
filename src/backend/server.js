@@ -8,7 +8,9 @@ const app = express();
 app.use(bodyParser.json());
 app.use(cors({
     origin: 'https://adminflow.ru',
-    credentials: true
+    credentials: true,
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // Логирование
@@ -27,9 +29,9 @@ app.get('/', (req, res) => {
     res.json({ message: 'API работает' });
 });
 
-// Маршрут регистрации (без /api префикса)
-app.post('/register', (req, res) => {
-    console.log('POST /register вызван');
+// Маршрут регистрации с префиксом /api
+app.post('/api/register', (req, res) => {
+    console.log('POST /api/register вызван');
     console.log('Тело запроса:', req.body);
     
     const { username, password } = req.body;
@@ -66,5 +68,5 @@ app.listen(PORT, () => {
     console.log(`Сервер запущен на порту ${PORT}`);
     console.log('Доступные маршруты:');
     console.log('GET  /');
-    console.log('POST /register');
+    console.log('POST /api/register');
 });
