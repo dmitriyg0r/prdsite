@@ -267,3 +267,9 @@
         padding: 4px 8px;
     }
 }
+
+.users-table td[colspan="5"] {
+    padding: 20px;
+    text-align: center;
+    color: var(--text-secondary);
+}

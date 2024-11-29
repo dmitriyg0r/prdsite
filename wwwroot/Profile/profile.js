@@ -33,21 +33,23 @@ function showProfile(userData) {
     }
 
     try {
-        // Скрываем форму входа и показываем информацию профиля
         loginContainer.style.display = 'none';
         profileInfo.style.display = 'block';
 
-        // Обновляем информацию профиля
         if (profileUsername) profileUsername.textContent = userData.data.username || 'Гость';
         if (profileRole) profileRole.textContent = userData.data.role || 'Пользователь';
 
         // Показываем админ-панель если пользователь админ
         if (adminSection) {
             const isAdmin = userData.data.role === 'Admin';
+            console.log('Is user admin?', isAdmin);
             adminSection.style.display = isAdmin ? 'block' : 'none';
             if (isAdmin) {
+                console.log('Loading users for admin...');
                 loadUsers(); // Загружаем пользователей если админ
             }
+        } else {
+            console.error('Admin section not found');
         }
 
         console.log('Profile displayed successfully');
@@ -124,22 +126,28 @@ async function handleLogin(event) {
 
 // Функция для загрузки пользователей
 async function loadUsers() {
+    console.log('Loading users...');
     try {
         const user = JSON.parse(localStorage.getItem('user'));
-        if (!user || !user.data.token) {
+        console.log('Current user data:', user);
+        
+        if (!user || !user.data || !user.data.token) {
+            console.error('No authentication token found');
             throw new Error('No authentication token found');
         }
 
-        const response = await fetch('/api/users', {
+        const response = await fetch('https://adminflow.ru/api/users', {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${user.data.token}`,
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
             }
         });
 
+        console.log('Users API response status:', response.status);
         const data = await response.json();
-        console.log('Users data:', data);
+        console.log('Users API response data:', data);
 
         if (response.ok && data.success) {
             displayUsers(data.data);
@@ -154,18 +162,31 @@ async function loadUsers() {
 
 // Функция для отображения пользователей в таблице
 function displayUsers(users) {
+    console.log('Displaying users:', users);
     const tableBody = document.getElementById('users-table-body');
-    if (!tableBody) return;
+    
+    if (!tableBody) {
+        console.error('Table body element not found');
+        return;
+    }
 
     tableBody.innerHTML = '';
+
+    if (!Array.isArray(users) || users.length === 0) {
+        console.log('No users to display');
+        const row = document.createElement('tr');
+        row.innerHTML = '<td colspan="5" style="text-align: center;">Нет пользователей для отображения</td>';
+        tableBody.appendChild(row);
+        return;
+    }
 
     users.forEach(user => {
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>${user.id}</td>
-            <td>${user.username}</td>
-            <td>${user.role}</td>
-            <td>${new Date(user.createdAt).toLocaleString()}</td>
+            <td>${user.id || 'N/A'}</td>
+            <td>${user.username || 'N/A'}</td>
+            <td>${user.role || 'N/A'}</td>
+            <td>${user.createdAt ? new Date(user.createdAt).toLocaleString() : 'N/A'}</td>
             <td>
                 <button class="action-btn edit-btn" onclick="editUser(${user.id})">
                     <i class="fas fa-edit"></i>
