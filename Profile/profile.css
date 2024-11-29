@@ -356,13 +356,12 @@ main {
     border-radius: 5px;
     cursor: pointer;
     margin: 0 5px;
-    font-size: 14px;
     transition: all 0.3s ease;
 }
 
 .edit-btn {
     background: var(--primary-color);
-    color: var(--button-text);
+    color: white;
 }
 
 .delete-btn {
@@ -372,18 +371,25 @@ main {
 
 .action-btn:hover {
     opacity: 0.8;
-    transform: translateY(-2px);
+    transform: translateY(-1px);
 }
 
-/* Добавим адаптивность */
+.action-btn i {
+    margin-right: 0;
+}
+
+/* Добавьте стили для мобильной версии */
 @media screen and (max-width: 768px) {
     .users-table {
-        display: block;
-        overflow-x: auto;
+        font-size: 14px;
     }
     
-    .users-table th,
-    .users-table td {
-        min-width: 120px;
+    .action-btn {
+        padding: 4px 8px;
+        margin: 2px;
+    }
+    
+    .action-btn i {
+        font-size: 12px;
     }
 }

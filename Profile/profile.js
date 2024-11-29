@@ -85,27 +85,39 @@ async function loadUsers() {
     console.log('LoadUsers called');
     try {
         const userData = JSON.parse(localStorage.getItem('user'));
-        console.log('Token:', userData.token);
+        if (!userData || !userData.token) {
+            console.error('No token found');
+            return;
+        }
 
         const response = await fetch(`${API_BASE_URL}/users`, {
+            method: 'GET',
             headers: {
                 'Authorization': `Bearer ${userData.token}`,
-                'Content-Type': 'application/json'
-            }
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            credentials: 'include'
         });
         
         console.log('Response status:', response.status);
         
         if (response.ok) {
-            const users = await response.json();
-            console.log('Users data:', users);
-            displayUsers(users);
+            const result = await response.json();
+            if (result.success && result.data) {
+                console.log('Users data:', result.data);
+                displayUsers(result.data);
+            } else {
+                console.error('Error in response:', result);
+            }
         } else {
             const errorData = await response.json();
             console.error('Error loading users:', errorData);
+            showError('Ошибка загрузки пользователей');
         }
     } catch (error) {
         console.error('Error in loadUsers:', error);
+        showError('Ошибка при загрузке данных');
     }
 }
 
@@ -120,16 +132,27 @@ function displayUsers(users) {
     
     users.forEach(user => {
         const row = document.createElement('tr');
-        const lastLoginDate = user.lastLogin ? new Date(user.lastLogin).toLocaleString() : 'Никогда';
+        
+        // Форматируем дату
+        const createdAt = new Date(user.createdAt).toLocaleString('ru-RU', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
         
         row.innerHTML = `
             <td>${user.id}</td>
             <td>${user.username}</td>
             <td>${user.role}</td>
-            <td>${lastLoginDate}</td>
+            <td>${createdAt}</td>
             <td>
+                <button class="action-btn edit-btn" onclick="editUser(${user.id})">
+                    <i class="fas fa-edit"></i>
+                </button>
                 <button class="action-btn delete-btn" onclick="deleteUser(${user.id})">
-                    <i class="fas fa-trash"></i> Удалить
+                    <i class="fas fa-trash"></i>
                 </button>
             </td>
         `;
@@ -171,19 +194,16 @@ function showProfile(userData) {
     document.getElementById('profile-container').style.display = 'block';
     
     // Обновляем информацию профиля
-    document.getElementById('profile-username').textContent = userData.username || 'Анонимный пользователь';
-    document.getElementById('profile-role').textContent = userData.role || 'Гость';
+    document.getElementById('profile-username').textContent = userData.username;
+    document.getElementById('profile-role').textContent = userData.role;
     
-    // Показываем админ-панель, если пользователь админ
+    // Показываем админ-панель и загружаем пользователей, если пользователь админ
     const adminSection = document.getElementById('admin-section');
-    console.log('User role:', userData.role);
-    
     if (userData.role === 'Admin') {
-        console.log('Showing admin section');
+        console.log('Loading admin section');
         adminSection.style.display = 'block';
         loadUsers(); // Загружаем список пользователей
     } else {
-        console.log('Hiding admin section');
         adminSection.style.display = 'none';
     }
 }
