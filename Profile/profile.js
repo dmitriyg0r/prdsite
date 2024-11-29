@@ -109,7 +109,7 @@ async function handleAnonymousLogin() {
             showSuccess('Успешный анонимный вход');
             showProfile(data.data);
         } else {
-            showError(data.message || 'Ошибка аноимного входа');
+            showError(data.message || 'Ошибка анои��ного входа');
         }
     } catch (error) {
         console.error('Anonymous login error:', error);
@@ -326,7 +326,7 @@ async function editUser(userId) {
     try {
         const userData = JSON.parse(localStorage.getItem('user'));
         if (!userData?.data?.token) {
-            throw new Error('Треуется авторизация');
+            throw new Error('Треуе��ся авторизация');
         }
 
         const newUsername = prompt('Введите новое имя пользователя:');
@@ -397,7 +397,7 @@ async function showCreateUserModal() {
         
         if (response.ok && data.success) {
             showSuccess('Пользователь успешно создан');
-            await loadUsers(); // Перезагржаем список пользователей
+            await loadUsers(); // Перезагржаем список по��ьзователей
         } else {
             throw new Error(data.message || 'Ошибка при создании пользователя');
         }
@@ -541,5 +541,111 @@ document.addEventListener('DOMContentLoaded', () => {
     if (registerForm) {
         registerForm.addEventListener('submit', handleRegister);
     }
+});
+
+// Функции для переключения между формами
+function showLoginForm() {
+    document.getElementById('login-form').style.display = 'block';
+    document.getElementById('register-form').style.display = 'none';
+    document.getElementById('success-message').style.display = 'none';
+    document.getElementById('error-message').style.display = 'none';
+}
+
+function showRegisterForm() {
+    document.getElementById('login-form').style.display = 'none';
+    document.getElementById('register-form').style.display = 'block';
+    document.getElementById('success-message').style.display = 'none';
+    document.getElementById('error-message').style.display = 'none';
+}
+
+// Обработчик регистрации
+async function handleRegister(event) {
+    event.preventDefault();
+    
+    try {
+        const username = document.getElementById('reg-username').value;
+        const password = document.getElementById('reg-password').value;
+        
+        console.log('Отправка запроса регистрации:', { username });
+        
+        const response = await fetch('https://adminflow.ru/api/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ username, password })
+        });
+        
+        console.log('Статус ответа:', response.status);
+        
+        const data = await response.json();
+        console.log('Ответ сервера:', data);
+        
+        if (data.success) {
+            showSuccess('Регистрация успешна! Теперь вы можете войти.');
+            showLoginForm();
+            document.getElementById('register-form').reset();
+        } else {
+            throw new Error(data.message || 'Ошибка при регистрации');
+        }
+    } catch (error) {
+        console.error('Ошибка регистрации:', error);
+        showError(error.message || 'Произошла ошибка при регистрации. Попробуйте позже.');
+    }
+}
+
+// Обработчик входа
+async function handleLogin(event) {
+    event.preventDefault();
+    
+    try {
+        const username = document.getElementById('login-username').value;
+        const password = document.getElementById('login-password').value;
+        
+        console.log('Отправка запроса входа:', { username });
+        
+        const response = await fetch('https://adminflow.ru/api/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ username, password })
+        });
+        
+        console.log('Статус ответа:', response.status);
+        
+        const data = await response.json();
+        console.log('Ответ сервера:', data);
+        
+        if (data.success) {
+            showSuccess('Вход выполнен успешно!');
+            // Здесь можно добавить перенаправление или другую логику
+        } else {
+            throw new Error(data.message || 'Ошибка при входе');
+        }
+    } catch (error) {
+        console.error('Ошибка входа:', error);
+        showError(error.message || 'Произошла ошибка при входе. Попробуйте позже.');
+    }
+}
+
+// Инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', () => {
+    // Привязываем обработчики к формам
+    const registerForm = document.getElementById('register-form');
+    const loginForm = document.getElementById('login-form');
+    
+    if (registerForm) {
+        registerForm.addEventListener('submit', handleRegister);
+    }
+    
+    if (loginForm) {
+        loginForm.addEventListener('submit', handleLogin);
+    }
+    
+    // По умолчанию показываем форму входа
+    showLoginForm();
 });
 

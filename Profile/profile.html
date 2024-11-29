@@ -10,7 +10,8 @@
 </head>
 <body>
     <!-- В начале body или где-то в верхней части страницы -->
-    <div id="error-message"></div>
+    <div id="success-message" style="display: none; color: green; margin: 10px 0;"></div>
+    <div id="error-message" style="display: none; color: red; margin: 10px 0;"></div>
 
     <!-- Боковое меню -->
     <nav class="sidebar">
@@ -72,7 +73,7 @@
             <!-- Форма входа -->
             <div id="login-container">
                 <h2>Вход в систему</h2>
-                <form id="login-form">
+                <form id="login-form" style="display: none;">
                     <div class="form-group">
                         <label for="username">Имя пользователя:</label>
                         <input type="text" id="username" required>
@@ -97,7 +98,7 @@
             <!-- Добавьте после формы входа -->
             <div id="register-container" style="display: none;">
                 <h2>Регистрация</h2>
-                <form id="register-form">
+                <form id="register-form" style="display: none;">
                     <div class="form-group">
                         <label for="reg-username">Имя пользователя:</label>
                         <input type="text" id="reg-username" required>
