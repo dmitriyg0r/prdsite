@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Домашнее задание</title>
+    <link rel="icon" type="image/x-icon" href="../flow.ico">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&family=Montserrat:wght@300&display=swap">
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="about.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../mobile.css">
+</head>
+<body>
+    <!-- Добавляем боковое меню -->
+    <nav class="sidebar">
+        <!-- Добавляем иконку -->
+        <div class="sidebar-logo">
+            <img src="../flow.ico" alt="Flow Logo" class="sidebar-icon">
+        </div>
+        <div class="sidebar-nav">
+            <a href="../index.html" class="sidebar-link">
+                <i class="fas fa-home"></i>
+                <span>Расписание</span>
+            </a>
+            <a href="../home/homework.html" class="sidebar-link">
+                <i class="fas fa-book"></i>
+                <span>Задания</span>
+            </a>
+            <a href="../downloads/downloads.html" class="sidebar-link">
+                <i class="fas fa-download"></i>
+                <span>Загрузки</span>
+            </a>
+            <a href="../memes/memes.html" class="sidebar-link">
+                <i class="fas fa-smile"></i>
+                <span>Мемы</span>
+            </a>
+            <a href="about.html" class="sidebar-link active">
+                <i class="fas fa-info-circle"></i>
+                <span>О нас</span>
+            </a>
+            <a href="../games/games.html" class="sidebar-link">
+                <i class="fas fa-gamepad"></i>
+                <span>Игры</span>
+            </a>
+            <a href="../Profile/profile.html" class="sidebar-link">
+                <i class="fas fa-user"></i>
+                <span>Профиль</span>
+            </a>
+        </div>
+        <!-- Переключатель темы после навигации -->
+        <div class="theme-switch-wrapper">
+            <div class="theme-toggle-container">
+                <i class="fas fa-sun theme-icon"></i>
+                <input type="checkbox" id="theme-toggle" class="theme-checkbox">
+                <label for="theme-toggle" class="theme-label">
+                    <div class="ball"></div>
+                </label>
+                <span>Тёмная тема</span>
+            </div>
+        </div>
+    </nav>
+    <!-- Мобильное меню -->
+    <div class="mobile-menu-toggle">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+
+    <div class="overlay"></div>
+
+    <div class="mobile-menu">
+        <nav>
+            <ul>
+                <li><a href="../index.html"><i class="fas fa-home"></i>Расписание</a></li>
+                <li><a href="../home/homework.html"><i class="fas fa-book"></i>Задания</a></li>
+                <li><a href="../downloads/downloads.html"><i class="fas fa-download"></i>Загрузки</a></li>
+                <li><a href="../memes/memes.html"><i class="fas fa-smile"></i>Мемы</a></li>
+                <li><a href="../about/about.html"><i class="fas fa-info-circle"></i>О нас</a></li>
+                <li><a href="../games/games.html"><i class="fas fa-gamepad"></i>Игры</a></li>
+                <li><a href="../Profile/profile.html"><i class="fas fa-user"></i>Профиль</a></li>
+            </ul>
+        </nav>
+    </div>
+    <!-- Остальной контент -->
+    <main>
+        <section id="about-us">
+            <h1 class="company-name">Чат</h1>
+            <div class="content-wrapper">
+                <div class="text-content">
+                    <div class="developers-phrase">
+                        <p>Мы — разработчики из группы 18ПрД4310</p>
+                    </div>
+                    <div class="additional-phrase">
+                        <p>Мы создали для учащихся МФЮА сайт и бота.
+                            Они помогут вам лучше ориентироваться
+                            в домашнем задании и расписании. Мы ни в коем случае ничего не продаём, и не собираем никаких данных.</p>
+                    </div>
+                    <div class="help-phrase">
+                        <p>Если у вас есть вопросы или предложения, не стесняйтесь связаться с нами через форму обратной связи или по электронной почте.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <script src="../main.js"></script>
+</body>
+</html>
