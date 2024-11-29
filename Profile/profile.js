@@ -240,6 +240,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const loginContainer = document.getElementById('login-container');
     const profileInfo = document.getElementById('profile-info');
+    const registerForm = document.getElementById('register-form');
+    const loginForm = document.getElementById('login-form');
+    const anonymousLoginBtn = document.getElementById('anonymous-login-btn');
+    const logoutBtn = document.querySelector('.danger-btn');
 
     // Проверяем сохраненную сессию
     const userData = localStorage.getItem('user');
@@ -277,10 +281,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Привязываем обработчики событий
-    const loginForm = document.getElementById('login-form');
-    const anonymousLoginBtn = document.getElementById('anonymous-login-btn');
-    const logoutBtn = document.querySelector('.danger-btn');
-
+    if (registerForm) {
+        registerForm.addEventListener('submit', handleRegister);
+        console.log('Register form handler attached');
+    }
+    
     if (loginForm) {
         loginForm.addEventListener('submit', handleLogin);
         console.log('Login form handler attached');
@@ -365,7 +370,7 @@ async function editUser(userId) {
         }
     } catch (error) {
         console.error('Error updating user:', error);
-        showError('Ошиб�� при обновлении пользователя');
+        showError('Ошиб при обновлении пользователя');
     }
 }
 
@@ -452,26 +457,6 @@ async function handleRegister(event) {
         showError(error.message || 'Произошла ошибка при регистрации. Попробуйте позже.');
     }
 }
-
-// Инициализация при загрузке страницы
-document.addEventListener('DOMContentLoaded', () => {
-    // Привязываем обработчики к формам
-    const registerForm = document.getElementById('register-form');
-    const loginForm = document.getElementById('login-form');
-    
-    if (registerForm) {
-        registerForm.addEventListener('submit', handleRegister);
-        console.log('Register form handler attached');
-    }
-    
-    if (loginForm) {
-        loginForm.addEventListener('submit', handleLogin);
-        console.log('Login form handler attached');
-    }
-    
-    // По умолчанию показываем форму входа
-    showLoginForm();
-});
 
 // Обработчик загрузки аватара
 function initializeAvatarUpload() {
