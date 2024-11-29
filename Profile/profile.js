@@ -126,7 +126,12 @@ function showProfile(userData) {
 
         // Показываем админ-панель если пользователь админ
         if (adminSection) {
-            adminSection.style.display = userData.role === 'Admin' ? 'block' : 'none';
+            if (userData.role === 'Admin') {
+                adminSection.style.display = 'block';
+                loadUsers(); // Загружаем пользователей для админа
+            } else {
+                adminSection.style.display = 'none';
+            }
         }
 
         console.log('Profile displayed successfully');
@@ -134,6 +139,78 @@ function showProfile(userData) {
         console.error('Error displaying profile:', error);
         showError('Ошибка при отображении профиля');
     }
+}
+
+async function loadUsers() {
+    console.log('Loading users...');
+    try {
+        const userData = JSON.parse(localStorage.getItem('user'));
+        
+        if (!userData || !userData.token) {
+            throw new Error('No authentication token found');
+        }
+
+        const response = await fetch(`${API_BASE_URL}/users`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${userData.token}`,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            credentials: 'include'
+        });
+
+        console.log('Users response status:', response.status);
+        const data = await response.json();
+        console.log('Users response data:', data);
+        
+        if (response.ok && data.success) {
+            displayUsers(data.data);
+        } else {
+            throw new Error(data.message || 'Failed to load users');
+        }
+    } catch (error) {
+        console.error('Error loading users:', error);
+        showError('Ошибка при загрузке пользователей');
+    }
+}
+
+function displayUsers(users) {
+    const tableBody = document.getElementById('users-table-body');
+    
+    if (!tableBody) {
+        console.error('Users table body not found');
+        return;
+    }
+
+    console.log('Displaying users:', users);
+    tableBody.innerHTML = '';
+
+    if (!Array.isArray(users) || users.length === 0) {
+        const row = document.createElement('tr');
+        row.innerHTML = '<td colspan="5">Нет пользователей для отображения</td>';
+        tableBody.appendChild(row);
+        return;
+    }
+
+    users.forEach(user => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${user.id || 'N/A'}</td>
+            <td>${user.username || 'N/A'}</td>
+            <td>${user.role || 'N/A'}</td>
+            <td>${user.createdAt ? new Date(user.createdAt).toLocaleString() : 'N/A'}</td>
+            <td>
+                <button class="action-btn edit-btn" onclick="editUser(${user.id})">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="action-btn delete-btn" onclick="deleteUser(${user.id})">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        `;
+        tableBody.appendChild(row);
+    });
 }
 
 // Функция выхода из системы
