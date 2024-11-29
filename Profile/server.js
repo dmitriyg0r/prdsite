@@ -7,8 +7,9 @@ const cors = require('cors');
 const app = express();
 app.use(cors({
     origin: 'https://adminflow.ru',
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
 }));
 app.use(express.json());
 
@@ -106,6 +107,67 @@ app.get('/api/users', authenticateToken, async (req, res) => {
     }
 });
 
+// Добавьте этот endpoint для создания пользователей
+app.post('/api/users', authenticateToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'Admin') {
+            return res.status(403).json({ 
+                success: false, 
+                message: 'Доступ запрещен' 
+            });
+        }
+
+        const { username, password, role } = req.body;
+        
+        // Проверка обязательных полей
+        if (!username || !password || !role) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Все поля обязательны для заполнения' 
+            });
+        }
+
+        // Проверка роли
+        if (!['Admin', 'User'].includes(role)) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Недопустимая роль' 
+            });
+        }
+
+        // Хеширование пароля
+        const passwordHash = await bcrypt.hash(password, 10);
+
+        // Создание пользователя
+        const result = await pool.query(
+            'INSERT INTO users (username, password_hash, role) VALUES ($1, $2, $3) RETURNING id, username, role',
+            [username, passwordHash, role]
+        );
+
+        res.status(201).json({ 
+            success: true, 
+            data: result.rows[0],
+            message: 'Пользователь успешно создан'
+        });
+
+    } catch (error) {
+        console.error('Error creating user:', error);
+        
+        // Проверка на дубликат имени пользователя
+        if (error.code === '23505') { // unique_violation
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Пользователь с таким именем уже существует' 
+            });
+        }
+
+        res.status(500).json({ 
+            success: false, 
+            message: 'Ошибка при создании пользователя' 
+        });
+    }
+});
+
 // Инициализация базы данных
 async function initDatabase() {
     try {
@@ -143,4 +205,7 @@ async function initDatabase() {
 initDatabase();
 app.listen(3000, () => {
     console.log('Server running on port 3000');
-}); 
+});
+
+// Добавьте обработку OPTIONS запросов
+app.options('*', cors()); 

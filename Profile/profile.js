@@ -389,7 +389,7 @@ async function showCreateUserModal() {
 
         const role = prompt('Введите роль (Admin/User):');
         if (!role || !['Admin', 'User'].includes(role)) {
-            showError('Некорректная роль. Допустимые ��начения: Admin, User');
+            showError('Некорректная роль. Допустимые начения: Admin, User');
             return;
         }
 
