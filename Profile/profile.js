@@ -430,3 +430,90 @@ function showSuccess(message) {
     // Добавьте свою реализацию уведомлений
     alert(message);
 }
+
+// Обработка входа в систему
+document.getElementById('loginForm').addEventListener('submit', async function(e) {
+    e.preventDefault(); // Предотвращаем стандартную отправку формы
+    
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                username: username,
+                password: password
+            }),
+            credentials: 'include'
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Сохраняем данные пользователя
+            localStorage.setItem('user', JSON.stringify(data.data));
+            
+            // Скрываем форму входа
+            document.getElementById('login-container').style.display = 'none';
+            
+            // Показываем информацию о профиле
+            const profileInfo = document.getElementById('profile-info');
+            profileInfo.style.display = 'block';
+            
+            // Обновляем информацию в профиле
+            document.getElementById('profile-username').textContent = data.data.username;
+            document.getElementById('profile-role').textContent = data.data.role;
+            
+            // Если пользователь админ, показываем админ-панель
+            if (data.data.role === 'admin') {
+                document.getElementById('admin-section').style.display = 'block';
+                loadUsers(); // Загружаем список пользователей
+            }
+        } else {
+            showError(data.message || 'Ошибка входа');
+        }
+    } catch (error) {
+        console.error('Login error:', error);
+        showError('Ошибка при входе в систему');
+    }
+});
+
+// Функция для отображения ошибок
+function showError(message) {
+    alert(message); // Можно заменить на более красивое уведомление
+}
+
+// При загрузке страницы проверяем, есть ли сохраненный пользователь
+document.addEventListener('DOMContentLoaded', () => {
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+        const userData = JSON.parse(savedUser);
+        // Скрываем форму входа
+        document.getElementById('login-container').style.display = 'none';
+        
+        // Показываем информацию о профиле
+        const profileInfo = document.getElementById('profile-info');
+        profileInfo.style.display = 'block';
+        
+        // Обновляем информацию в профиле
+        document.getElementById('profile-username').textContent = userData.username;
+        document.getElementById('profile-role').textContent = userData.role;
+        
+        // Если пользователь админ, показываем админ-панель
+        if (userData.role === 'admin') {
+            document.getElementById('admin-section').style.display = 'block';
+            loadUsers(); // Загружаем список пользователей
+        }
+    }
+});
+
+// Функция для выхода
+function handleLogout() {
+    localStorage.removeItem('user');
+    window.location.reload(); // Перезагружаем страницу после выхода
+}
