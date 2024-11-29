@@ -11,20 +11,9 @@ const togglePassword = () => {
     }
 }
 
-const showError = (message) => {
-    const errorMessage = document.getElementById('error-message');
-    if (errorMessage) {
-        errorMessage.textContent = message;
-        errorMessage.style.display = 'block';
-        
-        // Автоматически скрываем сообщение через 5 секунд
-        setTimeout(() => {
-            errorMessage.style.display = 'none';
-        }, 5000);
-    } else {
-        console.error('Error element not found:', message);
-    }
-};
+function showError(message) {
+    alert(message);
+}
 
 // Обновляем константу API_BASE_URL
 const API_BASE_URL = 'https://adminflow.ru/api'; // Убираем порт 5002
@@ -113,7 +102,7 @@ async function loadUsers() {
         } else {
             const errorData = await response.json();
             console.error('Error loading users:', errorData);
-            showError('Ошибка загрузки пользователей');
+            showError('Ошибка загрузк пользователей');
         }
     } catch (error) {
         console.error('Error in loadUsers:', error);
@@ -420,11 +409,6 @@ async function confirmDelete() {
 
 // Вспомогательные функции для уведомлений
 function showSuccess(message) {
-    // Добавьте свою реализацию уведомлений
-    alert(message);
-}
-
-function showError(message) {
     // Добавьте свою реализацию уведомлений
     alert(message);
 }
