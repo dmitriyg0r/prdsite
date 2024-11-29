@@ -87,7 +87,7 @@ authRoutes.post('/register', async (req, res) => {
 // Подключаем маршруты аутентификации
 app.use('/auth', authRoutes);
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5002;
 app.listen(PORT, () => {
     console.log(`Сервер запущен на порту ${PORT}`);
 });

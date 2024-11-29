@@ -1,5 +1,4 @@
 const API_BASE_URL = 'https://adminflow.ru/api';
-
 // Вспомогательные функции
 const showError = (message) => {
     const errorMessage = document.getElementById('error-message');
@@ -500,3 +499,4 @@ document.addEventListener('DOMContentLoaded', async () => {
         showError('API сервер недоступен. Пожалуйста, попробуйте позже.');
     }
 });
+
