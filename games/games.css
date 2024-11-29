@@ -1,136 +1,36 @@
 .game-container {
-    position: relative;
-    width: 600px;
-    height: 300px;
-    margin: 50px auto;
-    border: 2px solid var(--text-color);
-    overflow: hidden;
-    background-color: var(--background-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
 }
 
-/* Добавляем землю */
-.ground {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    height: 2px;
-    background-color: #333;
+#game {
+    border: 1px solid #000;
+    background-color: #fff;
 }
 
-/* Добавляем точки на земле */
-.ground::before {
-    content: '';
-    position: absolute;
-    width: 200%;
-    height: 20px;
-    bottom: 2px;
-    background: repeating-linear-gradient(
-        90deg,
-        #333 0,
-        #333 1px,
-        transparent 1px,
-        transparent 30px
-    );
-    animation: moveGround 1s linear infinite;
+.game-info {
+    margin-top: 10px;
+    font-size: 18px;
 }
 
-/* Анимация бега динозавра */
-@keyframes run {
-    0% { background-position: 0 0; }
-    50% { background-position: -70px 0; }
-    100% { background-position: -140px 0; }
+.score, .high-score {
+    margin: 0 10px;
 }
 
-#character {
-    width: 50px;
-    height: 50px;
-    background-image: url('../images/dino-run.png');
-    background-size: contain;
-    background-position: center;
-    position: absolute;
-    bottom: 2px;
-    left: 50px;
-    animation: run 0.3s steps(2) infinite;
+.game-start {
+    margin-top: 10px;
+    font-size: 16px;
+    color: #666;
 }
 
-#character.jump {
-    animation: none;
+/* Для темной темы */
+[data-theme="dark"] #game {
+    border-color: #fff;
+    background-color: #202124;
 }
 
-/* Анимация движения земли */
-@keyframes moveGround {
-    from { transform: translateX(0); }
-    to { transform: translateX(-30px); }
-}
-
-/* Добавляем облака */
-.cloud {
-    position: absolute;
-    background-image: url('../images/cloud.png');
-    background-size: contain;
-    background-repeat: no-repeat;
-    width: 70px;
-    height: 30px;
-    animation: moveCloud linear infinite;
-}
-
-@keyframes moveCloud {
-    from { right: -70px; }
-    to { right: 100%; }
-}
-
-#obstacle {
-    width: 20px;
-    height: 40px;
-    background-image: url('../images/cactus.png');
-    background-size: contain;
-    background-position: center;
-    position: absolute;
-    bottom: 2px;
-    left: 600px;
-    transition: left 0.016s linear;
-}
-
-#score {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    font-size: 24px;
-    font-weight: bold;
-    font-family: 'Montserrat', sans-serif;
-}
-
-/* Добавляем анимацию для фона */
-@keyframes scrollBackground {
-    from {
-        background-position: 0 0;
-    }
-    to {
-        background-position: -600px 0;
-    }
-}
-
-/* Добавляем стили для состояния game over */
-.game-over {
-    opacity: 0.7;
-    pointer-events: none;
-}
-
-/* Добавляем медиа-запрос для мобильных устройств */
-@media (max-width: 768px) {
-    .game-container {
-        width: 100%;
-        max-width: 600px;
-        height: 200px;
-    }
-    
-    #character {
-        width: 40px;
-        height: 40px;
-    }
-    
-    #obstacle {
-        width: 15px;
-        height: 30px;
-    }
+[data-theme="dark"] .game-start {
+    color: #999;
 }
