@@ -24,16 +24,43 @@ const pool = new Pool({
 app.post('/api/auth/register', async (req, res) => {
     try {
         const { username, password } = req.body;
+        
+        if (!username || !password) {
+            return res.status(400).json({
+                success: false,
+                message: 'Необходимо указать имя пользователя и пароль'
+            });
+        }
+
         const hashedPassword = await bcrypt.hash(password, 10);
         
         const result = await pool.query(
-            'INSERT INTO users (username, password_hash) VALUES ($1, $2) RETURNING *',
+            'INSERT INTO users (username, password_hash) VALUES ($1, $2) RETURNING id, username, role',
             [username, hashedPassword]
         );
         
-        res.json({ success: true, message: 'Регистрация успешна' });
+        res.status(201).json({
+            success: true,
+            message: 'Регистрация успешна',
+            data: {
+                id: result.rows[0].id,
+                username: result.rows[0].username,
+                role: result.rows[0].role
+            }
+        });
     } catch (error) {
-        res.status(400).json({ success: false, message: 'Ошибка при регистрации' });
+        if (error.code === '23505') { // Код ошибки уникального ограничения PostgreSQL
+            res.status(400).json({
+                success: false,
+                message: 'Пользователь с таким именем уже существует'
+            });
+        } else {
+            console.error('Ошибка регистрации:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Ошибка при регистрации пользователя'
+            });
+        }
     }
 });
 

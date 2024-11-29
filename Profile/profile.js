@@ -110,7 +110,7 @@ async function handleAnonymousLogin() {
             showSuccess('Успешный анонимный вход');
             showProfile(data.data);
         } else {
-            showError(data.message || 'Ошибка ано��имного входа');
+            showError(data.message || 'Ошибка аноимного входа');
         }
     } catch (error) {
         console.error('Anonymous login error:', error);
@@ -327,7 +327,7 @@ async function editUser(userId) {
     try {
         const userData = JSON.parse(localStorage.getItem('user'));
         if (!userData?.data?.token) {
-            throw new Error('Тре��уется авторизация');
+            throw new Error('Треуется авторизация');
         }
 
         const newUsername = prompt('Введите новое имя пользователя:');
@@ -398,7 +398,7 @@ async function showCreateUserModal() {
         
         if (response.ok && data.success) {
             showSuccess('Пользователь успешно создан');
-            await loadUsers(); // Перезагружаем список пользователей
+            await loadUsers(); // Перезагр��жаем список пользователей
         } else {
             throw new Error(data.message || 'Ошибка при создании пользователя');
         }
@@ -428,32 +428,23 @@ async function handleRegister(event) {
         const response = await fetch(`${API_BASE_URL}/auth/register`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
+                'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ username, password }),
-            credentials: 'include'
+            body: JSON.stringify({ username, password })
         });
         
-        // Проверяем, что ответ не пустой
-        const text = await response.text();
-        let data;
-        try {
-            data = JSON.parse(text);
-        } catch (e) {
-            console.error('Invalid JSON response:', text);
-            throw new Error('Некорректный ответ от сервера');
-        }
+        const data = await response.json();
         
-        if (response.ok && data.success) {
+        if (response.ok) {
             showSuccess('Регистрация успешна! Теперь вы можете войти.');
             showLoginForm();
+            document.getElementById('register-form').reset();
         } else {
-            showError(data.message || 'Ошибка при регистрации');
+            throw new Error(data.message || 'Ошибка при регистрации');
         }
     } catch (error) {
-        console.error('Registration error:', error);
-        showError(error.message || 'Ошибка при регистрации');
+        console.error('Ошибка регистрации:', error);
+        showError(error.message || 'Произошла ошибка при регистрации. Попробуйте позже.');
     }
 }
 
