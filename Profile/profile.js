@@ -85,8 +85,7 @@ async function loadUsers() {
                 'Authorization': `Bearer ${userData.token}`,
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
-            },
-            credentials: 'include'
+            }
         });
         
         console.log('Response status:', response.status);
@@ -102,7 +101,7 @@ async function loadUsers() {
         } else {
             const errorData = await response.json();
             console.error('Error loading users:', errorData);
-            showError('Ошибка загрузк пользователей');
+            showError('Ошибка загрузки пользователей');
         }
     } catch (error) {
         console.error('Error in loadUsers:', error);
