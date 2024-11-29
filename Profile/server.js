@@ -93,7 +93,10 @@ app.post('/api/auth/login', async (req, res) => {
 app.get('/api/users', authenticateToken, async (req, res) => {
     try {
         if (req.user.role !== 'Admin') {
-            return res.status(403).json({ success: false, message: 'Доступ запрещен' });
+            return res.status(403).json({ 
+                success: false, 
+                message: 'Доступ запрещен' 
+            });
         }
 
         const result = await pool.query(
@@ -164,6 +167,109 @@ app.post('/api/users', authenticateToken, async (req, res) => {
         res.status(500).json({ 
             success: false, 
             message: 'Ошибка при создании пользователя' 
+        });
+    }
+});
+
+// Получение всех пользователей
+app.get('/api/users', authenticateToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'Admin') {
+            return res.status(403).json({ 
+                success: false, 
+                message: 'Доступ запрещен' 
+            });
+        }
+
+        const result = await pool.query(
+            'SELECT id, username, role, created_at FROM users'
+        );
+        
+        res.json({ 
+            success: true, 
+            data: result.rows 
+        });
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Ошибка при получении списка пользователей' 
+        });
+    }
+});
+
+// Обновление пользователя
+app.put('/api/users/:id', authenticateToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'Admin') {
+            return res.status(403).json({ 
+                success: false, 
+                message: 'Доступ запрещен' 
+            });
+        }
+
+        const { id } = req.params;
+        const { username, role } = req.body;
+
+        const result = await pool.query(
+            'UPDATE users SET username = $1, role = $2 WHERE id = $3 RETURNING id, username, role',
+            [username, role, id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Пользователь не найден' 
+            });
+        }
+
+        res.json({ 
+            success: true, 
+            data: result.rows[0],
+            message: 'Пользователь успешно обновлен' 
+        });
+    } catch (error) {
+        console.error('Error updating user:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Ошибка при обновлении пользователя' 
+        });
+    }
+});
+
+// Удаление пользователя
+app.delete('/api/users/:id', authenticateToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'Admin') {
+            return res.status(403).json({ 
+                success: false, 
+                message: 'Доступ запрещен' 
+            });
+        }
+
+        const { id } = req.params;
+
+        const result = await pool.query(
+            'DELETE FROM users WHERE id = $1 RETURNING id',
+            [id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Пользователь не найден' 
+            });
+        }
+
+        res.json({ 
+            success: true, 
+            message: 'Пользователь успешно удален' 
+        });
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Ошибка при удалении пользователя' 
         });
     }
 });

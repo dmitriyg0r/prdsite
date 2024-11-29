@@ -193,40 +193,26 @@ async function loadUsers() {
 }
 
 function displayUsers(users) {
-    const tableBody = document.getElementById('users-table-body');
+    const usersList = document.getElementById('users-list');
+    if (!usersList) return;
+
+    usersList.innerHTML = '';
     
-    if (!tableBody) {
-        console.error('Users table body not found');
-        return;
-    }
-
-    console.log('Displaying users:', users);
-    tableBody.innerHTML = '';
-
-    if (!Array.isArray(users) || users.length === 0) {
-        const row = document.createElement('tr');
-        row.innerHTML = '<td colspan="5">Нет пользователей для отображения</td>';
-        tableBody.appendChild(row);
-        return;
-    }
-
     users.forEach(user => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${user.id || 'N/A'}</td>
-            <td>${user.username || 'N/A'}</td>
-            <td>${user.role || 'N/A'}</td>
-            <td>${user.createdAt ? new Date(user.createdAt).toLocaleString() : 'N/A'}</td>
-            <td>
-                <button class="action-btn edit-btn" onclick="editUser(${user.id})">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button class="action-btn delete-btn" onclick="deleteUser(${user.id})">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </td>
+        const userDiv = document.createElement('div');
+        userDiv.className = 'user-item';
+        userDiv.innerHTML = `
+            <div class="user-info">
+                <span class="username">${user.username}</span>
+                <span class="role">${user.role}</span>
+                <span class="created-at">${new Date(user.created_at).toLocaleString()}</span>
+            </div>
+            <div class="user-actions">
+                <button onclick="editUser(${user.id})" class="edit-btn">Редактировать</button>
+                <button onclick="deleteUser(${user.id})" class="delete-btn">Удалить</button>
+            </div>
         `;
-        tableBody.appendChild(row);
+        usersList.appendChild(userDiv);
     });
 }
 
@@ -336,34 +322,29 @@ async function deleteUser(userId) {
 async function editUser(userId) {
     try {
         const userData = JSON.parse(localStorage.getItem('user'));
-        
-        if (!userData || !userData.data || !userData.data.token) {
-            throw new Error('No authentication token found');
+        if (!userData?.data?.token) {
+            throw new Error('Требуется авторизация');
         }
 
         const newUsername = prompt('Введите новое имя пользователя:');
         const newRole = prompt('Введите новую роль (Admin/User):');
-        
-        if (!newUsername || !newRole) {
-            return; // Поьзователь отменил редактирование
-        }
+
+        if (!newUsername || !newRole) return;
 
         const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
             method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${userData.data.token}`,
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 username: newUsername,
                 role: newRole
-            }),
-            credentials: 'include'
+            })
         });
 
         const data = await response.json();
-        
+
         if (response.ok && data.success) {
             showSuccess('Пользователь успешно обновлен');
             loadUsers(); // Перезагружаем список пользователей
