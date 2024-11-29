@@ -109,7 +109,7 @@ async function handleAnonymousLogin() {
     }
 }
 
-// Функция отображения профиля
+// Функция отображен��я профиля
 function showProfile(userData) {
     // Скрываем все контейнеры авторизации
     const authContainers = document.querySelectorAll('#login-container, #register-container');
@@ -141,7 +141,7 @@ function showProfile(userData) {
     }
 }
 
-// Функция загрузки списка пользователей
+// Функция загрузки списка ��ользователей
 async function loadUsers() {
     try {
         const user = JSON.parse(localStorage.getItem('user'));
@@ -203,32 +203,38 @@ function handleLogout() {
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Page loaded, initializing...');
 
+    const loginContainer = document.getElementById('login-container');
+    const profileInfo = document.getElementById('profile-info');
+
     // Проверяем сохраненную сессию
     const userData = localStorage.getItem('user');
     if (userData) {
         console.log('Found saved session');
         try {
             const parsedUserData = JSON.parse(userData);
-            // Сразу скрываем контейнер входа и показываем профиль
-            const loginContainer = document.getElementById('login-container');
-            if (loginContainer) {
-                loginContainer.style.display = 'none';
+            // Показываем профиль
+            if (profileInfo) {
+                profileInfo.style.display = 'block';
             }
             showProfile(parsedUserData);
         } catch (e) {
             console.error('Error parsing saved session:', e);
             localStorage.removeItem('user');
             // В случае ошибки показываем форму входа
-            const loginContainer = document.getElementById('login-container');
             if (loginContainer) {
                 loginContainer.style.display = 'block';
+            }
+            if (profileInfo) {
+                profileInfo.style.display = 'none';
             }
         }
     } else {
         // Если нет сохраненной сессии, показываем форму входа
-        const loginContainer = document.getElementById('login-container');
         if (loginContainer) {
             loginContainer.style.display = 'block';
+        }
+        if (profileInfo) {
+            profileInfo.style.display = 'none';
         }
     }
 
