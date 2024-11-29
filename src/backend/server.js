@@ -1,17 +1,45 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const fs = require('fs');
+const path = require('path');
 const app = express();
 
-// Массив для хранения пользователей
-const users = [
-    { 
-        username: 'dimon', 
-        password: 'Gg3985502', 
-        role: 'Admin',
-        createdAt: new Date()
+// Путь к файлу с данными
+const DB_PATH = path.join(__dirname, 'users.json');
+
+// Функция для загрузки пользователей из файла
+function loadUsers() {
+    try {
+        if (fs.existsSync(DB_PATH)) {
+            const data = fs.readFileSync(DB_PATH, 'utf8');
+            return JSON.parse(data);
+        }
+    } catch (error) {
+        console.error('Error loading users:', error);
     }
-];
+    // Возвращаем массив по умолчанию, если файл не существует или произошла ошибка
+    return [
+        { 
+            username: 'dimon', 
+            password: 'Gg3985502', 
+            role: 'Admin',
+            createdAt: new Date()
+        }
+    ];
+}
+
+// Функция для сохранения пользователей в файл
+function saveUsers(users) {
+    try {
+        fs.writeFileSync(DB_PATH, JSON.stringify(users, null, 2));
+    } catch (error) {
+        console.error('Error saving users:', error);
+    }
+}
+
+// Загружаем пользователей при старте сервера
+let users = loadUsers();
 
 // Middleware
 app.use(cors({
@@ -57,6 +85,7 @@ app.post('/api/register', (req, res) => {
     };
 
     users.push(newUser);
+    saveUsers(users); // Сохраняем изменения
 
     res.json({
         success: true,
@@ -124,12 +153,11 @@ app.get('/api/users', (req, res) => {
     });
 });
 
-// Добавьте этот маршрут в server.js
+// Маршрут для удаления пользователя
 app.delete('/api/users/:username', (req, res) => {
     console.log('DELETE /api/users/:username вызван');
     const { username } = req.params;
     
-    // Находим индекс пользователя
     const userIndex = users.findIndex(u => u.username === username);
     
     if (userIndex === -1) {
@@ -139,7 +167,6 @@ app.delete('/api/users/:username', (req, res) => {
         });
     }
     
-    // Не позволяем удалить последнего администратора
     if (users[userIndex].role === 'Admin' && 
         users.filter(u => u.role === 'Admin').length === 1) {
         return res.status(400).json({
@@ -148,9 +175,9 @@ app.delete('/api/users/:username', (req, res) => {
         });
     }
     
-    // Удаляем пользователя
     users.splice(userIndex, 1);
-    
+    saveUsers(users); // Сохраняем изменения
+
     res.json({
         success: true,
         message: 'Пользователь успешно удален'
@@ -166,5 +193,4 @@ app.listen(PORT, () => {
     console.log('POST /api/auth/login');
     console.log('POST /api/auth/anonymous-login');
     console.log('GET  /api/users');
-    console.log('DELETE /api/users/:username');
 });

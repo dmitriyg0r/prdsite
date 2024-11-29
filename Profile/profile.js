@@ -247,7 +247,10 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Found saved session');
         try {
             const parsedUserData = JSON.parse(userData);
-            // Показываем профиль
+            // Скрываем контейнер входа и показываем профиль
+            if (loginContainer) {
+                loginContainer.style.display = 'none';
+            }
             if (profileInfo) {
                 profileInfo.style.display = 'block';
             }
@@ -276,7 +279,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Привязываем обработчики событий
     const loginForm = document.getElementById('login-form');
     const anonymousLoginBtn = document.getElementById('anonymous-login-btn');
-    const logoutBtn = document.querySelector('.danger-btn'); // Кнопка выхода
+    const logoutBtn = document.querySelector('.danger-btn');
 
     if (loginForm) {
         loginForm.addEventListener('submit', handleLogin);
@@ -291,11 +294,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (logoutBtn) {
         logoutBtn.addEventListener('click', handleLogout);
         console.log('Logout handler attached');
-    }
-
-    const registerForm = document.getElementById('register-form');
-    if (registerForm) {
-        registerForm.addEventListener('submit', handleRegister);
     }
 });
 
@@ -367,7 +365,7 @@ async function editUser(userId) {
         }
     } catch (error) {
         console.error('Error updating user:', error);
-        showError('Ошибк при обновлении пользователя');
+        showError('Ошиб�� при обновлении пользователя');
     }
 }
 
