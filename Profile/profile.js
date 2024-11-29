@@ -110,7 +110,7 @@ async function handleAnonymousLogin() {
             showSuccess('Успешный анонимный вход');
             showProfile(data.data);
         } else {
-            showError(data.message || 'Ошибка анонимного входа');
+            showError(data.message || 'Ошибка ано��имного входа');
         }
     } catch (error) {
         console.error('Anonymous login error:', error);
@@ -327,7 +327,7 @@ async function editUser(userId) {
     try {
         const userData = JSON.parse(localStorage.getItem('user'));
         if (!userData?.data?.token) {
-            throw new Error('Требуется авторизация');
+            throw new Error('Тре��уется авторизация');
         }
 
         const newUsername = prompt('Введите новое имя пользователя:');
@@ -428,12 +428,22 @@ async function handleRegister(event) {
         const response = await fetch(`${API_BASE_URL}/auth/register`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
             },
-            body: JSON.stringify({ username, password })
+            body: JSON.stringify({ username, password }),
+            credentials: 'include'
         });
         
-        const data = await response.json();
+        // Проверяем, что ответ не пустой
+        const text = await response.text();
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
+            console.error('Invalid JSON response:', text);
+            throw new Error('Некорректный ответ от сервера');
+        }
         
         if (response.ok && data.success) {
             showSuccess('Регистрация успешна! Теперь вы можете войти.');
@@ -443,6 +453,19 @@ async function handleRegister(event) {
         }
     } catch (error) {
         console.error('Registration error:', error);
-        showError('Ошибка при регистрации');
+        showError(error.message || 'Ошибка при регистрации');
     }
 }
+
+const toggleRegPassword = () => {
+    const passwordInput = document.getElementById('reg-password');
+    const eyeIcon = document.querySelector('#register-container .eye-icon');
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        eyeIcon.classList.add('show');
+    } else {
+        passwordInput.type = 'password';
+        eyeIcon.classList.remove('show');
+    }
+};
