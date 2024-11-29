@@ -7,7 +7,7 @@
     <link rel="icon" type="image/x-icon" href="../flow.ico">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&family=Montserrat:wght@300&display=swap">
     <link rel="stylesheet" href="../style.css">
-    <link rel="stylesheet" href="about.css">
+    <link rel="stylesheet" href="chat.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="../mobile.css">
 </head>
@@ -86,23 +86,19 @@
     <main>
         <section id="about-us">
             <h1 class="company-name">Чат</h1>
-            <div class="content-wrapper">
-                <div class="text-content">
-                    <div class="developers-phrase">
-                        <p>Мы — разработчики из группы 18ПрД4310</p>
-                    </div>
-                    <div class="additional-phrase">
-                        <p>Мы создали для учащихся МФЮА сайт и бота.
-                            Они помогут вам лучше ориентироваться
-                            в домашнем задании и расписании. Мы ни в коем случае ничего не продаём, и не собираем никаких данных.</p>
-                    </div>
-                    <div class="help-phrase">
-                        <p>Если у вас есть вопросы или предложения, не стесняйтесь связаться с нами через форму обратной связи или по электронной почте.</p>
-                    </div>
+            <div class="chat-container">
+                <div id="messages" class="messages-area"></div>
+                <div class="input-area">
+                    <input type="text" id="messageInput" placeholder="Введите сообщение...">
+                    <button id="sendMessage">Отправить</button>
                 </div>
             </div>
         </section>
     </main>
+    <!-- Добавляем Firebase скрипты перед закрывающим тегом body -->
+    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.x.x/firebase-database-compat.js"></script>
     <script src="../main.js"></script>
+    <script src="chat.js"></script>
 </body>
 </html>
