@@ -130,13 +130,17 @@
 
 /* Стили для таблицы пользователей */
 .users-table-container {
+    margin-top: 20px;
     overflow-x: auto;
 }
 
 .users-table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 20px;
+    margin-top: 10px;
+    background: var(--background-color);
+    border-radius: 8px;
+    overflow: hidden;
 }
 
 .users-table th,
@@ -153,16 +157,15 @@
 }
 
 .users-table tr:hover {
-    background: var(--table-hover);
+    background: var(--hover-color);
 }
 
-/* Стили для кнопок действий в таблице */
 .action-btn {
     padding: 6px 12px;
     border: none;
-    border-radius: 6px;
+    border-radius: 4px;
     cursor: pointer;
-    margin: 0 5px;
+    margin: 0 4px;
     transition: all 0.3s ease;
 }
 
@@ -247,4 +250,26 @@
 /* Стилизация скроллбара */
 ::-webkit-scrollbar {
     width: 0;
+}
+
+/* Адаптивность для мобильных устройств */
+@media screen and (max-width: 768px) {
+    .users-table {
+        font-size: 14px;
+    }
+
+    .users-table th,
+    .users-table td {
+        padding: 8px 10px;
+    }
+
+    .action-btn {
+        padding: 4px 8px;
+    }
+}
+
+.users-table td[colspan="5"] {
+    padding: 20px;
+    text-align: center;
+    color: var(--text-secondary);
 }
