@@ -1,129 +1,22 @@
-/* Специфичные стили для профиля */
+/* Основные стили для профиля */
 #profile-container {
     width: 100%;
-    max-width: 800px;
+    max-width: 1200px;
     margin: 20px auto;
     padding: 20px;
     animation: fadeIn 0.6s ease-out;
 }
 
-/* Стили для админ-панели */
-.admin-controls {
-    margin: 20px 0;
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-}
-
-/* Стили для таблицы пользователей */
-.users-table-container {
-    background: var(--text-container-background);
-    border-radius: 25px;
-    padding: 20px;
-    box-shadow: var(--text-container-shadow);
-    margin-top: 20px;
-    overflow-x: auto;
-    animation: slideIn 0.4s ease-out;
-}
-
-.users-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 15px;
-    min-width: 800px;
-}
-
-.users-table th {
-    background: var(--primary-color);
-    color: var(--header-text);
-    font-weight: 500;
-    padding: 15px;
-    text-align: left;
-}
-
-.users-table td {
-    padding: 15px;
-    border-bottom: 1px solid var(--border-color);
-    color: var(--text-color);
-}
-
-.users-table tr {
-    transition: all 0.3s ease;
-}
-
-.users-table tr:hover {
-    background: var(--table-hover);
-    transform: scale(1.01);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
-
-/* Стили для кнопок */
-.action-btn {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 50px;
-    cursor: pointer;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-}
-
-.edit-btn {
-    background: linear-gradient(45deg, var(--button-background), var(--header-gradient));
-    color: var(--button-text);
-}
-
-.delete-btn {
-    background: linear-gradient(45deg, #ff4444, #cc0000);
-    color: white;
-}
-
-.action-btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-}
-
-/* Стили для модальных окон */
-.modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
-    backdrop-filter: blur(5px);
-}
-
-.modal-content {
-    position: relative;
-    background-color: var(--text-container-background);
-    margin: 10% auto;
+/* Стили для формы входа */
+#login-container {
+    max-width: 400px;
+    margin: 40px auto;
     padding: 30px;
-    border-radius: 25px;
-    width: 80%;
-    max-width: 500px;
+    background: var(--text-container-background);
+    border-radius: 15px;
     box-shadow: var(--text-container-shadow);
-    animation: fadeIn 0.3s ease-out;
 }
 
-.close {
-    position: absolute;
-    right: 25px;
-    top: 15px;
-    font-size: 24px;
-    cursor: pointer;
-    color: var(--text-color);
-    transition: all 0.3s ease;
-}
-
-.close:hover {
-    transform: rotate(90deg);
-    color: var(--primary-color);
-}
-
-/* Стили для форм в модальном окне */
 .form-group {
     margin-bottom: 20px;
 }
@@ -135,42 +28,134 @@
     font-weight: 500;
 }
 
-.form-group input,
-.form-group select {
+.form-group input {
     width: 100%;
     padding: 12px 15px;
     border: 2px solid var(--border-color);
     border-radius: 10px;
-    background-color: var(--input-background);
+    background: var(--input-background);
     color: var(--text-color);
     transition: all 0.3s ease;
 }
 
-.form-group input:focus,
-.form-group select:focus {
-    outline: none;
+.form-group input:focus {
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(var(--button-background-rgb), 0.2);
+    outline: none;
+}
+
+/* Стили для кнопок */
+.login-btn, 
+.anonymous-login-btn {
+    width: 100%;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 10px;
+}
+
+.login-btn {
+    background: linear-gradient(45deg, var(--button-background), var(--header-gradient));
+    color: var(--button-text);
+}
+
+.anonymous-login-btn {
+    background: var(--button-secondary);
+    color: var(--text-color);
+}
+
+.login-btn:hover,
+.anonymous-login-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Стили для информации профиля */
+#profile-info {
+    background: var(--text-container-background);
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 30px;
+    box-shadow: var(--text-container-shadow);
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.profile-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin-right: 20px;
+    background: var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 2em;
+}
+
+.profile-details h2 {
+    margin: 0;
+    color: var(--text-color);
+}
+
+.profile-role {
+    color: var(--text-secondary);
+    font-size: 0.9em;
+    margin-top: 5px;
+}
+
+/* Стили для админ-панели */
+#admin-section {
+    background: var(--text-container-background);
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: var(--text-container-shadow);
 }
 
 /* Адаптивность */
 @media screen and (max-width: 768px) {
-    .users-table {
-        font-size: 14px;
-    }
-    
-    .action-btn {
-        padding: 8px 16px;
-        font-size: 14px;
-    }
-    
-    .modal-content {
-        width: 95%;
-        margin: 5% auto;
-        padding: 20px;
-    }
-    
     #profile-container {
         padding: 10px;
     }
+
+    .profile-header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .profile-avatar {
+        margin: 0 auto 20px;
+    }
+
+    .users-table {
+        font-size: 14px;
+    }
+}
+
+/* Темная тема */
+[data-theme="dark"] .form-group input {
+    background: var(--input-background);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .form-group input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(139, 68, 196, 0.2);
+}
+
+[data-theme="dark"] .login-btn {
+    background: linear-gradient(45deg, var(--primary-color), var(--primary-light));
+}
+
+[data-theme="dark"] .anonymous-login-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-color);
 }
