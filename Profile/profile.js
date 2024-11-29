@@ -421,14 +421,14 @@ async function handleRegister(event) {
     event.preventDefault();
     
     try {
-        // Добавим логирование для отладки
-        const registerUrl = `${API_BASE_URL}/auth/register`;
+        const registerUrl = `${API_BASE_URL}/register`;
         console.log('Отправка запроса на:', registerUrl);
         
         const response = await fetch(registerUrl, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
             },
             body: JSON.stringify({ 
                 username: document.getElementById('reg-username').value,
