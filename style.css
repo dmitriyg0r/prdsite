@@ -1126,3 +1126,6 @@ body[data-theme="dark"] *::-webkit-scrollbar-thumb {
 body[data-theme="dark"] *::-webkit-scrollbar-thumb:hover {
     background-color: #2A2B2F;
 }
+::-webkit-scrollbar {
+    width: 0;
+  }
