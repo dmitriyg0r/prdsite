@@ -69,39 +69,27 @@
 
     <!-- Основной контент -->
     <main class="main-content">
-        <header class="top-bar">
-            <button id="sidebar-toggle">
-                <i class="fas fa-bars"></i>
-            </button>
-            <div class="mobile-logo">
-                <img src="../images/logo.png" alt="Logo">
-                <h2>AdminFlow</h2>
-            </div>
-            <button id="mobile-theme-toggle">
-                <i class="fas fa-moon"></i>
-            </button>
-        </header>
-
-        <!-- Контейнер для входа -->
-        <div id="login-container">
-            <form id="loginForm">
-                <h2>Вход в систему</h2>
-                <div class="form-group">
-                    <label for="login-username">Имя пользователя:</label>
-                    <input type="text" id="login-username" required>
-                </div>
-                <div class="form-group">
-                    <label for="login-password">Пароль:</label>
-                    <input type="password" id="login-password" required>
-                </div>
-                <button type="submit" class="btn primary-btn">Войти</button>
-                <button type="button" class="btn secondary-btn" onclick="handleAnonymousLogin()">Анонимный вход</button>
-            </form>
-        </div>
-
         <!-- Контейнер профиля -->
-        <div id="profile-container" style="display: none;">
-            <div class="profile-info">
+        <div id="profile-container">
+            <!-- Форма входа -->
+            <div id="login-container">
+                <h2>Вход в систему</h2>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="username">Имя пользователя:</label>
+                        <input type="text" id="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Пароль:</label>
+                        <input type="password" id="password" required>
+                    </div>
+                    <button type="submit" class="btn primary-btn">Войти</button>
+                    <button type="button" class="btn secondary-btn" onclick="handleAnonymousLogin()">Анонимный вход</button>
+                </form>
+            </div>
+
+            <!-- Информация о профиле -->
+            <div id="profile-info" style="display: none;">
                 <h2>Профиль пользователя</h2>
                 <p>Имя пользователя: <span id="profile-username"></span></p>
                 <p>Роль: <span id="profile-role"></span></p>
@@ -131,48 +119,6 @@
                             <!-- Данные будут добавлены через JavaScript -->
                         </tbody>
                     </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- Модальные окна -->
-        <div id="userModal" class="modal">
-            <div class="modal-content">
-                <span class="close" onclick="closeUserModal()">&times;</span>
-                <h2 id="modal-title">Добавить пользователя</h2>
-                <form id="userForm" onsubmit="handleUserSubmit(event)">
-                    <input type="hidden" id="userId">
-                    <div class="form-group">
-                        <label for="username">Имя пользователя:</label>
-                        <input type="text" id="username" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="password">Пароль:</label>
-                        <input type="password" id="password">
-                        <small>Оставьте пустым, чтобы сохранить текущий пароль</small>
-                    </div>
-                    <div class="form-group">
-                        <label for="role">Роль:</label>
-                        <select id="role" required>
-                            <option value="User">Пользователь</option>
-                            <option value="Admin">Администратор</option>
-                        </select>
-                    </div>
-                    <div class="form-actions">
-                        <button type="submit" class="btn primary-btn">Сохранить</button>
-                        <button type="button" class="btn secondary-btn" onclick="closeUserModal()">Отмена</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <div id="deleteModal" class="modal">
-            <div class="modal-content">
-                <h2>Подтверждение удаления</h2>
-                <p>Вы уверены, что хотите удалить этого пользователя?</p>
-                <div class="form-actions">
-                    <button class="btn danger-btn" onclick="confirmDelete()">Удалить</button>
-                    <button class="btn secondary-btn" onclick="closeDeleteModal()">Отмена</button>
                 </div>
             </div>
         </div>
