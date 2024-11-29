@@ -15,6 +15,14 @@ app.use(cors({
 
 app.use(express.json());
 
+// Логирование всех запросов
+app.use((req, res, next) => {
+    console.log(`${new Date().toISOString()} ${req.method} ${req.url}`);
+    console.log('Headers:', req.headers);
+    if (req.body) console.log('Body:', req.body);
+    next();
+});
+
 // Конфигурация базы данных
 const pool = new Pool({
     user: 'admin',
@@ -54,36 +62,41 @@ app.get('/api/users', authenticateToken, async (req, res) => {
 });
 
 app.post('/api/users', authenticateToken, async (req, res) => {
+    console.log('Получен POST запрос на /api/users');
+    console.log('Headers:', req.headers);
+    console.log('Body:', req.body);
+    
     try {
         const { username, password, role } = req.body;
         
-        // Проверка обязательных полей
         if (!username || !password || !role) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Все поля обязательны' 
+            return res.status(400).json({
+                success: false,
+                message: 'Все поля обязательны'
             });
         }
 
-        // Хеширование пароля
         const passwordHash = await bcrypt.hash(password, 10);
 
-        // Добавление пользователя в базу данных
         const result = await pool.query(
             'INSERT INTO users (username, password_hash, role) VALUES ($1, $2, $3) RETURNING id, username, role',
             [username, passwordHash, role]
         );
+
+        console.log('Пользователь успешно создан:', result.rows[0]);
 
         res.status(201).json({
             success: true,
             data: result.rows[0],
             message: 'Пользователь успешно создан'
         });
+
     } catch (error) {
-        console.error('Error creating user:', error);
+        console.error('Ошибка при создании пользователя:', error);
         res.status(500).json({
             success: false,
-            message: 'Ошибка при создании пользователя'
+            message: 'Ошибка при создании пользователя',
+            error: error.message
         });
     }
 });
