@@ -393,3 +393,102 @@
     transform: translateY(-50%);
     cursor: pointer;
 }
+
+/* Стили для профиля */
+.profile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 10px 0;
+    border-bottom: 2px solid #eee;
+}
+
+.user-info-card {
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.success-message {
+    display: flex;
+    align-items: center;
+    color: #4CAF50;
+    margin-bottom: 20px;
+    padding: 10px;
+    background: #E8F5E9;
+    border-radius: 4px;
+}
+
+.success-message i {
+    margin-right: 10px;
+    font-size: 20px;
+}
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.user-detail {
+    display: flex;
+    gap: 10px;
+}
+
+.detail-label {
+    font-weight: bold;
+    color: #666;
+    min-width: 150px;
+}
+
+.detail-value {
+    color: #333;
+}
+
+/* Кнопка выхода */
+.danger-btn {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.danger-btn:hover {
+    background-color: #c82333;
+}
+
+/* Таблица пользователей */
+.users-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.users-table th,
+.users-table td {
+    padding: 12px;
+    border: 1px solid #eee;
+    text-align: left;
+}
+
+.users-table th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+    color: #495057;
+}
+
+.users-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.users-table tr:hover {
+    background-color: #f5f5f5;
+}

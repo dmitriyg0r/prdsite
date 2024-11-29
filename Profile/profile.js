@@ -106,23 +106,30 @@ function showProfile(userData) {
     const loginContainer = document.getElementById('login-container');
     const registerContainer = document.getElementById('register-container');
     const profileContainer = document.getElementById('profile-container');
+    const usersList = document.getElementById('users-list');
     
     if (loginContainer) loginContainer.style.display = 'none';
     if (registerContainer) registerContainer.style.display = 'none';
     if (profileContainer) profileContainer.style.display = 'block';
     
     // Отображаем информацию о пользователе
-    const userInfo = document.getElementById('user-info');
-    if (userInfo) {
-        userInfo.innerHTML = `
-            <h2>Профиль</h2>
-            <p>Имя пользователя: ${userData.data.username}</p>
-            <p>Роль: ${userData.data.role}</p>
+    const userDetails = document.querySelector('.user-details');
+    if (userDetails) {
+        userDetails.innerHTML = `
+            <div class="user-detail">
+                <span class="detail-label">Имя пользователя:</span>
+                <span class="detail-value">${userData.data.username}</span>
+            </div>
+            <div class="user-detail">
+                <span class="detail-label">Роль:</span>
+                <span class="detail-value">${userData.data.role}</span>
+            </div>
         `;
     }
     
-    // Если пользователь админ, загружаем список пользователей
-    if (userData.data.role === 'Admin') {
+    // Если пользователь админ, показываем список пользователей
+    if (userData.data.role === 'Admin' && usersList) {
+        usersList.style.display = 'block';
         loadUsers();
     }
 }

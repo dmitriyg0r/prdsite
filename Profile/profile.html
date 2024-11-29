@@ -150,6 +150,43 @@
                     </table>
                 </div>
             </div>
+
+            <!-- Добавьте этот блок после форм входа и регистрации -->
+            <div id="profile-container" style="display: none;">
+                <div class="profile-header">
+                    <h2>Личный кабинет</h2>
+                    <button id="logout-btn" class="btn danger-btn" onclick="handleLogout()">
+                        Выйти из аккаунта
+                    </button>
+                </div>
+                
+                <div id="user-info" class="user-info-card">
+                    <div class="success-message">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Вы успешно авторизованы</span>
+                    </div>
+                    <div class="user-details">
+                        <!-- Данные пользователя будут добавлены через JavaScript -->
+                    </div>
+                </div>
+                
+                <!-- Таблица пользователей (видна только админу) -->
+                <div id="users-list" style="display: none;">
+                    <h3>Список пользователей</h3>
+                    <table class="users-table">
+                        <thead>
+                            <tr>
+                                <th>Имя пользователя</th>
+                                <th>Роль</th>
+                                <th>Дата регистрации</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body">
+                            <!-- Данные будут добавлены через JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </main>
 
