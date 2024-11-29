@@ -430,7 +430,7 @@ async function createUser(username, password, role) {
         
         if (response.ok && data.success) {
             showSuccess('Пользователь успешно создан');
-            await loadUsers(); // Перезагружаем список пользовател��й
+            await loadUsers(); // Перезагружаем список пользователй
         } else {
             throw new Error(data.message || 'Failed to create user');
         }
@@ -454,10 +454,10 @@ app.use(express.json());
 
 // Конфигурация базы данных
 const pool = new Pool({
-    user: 'your_username',
+    user: 'admin',
     host: 'localhost',
     database: 'adminflow',
-    password: 'your_password',
+    password: 'admin',
     port: 5432
 });
 
