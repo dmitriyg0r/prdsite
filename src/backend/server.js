@@ -184,6 +184,74 @@ app.delete('/api/users/:username', (req, res) => {
     });
 });
 
+// Добавьте новые маршруты для работы с рекордами
+app.post('/api/scores', async (req, res) => {
+    const { username, score } = req.body;
+    
+    try {
+        const user = users.find(u => u.username === username);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'Пользователь не найден'
+            });
+        }
+
+        // Сохраняем рекорд в файл scores.json
+        const scoresPath = path.join(__dirname, 'scores.json');
+        let scores = [];
+        
+        if (fs.existsSync(scoresPath)) {
+            scores = JSON.parse(fs.readFileSync(scoresPath, 'utf8'));
+        }
+        
+        scores.push({
+            username,
+            score,
+            timestamp: new Date()
+        });
+        
+        fs.writeFileSync(scoresPath, JSON.stringify(scores, null, 2));
+
+        res.json({
+            success: true,
+            message: 'Рекорд сохранен'
+        });
+    } catch (error) {
+        console.error('Error saving score:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Ошибка при сохранении рекорда'
+        });
+    }
+});
+
+app.get('/api/scores', (req, res) => {
+    try {
+        const scoresPath = path.join(__dirname, 'scores.json');
+        let scores = [];
+        
+        if (fs.existsSync(scoresPath)) {
+            scores = JSON.parse(fs.readFileSync(scoresPath, 'utf8'));
+        }
+        
+        // Сортируем по убыванию счета и берем топ-10
+        scores.sort((a, b) => b.score - a.score);
+        scores = scores.slice(0, 10);
+
+        res.json({
+            success: true,
+            data: scores
+        });
+    } catch (error) {
+        console.error('Error getting scores:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Ошибка при получении рекордов'
+        });
+    }
+});
+
 // Запуск сервера
 const PORT = process.env.PORT || 5003;
 app.listen(PORT, () => {

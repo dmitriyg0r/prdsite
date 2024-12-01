@@ -148,40 +148,58 @@ canvas.addEventListener('touchstart', (e) => {
     }
 });
 
-function updateLeaderboard(newScore) {
-    const playerName = localStorage.getItem('username') || 'Гость';
+async function updateLeaderboard(newScore) {
+    const userData = JSON.parse(localStorage.getItem('user'));
+    const username = userData?.data?.username || 'Гость';
     
-    leaderboard.push({
-        name: playerName,
-        score: Math.floor(newScore)
-    });
-    
-    // Сортируем по убыванию счёта
-    leaderboard.sort((a, b) => b.score - a.score);
-    
-    // Оставляем только топ-10
-    leaderboard = leaderboard.slice(0, 10);
-    
-    // Сохраняем в localStorage
-    localStorage.setItem('dinoLeaderboard', JSON.stringify(leaderboard));
-    
-    // Обновляем отображение
-    displayLeaderboard();
+    try {
+        // Отправляем новый рекорд на сервер
+        const response = await fetch('https://adminflow.ru/api/scores', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                username,
+                score: Math.floor(newScore)
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Ошибка при сохранении рекорда');
+        }
+
+        // Обновляем отображение таблицы рекордов
+        await displayLeaderboard();
+    } catch (error) {
+        console.error('Error updating leaderboard:', error);
+    }
 }
 
-function displayLeaderboard() {
-    const tbody = document.getElementById('leaderboardBody');
-    tbody.innerHTML = '';
-    
-    leaderboard.forEach((record, index) => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${index + 1}</td>
-            <td>${record.name}</td>
-            <td>${record.score}</td>
-        `;
-        tbody.appendChild(row);
-    });
+async function displayLeaderboard() {
+    try {
+        const response = await fetch('https://adminflow.ru/api/scores');
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error('Ошибка при получении рекордов');
+        }
+
+        const tbody = document.getElementById('leaderboardBody');
+        tbody.innerHTML = '';
+        
+        data.data.forEach((record, index) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td>${record.username}</td>
+                <td>${record.score}</td>
+            `;
+            tbody.appendChild(row);
+        });
+    } catch (error) {
+        console.error('Error displaying leaderboard:', error);
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {

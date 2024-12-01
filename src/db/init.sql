@@ -10,3 +10,11 @@ CREATE TABLE IF NOT EXISTS users (
 INSERT INTO users (username, password_hash, role)
 VALUES ('admin', '$2b$10$yourhashedpassword', 'Admin')
 ON CONFLICT (username) DO NOTHING; 
+
+-- Добавьте новую таблицу для рекордов
+CREATE TABLE IF NOT EXISTS game_scores (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    score INTEGER NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+); 
