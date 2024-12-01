@@ -808,7 +808,7 @@ app.use((req, res, next) => {
 });
 
 // Обновляем путь к статическим файлам
-app.use('/uploads', express.static('/var/www/html/src/backend/uploads'));
+app.use('/uploads', express.static('/var/www/html/src/backend/uploads/avatars'));
 
 // Запуск сервера
 const PORT = process.env.PORT || 5003;
