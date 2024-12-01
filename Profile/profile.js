@@ -742,7 +742,6 @@ async function rejectFriendRequest(requestId) {
 }
 
 // Загрузка списка друзей
-// Загрузка списка друзей
 async function loadFriendsList() {
     try {
         const response = await fetch(`${API_BASE_URL}/friends/list`, {
