@@ -819,7 +819,7 @@ async function loadFriendsList() {
                 .map(friend => `
                     <tr>
                         <td>
-                            <img src="${friend.avatarUrl.startsWith('http') ? friend.avatarUrl : API_BASE_URL + friend.avatarUrl}" 
+                            <img src="${avatarUrl}" 
                                 alt="Avatar" 
                                 class="friend-avatar"
                                 onerror="this.src='../assets/default-avatar.png'">

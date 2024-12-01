@@ -613,8 +613,12 @@ app.post('/api/friends/reject/:requestId', (req, res) => {
 const uploadsPath = path.join(__dirname, 'uploads');
 console.log('Путь к загрузкам:', uploadsPath);
 
-// Добавляем middleware для статических файлов перед другими маршрутами
-app.use('/uploads', express.static(uploadsPath));
+// Добавляем middleware для логирования запросов к статическим файлам
+app.use('/uploads', (req, res, next) => {
+    console.log('Запрос к статическому файлу:', req.url);
+    console.log('Полный путь:', path.join(uploadsPath, req.url));
+    next();
+}, express.static(uploadsPath));
 
 // Убираем проверку авторизации для статических файлов
 app.use((req, res, next) => {
@@ -663,8 +667,16 @@ app.get('/api/friends/list', (req, res) => {
                 const friendUsername = f.user1 === username ? f.user2 : f.user1;
                 const friend = users.find(u => u.username === friendUsername);
                 
-                // Упрощаем формирование URL аватарки
-                const avatarUrl = friend?.avatar 
+                // Проверяем существование файла
+                const avatarPath = friend?.avatar 
+                    ? path.join(uploadsPath, 'avatars', friend.avatar)
+                    : path.join(uploadsPath, 'avatars', 'default-avatar.png');
+                
+                console.log('Проверка файла аватара:', avatarPath);
+                const avatarExists = fs.existsSync(avatarPath);
+                console.log('Файл существует:', avatarExists);
+
+                const avatarUrl = friend?.avatar && avatarExists
                     ? `/uploads/avatars/${friend.avatar}`
                     : '/uploads/avatars/default-avatar.png';
 
