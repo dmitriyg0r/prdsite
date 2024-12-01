@@ -159,7 +159,6 @@ function showProfile(userData) {
     // Обновляем информацию профиля
     const profileUsername = document.getElementById('profile-username');
     const profileRole = document.getElementById('profile-role');
-    const userAvatar = document.getElementById('user-avatar');
     
     if (profileUsername) profileUsername.textContent = userData.data.username;
     if (profileRole) profileRole.textContent = userData.data.role;
@@ -170,55 +169,48 @@ function showProfile(userData) {
     // Инициализируем загрузку аватара
     initializeAvatarUpload();
     
-    // Загружаем список друзей
-    loadFriendsList();
-    
     // Показываем админ-панель для администраторов
     const adminSection = document.getElementById('admin-section');
     if (adminSection && userData.data.role === 'Admin') {
         adminSection.style.display = 'block';
-        loadUsers();
+        loadUsers(); // Теперь эта функция определена
     }
+    
+    // Загружаем списки друзей и запросов
+    loadFriendRequests();
+    loadFriendsList();
 }
 
-// Функция загрузки списка друзей
-async function loadFriendsList() {
+// Функция загрузки списка пользователей
+async function loadUsers() {
     try {
         const user = JSON.parse(localStorage.getItem('user'));
-        if (!user || !user.data.username) {
-            throw new Error('Пользователь не авторизован');
-        }
-
-        const response = await fetch(`${API_BASE_URL}/friends/list`, {
+        const response = await fetch(`${API_BASE_URL}/users`, {
             headers: {
                 'Authorization': `Bearer ${user.data.username}`
             }
         });
-
+        
         const data = await response.json();
+        
         if (data.success) {
-            const friendsList = document.getElementById('friends-list');
-            if (friendsList) {
-                friendsList.innerHTML = data.data.map(friend => `
+            const usersTableBody = document.getElementById('users-table-body');
+            if (usersTableBody) {
+                usersTableBody.innerHTML = data.data.map(user => `
                     <tr>
                         <td>
-                            <img src="${API_BASE_URL}${friend.avatarUrl}" 
-                                 alt="Avatar" 
-                                 class="friend-avatar"
-                                 onerror="this.src='${API_BASE_URL}/uploads/avatars/default-avatar.png'">
+                            <div class="user-row">
+                                <img src="${user.avatarUrl || '../assets/default-avatar.png'}" 
+                                     alt="Avatar" 
+                                     class="user-table-avatar">
+                                <span>${user.username}</span>
+                            </div>
                         </td>
-                        <td>${friend.username}</td>
+                        <td>${user.role}</td>
+                        <td>${new Date(user.createdAt).toLocaleString()}</td>
                         <td>
-                            <span class="friend-status ${friend.online ? 'status-online' : ''}">
-                                ${friend.online ? 'Онлайн' : 'Оффлайн'}
-                            </span>
-                        </td>
-                        <td class="friend-actions">
-                            <button class="btn chat-btn" onclick="openChat('${friend.username}')">
-                                <i class="fas fa-comment"></i> Чат
-                            </button>
-                            <button class="btn danger-btn" onclick="removeFriend('${friend.username}')">
-                                <i class="fas fa-user-minus"></i> Удалить
+                            <button class="action-btn delete-btn" onclick="deleteUser('${user.username}')">
+                                <i class="fas fa-trash"></i> Удалить
                             </button>
                         </td>
                     </tr>
@@ -226,10 +218,64 @@ async function loadFriendsList() {
             }
         }
     } catch (error) {
+        console.error('Error loading users:', error);
+        showError('Ошибка при загрузке списка пользователей');
+    }
+}
+
+// Функция загрузки списка друзей
+async function loadFriendsList() {
+    try {
+        const userData = JSON.parse(localStorage.getItem('user'));
+        if (!userData?.data?.username) {
+            throw new Error('Требуется авторизация');
+        }
+
+        const response = await fetch(`${API_BASE_URL}/friends/list`, {
+            headers: {
+                'Authorization': `Bearer ${userData.data.username}`
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            const friendsList = document.getElementById('friends-list');
+            friendsList.innerHTML = data.data
+                .map(friend => `
+                    <tr>
+                        <td>
+                            <img src="${API_BASE_URL}${friend.avatarUrl}" 
+                                alt="Avatar" 
+                                class="friend-avatar"
+                                onerror="this.src='../assets/default-avatar.png'">
+                        </td>
+                        <td>${friend.username}</td>
+                        <td>
+                            <span class="friend-status ${friend.online ? 'status-online' : 'status-offline'}">
+                                ${friend.online ? 'Онлайн' : 'Оффлайн'}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="friend-actions">
+                                <button class="btn chat-btn" onclick="openChat('${friend.username}')">
+                                    <i class="fas fa-comment"></i> Чат
+                                </button>
+                                <button class="btn danger-btn" onclick="removeFriend('${friend.username}')">
+                                    <i class="fas fa-user-minus"></i> Удалить
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `)
+                .join('');
+        }
+    } catch (error) {
         console.error('Error loading friends list:', error);
         showError('Ошибка при загрузке списка друзей');
     }
 }
+
 // Функция выхода из системы
 function handleLogout() {
     console.log('Logging out...');
