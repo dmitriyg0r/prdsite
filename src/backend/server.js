@@ -807,8 +807,8 @@ app.use((req, res, next) => {
     next();
 });
 
-// Добавьте эту строку после других middleware
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Обновляем путь к статическим файлам
+app.use('/uploads', express.static('/var/www/html/src/backend/uploads'));
 
 // Запуск сервера
 const PORT = process.env.PORT || 5003;
