@@ -145,25 +145,7 @@
                                 <i class="fas fa-user-plus"></i> Добавить друга
                             </button>
                             
-                            <!-- Модальное окно для добавления друга -->
-                            <div id="add-friend-modal" class="modal">
-                                <div class="modal-content">
-                                    <span class="close">&times;</span>
-                                    <h3>Добавить друга</h3>
-                                    <div class="search-container">
-                                        <input type="text" id="friend-search" placeholder="Введите никнейм...">
-                                        <div id="search-results" class="search-results"></div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Секция запросов в друзья -->
-                            <div class="friend-requests">
-                                <h3>Запросы в друзья</h3>
-                                <div id="friend-requests-list"></div>
-                            </div>
-
-                            <!-- Таблица друзей -->
+                            <!-- Таблица друзей теперь идет первой -->
                             <div class="friends-table-container">
                                 <h3>Мои друзья</h3>
                                 <table class="friends-table">
@@ -179,6 +161,24 @@
                                         <!-- Список друзей будет добавлен динамически -->
                                     </tbody>
                                 </table>
+                            </div>
+
+                            <!-- Секция запросов в друзья теперь идет после -->
+                            <div class="friend-requests">
+                                <h3>Запросы в друзья</h3>
+                                <div id="friend-requests-list"></div>
+                            </div>
+
+                            <!-- Модальное окно для добавления друга -->
+                            <div id="add-friend-modal" class="modal">
+                                <div class="modal-content">
+                                    <span class="close">&times;</span>
+                                    <h3>Добавить друга</h3>
+                                    <div class="search-container">
+                                        <input type="text" id="friend-search" placeholder="Введите никнейм...">
+                                        <div id="search-results" class="search-results"></div>
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- Добавляем здесь модальное окно чата -->

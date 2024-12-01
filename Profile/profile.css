@@ -775,7 +775,7 @@
 /* Таблица друзей */
 .friends-table-container {
     margin-top: 20px;
-    overflow-x: auto;
+    margin-bottom: 30px;
 }
 
 .friends-table {
@@ -999,4 +999,8 @@
 .register-btn:hover,
 .chat-btn:hover {
     transform: none;
+}
+
+.friend-requests {
+    margin-top: 30px;
 }
