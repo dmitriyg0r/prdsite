@@ -1,100 +1,70 @@
 @media screen and (max-width: 768px) {
     /* Боковое меню */
     .sidebar {
-        transform: translateX(-100%);
-        width: 250px;
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 80%;
+        max-width: 300px;
+        height: 100vh;
+        background: var(--sidebar-background);
+        padding: 60px 20px 20px;
         z-index: 1001;
+        transition: left 0.3s ease;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
     }
 
     .sidebar.active {
-        transform: translateX(0);
+        left: 0;
     }
 
-    /* Основной контент */
-    main {
-        margin-left: 0;
-        padding: 60px 15px 20px;
-    }
-
-    /* Таблица расписания */
-    .table-container {
-        margin: 15px -15px;
-        border-radius: 0;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        background: transparent;
-        box-shadow: none;
-    }
-
-    table {
-        min-width: 700px;
-        background: var(--table-background);
-        margin: 0;
-        font-size: 14px;
-    }
-
-    th, td {
-        padding: 10px;
-        min-width: 100px;
-    }
-
-    /* Заголовок */
-    .zagolovok {
-        font-size: 24px;
-        margin: 10px 0;
-        text-align: center;
-    }
-
-    /* Новости */
-    .news-content {
-        grid-template-columns: 1fr;
+    /* Стили для пунктов меню */
+    .sidebar-nav {
+        display: flex;
+        flex-direction: column;
         gap: 15px;
-        padding: 15px;
+        opacity: 1;
+        visibility: visible;
     }
 
-    .post {
-        min-height: auto;
+    .sidebar-link {
+        padding: 12px 15px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        color: var(--button-text);
+        text-decoration: none;
+        transition: background 0.3s ease;
+        opacity: 1;
     }
 
-    /* Подвал */
-    .container {
-        width: 100%;
-        margin-left: 0;
-        padding: 20px 15px;
-    }
-
-    .dz {
-        font-size: 16px;
-    }
-
-    /* Кнопка добавления поста */
-    .add-post-btn {
-        right: 15px;
-        bottom: 15px;
-        width: 45px;
-        height: 45px;
+    .sidebar-link i {
         font-size: 20px;
+        margin-right: 15px;
+        opacity: 1;
     }
 
-    /* Модальное окно */
-    .modal-content {
-        width: 90%;
-        margin: 10% auto;
-        padding: 15px;
+    .sidebar-link span {
+        display: block;
+        font-size: 16px;
+        opacity: 1;
+        white-space: nowrap;
     }
 
     /* Гамбургер меню */
     .menu-toggle {
-        display: flex;
         position: fixed;
         top: 15px;
         left: 15px;
-        z-index: 1002;
-        width: 30px;
-        height: 25px;
+        width: 35px;
+        height: 30px;
+        display: flex;
         flex-direction: column;
         justify-content: space-between;
         cursor: pointer;
+        z-index: 1002;
     }
 
     .menu-toggle span {
@@ -104,6 +74,19 @@
         background-color: var(--text-color);
         border-radius: 3px;
         transition: all 0.3s ease;
+    }
+
+    /* Анимация гамбургера в крестик */
+    .menu-toggle.active span:nth-child(1) {
+        transform: translateY(13px) rotate(45deg);
+    }
+
+    .menu-toggle.active span:nth-child(2) {
+        opacity: 0;
+    }
+
+    .menu-toggle.active span:nth-child(3) {
+        transform: translateY(-13px) rotate(-45deg);
     }
 
     /* Затемнение фона */
@@ -117,10 +100,32 @@
         background: rgba(0, 0, 0, 0.5);
         z-index: 1000;
         backdrop-filter: blur(3px);
+        transition: opacity 0.3s ease;
     }
 
     .overlay.active {
         display: block;
+    }
+
+    /* Логотип в меню */
+    .sidebar-logo {
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: center;
+    }
+
+    .sidebar-icon {
+        width: 40px;
+        height: 40px;
+        opacity: 1;
+    }
+
+    /* Переключатель темы */
+    .theme-switch-wrapper {
+        margin-top: auto;
+        padding: 15px;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.1);
     }
 }
 
