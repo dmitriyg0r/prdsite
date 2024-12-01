@@ -138,6 +138,49 @@
                         <button class="btn danger-btn" onclick="handleLogout()">
                             <i class="fas fa-sign-out-alt"></i> Выйти
                         </button>
+                        
+                        <!-- Добавляем секцию для друзей -->
+                        <div class="friends-section">
+                            <button class="btn primary-btn add-friend-btn" onclick="showAddFriendModal()">
+                                <i class="fas fa-user-plus"></i> Добавить друга
+                            </button>
+                            
+                            <!-- Модальное окно для добавления друга -->
+                            <div id="add-friend-modal" class="modal">
+                                <div class="modal-content">
+                                    <span class="close">&times;</span>
+                                    <h3>Добавить друга</h3>
+                                    <div class="search-container">
+                                        <input type="text" id="friend-search" placeholder="Введите никнейм...">
+                                        <div id="search-results" class="search-results"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Секция запросов в друзья -->
+                            <div class="friend-requests">
+                                <h3>Запросы в друзья</h3>
+                                <div id="friend-requests-list"></div>
+                            </div>
+
+                            <!-- Таблица друзей -->
+                            <div class="friends-table-container">
+                                <h3>Мои друзья</h3>
+                                <table class="friends-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Аватар</th>
+                                            <th>Никнейм</th>
+                                            <th>Статус</th>
+                                            <th>Действия</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="friends-list">
+                                        <!-- Список друзей будет добавлен динамически -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

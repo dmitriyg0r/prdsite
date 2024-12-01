@@ -314,6 +314,21 @@ document.addEventListener('DOMContentLoaded', () => {
         logoutBtn.addEventListener('click', handleLogout);
         console.log('Logout handler attached');
     }
+
+    // Инициализация поиска друзей
+    const friendSearch = document.getElementById('friend-search');
+    if (friendSearch) {
+        friendSearch.addEventListener('input', (e) => {
+            searchUsers(e.target.value);
+        });
+    }
+
+    // Загружаем списки друзей и запросов при входе
+    const userData = localStorage.getItem('user');
+    if (userData) {
+        loadFriendRequests();
+        loadFriendsList();
+    }
 });
 
 // Функция для удаления пользователя
@@ -551,3 +566,244 @@ async function loadUserAvatar(username) {
     }
 }
 
+// Добавляем новые функции для работы с друзьями
+
+// Показать модальное окно добавления друга
+function showAddFriendModal() {
+    const modal = document.getElementById('add-friend-modal');
+    modal.style.display = 'block';
+
+    // Закрытие по клику вне модального окна
+    window.onclick = (event) => {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    };
+
+    // Закрытие по клику на крестик
+    const closeBtn = modal.querySelector('.close');
+    closeBtn.onclick = () => {
+        modal.style.display = 'none';
+    };
+}
+
+// Поиск пользователей
+let searchTimeout;
+async function searchUsers(searchTerm) {
+    const searchResults = document.getElementById('search-results');
+    
+    // Очищаем предыдущий таймаут
+    clearTimeout(searchTimeout);
+    
+    if (!searchTerm) {
+        searchResults.style.display = 'none';
+        return;
+    }
+
+    // Устанавливаем новый таймаут
+    searchTimeout = setTimeout(async () => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/users/search?query=${searchTerm}`, {
+                headers: {
+                    'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
+                }
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                searchResults.innerHTML = data.data
+                    .map(user => `
+                        <div class="search-result-item" onclick="sendFriendRequest('${user.username}')">
+                            <img src="${user.avatarUrl || '../assets/default-avatar.png'}" alt="Avatar">
+                            <span>${user.username}</span>
+                        </div>
+                    `)
+                    .join('');
+                searchResults.style.display = 'block';
+            }
+        } catch (error) {
+            console.error('Error searching users:', error);
+            showError('Ошибка при поиске пользователей');
+        }
+    }, 300); // Задержка для предотвращения частых запросов
+}
+
+// Отправка запроса в друзья
+async function sendFriendRequest(targetUsername) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/friends/request`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
+            },
+            body: JSON.stringify({ targetUsername })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            showSuccess('Запрос в друзья отправлен');
+            document.getElementById('add-friend-modal').style.display = 'none';
+        } else {
+            throw new Error(data.message);
+        }
+    } catch (error) {
+        console.error('Error sending friend request:', error);
+        showError(error.message || 'Ошибка при отправке запроса в друзья');
+    }
+}
+
+// Загрузка запросов в друзья
+async function loadFriendRequests() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/friends/requests`, {
+            headers: {
+                'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            const requestsList = document.getElementById('friend-requests-list');
+            requestsList.innerHTML = data.data
+                .map(request => `
+                    <div class="friend-request-item">
+                        <div class="user-info">
+                            <img src="${request.avatarUrl || '../assets/default-avatar.png'}" alt="Avatar" class="friend-avatar">
+                            <span>${request.username}</span>
+                        </div>
+                        <div class="request-actions">
+                            <button class="btn primary-btn" onclick="acceptFriendRequest('${request.id}')">
+                                Принять
+                            </button>
+                            <button class="btn danger-btn" onclick="rejectFriendRequest('${request.id}')">
+                                Отклонить
+                            </button>
+                        </div>
+                    </div>
+                `)
+                .join('');
+        }
+    } catch (error) {
+        console.error('Error loading friend requests:', error);
+        showError('Ошибка при загрузке запросов в друзья');
+    }
+}
+
+// Принятие запроса в друзья
+async function acceptFriendRequest(requestId) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/friends/accept/${requestId}`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            showSuccess('Запрос в друзья принят');
+            loadFriendRequests();
+            loadFriendsList();
+        }
+    } catch (error) {
+        console.error('Error accepting friend request:', error);
+        showError('Ошибка при принятии запроса в друзья');
+    }
+}
+
+// Отклонение запроса в друзья
+async function rejectFriendRequest(requestId) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/friends/reject/${requestId}`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            showSuccess('Запрос в друзья отклонен');
+            loadFriendRequests();
+        }
+    } catch (error) {
+        console.error('Error rejecting friend request:', error);
+        showError('Ошибка при отклонении запроса в друзья');
+    }
+}
+
+// Загрузка списка друзей
+async function loadFriendsList() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/friends/list`, {
+            headers: {
+                'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            const friendsList = document.getElementById('friends-list');
+            friendsList.innerHTML = data.data
+                .map(friend => `
+                    <tr>
+                        <td>
+                            <img src="${friend.avatarUrl || '../assets/default-avatar.png'}" 
+                                 alt="Avatar" 
+                                 class="friend-avatar">
+                        </td>
+                        <td>${friend.username}</td>
+                        <td>
+                            <span class="friend-status ${friend.online ? 'status-online' : 'status-offline'}">
+                                ${friend.online ? 'Онлайн' : 'Оффлайн'}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="friend-actions">
+                                <button class="btn danger-btn" onclick="removeFriend('${friend.username}')">
+                                    <i class="fas fa-user-minus"></i> Удалить
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `)
+                .join('');
+        }
+    } catch (error) {
+        console.error('Error loading friends list:', error);
+        showError('Ошибка при загрузке списка друзей');
+    }
+}
+
+// Удаление друга
+async function removeFriend(friendUsername) {
+    if (!confirm(`Вы уверены, что хотите удалить ${friendUsername} из друзей?`)) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/friends/remove/${friendUsername}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            showSuccess('Друг успешно удален');
+            loadFriendsList();
+        }
+    } catch (error) {
+        console.error('Error removing friend:', error);
+        showError('Ошибка при удалении друга');
+    }
+}

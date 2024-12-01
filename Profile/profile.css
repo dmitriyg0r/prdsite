@@ -608,3 +608,155 @@
     border-radius: 50%;
     object-fit: cover;
 }
+
+/* Стили для секции друзей */
+.friends-section {
+    margin-top: 20px;
+    width: 100%;
+}
+
+.add-friend-btn {
+    margin-bottom: 20px;
+}
+
+/* Модальное окно */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1001;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    background-color: var(--text-container-background);
+    margin: 15% auto;
+    padding: 20px;
+    border-radius: 8px;
+    width: 80%;
+    max-width: 500px;
+    position: relative;
+}
+
+.close {
+    position: absolute;
+    right: 20px;
+    top: 10px;
+    font-size: 28px;
+    cursor: pointer;
+}
+
+/* Поиск друзей */
+.search-container {
+    margin-top: 20px;
+}
+
+#friend-search {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+.search-results {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    display: none;
+}
+
+.search-result-item {
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.search-result-item:hover {
+    background-color: var(--table-hover);
+}
+
+.search-result-item img {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+/* Запросы в друзья */
+.friend-requests {
+    margin: 20px 0;
+    padding: 15px;
+    background-color: var(--text-container-background);
+    border-radius: 8px;
+    box-shadow: var(--text-container-shadow);
+}
+
+.friend-request-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.friend-request-item:last-child {
+    border-bottom: none;
+}
+
+.request-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* Таблица друзей */
+.friends-table-container {
+    margin-top: 20px;
+    overflow-x: auto;
+}
+
+.friends-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.friends-table th,
+.friends-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.friends-table th {
+    background-color: var(--table-header-bg);
+    color: var(--table-header-text);
+}
+
+.friend-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.friend-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* Статусы друзей */
+.friend-status {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+}
+
+.status-online {
+    background-color: #4CAF50;
+}
