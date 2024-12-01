@@ -1097,9 +1097,15 @@ body[data-theme="dark"] *::-webkit-scrollbar-thumb:hover {
     border: 2px solid var(--primary-color);
     object-fit: cover;
     background-color: var(--text-container-background);
-    position: absolute;
-    right: 0;
-    top: 0;
+    display: block;
+}
+
+.user-avatar:not([src=""]) {
+    display: block;
+}
+
+.user-avatar[src=""] {
+    display: none;
 }
 
 .user-avatar:hover {
