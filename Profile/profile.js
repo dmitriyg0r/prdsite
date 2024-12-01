@@ -742,6 +742,8 @@ async function rejectFriendRequest(requestId) {
 }
 
 // Загрузка списка друзей
+// ... existing code ...
+
 async function loadFriendsList() {
     try {
         const response = await fetch(`${API_BASE_URL}/friends/list`, {
@@ -758,10 +760,9 @@ async function loadFriendsList() {
                 .map(friend => `
                     <tr>
                         <td>
-                            <img src="${friend.avatarUrl || '../assets/default-avatar.png'}" 
+                            <img src="${friend.avatarUrl ? `${API_BASE_URL}${friend.avatarUrl}` : '../assets/default-avatar.png'}" 
                                 alt="Avatar" 
-                                class="friend-avatar"
-                                onerror="this.src='../assets/default-avatar.png'">
+                                class="friend-avatar">
                         </td>
                         <td>${friend.username}</td>
                         <td>
