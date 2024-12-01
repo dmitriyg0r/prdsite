@@ -486,8 +486,14 @@ async function handleRegister(event) {
 
 // Обновляем функцию initializeAvatarUpload
 function initializeAvatarUpload() {
+    const avatarContainer = document.querySelector('.avatar-container');
     const avatarUpload = document.getElementById('avatar-upload');
     const userAvatar = document.getElementById('user-avatar');
+
+    // Добавляем обработчик клика на контейнер аватарки
+    avatarContainer.addEventListener('click', () => {
+        avatarUpload.click();
+    });
 
     avatarUpload.addEventListener('change', async (event) => {
         const file = event.target.files[0];
