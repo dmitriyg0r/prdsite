@@ -10,11 +10,13 @@ const app = express();
 const DB_PATH = path.join(__dirname, 'users.json');
 const FRIENDS_DB_PATH = path.join(__dirname, 'friends.json');
 const FRIEND_REQUESTS_DB_PATH = path.join(__dirname, 'friend_requests.json');
+const MESSAGES_DB_PATH = path.join(__dirname, 'messages.json');
 
 // Загрузка данных при старте
 let users = loadUsers();
 let friendships = loadFriendships();
 let friendRequests = loadFriendRequests();
+let messages = loadMessages();
 
 // Функции для работы с пользователями
 function loadUsers() {
@@ -83,6 +85,27 @@ function saveFriendRequests(requests) {
         fs.writeFileSync(FRIEND_REQUESTS_DB_PATH, JSON.stringify(requests, null, 2));
     } catch (error) {
         console.error('Error saving friend requests:', error);
+    }
+}
+
+// Функции для работы с сообщениями
+function loadMessages() {
+    try {
+        if (fs.existsSync(MESSAGES_DB_PATH)) {
+            const data = fs.readFileSync(MESSAGES_DB_PATH, 'utf8');
+            return JSON.parse(data);
+        }
+    } catch (error) {
+        console.error('Error loading messages:', error);
+    }
+    return [];
+}
+
+function saveMessages(messages) {
+    try {
+        fs.writeFileSync(MESSAGES_DB_PATH, JSON.stringify(messages, null, 2));
+    } catch (error) {
+        console.error('Error saving messages:', error);
     }
 }
 
@@ -642,6 +665,120 @@ app.delete('/api/friends/remove/:friendUsername', (req, res) => {
         success: true,
         message: 'Друг удален'
     });
+});
+
+// Маршрут для получения истории чата
+app.get('/api/chat/history/:username', (req, res) => {
+    console.log('GET /api/chat/history/:username вызван');
+    const { username } = req.params;
+    const currentUser = req.headers.authorization.split(' ')[1];
+
+    try {
+        const chatHistory = messages.filter(msg => 
+            (msg.from === currentUser && msg.to === username) ||
+            (msg.from === username && msg.to === currentUser)
+        ).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+        console.log('Отправка истории чата:', {
+            currentUser,
+            chatPartner: username,
+            messageCount: chatHistory.length
+        });
+
+        res.json({
+            success: true,
+            data: chatHistory
+        });
+    } catch (error) {
+        console.error('Error in chat history:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Ошибка при получении истории чата',
+            error: error.message
+        });
+    }
+});
+
+// Маршрут для отправки сообщения
+app.post('/api/chat/send', (req, res) => {
+    console.log('POST /api/chat/send вызван');
+    const { to, message } = req.body;
+    const from = req.headers.authorization.split(' ')[1];
+
+    try {
+        if (!message || !to) {
+            return res.status(400).json({
+                success: false,
+                message: 'Необходимо указать получателя и текст сообщения'
+            });
+        }
+
+        const newMessage = {
+            from,
+            to,
+            message,
+            timestamp: new Date(),
+            id: Date.now().toString()
+        };
+
+        messages.push(newMessage);
+        saveMessages(messages);
+
+        console.log('Сообщение отправлено:', {
+            from,
+            to,
+            messageId: newMessage.id
+        });
+
+        res.json({
+            success: true,
+            data: newMessage
+        });
+    } catch (error) {
+        console.error('Error sending message:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Ошибка при отправке сообщения',
+            error: error.message
+        });
+    }
+});
+
+// Маршрут для удаления сообщения
+app.delete('/api/chat/message/:messageId', (req, res) => {
+    console.log('DELETE /api/chat/message/:messageId вызван');
+    const { messageId } = req.params;
+    const currentUser = req.headers.authorization.split(' ')[1];
+
+    try {
+        const messageIndex = messages.findIndex(
+            msg => msg.id === messageId && msg.from === currentUser
+        );
+
+        if (messageIndex === -1) {
+            return res.status(404).json({
+                success: false,
+                message: 'Сообщение не найдено или у вас нет прав на его удаление'
+            });
+        }
+
+        messages.splice(messageIndex, 1);
+        saveMessages(messages);
+
+        console.log('Сообщение удалено:', { messageId });
+
+        res.json({
+            success: true,
+            message: 'Сообщение успешно удалено'
+        });
+    } catch (error) {
+        console.error('Error deleting message:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Ошибка при удалении сообщения',
+            error: error.message
+        });
+    }
 });
 
 // Проверка авторизации
