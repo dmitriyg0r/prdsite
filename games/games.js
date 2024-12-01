@@ -192,7 +192,14 @@ async function displayLeaderboard() {
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${index + 1}</td>
-                <td>${record.username}</td>
+                <td>
+                    <div class="leaderboard-user">
+                        <img src="${record.avatarUrl ? `https://adminflow.ru/api${record.avatarUrl}` : '../assets/default-avatar.png'}" 
+                             alt="Avatar" 
+                             class="leaderboard-avatar">
+                        <span>${record.username}</span>
+                    </div>
+                </td>
                 <td>${record.score}</td>
             `;
             tbody.appendChild(row);

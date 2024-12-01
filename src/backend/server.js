@@ -261,7 +261,7 @@ app.post('/api/scores', async (req, res) => {
     }
 });
 
-app.get('/api/scores', (req, res) => {
+app.get('/api/scores', async (req, res) => {
     try {
         const scoresPath = path.join(__dirname, 'scores.json');
         let scores = [];
@@ -270,13 +270,22 @@ app.get('/api/scores', (req, res) => {
             scores = JSON.parse(fs.readFileSync(scoresPath, 'utf8'));
         }
         
+        // Добавляем информацию об аватарах к рекордам
+        const scoresWithAvatars = scores.map(score => {
+            const user = users.find(u => u.username === score.username);
+            return {
+                ...score,
+                avatarUrl: user?.avatar || null
+            };
+        });
+        
         // Сортируем по убыванию счета и берем топ-10
-        scores.sort((a, b) => b.score - a.score);
-        scores = scores.slice(0, 10);
+        scoresWithAvatars.sort((a, b) => b.score - a.score);
+        const top10Scores = scoresWithAvatars.slice(0, 10);
 
         res.json({
             success: true,
-            data: scores
+            data: top10Scores
         });
     } catch (error) {
         console.error('Error getting scores:', error);
