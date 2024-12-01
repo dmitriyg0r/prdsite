@@ -1,9 +1,13 @@
+// Определяем базовый URL API
+const API_BASE_URL = 'https://adminflow.ru/api';
+
 // Вспомогательные функции
 const showError = (message) => {
     const errorMessage = document.getElementById('error-message');
     if (errorMessage) {
         errorMessage.textContent = message;
         errorMessage.style.display = 'block';
+        errorMessage.style.backgroundColor = '#ff4444';
         
         setTimeout(() => {
             errorMessage.style.display = 'none';
@@ -213,7 +217,7 @@ async function loadUsers() {
 function handleLogout() {
     console.log('Logging out...');
     try {
-        // О��ищаем данные пользователя
+        // Оищаем данные пользователя
         localStorage.removeItem('user');
         
         // Скрываем профиль и показываем форму входа
@@ -416,7 +420,7 @@ async function showCreateUserModal() {
             showSuccess('Пользователь успешно создан');
             await loadUsers(); // Перезагржаем список поьзователей
         } else {
-            throw new Error(data.message || 'Ошибка при создании пользоватея');
+            throw new Error(data.message || 'Ошибка при создании пол��зоватея');
         }
     } catch (error) {
         console.error('Error creating user:', error);
