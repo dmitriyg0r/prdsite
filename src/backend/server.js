@@ -623,8 +623,8 @@ app.get('/api/friends/list', (req, res) => {
             const friend = users.find(u => u.username === friendUsername);
             return {
                 username: friendUsername,
-                avatarUrl: friend?.avatar,
-                online: true // В будущем здесь можно реализовать реальную проверку онлайн-статуса
+                avatarUrl: friend?.avatar ? `/uploads/avatars/${friend.avatar}` : null,
+                online: true
             };
         });
 
@@ -794,6 +794,9 @@ app.use((req, res, next) => {
     }
     next();
 });
+
+// Добавьте эту строку после других middleware
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Запуск сервера
 const PORT = process.env.PORT || 5003;
