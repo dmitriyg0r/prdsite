@@ -361,37 +361,33 @@ app.get('/api/scores', async (req, res) => {
 
 // Маршрут для загрузки аватара
 app.post('/api/upload-avatar', upload.single('avatar'), (req, res) => {
-    try {
-        if (!req.file) {
-            return res.status(400).json({
-                success: false,
-                message: 'Файл не загружен'
-            });
-        }
-
-        const username = req.body.username;
-        const avatarPath = req.file.filename; // Используем только имя файла
-
-        // Обновляем информацию о пользователе
-        const userIndex = users.findIndex(u => u.username === username);
-        if (userIndex !== -1) {
-            users[userIndex].avatar = avatarPath;
-            saveUsers(users);
-        }
-
-        res.json({
-            success: true,
-            data: {
-                avatarUrl: `/uploads/avatars/${avatarPath}` // Формируем URL для клиента
-            }
-        });
-    } catch (error) {
-        console.error('Error uploading avatar:', error);
-        res.status(500).json({
+    if (!req.file) {
+        return res.status(400).json({
             success: false,
-            message: 'Ошибка при загрузке аватара'
+            message: 'Файл не был загружен'
         });
     }
+
+    const username = req.body.username;
+    const user = users.find(u => u.username === username);
+    
+    if (!user) {
+        return res.status(404).json({
+            success: false,
+            message: 'Пользователь не найден'
+        });
+    }
+
+    user.avatar = `/uploads/avatars/${req.file.filename}`;
+    saveUsers(users);
+
+    res.json({
+        success: true,
+        message: 'Аватар успешно загружен',
+        data: {
+            avatarUrl: user.avatar
+        }
+    });
 });
 
 // Маршрут для получения аватара
@@ -609,47 +605,7 @@ app.post('/api/friends/reject/:requestId', (req, res) => {
     });
 });
 
-// Настраиваем статические файлы
-const uploadsPath = path.join(__dirname, 'uploads');
-console.log('Путь к загрузкам:', uploadsPath);
-
-// Добавляем middleware для логирования запросов к статическим файлам
-app.use('/uploads', (req, res, next) => {
-    console.log('Запрос к статическому файлу:', req.url);
-    console.log('Полный путь:', path.join(uploadsPath, req.url));
-    next();
-}, express.static(uploadsPath));
-
-// Убираем проверку авторизации для статических файлов
-app.use((req, res, next) => {
-    if (req.path.startsWith('/api/') && 
-        !req.path.includes('/auth/') && 
-        !req.path.includes('/uploads/')) {
-        const authHeader = req.headers.authorization;
-        if (!authHeader) {
-            return res.status(401).json({
-                success: false,
-                message: 'Требуется авторизация'
-            });
-        }
-    }
-    next();
-});
-
-// Маршрут для проверки доступности файла
-app.get('/api/check-avatar/:filename', (req, res) => {
-    const filename = req.params.filename;
-    const filepath = path.join(uploadsPath, 'avatars', filename);
-    
-    console.log('Проверка файла:', filepath);
-    if (fs.existsSync(filepath)) {
-        res.json({ exists: true, path: filepath });
-    } else {
-        res.json({ exists: false, path: filepath });
-    }
-});
-
-// Обновляем маршрут получения списка друзей
+// Маршрут для получения списка друзей
 app.get('/api/friends/list', (req, res) => {
     const username = req.headers.authorization?.split(' ')[1];
 
@@ -660,45 +616,22 @@ app.get('/api/friends/list', (req, res) => {
         });
     }
 
-    try {
-        const friendsList = friendships
-            .filter(f => f.user1 === username || f.user2 === username)
-            .map(f => {
-                const friendUsername = f.user1 === username ? f.user2 : f.user1;
-                const friend = users.find(u => u.username === friendUsername);
-                
-                // Проверяем существование файла
-                const avatarPath = friend?.avatar 
-                    ? path.join(uploadsPath, 'avatars', friend.avatar)
-                    : path.join(uploadsPath, 'avatars', 'default-avatar.png');
-                
-                console.log('Проверка файла аватара:', avatarPath);
-                const avatarExists = fs.existsSync(avatarPath);
-                console.log('Файл существует:', avatarExists);
-
-                const avatarUrl = friend?.avatar && avatarExists
-                    ? `/uploads/avatars/${friend.avatar}`
-                    : '/uploads/avatars/default-avatar.png';
-
-                return {
-                    username: friendUsername,
-                    avatarUrl: avatarUrl,
-                    online: true
-                };
-            });
-
-        res.json({
-            success: true,
-            data: friendsList
+    const friendsList = friendships
+        .filter(f => f.user1 === username || f.user2 === username)
+        .map(f => {
+            const friendUsername = f.user1 === username ? f.user2 : f.user1;
+            const friend = users.find(u => u.username === friendUsername);
+            return {
+                username: friendUsername,
+                avatarUrl: friend?.avatar,
+                online: true // В будущем здесь можно реализовать реальную проверку онлайн-статуса
+            };
         });
-    } catch (error) {
-        console.error('Ошибка при получении списка друзей:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Ошибка при получении списка друзей',
-            error: error.message
-        });
-    }
+
+    res.json({
+        success: true,
+        data: friendsList
+    });
 });
 
 // Маршрут для удаления друга
@@ -846,6 +779,20 @@ app.delete('/api/chat/message/:messageId', (req, res) => {
             error: error.message
         });
     }
+});
+
+// Проверка авторизации
+app.use((req, res, next) => {
+    if (req.path.startsWith('/api/') && !req.path.includes('/auth/')) {
+        const authHeader = req.headers.authorization;
+        if (!authHeader) {
+            return res.status(401).json({
+                success: false,
+                message: 'Требуется авторизация'
+            });
+        }
+    }
+    next();
 });
 
 // Запуск сервера

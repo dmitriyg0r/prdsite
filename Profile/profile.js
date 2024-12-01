@@ -159,6 +159,7 @@ function showProfile(userData) {
     // Обновляем информацию профиля
     const profileUsername = document.getElementById('profile-username');
     const profileRole = document.getElementById('profile-role');
+    const userAvatar = document.getElementById('user-avatar');
     
     if (profileUsername) profileUsername.textContent = userData.data.username;
     if (profileRole) profileRole.textContent = userData.data.role;
@@ -173,15 +174,11 @@ function showProfile(userData) {
     const adminSection = document.getElementById('admin-section');
     if (adminSection && userData.data.role === 'Admin') {
         adminSection.style.display = 'block';
-        loadUsers(); // Теперь эта функция определена
+        loadUsers();
     }
-    
-    // Загружаем списки друзей и запросов
-    loadFriendRequests();
-    loadFriendsList();
 }
 
-// Функция загрузки списка пользователей
+// Функция загрузки списка ользователей
 async function loadUsers() {
     try {
         const user = JSON.parse(localStorage.getItem('user'));
@@ -200,7 +197,7 @@ async function loadUsers() {
                     <tr>
                         <td>
                             <div class="user-row">
-                                <img src="${user.avatarUrl || '../assets/default-avatar.png'}" 
+                                <img src="${user.avatarUrl ? `${API_BASE_URL}${user.avatarUrl}` : '../assets/default-avatar.png'}" 
                                      alt="Avatar" 
                                      class="user-table-avatar">
                                 <span>${user.username}</span>
@@ -220,59 +217,6 @@ async function loadUsers() {
     } catch (error) {
         console.error('Error loading users:', error);
         showError('Ошибка при загрузке списка пользователей');
-    }
-}
-
-// Функция загрузки списка друзей
-async function loadFriendsList() {
-    try {
-        const userData = JSON.parse(localStorage.getItem('user'));
-        if (!userData?.data?.username) {
-            throw new Error('Требуется авторизация');
-        }
-
-        const response = await fetch(`${API_BASE_URL}/friends/list`, {
-            headers: {
-                'Authorization': `Bearer ${userData.data.username}`
-            }
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-            const friendsList = document.getElementById('friends-list');
-            friendsList.innerHTML = data.data
-                .map(friend => `
-                    <tr>
-                        <td>
-                            <img src="${API_BASE_URL}${friend.avatarUrl}" 
-                                alt="Avatar" 
-                                class="friend-avatar"
-                                onerror="this.src='../assets/default-avatar.png'">
-                        </td>
-                        <td>${friend.username}</td>
-                        <td>
-                            <span class="friend-status ${friend.online ? 'status-online' : 'status-offline'}">
-                                ${friend.online ? 'Онлайн' : 'Оффлайн'}
-                            </span>
-                        </td>
-                        <td>
-                            <div class="friend-actions">
-                                <button class="btn chat-btn" onclick="openChat('${friend.username}')">
-                                    <i class="fas fa-comment"></i> Чат
-                                </button>
-                                <button class="btn danger-btn" onclick="removeFriend('${friend.username}')">
-                                    <i class="fas fa-user-minus"></i> Удалить
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                `)
-                .join('');
-        }
-    } catch (error) {
-        console.error('Error loading friends list:', error);
-        showError('Ошибка при загрузке списка друзей');
     }
 }
 
@@ -406,7 +350,7 @@ async function deleteUser(username) {
 
         if (response.ok && data.success) {
             showSuccess('Пользователь успешно удален');
-            // Перезагружаем списо�� пользователей
+            // Перезагружаем список пользователей
             loadUsers();
         } else {
             throw new Error(data.message || 'Ошибка при удалении пользователя');
@@ -800,14 +744,9 @@ async function rejectFriendRequest(requestId) {
 // Загрузка списка друзей
 async function loadFriendsList() {
     try {
-        const userData = JSON.parse(localStorage.getItem('user'));
-        if (!userData?.data?.username) {
-            throw new Error('Требуется авторизация');
-        }
-
         const response = await fetch(`${API_BASE_URL}/friends/list`, {
             headers: {
-                'Authorization': `Bearer ${userData.data.username}`
+                'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
             }
         });
 
@@ -819,10 +758,9 @@ async function loadFriendsList() {
                 .map(friend => `
                     <tr>
                         <td>
-                            <img src="${avatarUrl}" 
+                            <img src="${friend.avatarUrl ? `${API_BASE_URL}${friend.avatarUrl}` : '../assets/default-avatar.png'}" 
                                 alt="Avatar" 
-                                class="friend-avatar"
-                                onerror="this.src='../assets/default-avatar.png'">
+                                class="friend-avatar">
                         </td>
                         <td>${friend.username}</td>
                         <td>
@@ -843,12 +781,10 @@ async function loadFriendsList() {
                     </tr>
                 `)
                 .join('');
-        } else {
-            throw new Error(data.message || 'Ошибка при загрузке списка друзей');
         }
     } catch (error) {
         console.error('Error loading friends list:', error);
-        showError(error.message || 'Ошибка при загрузке списка друзей');
+        showError('Ошибка при загрузке списка друзей');
     }
 }
 
