@@ -456,9 +456,10 @@
 }
 
 .user-details {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+    flex-grow: 1;
+    padding: 0;
+    background: none;
+    box-shadow: none;
 }
 
 .user-detail {
@@ -527,7 +528,7 @@
     display: flex;
     gap: 40px;
     padding: 30px;
-    background: var(--background-color);
+    background: var(--text-container-background);
     border-radius: 20px;
     box-shadow: var(--text-container-shadow);
     position: relative;
@@ -655,11 +656,10 @@
 
 /* Стили для секции друзей */
 .friends-section {
-    margin-top: 30px;
-    padding: 20px;
-    background: var(--text-container-background);
-    border-radius: 15px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    margin-top: 0;
+    padding: 0;
+    background: none;
+    box-shadow: none;
 }
 
 .add-friend-btn {
