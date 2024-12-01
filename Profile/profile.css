@@ -594,12 +594,12 @@
 .user-row {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
 }
 
 .user-table-avatar {
-    width: 5px;
-    height: 5px;
+    width: 16px;
+    height: 16px;
     border-radius: 50%;
     object-fit: cover;
 }
