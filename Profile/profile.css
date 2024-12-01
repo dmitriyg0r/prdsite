@@ -508,6 +508,11 @@
 
 .avatar-section {
     flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    width: 250px;
 }
 
 .avatar-container {
@@ -909,4 +914,44 @@
 
 [data-theme="dark"] .friends-table td {
     background: var(--card-background);
+}
+
+.user-info {
+    width: 100%;
+    text-align: center;
+    padding: 20px;
+    background: var(--text-container-background);
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.user-info p {
+    margin: 10px 0;
+    font-size: 16px;
+    color: var(--text-color);
+}
+
+.user-info .username {
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.user-info .role {
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+}
+
+.user-info span {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.user-info .danger-btn {
+    width: 100%;
+    margin-top: 15px;
+}
+
+/* Обновляем стили для темной темы */
+[data-theme="dark"] .user-info {
+    background: var(--surface);
 }

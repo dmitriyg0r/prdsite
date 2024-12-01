@@ -131,14 +131,15 @@
                                 <input type="file" id="avatar-upload" accept="image/*" style="display: none;">
                             </div>
                         </div>
+                        <div class="user-info">
+                            <p class="username">Имя пользователя: <span id="profile-username"></span></p>
+                            <p class="role">Роль: <span id="profile-role"></span></p>
+                            <button class="btn danger-btn" onclick="handleLogout()">
+                                <i class="fas fa-sign-out-alt"></i> Выйти
+                            </button>
+                        </div>
                     </div>
                     <div class="user-details">
-                        <p>Имя пользователя: <span id="profile-username"></span></p>
-                        <p>Роль: <span id="profile-role"></span></p>
-                        <button class="btn danger-btn" onclick="handleLogout()">
-                            <i class="fas fa-sign-out-alt"></i> Выйти
-                        </button>
-                        
                         <!-- Добавляем секцию для друзей -->
                         <div class="friends-section">
                             <button class="btn primary-btn add-friend-btn" onclick="showAddFriendModal()">
