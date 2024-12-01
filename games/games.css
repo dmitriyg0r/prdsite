@@ -78,12 +78,12 @@
 .leaderboard-user {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
 }
 
 .leaderboard-avatar {
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
     object-fit: cover;
 }
