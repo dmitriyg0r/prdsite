@@ -1101,3 +1101,44 @@
 .friends-table td {
     vertical-align: middle;
 }
+
+/* Стили для таблиц */
+.friends-table th,
+.friends-table td,
+.users-table th,
+.users-table td {
+    text-align: center;
+    vertical-align: middle;
+}
+
+/* Стили для контейнера аватара в таблице */
+.friends-table td:first-child {
+    width: 60px;
+}
+
+/* Стили для аватара в таблице */
+.friend-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin: 0 auto;
+    display: block;
+}
+
+/* Стили для контейнера действий */
+.friend-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Стили для статуса */
+.friend-status {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    margin: 0 auto;
+}
