@@ -764,6 +764,9 @@ async function loadFriendsList() {
                         </td>
                         <td>
                             <div class="friend-actions">
+                                <button class="btn chat-btn" onclick="openChat('${friend.username}')">
+                                    <i class="fas fa-comment"></i> Чат
+                                </button>
                                 <button class="btn danger-btn" onclick="removeFriend('${friend.username}')">
                                     <i class="fas fa-user-minus"></i> Удалить
                                 </button>
@@ -803,4 +806,156 @@ async function removeFriend(friendUsername) {
         console.error('Error removing friend:', error);
         showError('Ошибка при удалении друга');
     }
+}
+
+// Глобальная переменная для хранения текущего собеседника
+let currentChatPartner = null;
+
+// Функция открытия чата
+function openChat(username) {
+    currentChatPartner = username;
+    const modal = document.getElementById('chat-modal');
+    const chatUsername = document.getElementById('chat-username');
+    
+    chatUsername.textContent = username;
+    modal.style.display = 'block';
+    
+    // Загружаем историю сообщений
+    loadChatHistory(username);
+    
+    // Очищаем поле ввода
+    document.getElementById('chat-input').value = '';
+    
+    // Устанавливаем фокус на поле ввода
+    setTimeout(() => {
+        document.getElementById('chat-input').focus();
+    }, 100);
+
+    // Закрытие по клику вне модального окна
+    window.onclick = (event) => {
+        if (event.target === modal) {
+            closeChat();
+        }
+    };
+
+    // Закрытие по клику на крестик
+    const closeBtn = modal.querySelector('.close');
+    closeBtn.onclick = closeChat;
+
+    // Обработка нажатия Enter в поле ввода
+    document.getElementById('chat-input').onkeypress = (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    };
+
+    startCheckingMessages();
+}
+
+// Функция закрытия чата
+function closeChat() {
+    stopCheckingMessages();
+    currentChatPartner = null;
+    document.getElementById('chat-modal').style.display = 'none';
+}
+
+// Функция загрузки истории сообщений
+async function loadChatHistory(username) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/chat/history/${username}`, {
+            headers: {
+                'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            const chatMessages = document.getElementById('chat-messages');
+            chatMessages.innerHTML = data.data
+                .map(message => createMessageElement(message))
+                .join('');
+            
+            // Прокручиваем к последнему сообщению
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+    } catch (error) {
+        console.error('Error loading chat history:', error);
+        showError('Ошибка при загрузке истории сообщений');
+    }
+}
+
+// Функция отправки сообщения
+async function sendMessage() {
+    const input = document.getElementById('chat-input');
+    const message = input.value.trim();
+    
+    if (!message || !currentChatPartner) return;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/chat/send`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
+            },
+            body: JSON.stringify({
+                to: currentChatPartner,
+                message: message
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Добавляем сообщение в чат
+            const chatMessages = document.getElementById('chat-messages');
+            chatMessages.insertAdjacentHTML('beforeend', 
+                createMessageElement({
+                    from: JSON.parse(localStorage.getItem('user')).data.username,
+                    message: message,
+                    timestamp: new Date()
+                })
+            );
+            
+            // Очищаем поле ввода
+            input.value = '';
+            
+            // Прокручиваем к новому сообщению
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+    } catch (error) {
+        console.error('Error sending message:', error);
+        showError('Ошибка при отправке сообщения');
+    }
+}
+
+// Функция создания элемента сообщения
+function createMessageElement(message) {
+    const currentUser = JSON.parse(localStorage.getItem('user')).data.username;
+    const isSent = message.from === currentUser;
+    const time = new Date(message.timestamp).toLocaleTimeString();
+    
+    return `
+        <div class="message ${isSent ? 'message-sent' : 'message-received'}">
+            ${message.message}
+            <div class="message-time">${time}</div>
+        </div>
+    `;
+}
+
+// Функция для периодической проверки новых сообщений
+let checkMessagesInterval;
+
+function startCheckingMessages() {
+    if (currentChatPartner) {
+        checkMessagesInterval = setInterval(() => {
+            loadChatHistory(currentChatPartner);
+        }, 5000); // Проверяем каждые 5 секунд
+    }
+}
+
+function stopCheckingMessages() {
+    clearInterval(checkMessagesInterval);
 }

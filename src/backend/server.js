@@ -567,6 +567,45 @@ app.delete('/api/friends/remove/:friendUsername', (req, res) => {
     });
 });
 
+// Добавляем структуру для хранения сообщений
+const messages = [];
+
+// Маршрут для получения истории сообщений
+app.get('/api/chat/history/:username', (req, res) => {
+    const { username } = req.params;
+    const currentUser = req.headers.authorization.split(' ')[1];
+
+    const chatHistory = messages.filter(msg => 
+        (msg.from === currentUser && msg.to === username) ||
+        (msg.from === username && msg.to === currentUser)
+    );
+
+    res.json({
+        success: true,
+        data: chatHistory
+    });
+});
+
+// Маршрут для отправки сообщения
+app.post('/api/chat/send', (req, res) => {
+    const { to, message } = req.body;
+    const from = req.headers.authorization.split(' ')[1];
+
+    const newMessage = {
+        from,
+        to,
+        message,
+        timestamp: new Date()
+    };
+
+    messages.push(newMessage);
+
+    res.json({
+        success: true,
+        data: newMessage
+    });
+});
+
 // Запуск сервера
 const PORT = process.env.PORT || 5003;
 app.listen(PORT, () => {

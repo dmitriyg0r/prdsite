@@ -180,6 +180,25 @@
                                     </tbody>
                                 </table>
                             </div>
+
+                            <!-- Добавляем здесь модальное окно чата -->
+                            <div id="chat-modal" class="modal">
+                                <div class="modal-content chat-modal-content">
+                                    <div class="chat-header">
+                                        <h3>Чат с <span id="chat-username"></span></h3>
+                                        <span class="close">&times;</span>
+                                    </div>
+                                    <div class="chat-messages" id="chat-messages">
+                                        <!-- Сообщения будут добавляться динамически -->
+                                    </div>
+                                    <div class="chat-input-container">
+                                        <input type="text" id="chat-input" placeholder="Введите сообщение...">
+                                        <button class="btn primary-btn" onclick="sendMessage()">
+                                            <i class="fas fa-paper-plane"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
