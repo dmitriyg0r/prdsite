@@ -624,7 +624,7 @@ tr:hover {
     margin: 0 auto;
 }
 
-/* При наведени на sidebar ля контейнера темы */
+/* П��и наведени на sidebar ля контейнера темы */
 .sidebar:hover .theme-toggle-container {
     padding: 14px 24px;
     justify-content: flex-start;
@@ -1006,7 +1006,7 @@ table {
     opacity: 1;
 }
 
-/* Дополнительные стили для тёмной темы */
+/* Дополнительные стили для тёмн��й темы */
 [data-theme="dark"] .sidebar-link {
     background: rgba(255, 255, 255, 0.08);
 }
@@ -1071,3 +1071,37 @@ body[data-theme="dark"] *::-webkit-scrollbar-thumb:hover {
 ::-webkit-scrollbar {
     width: 0;
   }
+
+/* Стили для контейнера аватарки */
+.user-avatar-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid var(--primary-color);
+    object-fit: cover;
+    background-color: var(--text-container-background);
+}
+
+.user-avatar:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Стили для тёмной темы */
+[data-theme="dark"] .user-avatar {
+    border-color: var(--primary-light);
+    box-shadow: 0 0 10px rgba(139, 68, 196, 0.3);
+}
+
+[data-theme="dark"] .user-avatar:hover {
+    box-shadow: 0 0 15px rgba(139, 68, 196, 0.5);
+}
