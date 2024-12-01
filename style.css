@@ -291,7 +291,7 @@ main {
     color: var(--text-secondary);
 }
 
-/* Стили для переключа��еля темы */
+/* Стили для переключаеля темы */
 .theme-toggle-container {
     display: flex;
     align-items: center;
