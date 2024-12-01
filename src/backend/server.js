@@ -9,6 +9,10 @@ const app = express();
 // Путь к файлу с данными
 const DB_PATH = path.join(__dirname, 'users.json');
 
+// Добавим новые пути к файлам для хранения данных
+const FRIENDS_DB_PATH = path.join(__dirname, 'friends.json');
+const FRIEND_REQUESTS_DB_PATH = path.join(__dirname, 'friend_requests.json');
+
 // Функция для загрузки пользователей из файла
 function loadUsers() {
     try {
@@ -41,6 +45,52 @@ function saveUsers(users) {
 
 // Загружаем пользователей при старте сервера
 let users = loadUsers();
+
+// Функции для работы с данными друзей
+function loadFriendships() {
+    try {
+        if (fs.existsSync(FRIENDS_DB_PATH)) {
+            const data = fs.readFileSync(FRIENDS_DB_PATH, 'utf8');
+            return JSON.parse(data);
+        }
+    } catch (error) {
+        console.error('Error loading friendships:', error);
+    }
+    return [];
+}
+
+function saveFriendships(friendships) {
+    try {
+        fs.writeFileSync(FRIENDS_DB_PATH, JSON.stringify(friendships, null, 2));
+    } catch (error) {
+        console.error('Error saving friendships:', error);
+    }
+}
+
+// Функции для работы с запросами в друзья
+function loadFriendRequests() {
+    try {
+        if (fs.existsSync(FRIEND_REQUESTS_DB_PATH)) {
+            const data = fs.readFileSync(FRIEND_REQUESTS_DB_PATH, 'utf8');
+            return JSON.parse(data);
+        }
+    } catch (error) {
+        console.error('Error loading friend requests:', error);
+    }
+    return [];
+}
+
+function saveFriendRequests(requests) {
+    try {
+        fs.writeFileSync(FRIEND_REQUESTS_DB_PATH, JSON.stringify(requests, null, 2));
+    } catch (error) {
+        console.error('Error saving friend requests:', error);
+    }
+}
+
+// Загружаем данные при старте сервера
+let friendships = loadFriendships();
+let friendRequests = loadFriendRequests();
 
 // Middleware
 app.use(cors({
@@ -431,6 +481,7 @@ app.post('/api/friends/request', (req, res) => {
     };
 
     friendRequests.push(newRequest);
+    saveFriendRequests(friendRequests); // Сохраняем изменения
 
     res.json({
         success: true,
@@ -484,9 +535,10 @@ app.post('/api/friends/accept/:requestId', (req, res) => {
         user2: request.to,
         createdAt: new Date()
     });
-
-    // Удаляем запрос
+    saveFriendships(friendships); // Сохраняем дружбу
+    
     friendRequests.splice(requestIndex, 1);
+    saveFriendRequests(friendRequests); // Сохраняем изменения в запросах
 
     res.json({
         success: true,
@@ -512,6 +564,7 @@ app.post('/api/friends/reject/:requestId', (req, res) => {
 
     // Удаляем запрос
     friendRequests.splice(requestIndex, 1);
+    saveFriendRequests(friendRequests); // Сохраняем изменения
 
     res.json({
         success: true,
@@ -560,6 +613,7 @@ app.delete('/api/friends/remove/:friendUsername', (req, res) => {
 
     // Удаляем дружбу
     friendships.splice(friendshipIndex, 1);
+    saveFriendships(friendships); // Сохраняем изменения
 
     res.json({
         success: true,
