@@ -1,154 +1,203 @@
 /* Общие мобильные стили */
 @media screen and (max-width: 768px) {
     /* Основной контейнер */
+    body {
+        padding-bottom: 60px; /* Для нижнего меню */
+    }
+
     .container {
-        padding: 15px;
+        padding: 10px;
+        margin: 0;
     }
 
-    /* Боковое меню */
+    /* Боковое меню преобразуем в нижнее */
     .sidebar {
-        width: 60px;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 60px;
+        padding: 0;
+        flex-direction: row;
+        justify-content: space-around;
+        align-items: center;
+        z-index: 1000;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
     }
 
+    .sidebar-nav {
+        display: flex;
+        width: 100%;
+        justify-content: space-around;
+        padding: 0 10px;
+    }
+
+    .sidebar-link {
+        padding: 8px;
+        margin: 0;
+        flex-direction: column;
+        align-items: center;
+        font-size: 12px;
+    }
+
+    .sidebar-link i {
+        font-size: 20px;
+        margin-bottom: 2px;
+    }
+
+    .sidebar-link span {
+        display: none;
+    }
+
+    .sidebar-logo {
+        display: none;
+    }
+
+    .theme-switch-wrapper {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        z-index: 1001;
+    }
+
+    /* Основной контент */
     .main-content {
-        width: calc(100% - 60px);
-        margin-left: 60px;
+        width: 100%;
+        margin-left: 0;
+        padding: 10px;
     }
 
-    /* Сетки и таблицы */
-    .grid-container {
-        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-        gap: 15px;
-        padding: 15px;
+    /* Заголовок */
+    .zagolovok {
+        font-size: 24px;
+        margin: 15px 0;
+        padding: 0 10px;
     }
 
+    /* Таблица расписания */
     .table-container {
+        margin: 10px 0;
+        border-radius: 10px;
         overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+        font-size: 14px;
+    }
+
+    th, td {
+        padding: 8px;
+        min-width: 100px;
     }
 
     /* Новости */
     .news-content {
         grid-template-columns: 1fr;
-        padding: 1rem;
+        gap: 15px;
+        padding: 10px;
     }
 
     .post {
-        min-height: 350px;
+        min-height: auto;
+        margin-bottom: 15px;
+    }
+
+    .post img {
+        height: 180px;
     }
 
     /* Модальные окна */
     .modal-content {
-        width: 95%;
-        margin: 10% auto;
+        width: 90%;
+        margin: 5% auto;
         padding: 15px;
+        border-radius: 10px;
     }
 
-    /* Загрузки */
-    .file-category {
-        flex: 1 1 100%;
-    }
-
-    .upload-section, 
-    .download-section {
-        padding: 20px;
-    }
-
-    /* О нас */
-    .company-name {
-        font-size: 14vw;
-        margin: 20px 0;
-    }
-
-    .content-wrapper {
-        flex-direction: column;
-    }
-
-    .text-content, 
-    .qr-code-container {
-        width: 100%;
-        max-width: none;
-    }
-
-    .qr-code-container {
-        margin-top: 20px;
-    }
-
-    .qr-code-container img {
-        max-width: 200px;
-    }
-
-    .developers-phrase, 
-    .additional-phrase {
-        font-size: 14px;
-    }
-
-    /* Профиль */
-    .profile-content {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .avatar-container {
-        width: 150px;
-        height: 150px;
-    }
-
-    /* Мемы */
-    .memes-grid {
-        columns: 1;
-    }
-
-    .upload-form-container {
-        width: 95%;
-    }
-
-    /* Чат */
-    .chat-container {
-        margin: 10px;
-    }
-
-    .messages-area {
-        height: 300px;
-    }
-
-    .input-area {
-        flex-direction: column;
+    #postForm {
         gap: 10px;
     }
 
-    .input-area input {
-        margin-right: 0;
-        margin-bottom: 10px;
+    #postForm textarea {
+        min-height: 100px;
+    }
+
+    /* Кнопка добавления поста */
+    .add-post-btn {
+        position: fixed;
+        bottom: 70px;
+        right: 15px;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        font-size: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     }
 }
 
 /* Дополнительные стили для очень маленьких экранов */
 @media screen and (max-width: 480px) {
-    .sidebar {
-        width: 50px;
+    /* Уменьшаем размер шрифтов */
+    body {
+        font-size: 14px;
     }
 
-    .main-content {
-        width: calc(100% - 50px);
-        margin-left: 50px;
+    .sidebar-link i {
+        font-size: 18px;
     }
 
-    .developer-links a {
-        padding: 8px 12px;
+    /* Оптимизация таблицы */
+    table {
         font-size: 12px;
     }
 
-    .qr-code-container img {
-        max-width: 150px;
+    th, td {
+        padding: 6px;
+        min-width: 80px;
     }
 
+    /* Модальные окна */
     .modal-content {
-        padding: 10px;
+        width: 95%;
+        margin: 3% auto;
     }
 
-    #upload-form input[type="file"]::-webkit-file-upload-button,
-    #upload-form input[type="file"]::file-selector-button {
-        padding: 8px 16px;
-        font-size: 13px;
+    /* Форма добавления поста */
+    .file-input-label {
+        font-size: 14px;
+        padding: 8px 12px;
+    }
+
+    /* Уменьшаем размер кнопки добавления поста */
+    .add-post-btn {
+        width: 45px;
+        height: 45px;
+        font-size: 20px;
+        bottom: 65px;
+    }
+}
+
+/* Стили для горизонтальной ориентации */
+@media screen and (max-width: 768px) and (orientation: landscape) {
+    body {
+        padding-bottom: 50px;
+    }
+
+    .sidebar {
+        height: 50px;
+    }
+
+    .sidebar-link i {
+        font-size: 16px;
+        margin-bottom: 1px;
+    }
+
+    .add-post-btn {
+        bottom: 60px;
     }
 }
