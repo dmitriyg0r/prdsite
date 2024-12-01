@@ -256,10 +256,11 @@ body {
 main {
     padding: 20px;
     margin-left: 90px;
+    margin-right: 60px;
     transition: margin-left 0.3s ease;
     min-height: calc(100vh - 200px);
     padding-top: 80px;
-    padding-right: 80px;
+    position: relative;
 }
 
 /* Стили для подвала */
@@ -1084,6 +1085,7 @@ body[data-theme="dark"] *::-webkit-scrollbar-thumb:hover {
     display: flex;
     align-items: center;
     justify-content: flex-end;
+    width: auto;
 }
 
 .user-avatar {
@@ -1095,7 +1097,9 @@ body[data-theme="dark"] *::-webkit-scrollbar-thumb:hover {
     border: 2px solid var(--primary-color);
     object-fit: cover;
     background-color: var(--text-container-background);
-    margin-left: auto;
+    position: absolute;
+    right: 0;
+    top: 0;
 }
 
 .user-avatar:hover {
