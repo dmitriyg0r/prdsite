@@ -1082,43 +1082,19 @@ body[data-theme="dark"] *::-webkit-scrollbar-thumb:hover {
     top: 20px;
     right: 20px;
     z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    width: auto;
+    cursor: pointer;
 }
 
 .user-avatar {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border: 2px solid var(--primary-color);
     object-fit: cover;
-    background-color: var(--text-container-background);
-    display: block;
-}
-
-.user-avatar:not([src=""]) {
-    display: block;
-}
-
-.user-avatar[src=""] {
-    display: none;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
 }
 
 .user-avatar:hover {
     transform: scale(1.1);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-/* Стили для тёмной темы */
-[data-theme="dark"] .user-avatar {
-    border-color: var(--primary-light);
-    box-shadow: 0 0 10px rgba(139, 68, 196, 0.3);
-}
-
-[data-theme="dark"] .user-avatar:hover {
-    box-shadow: 0 0 15px rgba(139, 68, 196, 0.5);
 }

@@ -54,3 +54,43 @@ async function loadUserAvatar() {
 
 // Вызываем функцию при загрузке страницы
 document.addEventListener('DOMContentLoaded', loadUserAvatar);
+
+// Функция для обновления аватарки
+function updateUserAvatar() {
+    const userAvatar = document.getElementById('userAvatar');
+    const avatarContainer = document.getElementById('userAvatarContainer');
+    
+    // Получаем текущего пользователя из localStorage
+    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    
+    if (currentUser && currentUser.username) {
+        // Запрашиваем информацию об аватаре с сервера
+        fetch(`http://localhost:5003/api/users/${currentUser.username}/avatar`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.data.avatarUrl) {
+                    userAvatar.src = `http://localhost:5003${data.data.avatarUrl}`;
+                } else {
+                    userAvatar.src = '../default-avatar.png';
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка при получении аватара:', error);
+                userAvatar.src = '../default-avatar.png';
+            });
+            
+        // Добавляем обработчик клика
+        avatarContainer.onclick = () => {
+            window.location.href = '../Profile/profile.html';
+        };
+        
+        // Показываем аватарку
+        avatarContainer.style.display = 'block';
+    } else {
+        // Скрываем аватарку если пользователь не авторизован
+        avatarContainer.style.display = 'none';
+    }
+}
+
+// Вызываем функцию при загрузке страницы
+document.addEventListener('DOMContentLoaded', updateUserAvatar);
