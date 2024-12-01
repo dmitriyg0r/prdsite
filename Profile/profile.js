@@ -873,12 +873,25 @@ async function loadChatHistory(username) {
 
         if (data.success) {
             const chatMessages = document.getElementById('chat-messages');
-            chatMessages.innerHTML = data.data
-                .map(message => createMessageElement(message))
-                .join('');
-            
-            // Прокручиваем к последнему сообщению
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+            const scrolledToBottom = chatMessages.scrollHeight - chatMessages.clientHeight <= chatMessages.scrollTop + 1;
+            const previousHeight = chatMessages.scrollHeight;
+
+            // Создаём временный div для сравнения содержимого
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = data.data.map(message => createMessageElement(message)).join('');
+
+            // Проверяем, есть ли изменения в сообщениях
+            if (chatMessages.innerHTML !== tempDiv.innerHTML) {
+                chatMessages.innerHTML = tempDiv.innerHTML;
+                
+                // Если был прокручен вниз, сохраняем прокрутку
+                if (scrolledToBottom) {
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                } else {
+                    // Сохраняем текущую позицию прокрутки
+                    chatMessages.scrollTop = chatMessages.scrollTop;
+                }
+            }
         }
     } catch (error) {
         console.error('Error loading chat history:', error);
@@ -909,28 +922,27 @@ async function sendMessage() {
         const data = await response.json();
 
         if (data.success) {
-            // Добавляем сообщение в чат
             const chatMessages = document.getElementById('chat-messages');
-            chatMessages.insertAdjacentHTML('beforeend', 
-                createMessageElement({
-                    from: JSON.parse(localStorage.getItem('user')).data.username,
-                    message: message,
-                    timestamp: new Date()
-                })
-            );
+            const newMessage = createMessageElement({
+                from: JSON.parse(localStorage.getItem('user')).data.username,
+                message: message,
+                timestamp: new Date()
+            });
             
-            // Очищаем поле ввода
+            chatMessages.insertAdjacentHTML('beforeend', newMessage);
             input.value = '';
             
-            // Прокручиваем к новому сообщению
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+            // Плавная прокрутка к новому сообщению
+            chatMessages.scrollTo({
+                top: chatMessages.scrollHeight,
+                behavior: 'smooth'
+            });
         }
     } catch (error) {
         console.error('Error sending message:', error);
         showError('Ошибка при отправке сообщения');
     }
 }
-
 // Функция создания элемента сообщения
 function createMessageElement(message) {
     const currentUser = JSON.parse(localStorage.getItem('user')).data.username;
@@ -959,3 +971,4 @@ function startCheckingMessages() {
 function stopCheckingMessages() {
     clearInterval(checkMessagesInterval);
 }
+
