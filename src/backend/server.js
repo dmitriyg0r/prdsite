@@ -36,6 +36,14 @@ function loadUsers() {
     ];
 }
 
+function saveUsers(users) {
+    try {
+        fs.writeFileSync(DB_PATH, JSON.stringify(users, null, 2));
+    } catch (error) {
+        console.error('Error saving users:', error);
+    }
+}
+
 // Функции для работы с друзьями
 function loadFriendships() {
     try {
@@ -155,7 +163,7 @@ app.post('/api/register', (req, res) => {
     };
 
     users.push(newUser);
-    saveUsers(users); // Сохраняем изменения
+    saveUsers(users);
 
     res.json({
         success: true,
@@ -210,12 +218,11 @@ app.post('/api/auth/anonymous-login', (req, res) => {
 app.get('/api/users', (req, res) => {
     console.log('GET /api/users вызван');
     
-    // Отправляем список пользователей без паролей, но с аватарами
     const safeUsers = users.map(user => ({
         username: user.username,
         role: user.role,
         createdAt: user.createdAt,
-        avatarUrl: user.avatar // Добавляем путь к аватару
+        avatarUrl: user.avatar
     }));
 
     res.json({
@@ -247,7 +254,7 @@ app.delete('/api/users/:username', (req, res) => {
     }
     
     users.splice(userIndex, 1);
-    saveUsers(users); // Сохраняем изменения
+    saveUsers(users);
 
     res.json({
         success: true,
@@ -255,7 +262,7 @@ app.delete('/api/users/:username', (req, res) => {
     });
 });
 
-// Добавьте новые маршруты для работы с рекордами
+// Маршруты для работы с рекордами
 app.post('/api/scores', async (req, res) => {
     const { username, score } = req.body;
     
@@ -268,7 +275,6 @@ app.post('/api/scores', async (req, res) => {
             });
         }
 
-        // Сохраняем рекорд в файл scores.json
         const scoresPath = path.join(__dirname, 'scores.json');
         let scores = [];
         
@@ -306,7 +312,6 @@ app.get('/api/scores', async (req, res) => {
             scores = JSON.parse(fs.readFileSync(scoresPath, 'utf8'));
         }
         
-        // Добавляем информацию об аватарах к рекордам
         const scoresWithAvatars = scores.map(score => {
             const user = users.find(u => u.username === score.username);
             return {
@@ -315,7 +320,6 @@ app.get('/api/scores', async (req, res) => {
             };
         });
         
-        // Сортируем по убыванию счета и берем топ-10
         scoresWithAvatars.sort((a, b) => b.score - a.score);
         const top10Scores = scoresWithAvatars.slice(0, 10);
 
@@ -332,7 +336,7 @@ app.get('/api/scores', async (req, res) => {
     }
 });
 
-// Добавляем новый маршрут для загрузки аватара
+// Маршрут для загрузки аватара
 app.post('/api/upload-avatar', upload.single('avatar'), (req, res) => {
     if (!req.file) {
         return res.status(400).json({
@@ -351,7 +355,6 @@ app.post('/api/upload-avatar', upload.single('avatar'), (req, res) => {
         });
     }
 
-    // Обновляем путь к аватару пользователя
     user.avatar = `/uploads/avatars/${req.file.filename}`;
     saveUsers(users);
 
@@ -364,7 +367,7 @@ app.post('/api/upload-avatar', upload.single('avatar'), (req, res) => {
     });
 });
 
-// Добавляем маршрут для получения аватара
+// Маршрут для получения аватара
 app.get('/api/uploads/avatars/:filename', (req, res) => {
     const filename = req.params.filename;
     const filepath = path.join(__dirname, 'uploads', 'avatars', filename);
@@ -376,7 +379,7 @@ app.get('/api/uploads/avatars/:filename', (req, res) => {
     }
 });
 
-// Добавляем маршрут для получения информации об аватаре пользователя
+// Маршрут для получения информации об аватаре пользователя
 app.get('/api/users/:username/avatar', (req, res) => {
     const { username } = req.params;
     const user = users.find(u => u.username === username);
@@ -396,21 +399,19 @@ app.get('/api/users/:username/avatar', (req, res) => {
     });
 });
 
-// Добавляем структуру для хранения запросов в друзья и списков друзей
-const friendRequests = [];
-const friendships = [];
-
 // Маршрут для поиска пользователей
 app.get('/api/users/search', (req, res) => {
     const { query } = req.query;
-    if (!query) {
+    const currentUser = req.headers.authorization?.split(' ')[1];
+    
+    if (!query || !currentUser) {
         return res.json({ success: true, data: [] });
     }
 
     const searchResults = users
         .filter(user => 
             user.username.toLowerCase().includes(query.toLowerCase()) &&
-            user.username !== req.headers.authorization.split(' ')[1] // Исключаем текущего пользователя
+            user.username !== currentUser
         )
         .map(user => ({
             username: user.username,
@@ -423,9 +424,15 @@ app.get('/api/users/search', (req, res) => {
 // Маршрут для отправки запроса в друзья
 app.post('/api/friends/request', (req, res) => {
     const { targetUsername } = req.body;
-    const senderUsername = req.headers.authorization.split(' ')[1];
+    const senderUsername = req.headers.authorization?.split(' ')[1];
 
-    // Проверяем существование пользователей
+    if (!senderUsername || !targetUsername) {
+        return res.status(400).json({
+            success: false,
+            message: 'Отсутствуют необходимые данные'
+        });
+    }
+
     if (!users.find(u => u.username === targetUsername)) {
         return res.status(404).json({
             success: false,
@@ -433,7 +440,6 @@ app.post('/api/friends/request', (req, res) => {
         });
     }
 
-    // Проверяем, не существует ли уже запрос
     const existingRequest = friendRequests.find(
         req => req.from === senderUsername && req.to === targetUsername
     );
@@ -445,7 +451,6 @@ app.post('/api/friends/request', (req, res) => {
         });
     }
 
-    // Проверяем, не являются ли пользователи уже друзьями
     const existingFriendship = friendships.find(
         f => (f.user1 === senderUsername && f.user2 === targetUsername) ||
              (f.user1 === targetUsername && f.user2 === senderUsername)
@@ -458,7 +463,6 @@ app.post('/api/friends/request', (req, res) => {
         });
     }
 
-    // Создаем новый запрос
     const newRequest = {
         id: Date.now().toString(),
         from: senderUsername,
@@ -467,6 +471,7 @@ app.post('/api/friends/request', (req, res) => {
     };
 
     friendRequests.push(newRequest);
+    saveFriendRequests(friendRequests);
 
     res.json({
         success: true,
@@ -476,46 +481,44 @@ app.post('/api/friends/request', (req, res) => {
 
 // Маршрут для получения входящих запросов в друзья
 app.get('/api/friends/requests', (req, res) => {
-    console.log('GET /api/friends/requests вызван');
-    console.log('Authorization header:', req.headers.authorization);
-    
-    try {
-        const username = req.headers.authorization.split(' ')[1];
-        console.log('Current username:', username);
-        console.log('All friend requests:', friendRequests);
+    const username = req.headers.authorization?.split(' ')[1];
 
-        const requests = friendRequests
-            .filter(req => req.to === username)
-            .map(req => {
-                const sender = users.find(u => u.username === req.from);
-                return {
-                    id: req.id,
-                    username: req.from,
-                    avatarUrl: sender?.avatar,
-                    createdAt: req.createdAt
-                };
-            });
-
-        console.log('Filtered requests:', requests);
-
-        res.json({
-            success: true,
-            data: requests
-        });
-    } catch (error) {
-        console.error('Error in /api/friends/requests:', error);
-        res.status(500).json({
+    if (!username) {
+        return res.status(401).json({
             success: false,
-            message: 'Ошибка при получении запросов в друзья',
-            error: error.message
+            message: 'Требуется авторизация'
         });
     }
+
+    const requests = friendRequests
+        .filter(req => req.to === username)
+        .map(req => {
+            const sender = users.find(u => u.username === req.from);
+            return {
+                id: req.id,
+                username: req.from,
+                avatarUrl: sender?.avatar,
+                createdAt: req.createdAt
+            };
+        });
+
+    res.json({
+        success: true,
+        data: requests
+    });
 });
 
 // Маршрут для принятия запроса в друзья
 app.post('/api/friends/accept/:requestId', (req, res) => {
     const { requestId } = req.params;
-    const username = req.headers.authorization.split(' ')[1];
+    const username = req.headers.authorization?.split(' ')[1];
+
+    if (!username) {
+        return res.status(401).json({
+            success: false,
+            message: 'Требуется авторизация'
+        });
+    }
 
     const requestIndex = friendRequests.findIndex(
         req => req.id === requestId && req.to === username
@@ -530,15 +533,16 @@ app.post('/api/friends/accept/:requestId', (req, res) => {
 
     const request = friendRequests[requestIndex];
 
-    // Создаем новую дружбу
     friendships.push({
         user1: request.from,
         user2: request.to,
         createdAt: new Date()
     });
 
-    // Удаляем запрос
     friendRequests.splice(requestIndex, 1);
+    
+    saveFriendships(friendships);
+    saveFriendRequests(friendRequests);
 
     res.json({
         success: true,
@@ -549,7 +553,14 @@ app.post('/api/friends/accept/:requestId', (req, res) => {
 // Маршрут для отклонения запроса в друзья
 app.post('/api/friends/reject/:requestId', (req, res) => {
     const { requestId } = req.params;
-    const username = req.headers.authorization.split(' ')[1];
+    const username = req.headers.authorization?.split(' ')[1];
+
+    if (!username) {
+        return res.status(401).json({
+            success: false,
+            message: 'Требуется авторизация'
+        });
+    }
 
     const requestIndex = friendRequests.findIndex(
         req => req.id === requestId && req.to === username
@@ -562,8 +573,8 @@ app.post('/api/friends/reject/:requestId', (req, res) => {
         });
     }
 
-    // Удаляем запрос
     friendRequests.splice(requestIndex, 1);
+    saveFriendRequests(friendRequests);
 
     res.json({
         success: true,
@@ -573,46 +584,44 @@ app.post('/api/friends/reject/:requestId', (req, res) => {
 
 // Маршрут для получения списка друзей
 app.get('/api/friends/list', (req, res) => {
-    console.log('GET /api/friends/list вызван');
-    console.log('Authorization header:', req.headers.authorization);
-    
-    try {
-        const username = req.headers.authorization.split(' ')[1];
-        console.log('Current username:', username);
-        console.log('All friendships:', friendships);
+    const username = req.headers.authorization?.split(' ')[1];
 
-        const friendsList = friendships
-            .filter(f => f.user1 === username || f.user2 === username)
-            .map(f => {
-                const friendUsername = f.user1 === username ? f.user2 : f.user1;
-                const friend = users.find(u => u.username === friendUsername);
-                return {
-                    username: friendUsername,
-                    avatarUrl: friend?.avatar,
-                    online: true
-                };
-            });
-
-        console.log('Filtered friends list:', friendsList);
-
-        res.json({
-            success: true,
-            data: friendsList
-        });
-    } catch (error) {
-        console.error('Error in /api/friends/list:', error);
-        res.status(500).json({
+    if (!username) {
+        return res.status(401).json({
             success: false,
-            message: 'Ошибка при получении списка друзей',
-            error: error.message
+            message: 'Требуется авторизация'
         });
     }
+
+    const friendsList = friendships
+        .filter(f => f.user1 === username || f.user2 === username)
+        .map(f => {
+            const friendUsername = f.user1 === username ? f.user2 : f.user1;
+            const friend = users.find(u => u.username === friendUsername);
+            return {
+                username: friendUsername,
+                avatarUrl: friend?.avatar,
+                online: true // В будущем здесь можно реализовать реальную проверку онлайн-статуса
+            };
+        });
+
+    res.json({
+        success: true,
+        data: friendsList
+    });
 });
 
 // Маршрут для удаления друга
 app.delete('/api/friends/remove/:friendUsername', (req, res) => {
     const { friendUsername } = req.params;
-    const username = req.headers.authorization.split(' ')[1];
+    const username = req.headers.authorization?.split(' ')[1];
+
+    if (!username) {
+        return res.status(401).json({
+            success: false,
+            message: 'Требуется авторизация'
+        });
+    }
 
     const friendshipIndex = friendships.findIndex(
         f => (f.user1 === username && f.user2 === friendUsername) ||
@@ -626,8 +635,8 @@ app.delete('/api/friends/remove/:friendUsername', (req, res) => {
         });
     }
 
-    // Удаляем дружбу
     friendships.splice(friendshipIndex, 1);
+    saveFriendships(friendships);
 
     res.json({
         success: true,
@@ -635,15 +644,11 @@ app.delete('/api/friends/remove/:friendUsername', (req, res) => {
     });
 });
 
-// Добавим проверку авторизации
+// Проверка авторизации
 app.use((req, res, next) => {
-    console.log('Checking authorization for:', req.path);
-    console.log('Headers:', req.headers);
-    
     if (req.path.startsWith('/api/') && !req.path.includes('/auth/')) {
         const authHeader = req.headers.authorization;
         if (!authHeader) {
-            console.log('No authorization header found');
             return res.status(401).json({
                 success: false,
                 message: 'Требуется авторизация'
