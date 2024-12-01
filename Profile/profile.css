@@ -1147,10 +1147,11 @@
     background-color: var(--background-color);
     padding: 20px;
     border-radius: 15px;
-    width: 90%;
-    max-width: 400px;
-    margin: 10vh auto;
-    position: relative;
+    width: 350px;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
@@ -1169,7 +1170,7 @@
 }
 
 .search-results {
-    max-height: 300px;
+    max-height: 200px;
     overflow-y: auto;
     border-radius: 8px;
 }
@@ -1199,4 +1200,11 @@
 [data-theme="dark"] #add-friend-modal .modal-content {
     background-color: var(--surface);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Адаптивность */
+@media screen and (max-width: 400px) {
+    #add-friend-modal .modal-content {
+        width: 90%;
+    }
 }
