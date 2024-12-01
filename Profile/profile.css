@@ -86,7 +86,6 @@
 }
 
 .btn:hover {
-    transform: translateY(-2px);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
@@ -188,7 +187,7 @@
 }
 
 .primary-btn:hover {
-    background-color: #45a049;
+    transform: none;
 }
 
 .edit-btn {
@@ -197,7 +196,7 @@
 }
 
 .edit-btn:hover {
-    background-color: #1976D2;
+    transform: none;
 }
 
 .delete-btn {
@@ -206,7 +205,7 @@
 }
 
 .delete-btn:hover {
-    background-color: #d32f2f;
+    transform: none;
 }
 
 /* Темная тема */
@@ -379,7 +378,7 @@
 }
 
 .register-btn:hover {
-    background-color: #1976D2;
+    transform: none;
 }
 
 .password-group {
@@ -460,7 +459,8 @@
 }
 
 .danger-btn:hover {
-    background-color: #c82333;
+    transform: none;
+    box-shadow: 0 6px 20px rgba(255, 68, 68, 0.3);
 }
 
 /* Таблица пользователей */
@@ -562,7 +562,7 @@
 }
 
 .user-details p:hover {
-    transform: translateX(5px);
+    transform: none;
 }
 
 .user-details span {
@@ -582,7 +582,7 @@
 }
 
 .danger-btn:hover {
-    transform: translateY(-3px);
+    transform: none;
     box-shadow: 0 6px 20px rgba(255, 68, 68, 0.3);
 }
 
@@ -643,7 +643,7 @@
 }
 
 .add-friend-btn:hover {
-    transform: translateY(-3px);
+    transform: none;
     box-shadow: 0 6px 20px rgba(var(--button-background-rgb), 0.3);
 }
 
@@ -805,7 +805,7 @@
 }
 
 .chat-btn:hover {
-    background-color: var(--button-hover);
+    transform: none;
 }
 
 /* Стили для модального окна чата */
@@ -960,4 +960,14 @@
 /* Обновляем стили для темной темы */
 [data-theme="dark"] .user-info {
     background: var(--surface);
+}
+
+/* Убираем transform для всех кнопок при наведении */
+.primary-btn:hover,
+.secondary-btn:hover,
+.edit-btn:hover,
+.delete-btn:hover,
+.register-btn:hover,
+.chat-btn:hover {
+    transform: none;
 }
