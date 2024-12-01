@@ -923,6 +923,23 @@
     gap: 10px;
     padding: 15px;
     border-top: 1px solid var(--border-color);
+    align-items: center;
+}
+
+.chat-input-container .btn {
+    padding: 10px;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chat-input-container .btn i {
+    margin: 0;
+    font-size: 16px;
 }
 
 #chat-input {
@@ -932,11 +949,6 @@
     border-radius: 20px;
     background: var(--input-background);
     color: var(--text-color);
-}
-
-.chat-input-container .btn {
-    padding: 10px 20px;
-    border-radius: 20px;
 }
 
 /* Анимация для сообщений */
