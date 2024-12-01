@@ -1141,3 +1141,62 @@
     background-color: var(--surface);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
+
+/* Стили для модального окна добавления друга */
+#add-friend-modal .modal-content {
+    background-color: var(--background-color);
+    padding: 20px;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 400px;
+    margin: 10vh auto;
+    position: relative;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.search-container {
+    margin-top: 20px;
+}
+
+#friend-search {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--input-background);
+    color: var(--text-color);
+    margin-bottom: 10px;
+}
+
+.search-results {
+    max-height: 300px;
+    overflow-y: auto;
+    border-radius: 8px;
+}
+
+.search-result-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--background-color);
+}
+
+.search-result-item:last-child {
+    border-bottom: none;
+}
+
+.close {
+    position: absolute;
+    right: 15px;
+    top: 15px;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--text-color);
+}
+
+/* Тёмная тема */
+[data-theme="dark"] #add-friend-modal .modal-content {
+    background-color: var(--surface);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
