@@ -645,15 +645,15 @@ app.get('/api/friends/list', (req, res) => {
                 const friendUsername = f.user1 === username ? f.user2 : f.user1;
                 const friend = users.find(u => u.username === friendUsername);
                 
-                // Формируем URL для аватарки, используя имя файла из данных пользователя
+                // Изменяем формирование URL аватарки
                 const avatarUrl = friend?.avatar 
-                    ? `/api/uploads/avatars/${friend.avatar}`
-                    : null;
+                    ? `/uploads/avatars/${friend.avatar}`  // Убираем /api из пути
+                    : '/uploads/avatars/default-avatar.png'; // Добавляем дефолтную аватарку
 
                 return {
                     username: friendUsername,
                     avatarUrl: avatarUrl,
-                    online: true // можно добавить реальную логику онлайн-статуса
+                    online: true
                 };
             });
 
