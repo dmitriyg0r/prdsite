@@ -100,7 +100,6 @@ body {
     font-family: 'Roboto', sans-serif;
     background-color: var(--background-color);
     transition: background-color 0.3s ease, color 0.3s ease;
-    position: relative;
 }
 /* Стили для бокового меню */
 .sidebar {
@@ -256,11 +255,8 @@ body {
 main {
     padding: 20px;
     margin-left: 90px;
-    margin-right: 60px;
     transition: margin-left 0.3s ease;
     min-height: calc(100vh - 200px);
-    padding-top: 80px;
-    position: relative;
 }
 
 /* Стили для подвала */
@@ -628,7 +624,7 @@ tr:hover {
     margin: 0 auto;
 }
 
-/* Пси наведени на sidebar ля контейнера темы */
+/* При наведени на sidebar ля контейнера темы */
 .sidebar:hover .theme-toggle-container {
     padding: 14px 24px;
     justify-content: flex-start;
@@ -1010,7 +1006,7 @@ table {
     opacity: 1;
 }
 
-/* Дополнительные стили для тёмнй темы */
+/* Дополнительные стили для тёмной темы */
 [data-theme="dark"] .sidebar-link {
     background: rgba(255, 255, 255, 0.08);
 }
@@ -1075,24 +1071,3 @@ body[data-theme="dark"] *::-webkit-scrollbar-thumb:hover {
 ::-webkit-scrollbar {
     width: 0;
   }
-
-.avatar-container {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 1000;
-}
-
-.avatar-image {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    cursor: pointer;
-    border: 2px solid #fff;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    transition: transform 0.2s;
-}
-
-.avatar-image:hover {
-    transform: scale(1.1);
-}
