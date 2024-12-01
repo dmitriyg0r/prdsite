@@ -761,10 +761,7 @@ async function loadFriendsList() {
 
         const response = await fetch(`${API_BASE_URL}/friends/list`, {
             headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${userData.data.username}`,
-                'credentials': 'include'
+                'Authorization': `Bearer ${userData.data.username}`
             }
         });
 
@@ -776,9 +773,10 @@ async function loadFriendsList() {
                 .map(friend => `
                     <tr>
                         <td>
-                            <img src="${friend.avatarUrl ? `${API_BASE_URL}${friend.avatarUrl}` : '../assets/default-avatar.png'}" 
+                            <img src="${friend.avatarUrl.startsWith('http') ? friend.avatarUrl : API_BASE_URL + friend.avatarUrl}" 
                                 alt="Avatar" 
-                                class="friend-avatar">
+                                class="friend-avatar"
+                                onerror="this.src='../assets/default-avatar.png'">
                         </td>
                         <td>${friend.username}</td>
                         <td>

@@ -609,9 +609,8 @@ app.post('/api/friends/reject/:requestId', (req, res) => {
     });
 });
 
-// Настраиваем статические файлы с абсолютным путем
-const uploadsPath = '/var/www/html/src/backend/uploads';
-console.log('Путь к загрузкам:', uploadsPath);
+// Настраиваем статические файлы
+const uploadsPath = path.join(__dirname, 'uploads');
 app.use('/uploads', express.static(uploadsPath));
 
 // Маршрут для проверки доступности файла
@@ -645,10 +644,10 @@ app.get('/api/friends/list', (req, res) => {
                 const friendUsername = f.user1 === username ? f.user2 : f.user1;
                 const friend = users.find(u => u.username === friendUsername);
                 
-                // Изменяем формирование URL аватарки
+                // Упрощаем формирование URL аватарки
                 const avatarUrl = friend?.avatar 
-                    ? `/uploads/avatars/${friend.avatar}`  // Убираем /api из пути
-                    : '/uploads/avatars/default-avatar.png'; // Добавляем дефолтную аватарку
+                    ? `/uploads/avatars/${friend.avatar}`
+                    : '/uploads/avatars/default-avatar.png';
 
                 return {
                     username: friendUsername,
