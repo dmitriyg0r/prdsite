@@ -598,8 +598,8 @@
 }
 
 .user-table-avatar {
-    width: 24px;
-    height: 24px;
+    width: 5px;
+    height: 5px;
     border-radius: 50%;
     object-fit: cover;
 }
