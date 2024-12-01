@@ -701,21 +701,24 @@
 .modal {
     display: none;
     position: fixed;
-    z-index: 1001;
+    z-index: 1000;
     left: 0;
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: transparent;
 }
 
-.modal-content {
-    background-color: var(--text-container-background);
-    margin: 15% auto;
-    padding: 20px;
-    border-radius: 8px;
-    width: 80%;
-    max-width: 500px;
+.chat-modal-content {
+    width: 90%;
+    max-width: 600px;
+    height: 80vh;
+    display: flex;
+    flex-direction: column;
+    margin: 5vh auto;
+    background-color: var(--background-color);
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     position: relative;
 }
 
@@ -884,16 +887,6 @@
 }
 
 /* Стили для модального окна чата */
-.chat-modal-content {
-    width: 90%;
-    max-width: 600px;
-    height: 80vh;
-    display: flex;
-    flex-direction: column;
-    margin: 5vh auto;
-    position: relative;
-}
-
 .chat-messages {
     flex-grow: 1;
     overflow-y: auto;
@@ -1141,4 +1134,10 @@
     border-radius: 12px;
     font-size: 12px;
     margin: 0 auto;
+}
+
+/* Обновляем стили для тёмной темы */
+[data-theme="dark"] .chat-modal-content {
+    background-color: var(--surface);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
