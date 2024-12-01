@@ -1,17 +1,15 @@
 @media screen and (max-width: 768px) {
-    /* Фиксированная ширина контента */
+    /* Основной контент */
     body {
         width: 100%;
         overflow-x: hidden;
         position: relative;
     }
 
-    /* Основной контент */
     main {
         width: 100%;
-        margin-left: 0;
-        padding: 60px 15px 20px;
-        position: relative;
+        margin-left: 0 !important;
+        padding: 20px 15px;
         overflow-x: hidden;
     }
 
@@ -19,16 +17,13 @@
     .sidebar {
         position: fixed;
         top: 0;
-        left: -100%;
-        width: 80%;
-        max-width: 300px;
-        height: 100vh;
+        left: -250px;
+        width: 250px;
+        height: 100%;
         background: var(--sidebar-background);
         padding: 60px 20px 20px;
         z-index: 1001;
-        overflow-y: auto;
-        display: flex;
-        flex-direction: column;
+        transition: none;
     }
 
     .sidebar.active {
@@ -37,20 +32,21 @@
 
     /* Гамбургер меню */
     .menu-toggle {
+        display: flex !important;
         position: fixed;
         top: 15px;
         left: 15px;
         width: 35px;
         height: 30px;
-        display: flex;
         flex-direction: column;
         justify-content: space-between;
-        cursor: pointer;
         z-index: 1002;
+        background: transparent;
+        border: none;
+        padding: 0;
     }
 
     .menu-toggle span {
-        display: block;
         width: 100%;
         height: 3px;
         background-color: var(--text-color);
@@ -73,34 +69,64 @@
         display: block;
     }
 
-    /* Стили для пунктов меню */
-    .sidebar-nav {
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
+    /* Заголовок */
+    .zagolovok {
+        margin-top: 60px;
+        font-size: 24px;
+    }
+
+    /* Таблица */
+    .table-container {
+        margin: 20px -15px;
+        width: calc(100% + 30px);
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+        min-width: 800px;
+    }
+
+    /* Контейнер */
+    .container {
+        width: 100% !important;
+        margin-left: 0 !important;
+        padding: 20px 15px;
+    }
+
+    /* Отключаем hover эффекты на мобильных */
+    .sidebar-link:hover {
+        transform: none;
+    }
+
+    tr:hover {
+        transform: none;
+        box-shadow: none;
+    }
+
+    /* Фиксим отображение меню */
+    .sidebar:hover {
+        width: 250px;
     }
 
     .sidebar-link {
         padding: 12px 15px;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        color: var(--button-text);
-        text-decoration: none;
     }
 
     .sidebar-link i {
-        font-size: 20px;
         margin-right: 15px;
     }
 
     .sidebar-link span {
-        display: block;
-        font-size: 16px;
+        opacity: 1;
+        display: inline;
     }
 }
 
 /* Блокировка прокрутки при открытом меню */
 body.menu-open {
     overflow: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100%;
 }
