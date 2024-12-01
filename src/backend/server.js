@@ -3,6 +3,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const fs = require('fs');
 const path = require('path');
+const multer = require('multer');
 const app = express();
 
 // Путь к файлу с данными
@@ -56,6 +57,39 @@ app.use((req, res, next) => {
     console.log('URL:', req.url);
     console.log('Тело:', req.body);
     next();
+});
+
+// Настройка хранилища для загрузки файлов
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        const uploadDir = path.join(__dirname, 'uploads', 'avatars');
+        // Создаем директорию, если она не существует
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+        }
+        cb(null, uploadDir);
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, `avatar-${uniqueSuffix}${path.extname(file.originalname)}`);
+    }
+});
+
+const upload = multer({
+    storage: storage,
+    limits: {
+        fileSize: 5 * 1024 * 1024 // 5MB максимальный размер
+    },
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = /jpeg|jpg|png|gif/;
+        const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+        const mimetype = allowedTypes.test(file.mimetype);
+        
+        if (extname && mimetype) {
+            return cb(null, true);
+        }
+        cb(new Error('Разрешены только изображения!'));
+    }
 });
 
 // Маршрут для регистрации
@@ -249,6 +283,50 @@ app.get('/api/scores', (req, res) => {
             success: false,
             message: 'Ошибка при получении рекордов'
         });
+    }
+});
+
+// Добавляем новый маршрут для загрузки аватара
+app.post('/api/upload-avatar', upload.single('avatar'), (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({
+            success: false,
+            message: 'Файл не был загружен'
+        });
+    }
+
+    const username = req.body.username;
+    const user = users.find(u => u.username === username);
+    
+    if (!user) {
+        return res.status(404).json({
+            success: false,
+            message: 'Пользователь не найден'
+        });
+    }
+
+    // Обновляем путь к аватару пользователя
+    user.avatar = `/uploads/avatars/${req.file.filename}`;
+    saveUsers(users);
+
+    res.json({
+        success: true,
+        message: 'Аватар успешно загружен',
+        data: {
+            avatarUrl: user.avatar
+        }
+    });
+});
+
+// Добавляем маршрут для получения аватара
+app.get('/api/uploads/avatars/:filename', (req, res) => {
+    const filename = req.params.filename;
+    const filepath = path.join(__dirname, 'uploads', 'avatars', filename);
+    
+    if (fs.existsSync(filepath)) {
+        res.sendFile(filepath);
+    } else {
+        res.status(404).send('Аватар не найден');
     }
 });
 

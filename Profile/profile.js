@@ -458,7 +458,7 @@ async function handleRegister(event) {
     }
 }
 
-// Обработчик загрузки аватара
+// Обновляем функцию initializeAvatarUpload
 function initializeAvatarUpload() {
     const avatarUpload = document.getElementById('avatar-upload');
     const userAvatar = document.getElementById('user-avatar');
@@ -472,28 +472,50 @@ function initializeAvatarUpload() {
             return;
         }
 
-        try {
-            // Создаем превью изображения
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                userAvatar.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
+        // Показываем превью перед загрузкой
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            userAvatar.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
 
-            // Здесь можно добавить логику загрузки на сервер
-            // const formData = new FormData();
-            // formData.append('avatar', file);
-            // const response = await fetch(`${API_BASE_URL}/upload-avatar`, {
-            //     method: 'POST',
-            //     body: formData,
-            //     credentials: 'include'
-            // });
-
-            showSuccess('Аватар успешно обновлен');
-        } catch (error) {
-            console.error('Error uploading avatar:', error);
-            showError('Ошибка при загрузке аватара');
-        }
+        // Загружаем файл на сервер
+        await uploadAvatar(file);
     });
+}
+
+async function uploadAvatar(file) {
+    try {
+        const userData = JSON.parse(localStorage.getItem('user'));
+        if (!userData?.data?.username) {
+            throw new Error('Требуется авторизация');
+        }
+
+        const formData = new FormData();
+        formData.append('avatar', file);
+        formData.append('username', userData.data.username);
+
+        const response = await fetch(`${API_BASE_URL}/upload-avatar`, {
+            method: 'POST',
+            body: formData,
+            credentials: 'include'
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            // Обновляем аватар на странице
+            const userAvatar = document.getElementById('user-avatar');
+            if (userAvatar) {
+                userAvatar.src = `${API_BASE_URL}${data.data.avatarUrl}`;
+            }
+            showSuccess('Аватар успешно обновлен');
+        } else {
+            throw new Error(data.message || 'Ошибка при загрузке аватара');
+        }
+    } catch (error) {
+        console.error('Error uploading avatar:', error);
+        showError(error.message || 'Произошла ошибка при загрузке аватара');
+    }
 }
 
