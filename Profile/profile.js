@@ -1,4 +1,3 @@
-const API_BASE_URL = 'https://adminflow.ru/api';
 // Вспомогательные функции
 const showError = (message) => {
     const errorMessage = document.getElementById('error-message');
@@ -156,9 +155,13 @@ function showProfile(userData) {
     // Обновляем информацию профиля
     const profileUsername = document.getElementById('profile-username');
     const profileRole = document.getElementById('profile-role');
+    const userAvatar = document.getElementById('user-avatar');
     
     if (profileUsername) profileUsername.textContent = userData.data.username;
     if (profileRole) profileRole.textContent = userData.data.role;
+    
+    // Загружаем аватар пользователя
+    loadUserAvatar(userData.data.username);
 
     // Инициализируем загрузку аватара
     initializeAvatarUpload();
@@ -210,7 +213,7 @@ async function loadUsers() {
 function handleLogout() {
     console.log('Logging out...');
     try {
-        // Очищаем данные пользователя
+        // О��ищаем данные пользователя
         localStorage.removeItem('user');
         
         // Скрываем профиль и показываем форму входа
@@ -226,7 +229,7 @@ function handleLogout() {
         const loginForm = document.getElementById('login-form');
         if (loginForm) loginForm.reset();
 
-        showSuccess('Вы успешно вышли из системы');
+        showSuccess('Вы успешно выли из системы');
         console.log('Logout successful');
     } catch (error) {
         console.error('Error during logout:', error);
@@ -516,6 +519,24 @@ async function uploadAvatar(file) {
     } catch (error) {
         console.error('Error uploading avatar:', error);
         showError(error.message || 'Произошла ошибка при загрузке аватара');
+    }
+}
+
+// Добавляем новую функцию для загрузки аватара
+async function loadUserAvatar(username) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/users/${username}/avatar`);
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+            const userAvatar = document.getElementById('user-avatar');
+            if (userAvatar && data.data.avatarUrl) {
+                userAvatar.src = `${API_BASE_URL}${data.data.avatarUrl}`;
+            }
+        }
+    } catch (error) {
+        console.error('Error loading avatar:', error);
+        // Если произошла ошибка, оставляем аватар по умолчанию
     }
 }
 

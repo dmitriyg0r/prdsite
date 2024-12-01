@@ -330,6 +330,26 @@ app.get('/api/uploads/avatars/:filename', (req, res) => {
     }
 });
 
+// Добавляем маршрут для получения информации об аватаре пользователя
+app.get('/api/users/:username/avatar', (req, res) => {
+    const { username } = req.params;
+    const user = users.find(u => u.username === username);
+    
+    if (!user) {
+        return res.status(404).json({
+            success: false,
+            message: 'Пользователь не найден'
+        });
+    }
+
+    res.json({
+        success: true,
+        data: {
+            avatarUrl: user.avatar || null
+        }
+    });
+});
+
 // Запуск сервера
 const PORT = process.env.PORT || 5003;
 app.listen(PORT, () => {
