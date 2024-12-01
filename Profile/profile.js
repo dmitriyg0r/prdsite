@@ -406,7 +406,7 @@ async function deleteUser(username) {
 
         if (response.ok && data.success) {
             showSuccess('Пользователь успешно удален');
-            // Перезагружаем список пользователей
+            // Перезагружаем списо�� пользователей
             loadUsers();
         } else {
             throw new Error(data.message || 'Ошибка при удалении пользователя');

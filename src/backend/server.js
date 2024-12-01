@@ -611,7 +611,26 @@ app.post('/api/friends/reject/:requestId', (req, res) => {
 
 // Настраиваем статические файлы
 const uploadsPath = path.join(__dirname, 'uploads');
+console.log('Путь к загрузкам:', uploadsPath);
+
+// Добавляем middleware для статических файлов перед другими маршрутами
 app.use('/uploads', express.static(uploadsPath));
+
+// Убираем проверку авторизации для статических файлов
+app.use((req, res, next) => {
+    if (req.path.startsWith('/api/') && 
+        !req.path.includes('/auth/') && 
+        !req.path.includes('/uploads/')) {
+        const authHeader = req.headers.authorization;
+        if (!authHeader) {
+            return res.status(401).json({
+                success: false,
+                message: 'Требуется авторизация'
+            });
+        }
+    }
+    next();
+});
 
 // Маршрут для проверки доступности файла
 app.get('/api/check-avatar/:filename', (req, res) => {
@@ -815,20 +834,6 @@ app.delete('/api/chat/message/:messageId', (req, res) => {
             error: error.message
         });
     }
-});
-
-// Проверка авторизации
-app.use((req, res, next) => {
-    if (req.path.startsWith('/api/') && !req.path.includes('/auth/')) {
-        const authHeader = req.headers.authorization;
-        if (!authHeader) {
-            return res.status(401).json({
-                success: false,
-                message: 'Требуется авторизация'
-            });
-        }
-    }
-    next();
 });
 
 // Запуск сервера
