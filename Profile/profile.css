@@ -528,9 +528,9 @@
     display: flex;
     gap: 40px;
     padding: 30px;
-    background: var(--text-container-background);
+    background: none;
     border-radius: 20px;
-    box-shadow: var(--text-container-shadow);
+    box-shadow: none;
     position: relative;
     z-index: 1;
     margin: 20px 0;
