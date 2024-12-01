@@ -31,53 +31,74 @@ if (mobileThemeToggle) {
     mobileThemeToggle.addEventListener('change', toggleTheme);
 }
 
-// Боковое меню
-const sidebarToggle = document.getElementById('sidebar-toggle');
-const sidebar = document.querySelector('.sidebar');
-
-if (sidebarToggle) {
-    sidebarToggle.addEventListener('click', () => {
-        sidebar.classList.toggle('sidebar-open');
-    });
-}
-
 document.addEventListener('DOMContentLoaded', function() {
     const menuToggle = document.querySelector('.menu-toggle');
     const sidebar = document.querySelector('.sidebar');
     const overlay = document.querySelector('.overlay');
+    const menuLinks = document.querySelectorAll('.sidebar-link');
 
     // Функция открытия/закрытия меню
     function toggleMenu() {
+        if (!menuToggle || !sidebar || !overlay) return; // Проверка на существование элементов
+        
         menuToggle.classList.toggle('active');
         sidebar.classList.toggle('active');
         overlay.classList.toggle('active');
+        
+        // Блокировка прокрутки при открытом меню
         document.body.style.overflow = sidebar.classList.contains('active') ? 'hidden' : '';
     }
 
-    // Обработчики событий
-    menuToggle.addEventListener('click', toggleMenu);
-    overlay.addEventListener('click', toggleMenu);
+    // Обработчики событий для открытия/закрытия меню
+    if (menuToggle) {
+        menuToggle.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleMenu();
+        });
+    }
 
-    // Закрытие меню при клике на пункт меню
-    const menuLinks = document.querySelectorAll('.sidebar-link');
+    if (overlay) {
+        overlay.addEventListener('click', toggleMenu);
+    }
+
+    // Закрытие меню при клике на пункты меню
     menuLinks.forEach(link => {
         link.addEventListener('click', () => {
-            toggleMenu();
+            if (window.innerWidth <= 768) { // Только для мобильных устройств
+                toggleMenu();
+            }
         });
     });
 
-    // Закрытие меню при свайпе влево
+    // Обработка свайпов
     let touchStartX = 0;
     let touchEndX = 0;
 
-    sidebar.addEventListener('touchstart', e => {
-        touchStartX = e.changedTouches[0].screenX;
-    }, false);
+    if (sidebar) {
+        sidebar.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
 
-    sidebar.addEventListener('touchend', e => {
-        touchEndX = e.changedTouches[0].screenX;
-        if (touchStartX - touchEndX > 50) {
-            toggleMenu();
-        }
-    }, false);
+        sidebar.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            if (touchStartX - touchEndX > 50) { // Свайп влево
+                toggleMenu();
+            }
+        }, { passive: true });
+
+        // Добавляем свайп вправо для открытия меню
+        document.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+
+        document.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            if (touchEndX - touchStartX > 50 && touchStartX < 50) { // Свайп вправо от левого края
+                if (!sidebar.classList.contains('active')) {
+                    toggleMenu();
+                }
+            }
+        }, { passive: true });
+    }
 });
