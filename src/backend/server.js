@@ -609,7 +609,25 @@ app.post('/api/friends/reject/:requestId', (req, res) => {
     });
 });
 
-// Маршрут для получения списка друзей
+// Настраиваем статические файлы с абсолютным путем
+const uploadsPath = '/var/www/html/src/backend/uploads';
+console.log('Путь к загрузкам:', uploadsPath);
+app.use('/uploads', express.static(uploadsPath));
+
+// Маршрут для проверки доступности файла
+app.get('/api/check-avatar/:filename', (req, res) => {
+    const filename = req.params.filename;
+    const filepath = path.join(uploadsPath, 'avatars', filename);
+    
+    console.log('Проверка файла:', filepath);
+    if (fs.existsSync(filepath)) {
+        res.json({ exists: true, path: filepath });
+    } else {
+        res.json({ exists: false, path: filepath });
+    }
+});
+
+// Обновляем маршрут получения списка друзей с подробным логированием
 app.get('/api/friends/list', (req, res) => {
     const username = req.headers.authorization?.split(' ')[1];
 
@@ -620,30 +638,43 @@ app.get('/api/friends/list', (req, res) => {
         });
     }
 
-    const friendsList = friendships
-        .filter(f => f.user1 === username || f.user2 === username)
-        .map(f => {
-            const friendUsername = f.user1 === username ? f.user2 : f.user1;
-            const friend = users.find(u => u.username === friendUsername);
-            
-            // Добавляем логирование для отладки
-            console.log('Friend data:', {
-                username: friendUsername,
-                avatar: friend?.avatar,
-                fullAvatarUrl: friend?.avatar ? `/uploads/avatars/${friend.avatar}` : null
+    try {
+        const friendsList = friendships
+            .filter(f => f.user1 === username || f.user2 === username)
+            .map(f => {
+                const friendUsername = f.user1 === username ? f.user2 : f.user1;
+                const friend = users.find(u => u.username === friendUsername);
+                
+                const avatarPath = friend?.avatar ? `/uploads/avatars/${friend.avatar}` : null;
+                
+                console.log('Данные друга:', {
+                    username: friendUsername,
+                    originalAvatar: friend?.avatar,
+                    avatarPath: avatarPath,
+                    fullFilePath: avatarPath ? path.join(uploadsPath, 'avatars', friend.avatar) : null
+                });
+
+                return {
+                    username: friendUsername,
+                    avatarUrl: avatarPath,
+                    online: true
+                };
             });
 
-            return {
-                username: friendUsername,
-                avatarUrl: friend?.avatar ? `/uploads/avatars/${friend.avatar}` : null,
-                online: true
-            };
-        });
+        console.log('Отправка списка друзей:', friendsList);
 
-    res.json({
-        success: true,
-        data: friendsList
-    });
+        res.json({
+            success: true,
+            data: friendsList
+        });
+    } catch (error) {
+        console.error('Ошибка при получении списка друзей:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Ошибка при получении списка друзей',
+            error: error.message
+        });
+    }
 });
 
 // Маршрут для удаления друга
@@ -806,9 +837,6 @@ app.use((req, res, next) => {
     }
     next();
 });
-
-// Обновляем путь к статическим файлам
-app.use('/uploads', express.static('/var/www/html/src/backend/uploads/avatars'));
 
 // Запуск сервера
 const PORT = process.env.PORT || 5003;
