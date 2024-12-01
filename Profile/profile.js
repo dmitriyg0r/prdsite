@@ -273,6 +273,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 profileInfo.style.display = 'block';
             }
             showProfile(parsedUserData);
+            
+            // Загружаем списки друзей и запросов
+            loadFriendRequests();
+            loadFriendsList();
         } catch (e) {
             console.error('Error parsing saved session:', e);
             localStorage.removeItem('user');
@@ -321,13 +325,6 @@ document.addEventListener('DOMContentLoaded', () => {
         friendSearch.addEventListener('input', (e) => {
             searchUsers(e.target.value);
         });
-    }
-
-    // Загружаем списки друзей и запросов при входе
-    const userData = localStorage.getItem('user');
-    if (userData) {
-        loadFriendRequests();
-        loadFriendsList();
     }
 });
 
