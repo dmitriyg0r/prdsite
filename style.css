@@ -376,17 +376,6 @@ table {
     min-width: 800px;
 }
 
-/* Анимация для строк таблицы */
-tr {
-    transition: all 0.3s ease;
-}
-
-tr:hover {
-    transform: scale(1.01);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
-
-
 /* Улучшенные стили для кнопки создания поста */
 .add-post-btn {
     background: linear-gradient(45deg, var(--button-background), var(--header-gradient));
