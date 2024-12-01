@@ -6,14 +6,17 @@ const path = require('path');
 const multer = require('multer');
 const app = express();
 
-// Путь к файлу с данными
+// Пути к файлам данных
 const DB_PATH = path.join(__dirname, 'users.json');
-
-// Добавим новые пути к файлам для хранения данных
 const FRIENDS_DB_PATH = path.join(__dirname, 'friends.json');
 const FRIEND_REQUESTS_DB_PATH = path.join(__dirname, 'friend_requests.json');
 
-// Функция для загрузки пользователей из файла
+// Загрузка данных при старте
+let users = loadUsers();
+let friendships = loadFriendships();
+let friendRequests = loadFriendRequests();
+
+// Функции для работы с пользователями
 function loadUsers() {
     try {
         if (fs.existsSync(DB_PATH)) {
@@ -23,7 +26,6 @@ function loadUsers() {
     } catch (error) {
         console.error('Error loading users:', error);
     }
-    // Возвращаем массив по умолчанию, если файл не существует или произошла ошибка
     return [
         { 
             username: 'dimon', 
@@ -34,19 +36,7 @@ function loadUsers() {
     ];
 }
 
-// Функция для сохранения пользователей в файл
-function saveUsers(users) {
-    try {
-        fs.writeFileSync(DB_PATH, JSON.stringify(users, null, 2));
-    } catch (error) {
-        console.error('Error saving users:', error);
-    }
-}
-
-// Загружаем пользователей при старте сервера
-let users = loadUsers();
-
-// Функции для работы с данными друзей
+// Функции для работы с друзьями
 function loadFriendships() {
     try {
         if (fs.existsSync(FRIENDS_DB_PATH)) {
@@ -87,10 +77,6 @@ function saveFriendRequests(requests) {
         console.error('Error saving friend requests:', error);
     }
 }
-
-// Загружаем данные при старте сервера
-let friendships = loadFriendships();
-let friendRequests = loadFriendRequests();
 
 // Middleware
 app.use(cors({
@@ -481,7 +467,6 @@ app.post('/api/friends/request', (req, res) => {
     };
 
     friendRequests.push(newRequest);
-    saveFriendRequests(friendRequests); // Сохраняем изменения
 
     res.json({
         success: true,
@@ -491,24 +476,40 @@ app.post('/api/friends/request', (req, res) => {
 
 // Маршрут для получения входящих запросов в друзья
 app.get('/api/friends/requests', (req, res) => {
-    const username = req.headers.authorization.split(' ')[1];
+    console.log('GET /api/friends/requests вызван');
+    console.log('Authorization header:', req.headers.authorization);
+    
+    try {
+        const username = req.headers.authorization.split(' ')[1];
+        console.log('Current username:', username);
+        console.log('All friend requests:', friendRequests);
 
-    const requests = friendRequests
-        .filter(req => req.to === username)
-        .map(req => {
-            const sender = users.find(u => u.username === req.from);
-            return {
-                id: req.id,
-                username: req.from,
-                avatarUrl: sender?.avatar,
-                createdAt: req.createdAt
-            };
+        const requests = friendRequests
+            .filter(req => req.to === username)
+            .map(req => {
+                const sender = users.find(u => u.username === req.from);
+                return {
+                    id: req.id,
+                    username: req.from,
+                    avatarUrl: sender?.avatar,
+                    createdAt: req.createdAt
+                };
+            });
+
+        console.log('Filtered requests:', requests);
+
+        res.json({
+            success: true,
+            data: requests
         });
-
-    res.json({
-        success: true,
-        data: requests
-    });
+    } catch (error) {
+        console.error('Error in /api/friends/requests:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Ошибка при получении запросов в друзья',
+            error: error.message
+        });
+    }
 });
 
 // Маршрут для принятия запроса в друзья
@@ -535,10 +536,9 @@ app.post('/api/friends/accept/:requestId', (req, res) => {
         user2: request.to,
         createdAt: new Date()
     });
-    saveFriendships(friendships); // Сохраняем дружбу
-    
+
+    // Удаляем запрос
     friendRequests.splice(requestIndex, 1);
-    saveFriendRequests(friendRequests); // Сохраняем изменения в запросах
 
     res.json({
         success: true,
@@ -564,7 +564,6 @@ app.post('/api/friends/reject/:requestId', (req, res) => {
 
     // Удаляем запрос
     friendRequests.splice(requestIndex, 1);
-    saveFriendRequests(friendRequests); // Сохраняем изменения
 
     res.json({
         success: true,
@@ -574,24 +573,40 @@ app.post('/api/friends/reject/:requestId', (req, res) => {
 
 // Маршрут для получения списка друзей
 app.get('/api/friends/list', (req, res) => {
-    const username = req.headers.authorization.split(' ')[1];
+    console.log('GET /api/friends/list вызван');
+    console.log('Authorization header:', req.headers.authorization);
+    
+    try {
+        const username = req.headers.authorization.split(' ')[1];
+        console.log('Current username:', username);
+        console.log('All friendships:', friendships);
 
-    const friendsList = friendships
-        .filter(f => f.user1 === username || f.user2 === username)
-        .map(f => {
-            const friendUsername = f.user1 === username ? f.user2 : f.user1;
-            const friend = users.find(u => u.username === friendUsername);
-            return {
-                username: friendUsername,
-                avatarUrl: friend?.avatar,
-                online: true // В реальном приложении здесь будет реальный статус
-            };
+        const friendsList = friendships
+            .filter(f => f.user1 === username || f.user2 === username)
+            .map(f => {
+                const friendUsername = f.user1 === username ? f.user2 : f.user1;
+                const friend = users.find(u => u.username === friendUsername);
+                return {
+                    username: friendUsername,
+                    avatarUrl: friend?.avatar,
+                    online: true
+                };
+            });
+
+        console.log('Filtered friends list:', friendsList);
+
+        res.json({
+            success: true,
+            data: friendsList
         });
-
-    res.json({
-        success: true,
-        data: friendsList
-    });
+    } catch (error) {
+        console.error('Error in /api/friends/list:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Ошибка при получении списка друзей',
+            error: error.message
+        });
+    }
 });
 
 // Маршрут для удаления друга
@@ -613,7 +628,6 @@ app.delete('/api/friends/remove/:friendUsername', (req, res) => {
 
     // Удаляем дружбу
     friendships.splice(friendshipIndex, 1);
-    saveFriendships(friendships); // Сохраняем изменения
 
     res.json({
         success: true,
@@ -621,43 +635,22 @@ app.delete('/api/friends/remove/:friendUsername', (req, res) => {
     });
 });
 
-// Добавляем структуру для хранения сообщений
-const messages = [];
-
-// Маршрут для получения истории сообщений
-app.get('/api/chat/history/:username', (req, res) => {
-    const { username } = req.params;
-    const currentUser = req.headers.authorization.split(' ')[1];
-
-    const chatHistory = messages.filter(msg => 
-        (msg.from === currentUser && msg.to === username) ||
-        (msg.from === username && msg.to === currentUser)
-    );
-
-    res.json({
-        success: true,
-        data: chatHistory
-    });
-});
-
-// Маршрут для отправки сообщения
-app.post('/api/chat/send', (req, res) => {
-    const { to, message } = req.body;
-    const from = req.headers.authorization.split(' ')[1];
-
-    const newMessage = {
-        from,
-        to,
-        message,
-        timestamp: new Date()
-    };
-
-    messages.push(newMessage);
-
-    res.json({
-        success: true,
-        data: newMessage
-    });
+// Добавим проверку авторизации
+app.use((req, res, next) => {
+    console.log('Checking authorization for:', req.path);
+    console.log('Headers:', req.headers);
+    
+    if (req.path.startsWith('/api/') && !req.path.includes('/auth/')) {
+        const authHeader = req.headers.authorization;
+        if (!authHeader) {
+            console.log('No authorization header found');
+            return res.status(401).json({
+                success: false,
+                message: 'Требуется авторизация'
+            });
+        }
+    }
+    next();
 });
 
 // Запуск сервера
