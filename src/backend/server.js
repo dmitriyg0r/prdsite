@@ -609,15 +609,13 @@ app.post('/api/friends/reject/:requestId', (req, res) => {
     });
 });
 
-// Настраиваем статические файлы с абсолютным путем
-const uploadsPath = '/var/www/html/src/backend/uploads';
-console.log('Путь к загрузкам:', uploadsPath);
-app.use('/uploads', express.static(uploadsPath));
+// Обновляем путь к статическим файлам
+app.use('/api/uploads', express.static('/var/www/html/src/backend/uploads'));
 
 // Маршрут для проверки доступности файла
 app.get('/api/check-avatar/:filename', (req, res) => {
     const filename = req.params.filename;
-    const filepath = path.join(uploadsPath, 'avatars', filename);
+    const filepath = path.join(__dirname, 'uploads', 'avatars', filename);
     
     console.log('Проверка файла:', filepath);
     if (fs.existsSync(filepath)) {
