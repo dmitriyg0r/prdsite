@@ -627,7 +627,7 @@ app.get('/api/check-avatar/:filename', (req, res) => {
     }
 });
 
-// Обновляем маршрут получения списка друзей с подробным логированием
+// Обновляем маршрут получения списка друзей
 app.get('/api/friends/list', (req, res) => {
     const username = req.headers.authorization?.split(' ')[1];
 
@@ -645,13 +645,13 @@ app.get('/api/friends/list', (req, res) => {
                 const friendUsername = f.user1 === username ? f.user2 : f.user1;
                 const friend = users.find(u => u.username === friendUsername);
                 
-                const avatarPath = friend?.avatar ? `/uploads/avatars/${friend.avatar}` : null;
+                // Формируем полный URL для аватарки
+                const avatarPath = friend?.avatar ? `/api/uploads/avatars/${friend.avatar}` : null;
                 
                 console.log('Данные друга:', {
                     username: friendUsername,
                     originalAvatar: friend?.avatar,
-                    avatarPath: avatarPath,
-                    fullFilePath: avatarPath ? path.join(uploadsPath, 'avatars', friend.avatar) : null
+                    avatarPath: avatarPath
                 });
 
                 return {
