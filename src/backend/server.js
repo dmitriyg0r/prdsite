@@ -130,7 +130,7 @@ app.use((req, res, next) => {
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         const uploadDir = path.join(__dirname, 'uploads', 'avatars');
-        // Создаем директорию, если она не существует
+        // С��здаем директорию, если она не существует
         if (!fs.existsSync(uploadDir)) {
             fs.mkdirSync(uploadDir, { recursive: true });
         }
@@ -370,7 +370,7 @@ app.post('/api/upload-avatar', upload.single('avatar'), (req, res) => {
         }
 
         const username = req.body.username;
-        const avatarPath = req.file.filename; // Используем только имя файла
+        const avatarPath = req.file.filename;
 
         // Обновляем информацию о пользователе
         const userIndex = users.findIndex(u => u.username === username);
@@ -382,7 +382,7 @@ app.post('/api/upload-avatar', upload.single('avatar'), (req, res) => {
         res.json({
             success: true,
             data: {
-                avatarUrl: `/uploads/avatars/${avatarPath}` // Формируем URL для клиента
+                avatarUrl: `/api/uploads/avatars/${avatarPath}`
             }
         });
     } catch (error) {
