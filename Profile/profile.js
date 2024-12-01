@@ -751,10 +751,7 @@ async function loadFriendsList() {
 
         const response = await fetch(`${API_BASE_URL}/friends/list`, {
             headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${userData.data.username}`,
-                'credentials': 'include'
+                'Authorization': userData.data.username  // Убрали 'Bearer ' префикс
             }
         });
 
