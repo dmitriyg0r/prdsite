@@ -101,7 +101,7 @@ body {
     background-color: var(--background-color);
     transition: background-color 0.3s ease, color 0.3s ease;
 }
-
+@import url('mobile.css');
 /* Стили для бокового меню */
 .sidebar {
     position: fixed;
@@ -292,7 +292,7 @@ main {
     color: var(--text-secondary);
 }
 
-/* Стили для переключателя темы */
+/* Стили для переключа��еля темы */
 .theme-toggle-container {
     display: flex;
     align-items: center;
@@ -443,21 +443,6 @@ tr:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* Медиа-запросы */
-@media screen and (max-width: 1600px) {
-    .grid-container {
-        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    }
-}
-
-@media screen and (max-width: 1200px) {
-    .grid-container {
-        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-        gap: 15px;
-        padding: 15px;
-    }
-}
-
 /* Анимации */
 @keyframes fadeIn {
     from { 
@@ -559,7 +544,7 @@ tr:hover {
     background: var(--primary-dark);
 }
 
-/* Обновляем стили для активных элементов */
+/* Обновляем стили для актвных элементов */
 [data-theme="dark"] .active,
 [data-theme="dark"] .sidebar-link.active {
     background: var(--primary-dark);
@@ -676,7 +661,7 @@ tr:hover {
     transition: transform 0.2s linear;
 }
 
-/* Показываем слайдер при наведении на sidebar */
+/* Показваем слайдер при наведении на sidebar */
 .sidebar:hover .theme-label {
     position: relative;
     opacity: 1;
@@ -739,33 +724,6 @@ table {
     width: 100%;
     border-collapse: collapse;
     min-width: 800px;
-}
-
-/* Добавить медиа-запрос для мобильных усройств */
-@media screen and (max-width: 768px) {
-    .sidebar {
-        width: 0;
-        overflow: hidden;
-    }
-    
-    .sidebar:hover {
-        width: 250px;
-    }
-    
-    main {
-        margin-left: 0;
-        padding: 10px;
-    }
-    
-    .container {
-        width: 100%;
-        margin-left: 0;
-    }
-    
-    .zagolovok {
-        font-size: 2em;
-        margin-top: 20px;
-    }
 }
 
 /* Стили для активного пункта меню */
@@ -1047,21 +1005,6 @@ table {
 .sidebar:hover .sidebar-header h2,
 .sidebar:hover .nav-links li a span {
     opacity: 1;
-}
-
-/* Медиа-запросы */
-@media screen and (max-width: 768px) {
-    .sidebar {
-        transform: translateX(-100%);
-    }
-    
-    .main-content {
-        margin-left: 0;
-    }
-    
-    .sidebar.active {
-        transform: translateX(0);
-    }
 }
 
 /* Дополнительные стили для тёмной темы */
