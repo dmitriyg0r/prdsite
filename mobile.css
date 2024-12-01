@@ -1,117 +1,139 @@
-/* Общие мобильные стили */
 @media screen and (max-width: 768px) {
-    /* Основные контейнеры */
-    .container {
-        padding: 15px;
-        margin: 10px;
+    /* Боковое меню */
+    .sidebar {
+        transform: translateX(-100%);
+        width: 250px;
+        z-index: 1001;
     }
 
-    /* Улучшение читаемости текста */
-    body {
-        font-size: 14px;
-        line-height: 1.4;
+    .sidebar.active {
+        transform: translateX(0);
     }
 
-    /* Адаптация таблиц */
+    /* Основной контент */
+    main {
+        margin-left: 0;
+        padding: 60px 15px 20px;
+    }
+
+    /* Таблица расписания */
     .table-container {
-        margin: 15px 0;
-        border-radius: 12px;
+        margin: 15px -15px;
+        border-radius: 0;
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
+        background: transparent;
+        box-shadow: none;
     }
 
-    /* Улучшение отображения карточек */
-    .post, .homework-card, .file-category {
+    table {
+        min-width: 700px;
+        background: var(--table-background);
+        margin: 0;
+        font-size: 14px;
+    }
+
+    th, td {
+        padding: 10px;
+        min-width: 100px;
+    }
+
+    /* Заголовок */
+    .zagolovok {
+        font-size: 24px;
+        margin: 10px 0;
+        text-align: center;
+    }
+
+    /* Новости */
+    .news-content {
+        grid-template-columns: 1fr;
+        gap: 15px;
         padding: 15px;
-        margin-bottom: 15px;
-        border-radius: 12px;
     }
 
-    /* Адаптация сетки мемов */
-    .memes-grid {
-        columns: 2;
-        column-gap: 10px;
-        padding: 10px;
+    .post {
+        min-height: auto;
     }
 
-    /* Улучшение модальных окон */
+    /* Подвал */
+    .container {
+        width: 100%;
+        margin-left: 0;
+        padding: 20px 15px;
+    }
+
+    .dz {
+        font-size: 16px;
+    }
+
+    /* Кнопка добавления поста */
+    .add-post-btn {
+        right: 15px;
+        bottom: 15px;
+        width: 45px;
+        height: 45px;
+        font-size: 20px;
+    }
+
+    /* Модальное окно */
     .modal-content {
-        width: 95%;
-        margin: 10px auto;
+        width: 90%;
+        margin: 10% auto;
         padding: 15px;
-        max-height: 90vh;
     }
 
-    /* Адаптация форм */
-    .form-group {
-        margin-bottom: 12px;
+    /* Гамбургер меню */
+    .menu-toggle {
+        display: flex;
+        position: fixed;
+        top: 15px;
+        left: 15px;
+        z-index: 1002;
+        width: 30px;
+        height: 25px;
+        flex-direction: column;
+        justify-content: space-between;
+        cursor: pointer;
     }
 
-    input, select, textarea {
-        font-size: 16px; /* Предотвращает масштабирование на iOS */
-        padding: 10px;
+    .menu-toggle span {
+        display: block;
+        width: 100%;
+        height: 3px;
+        background-color: var(--text-color);
+        border-radius: 3px;
+        transition: all 0.3s ease;
     }
 
-    /* Улучшение кнопок */
-    .btn, .action-btn {
-        padding: 8px 16px;
-        min-height: 44px; /* Улучшение доступности */
-    }
-}
-
-/* Дополнительные стили для очень маленьких экранов */
-@media screen and (max-width: 480px) {
-    /* Дальнейшее уменьшение сетки мемов */
-    .memes-grid {
-        columns: 1;
-    }
-
-    /* Адаптация заголовков */
-    h1 { font-size: 24px; }
-    h2 { font-size: 20px; }
-    h3 { font-size: 18px; }
-
-    /* Улучшение навигации */
-    .sidebar-link {
-        padding: 12px;
+    /* Затемнение фона */
+    .overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        backdrop-filter: blur(3px);
     }
 
-    /* Оптимизация модальных окон */
-    .modal-content {
-        padding: 10px;
-    }
-}
-
-/* Улучшение взаимодействия на тачскринах */
-@media (hover: none) {
-    /* Отключение эффектов наведения */
-    .post:hover,
-    .homework-card:hover,
-    .file-category:hover {
-        transform: none;
-        box-shadow: var(--text-container-shadow);
-    }
-
-    /* Увеличение области касания */
-    .sidebar-link,
-    .btn,
-    .action-btn {
-        padding: 12px 20px;
+    .overlay.active {
+        display: block;
     }
 }
 
-/* Оптимизация для ландшафтной ориентации */
+/* Ландшафтная ориентация */
 @media screen and (max-width: 768px) and (orientation: landscape) {
-    .sidebar {
-        height: 60px;
-    }
-
-    .content {
-        margin-left: 60px;
-    }
-
-    /* Адаптация модальных окон */
     .modal-content {
+        margin: 5% auto;
         max-height: 80vh;
+        overflow-y: auto;
+    }
+
+    .table-container {
+        max-height: calc(100vh - 200px);
+        overflow-y: auto;
     }
 }
