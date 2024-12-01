@@ -25,3 +25,15 @@ function toggleTheme() {
 if (themeToggle) {
     themeToggle.addEventListener('change', toggleTheme);
 }
+
+// Загрузка аватарки пользователя
+document.addEventListener('DOMContentLoaded', function() {
+    const userAvatar = document.getElementById('userAvatar');
+    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    
+    if (currentUser && currentUser.avatar) {
+        userAvatar.src = currentUser.avatar;
+    } else {
+        userAvatar.src = '../default-avatar.png'; // Путь к дефолтной аватарке
+    }
+});

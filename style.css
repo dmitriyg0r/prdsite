@@ -1076,25 +1076,23 @@ body[data-theme="dark"] *::-webkit-scrollbar-thumb:hover {
     width: 0;
   }
 
-/* Стили для контейнера аватарки */
-.user-avatar-container {
+.avatar-container {
     position: fixed;
     top: 20px;
     right: 20px;
     z-index: 1000;
-    cursor: pointer;
 }
 
-.user-avatar {
+.avatar-image {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    object-fit: cover;
+    cursor: pointer;
     border: 2px solid #fff;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     transition: transform 0.2s;
 }
 
-.user-avatar:hover {
+.avatar-image:hover {
     transform: scale(1.1);
 }
