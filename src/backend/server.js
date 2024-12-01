@@ -361,33 +361,37 @@ app.get('/api/scores', async (req, res) => {
 
 // Маршрут для загрузки аватара
 app.post('/api/upload-avatar', upload.single('avatar'), (req, res) => {
-    if (!req.file) {
-        return res.status(400).json({
-            success: false,
-            message: 'Файл не был загружен'
-        });
-    }
-
-    const username = req.body.username;
-    const user = users.find(u => u.username === username);
-    
-    if (!user) {
-        return res.status(404).json({
-            success: false,
-            message: 'Пользователь не найден'
-        });
-    }
-
-    user.avatar = `/uploads/avatars/${req.file.filename}`;
-    saveUsers(users);
-
-    res.json({
-        success: true,
-        message: 'Аватар успешно загружен',
-        data: {
-            avatarUrl: user.avatar
+    try {
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: 'Файл не загружен'
+            });
         }
-    });
+
+        const username = req.body.username;
+        const avatarPath = req.file.filename; // Используем только имя файла
+
+        // Обновляем информацию о пользователе
+        const userIndex = users.findIndex(u => u.username === username);
+        if (userIndex !== -1) {
+            users[userIndex].avatar = avatarPath;
+            saveUsers(users);
+        }
+
+        res.json({
+            success: true,
+            data: {
+                avatarUrl: `/uploads/avatars/${avatarPath}` // Формируем URL для клиента
+            }
+        });
+    } catch (error) {
+        console.error('Error uploading avatar:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Ошибка при загрузке аватара'
+        });
+    }
 });
 
 // Маршрут для получения аватара
@@ -621,6 +625,14 @@ app.get('/api/friends/list', (req, res) => {
         .map(f => {
             const friendUsername = f.user1 === username ? f.user2 : f.user1;
             const friend = users.find(u => u.username === friendUsername);
+            
+            // Добавляем логирование для отладки
+            console.log('Friend data:', {
+                username: friendUsername,
+                avatar: friend?.avatar,
+                fullAvatarUrl: friend?.avatar ? `/uploads/avatars/${friend.avatar}` : null
+            });
+
             return {
                 username: friendUsername,
                 avatarUrl: friend?.avatar ? `/uploads/avatars/${friend.avatar}` : null,
