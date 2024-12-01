@@ -1,4 +1,20 @@
 @media screen and (max-width: 768px) {
+    /* Фиксированная ширина контента */
+    body {
+        width: 100%;
+        overflow-x: hidden;
+        position: relative;
+    }
+
+    /* Основной контент */
+    main {
+        width: 100%;
+        margin-left: 0;
+        padding: 60px 15px 20px;
+        position: relative;
+        overflow-x: hidden;
+    }
+
     /* Боковое меню */
     .sidebar {
         position: fixed;
@@ -10,13 +26,15 @@
         background: var(--sidebar-background);
         padding: 60px 20px 20px;
         z-index: 1001;
-        transition: left 0.3s ease;
+        transition: transform 0.3s ease;
         overflow-y: auto;
         display: flex;
         flex-direction: column;
+        transform: translateX(-100%);
     }
 
     .sidebar.active {
+        transform: translateX(0);
         left: 0;
     }
 
@@ -65,6 +83,7 @@
         justify-content: space-between;
         cursor: pointer;
         z-index: 1002;
+        background: transparent;
     }
 
     .menu-toggle span {
@@ -91,7 +110,6 @@
 
     /* Затемнение фона */
     .overlay {
-        display: none;
         position: fixed;
         top: 0;
         left: 0;
@@ -99,12 +117,14 @@
         height: 100%;
         background: rgba(0, 0, 0, 0.5);
         z-index: 1000;
-        backdrop-filter: blur(3px);
-        transition: opacity 0.3s ease;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
     }
 
     .overlay.active {
-        display: block;
+        opacity: 1;
+        visibility: visible;
     }
 
     /* Логотип в меню */
@@ -127,6 +147,44 @@
         border-radius: 10px;
         background: rgba(255, 255, 255, 0.1);
     }
+
+    /* Таблица расписания */
+    .table-container {
+        width: 100%;
+        margin: 15px 0;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        position: relative;
+    }
+
+    table {
+        min-width: 700px;
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    /* Новости */
+    .news-content {
+        width: 100%;
+        padding: 15px;
+        margin: 0;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .post {
+        width: 100%;
+        margin: 0;
+    }
+}
+
+/* Блокировка прокрутки при открытом меню */
+body.menu-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    height: 100%;
 }
 
 /* Ландшафтная ориентация */

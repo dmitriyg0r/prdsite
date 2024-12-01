@@ -45,8 +45,8 @@ document.addEventListener('DOMContentLoaded', function() {
         sidebar.classList.toggle('active');
         overlay.classList.toggle('active');
         
-        // Блокировка прокрутки при открытом меню
-        document.body.style.overflow = sidebar.classList.contains('active') ? 'hidden' : '';
+        // Переключение класса для блокировки прокрутки
+        body.classList.toggle('menu-open');
     }
 
     // Обработчики событий для открытия/закрытия меню
