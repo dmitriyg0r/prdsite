@@ -130,7 +130,7 @@ app.use((req, res, next) => {
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         const uploadDir = path.join(__dirname, 'uploads', 'avatars');
-        // С��здаем директорию, если она не существует
+        // Создаем директорию, если она не существует
         if (!fs.existsSync(uploadDir)) {
             fs.mkdirSync(uploadDir, { recursive: true });
         }
@@ -370,7 +370,7 @@ app.post('/api/upload-avatar', upload.single('avatar'), (req, res) => {
         }
 
         const username = req.body.username;
-        const avatarPath = req.file.filename;
+        const avatarPath = req.file.filename; // Используем только имя файла
 
         // Обновляем информацию о пользователе
         const userIndex = users.findIndex(u => u.username === username);
@@ -382,7 +382,7 @@ app.post('/api/upload-avatar', upload.single('avatar'), (req, res) => {
         res.json({
             success: true,
             data: {
-                avatarUrl: `/api/uploads/avatars/${avatarPath}`
+                avatarUrl: `/uploads/avatars/${avatarPath}` // Формируем URL для клиента
             }
         });
     } catch (error) {
@@ -609,13 +609,15 @@ app.post('/api/friends/reject/:requestId', (req, res) => {
     });
 });
 
-// Обновляем путь к статическим файлам
-app.use('/api/uploads', express.static('/var/www/html/src/backend/uploads'));
+// Настраиваем статические файлы с абсолютным путем
+const uploadsPath = '/var/www/html/src/backend/uploads';
+console.log('Путь к загрузкам:', uploadsPath);
+app.use('/uploads', express.static(uploadsPath));
 
 // Маршрут для проверки доступности файла
 app.get('/api/check-avatar/:filename', (req, res) => {
     const filename = req.params.filename;
-    const filepath = path.join(__dirname, 'uploads', 'avatars', filename);
+    const filepath = path.join(uploadsPath, 'avatars', filename);
     
     console.log('Проверка файла:', filepath);
     if (fs.existsSync(filepath)) {
@@ -643,23 +645,17 @@ app.get('/api/friends/list', (req, res) => {
                 const friendUsername = f.user1 === username ? f.user2 : f.user1;
                 const friend = users.find(u => u.username === friendUsername);
                 
-                // Формируем полный URL для аватарки
-                const avatarPath = friend?.avatar ? `/api/uploads/avatars/${friend.avatar}` : null;
-                
-                console.log('Данные друга:', {
-                    username: friendUsername,
-                    originalAvatar: friend?.avatar,
-                    avatarPath: avatarPath
-                });
+                // Формируем URL для аватарки, используя имя файла из данных пользователя
+                const avatarUrl = friend?.avatar 
+                    ? `/api/uploads/avatars/${friend.avatar}`
+                    : null;
 
                 return {
                     username: friendUsername,
-                    avatarUrl: avatarPath,
-                    online: true
+                    avatarUrl: avatarUrl,
+                    online: true // можно добавить реальную логику онлайн-статуса
                 };
             });
-
-        console.log('Отправка списка друзей:', friendsList);
 
         res.json({
             success: true,
