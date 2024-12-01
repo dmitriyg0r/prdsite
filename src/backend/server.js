@@ -174,11 +174,12 @@ app.post('/api/auth/anonymous-login', (req, res) => {
 app.get('/api/users', (req, res) => {
     console.log('GET /api/users вызван');
     
-    // Отправляем список пользователей без паролей
+    // Отправляем список пользователей без паролей, но с аватарами
     const safeUsers = users.map(user => ({
         username: user.username,
         role: user.role,
-        createdAt: user.createdAt
+        createdAt: user.createdAt,
+        avatarUrl: user.avatar // Добавляем путь к аватару
     }));
 
     res.json({

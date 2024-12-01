@@ -195,7 +195,14 @@ async function loadUsers() {
             if (usersTableBody) {
                 usersTableBody.innerHTML = data.data.map(user => `
                     <tr>
-                        <td>${user.username}</td>
+                        <td>
+                            <div class="user-row">
+                                <img src="${user.avatarUrl ? `${API_BASE_URL}${user.avatarUrl}` : '../assets/default-avatar.png'}" 
+                                     alt="Avatar" 
+                                     class="user-table-avatar">
+                                <span>${user.username}</span>
+                            </div>
+                        </td>
                         <td>${user.role}</td>
                         <td>${new Date(user.createdAt).toLocaleString()}</td>
                         <td>
@@ -420,7 +427,7 @@ async function showCreateUserModal() {
             showSuccess('Пользователь успешно создан');
             await loadUsers(); // Перезагржаем список поьзователей
         } else {
-            throw new Error(data.message || 'Ошибка при создании пол��зоватея');
+            throw new Error(data.message || 'Ошибка при создании ползоватея');
         }
     } catch (error) {
         console.error('Error creating user:', error);
