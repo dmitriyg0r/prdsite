@@ -742,13 +742,19 @@ async function rejectFriendRequest(requestId) {
 }
 
 // Загрузка списка друзей
-// ... existing code ...
-
 async function loadFriendsList() {
     try {
+        const userData = JSON.parse(localStorage.getItem('user'));
+        if (!userData?.data?.username) {
+            throw new Error('Требуется авторизация');
+        }
+
         const response = await fetch(`${API_BASE_URL}/friends/list`, {
             headers: {
-                'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${userData.data.username}`,
+                'credentials': 'include'
             }
         });
 
@@ -783,10 +789,12 @@ async function loadFriendsList() {
                     </tr>
                 `)
                 .join('');
+        } else {
+            throw new Error(data.message || 'Ошибка при загрузке списка друзей');
         }
     } catch (error) {
         console.error('Error loading friends list:', error);
-        showError('Ошибка при загрузке списка друзей');
+        showError(error.message || 'Ошибка при загрузке списка друзей');
     }
 }
 
