@@ -758,7 +758,7 @@ async function loadFriendsList() {
                 .map(friend => `
                     <tr>
                         <td>
-                            <img src="${friend.avatarUrl ? `${API_BASE_URL}${friend.avatarUrl}` : '../assets/default-avatar.png'}" 
+                            <img src="${friend.avatarUrl ? `${API_BASE_URL}/uploads/avatars/${friend.avatarUrl}` : '../assets/default-avatar.png'}" 
                                 alt="Avatar" 
                                 class="friend-avatar">
                         </td>
