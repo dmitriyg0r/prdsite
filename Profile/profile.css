@@ -833,6 +833,8 @@
     height: 40px;
     border-radius: 50%;
     object-fit: cover;
+    display: block;
+    margin: 0 auto;
 }
 
 .friend-actions {
@@ -1115,8 +1117,8 @@
     height: 40px;
     border-radius: 50%;
     object-fit: cover;
-    margin: 0 auto;
     display: block;
+    margin: 0 auto;
 }
 
 /* Стили для контейнера действий */
@@ -1207,4 +1209,16 @@
     #add-friend-modal .modal-content {
         width: 90%;
     }
+}
+
+/* Центрируем содержимое ячеек таблицы */
+.friends-table td {
+    vertical-align: middle;
+    text-align: center;
+}
+
+/* Добавляем отступы для ячейки с аватаркой */
+.friends-table td:first-child {
+    padding: 8px;
+    width: 60px;
 }
