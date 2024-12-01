@@ -163,11 +163,11 @@
 }
 
 .users-table tr:nth-child(even) {
-    background-color: #f9f9f9;
+    background-color: var(--text-container-background);
 }
 
 .users-table tr:hover {
-    background-color: #f0f0f0;
+    background-color: var(--text-container-background);
 }
 
 .action-btn {
@@ -211,7 +211,7 @@
 
 /* Темная тема */
 [data-theme="dark"] {
-    --table-hover: rgba(139, 68, 196, 0.1);
+    --table-hover: var(--text-container-background);
 }
 
 [data-theme="dark"] .form-group input {
@@ -707,7 +707,7 @@
 }
 
 .search-result-item:hover {
-    background-color: var(--table-hover);
+    background-color: var(--text-container-background);
 }
 
 .search-result-item img {
