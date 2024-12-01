@@ -360,6 +360,213 @@ app.get('/api/users/:username/avatar', (req, res) => {
     });
 });
 
+// Добавляем структуру для хранения запросов в друзья и списков друзей
+const friendRequests = [];
+const friendships = [];
+
+// Маршрут для поиска пользователей
+app.get('/api/users/search', (req, res) => {
+    const { query } = req.query;
+    if (!query) {
+        return res.json({ success: true, data: [] });
+    }
+
+    const searchResults = users
+        .filter(user => 
+            user.username.toLowerCase().includes(query.toLowerCase()) &&
+            user.username !== req.headers.authorization.split(' ')[1] // Исключаем текущего пользователя
+        )
+        .map(user => ({
+            username: user.username,
+            avatarUrl: user.avatar
+        }));
+
+    res.json({ success: true, data: searchResults });
+});
+
+// Маршрут для отправки запроса в друзья
+app.post('/api/friends/request', (req, res) => {
+    const { targetUsername } = req.body;
+    const senderUsername = req.headers.authorization.split(' ')[1];
+
+    // Проверяем существование пользователей
+    if (!users.find(u => u.username === targetUsername)) {
+        return res.status(404).json({
+            success: false,
+            message: 'Пользователь не найден'
+        });
+    }
+
+    // Проверяем, не существует ли уже запрос
+    const existingRequest = friendRequests.find(
+        req => req.from === senderUsername && req.to === targetUsername
+    );
+
+    if (existingRequest) {
+        return res.status(400).json({
+            success: false,
+            message: 'Запрос уже отправлен'
+        });
+    }
+
+    // Проверяем, не являются ли пользователи уже друзьями
+    const existingFriendship = friendships.find(
+        f => (f.user1 === senderUsername && f.user2 === targetUsername) ||
+             (f.user1 === targetUsername && f.user2 === senderUsername)
+    );
+
+    if (existingFriendship) {
+        return res.status(400).json({
+            success: false,
+            message: 'Пользователи уже являются друзьями'
+        });
+    }
+
+    // Создаем новый запрос
+    const newRequest = {
+        id: Date.now().toString(),
+        from: senderUsername,
+        to: targetUsername,
+        createdAt: new Date()
+    };
+
+    friendRequests.push(newRequest);
+
+    res.json({
+        success: true,
+        message: 'Запрос отправлен'
+    });
+});
+
+// Маршрут для получения входящих запросов в друзья
+app.get('/api/friends/requests', (req, res) => {
+    const username = req.headers.authorization.split(' ')[1];
+
+    const requests = friendRequests
+        .filter(req => req.to === username)
+        .map(req => {
+            const sender = users.find(u => u.username === req.from);
+            return {
+                id: req.id,
+                username: req.from,
+                avatarUrl: sender?.avatar,
+                createdAt: req.createdAt
+            };
+        });
+
+    res.json({
+        success: true,
+        data: requests
+    });
+});
+
+// Маршрут для принятия запроса в друзья
+app.post('/api/friends/accept/:requestId', (req, res) => {
+    const { requestId } = req.params;
+    const username = req.headers.authorization.split(' ')[1];
+
+    const requestIndex = friendRequests.findIndex(
+        req => req.id === requestId && req.to === username
+    );
+
+    if (requestIndex === -1) {
+        return res.status(404).json({
+            success: false,
+            message: 'Запрос не найден'
+        });
+    }
+
+    const request = friendRequests[requestIndex];
+
+    // Создаем новую дружбу
+    friendships.push({
+        user1: request.from,
+        user2: request.to,
+        createdAt: new Date()
+    });
+
+    // Удаляем запрос
+    friendRequests.splice(requestIndex, 1);
+
+    res.json({
+        success: true,
+        message: 'Запрос принят'
+    });
+});
+
+// Маршрут для отклонения запроса в друзья
+app.post('/api/friends/reject/:requestId', (req, res) => {
+    const { requestId } = req.params;
+    const username = req.headers.authorization.split(' ')[1];
+
+    const requestIndex = friendRequests.findIndex(
+        req => req.id === requestId && req.to === username
+    );
+
+    if (requestIndex === -1) {
+        return res.status(404).json({
+            success: false,
+            message: 'Запрос не найден'
+        });
+    }
+
+    // Удаляем запрос
+    friendRequests.splice(requestIndex, 1);
+
+    res.json({
+        success: true,
+        message: 'Запрос отклонен'
+    });
+});
+
+// Маршрут для получения списка друзей
+app.get('/api/friends/list', (req, res) => {
+    const username = req.headers.authorization.split(' ')[1];
+
+    const friendsList = friendships
+        .filter(f => f.user1 === username || f.user2 === username)
+        .map(f => {
+            const friendUsername = f.user1 === username ? f.user2 : f.user1;
+            const friend = users.find(u => u.username === friendUsername);
+            return {
+                username: friendUsername,
+                avatarUrl: friend?.avatar,
+                online: true // В реальном приложении здесь будет реальный статус
+            };
+        });
+
+    res.json({
+        success: true,
+        data: friendsList
+    });
+});
+
+// Маршрут для удаления друга
+app.delete('/api/friends/remove/:friendUsername', (req, res) => {
+    const { friendUsername } = req.params;
+    const username = req.headers.authorization.split(' ')[1];
+
+    const friendshipIndex = friendships.findIndex(
+        f => (f.user1 === username && f.user2 === friendUsername) ||
+             (f.user1 === friendUsername && f.user2 === username)
+    );
+
+    if (friendshipIndex === -1) {
+        return res.status(404).json({
+            success: false,
+            message: 'Дружба не найдена'
+        });
+    }
+
+    // Удаляем дружбу
+    friendships.splice(friendshipIndex, 1);
+
+    res.json({
+        success: true,
+        message: 'Друг удален'
+    });
+});
+
 // Запуск сервера
 const PORT = process.env.PORT || 5003;
 app.listen(PORT, () => {
