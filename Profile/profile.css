@@ -501,10 +501,14 @@
     background: var(--background-color);
     border-radius: 15px;
     box-shadow: var(--text-container-shadow);
+    position: relative;
+    z-index: 1;
 }
 
 .avatar-section {
     flex-shrink: 0;
+    position: relative;
+    z-index: 1;
 }
 
 .avatar-container {
@@ -514,6 +518,7 @@
     border-radius: 50%;
     overflow: hidden;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1;
 }
 
 #user-avatar {
