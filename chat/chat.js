@@ -21,7 +21,8 @@ function loadFriendsList() {
             const friendsListDiv = document.getElementById('friends-list');
             friendsListDiv.innerHTML = data.data.map(friend => `
                 <div class="chat-partner" onclick="openChat('${friend.username}')">
-                    <img src="${request.avatarUrl || '../assets/default-avatar.png'}" alt="Avatar" class="friend-avatar"> 
+                    <img src="${friend.avatarUrl ? `${API_BASE_URL}${friend.avatarUrl}` : '../assets/default-avatar.png'}" 
+                    alt="Avatar" class="friend-avatar">
                     <span>${friend.username}</span>
                 </div>
             `).join('');
