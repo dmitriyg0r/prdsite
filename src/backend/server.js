@@ -836,6 +836,32 @@ app.put('/api/users/:username/role', (req, res) => {
     });
 });
 
+// Add a new route to get chat partners
+app.get('/api/chat/partners', (req, res) => {
+    const currentUser = req.headers.authorization.split(' ')[1];
+
+    if (!currentUser) {
+        return res.status(401).json({
+            success: false,
+            message: 'Требуется авторизация'
+        });
+    }
+
+    const chatPartners = messages.reduce((partners, msg) => {
+        if (msg.from === currentUser && !partners.includes(msg.to)) {
+            partners.push(msg.to);
+        } else if (msg.to === currentUser && !partners.includes(msg.from)) {
+            partners.push(msg.from);
+        }
+        return partners;
+    }, []);
+
+    res.json({
+        success: true,
+        data: chatPartners
+    });
+});
+
 // Запуск сервера
 const PORT = process.env.PORT || 5003;
 app.listen(PORT, () => {

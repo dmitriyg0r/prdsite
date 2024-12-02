@@ -44,3 +44,21 @@
     border-radius: 4px;
     word-wrap: break-word;
 }
+
+.chat-partners-area {
+    width: 200px;
+    float: left;
+    border-right: 1px solid #ccc;
+    padding: 10px;
+    background-color: var(--bg-color);
+}
+
+.chat-partner {
+    padding: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.chat-partner:hover {
+    background-color: #f0f0f0;
+}

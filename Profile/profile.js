@@ -1146,12 +1146,17 @@ function initializeUserProfile() {
     // Обновляем отображение имени пользователя и роли
     const profileUsername = document.getElementById('profile-username');
     const profileRole = document.getElementById('profile-role');
+    const chatLink = document.getElementById('chat-link');
 
     if (profileUsername) {
         profileUsername.textContent = currentUser.data.username;
     }
     if (profileRole) {
         profileRole.textContent = currentUser.data.role;
+    }
+    // Показываем ссылку на чат, если пользователь авторизован
+    if (chatLink) {
+        chatLink.style.display = 'block';
     }
 
     // Обновляем интерфейс в зависимости от роли
