@@ -42,7 +42,7 @@ let currentChatPartner = null;
 function createFriendElement(friend) {
     return `
         <div class="chat-partner" onclick="openChat('${friend.username}', '${friend.avatarUrl ? `/api/${friend.avatarUrl}` : '../assets/default-avatar.png'}')">
-            <img src="${friend.avatarUrl ? `/api/${friend.avatarUrl}` : '../assets/default-avatar.png'}" alt="Avatar" class="friend-avatar">
+            <img src="${friend.avatarUrl ? `${friend.avatarUrl}` : '../assets/default-avatar.png'}" alt="Avatar" class="friend-avatar">
             <div class="friend-info">
                 <div class="friend-name">${friend.username}</div>
                 <div class="last-message">${friend.lastMessage || 'Нет сообщений'}</div>
