@@ -795,6 +795,47 @@ app.use((req, res, next) => {
     next();
 });
 
+// Маршрут для обновления роли пользователя
+app.put('/api/users/:username/role', (req, res) => {
+    const { username } = req.params;
+    const { newRole } = req.body;
+    const adminUsername = req.headers.authorization?.split(' ')[1];
+
+    // Проверяем, что запрос делает администратор
+    const admin = users.find(u => u.username === adminUsername && u.role === 'Admin');
+    if (!admin) {
+        return res.status(403).json({
+            success: false,
+            message: 'Недостаточно прав для выполнения операции'
+        });
+    }
+
+    const user = users.find(u => u.username === username);
+    if (!user) {
+        return res.status(404).json({
+            success: false,
+            message: 'Пользователь не найден'
+        });
+    }
+
+    // Запрещаем менять роль последнего администратора
+    if (user.role === 'Admin' && 
+        users.filter(u => u.role === 'Admin').length === 1) {
+        return res.status(400).json({
+            success: false,
+            message: 'Невозможно изменить роль последнего администратора'
+        });
+    }
+
+    user.role = newRole;
+    saveUsers(users);
+
+    res.json({
+        success: true,
+        message: 'Роль пользователя успешно обновлена'
+    });
+});
+
 // Запуск сервера
 const PORT = process.env.PORT || 5003;
 app.listen(PORT, () => {
