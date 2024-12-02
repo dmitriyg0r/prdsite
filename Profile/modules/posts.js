@@ -46,7 +46,7 @@ async function loadPosts() {
             postsContainer.innerHTML = response.data.map(post => `
                 <div class="post">
                     <div class="post-header">
-                        <img src="${post.authorAvatar || '/api/uploads/avatars/default-avatar.png'}" 
+                        <img src="${post.authorAvatar ? `${API_BASE_URL}${post.authorAvatar}` : `${API_BASE_URL}/uploads/avatars/default-avatar.png`}" 
                              alt="Avatar" class="post-avatar">
                         <div class="post-info">
                             <div class="post-author">${post.author}</div>
@@ -54,7 +54,7 @@ async function loadPosts() {
                         </div>
                     </div>
                     <div class="post-content">${post.content}</div>
-                    ${post.image ? `<img src="${post.image}" alt="Post image" class="post-image">` : ''}
+                    ${post.image ? `<img src="${API_BASE_URL}${post.image}" alt="Post image" class="post-image">` : ''}
                     <div class="post-actions">
                         <div class="post-action" onclick="likePost('${post.id}')">
                             <i class="fas fa-heart ${post.likedBy.includes(userData.data.username) ? 'liked' : ''}"></i>
