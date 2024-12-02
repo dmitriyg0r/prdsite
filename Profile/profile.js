@@ -49,9 +49,21 @@ let roleCheckInterval;
 // Функция проверки роли пользователя
 async function checkUserRole() {
     try {
+        const userData = localStorage.getItem('user');
+        if (!userData) {
+            console.log('No user data found in localStorage');
+            return null;
+        }
+
+        const user = JSON.parse(userData);
+        if (!user?.data?.username) {
+            console.log('Invalid user data format');
+            return null;
+        }
+
         const response = await fetch('/api/user/check-role', {
             headers: {
-                'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
+                'Authorization': `Bearer ${user.data.username}`
             }
         });
 
@@ -79,6 +91,12 @@ function updateInterfaceBasedOnRole(role) {
 
 // Функция запуска проверки роли
 function startRoleChecking() {
+    const userData = localStorage.getItem('user');
+    if (!userData) {
+        console.log('No user logged in, skipping role check');
+        return;
+    }
+
     // Проверяем роль сразу при запуске
     checkUserRole();
     
