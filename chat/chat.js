@@ -44,7 +44,7 @@ async function openChat(username, avatarUrl) {
         chatHeaderName.textContent = username;
     }
     if (chatHeaderAvatar) {
-        chatHeaderAvatar.src = "${friend.avatarUrl ? `/api/${friend.avatarUrl}` : '../assets/default-avatar.png'}"
+        chatHeaderAvatar.src = " `/api/${friend.avatarUrl}` : '../assets/default-avatar.png'}"
     }
 
     try {
