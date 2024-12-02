@@ -997,14 +997,12 @@ function displayUsers(users) {
             <td>
                 <div class="role-container">
                     <span class="current-role">${user.role}</span>
+                    <button class="btn change-role-btn" 
+                            onclick="changeRole('${user.username}', '${user.role === 'Admin' ? 'User' : 'Admin'}')"
+                            ${user.role === 'Admin' && adminsCount === 1 ? 'disabled' : ''}>
+                        ${user.role === 'Admin' ? 'Сделать пользователем' : 'Сделать админом'}
+                    </button>
                 </div>
-            </td>
-            <td>
-                <button class="btn change-role-btn" 
-                        onclick="changeRole('${user.username}', '${user.role === 'Admin' ? 'User' : 'Admin'}')"
-                        ${user.role === 'Admin' && adminsCount === 1 ? 'disabled' : ''}>
-                    ${user.role === 'Admin' ? 'Сделать пользователем' : 'Сделать админом'}
-                </button>
             </td>
             <td>${new Date(user.createdAt).toLocaleString()}</td>
             <td>
