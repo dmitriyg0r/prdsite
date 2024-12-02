@@ -1345,3 +1345,28 @@
         width: 100%;
     }
 }
+
+/* Центрирование текста в определенных колонках */
+.users-table td:nth-child(2), /* Текущая роль */
+.users-table th:nth-child(2) {
+    text-align: center;
+}
+
+.users-table td:nth-child(4), /* Дата регистрации */
+.users-table th:nth-child(4) {
+    text-align: center;
+}
+
+.users-table td:last-child, /* Действия */
+.users-table th:last-child {
+    text-align: center;
+}
+
+/* Стили для кнопок в таблице */
+.users-table .delete-btn,
+.users-table .change-role-btn {
+    margin: 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
