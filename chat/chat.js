@@ -132,7 +132,38 @@ document.addEventListener('visibilitychange', () => {
     }
 });
 
-// Функция для создания элемента сообщен��я
+// Функция для проверки статуса прочтения сообщений
+async function checkMessageStatus() {
+    if (!currentChatPartner) return;
+
+    try {
+        const response = await fetch(`/api/chat/message-status/${currentChatPartner}`, {
+            headers: {
+                'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Обновляем статус для каждого сообщения
+            data.data.forEach(messageStatus => {
+                const messageElement = document.querySelector(`[data-message-id="${messageStatus.messageId}"]`);
+                if (messageElement && messageStatus.isRead) {
+                    const statusElement = messageElement.querySelector('.message-status');
+                    if (statusElement) {
+                        statusElement.className = 'message-status status-read';
+                        statusElement.innerHTML = '<i class="fas fa-check-double"></i>';
+                    }
+                }
+            });
+        }
+    } catch (error) {
+        console.error('Error checking message status:', error);
+    }
+}
+
+// Функция для создания элемента сообщения
 function createMessageElement(message) {
     const currentUser = JSON.parse(localStorage.getItem('user')).data.username;
     const isSent = message.from === currentUser;
@@ -147,7 +178,7 @@ function createMessageElement(message) {
     }
 
     return `
-        <div class="message ${isSent ? 'message-sent' : 'message-received'}">
+        <div class="message ${isSent ? 'message-sent' : 'message-received'}" data-message-id="${message.id}">
             ${message.message}
             <div class="message-info">
                 <span class="message-time">${time}</span>
@@ -156,6 +187,9 @@ function createMessageElement(message) {
         </div>
     `;
 }
+
+// Запускаем периодическую проверку статуса сообщений
+setInterval(checkMessageStatus, 3000);
 
 // Обработчик отправки сообщения
 document.getElementById('sendMessage').addEventListener('click', sendMessage);

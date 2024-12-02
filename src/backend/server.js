@@ -624,7 +624,7 @@ app.get('/api/friends/list', (req, res) => {
             return {
                 username: friendUsername,
                 avatarUrl: friend?.avatar,
-                online: true // В будущем здесь можно реализовать реальную ��роверку онлайн-статуса
+                online: true // В будущем здесь можно реализовать реальную роверку онлайн-статуса
             };
         });
 
@@ -913,6 +913,32 @@ app.get('/api/chat/new-messages/:username', (req, res) => {
     res.json({
         success: true,
         data: newMessages
+    });
+});
+
+// Маршрут для получения статуса сообщений
+app.get('/api/chat/message-status/:username', (req, res) => {
+    const { username } = req.params;
+    const currentUser = req.headers.authorization?.split(' ')[1];
+
+    if (!currentUser || !username) {
+        return res.status(400).json({
+            success: false,
+            message: 'Недостаточно данных'
+        });
+    }
+
+    // Получаем статусы сообщений
+    const messageStatuses = messages
+        .filter(msg => msg.from === currentUser && msg.to === username)
+        .map(msg => ({
+            messageId: msg.id,
+            isRead: msg.isRead
+        }));
+
+    res.json({
+        success: true,
+        data: messageStatuses
     });
 });
 
