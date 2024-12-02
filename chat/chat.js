@@ -26,13 +26,52 @@ function loadFriendsList() {
         }
     })
     .then(response => response.json())
-    .then(data => {
+    .then(async data => {
         if (data.success) {
             const friendsListDiv = document.getElementById('friends-list');
-            friendsListDiv.innerHTML = data.data.map(friend => createFriendElement(friend)).join('');
+            // Получаем последние сообщения для каждого друга
+            const friendsWithMessages = await Promise.all(
+                data.data.map(async friend => {
+                    const lastMessage = await getLastMessage(friend.username);
+                    return {
+                        ...friend,
+                        lastMessage: lastMessage
+                    };
+                })
+            );
+            friendsListDiv.innerHTML = friendsWithMessages.map(friend => createFriendElement(friend)).join('');
         }
     })
     .catch(error => console.error('Error loading friends list:', error));
+}
+
+// Функция для получения последнего сообщения
+async function getLastMessage(username) {
+    try {
+        const response = await fetch(`/api/chat/history/${username}`, {
+            headers: {
+                'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
+            }
+        });
+        const data = await response.json();
+        
+        if (data.success && data.data.length > 0) {
+            const lastMsg = data.data[data.data.length - 1];
+            const currentUser = JSON.parse(localStorage.getItem('user')).data.username;
+            const isOwnMessage = lastMsg.from === currentUser;
+            
+            // Обрезаем сообщение если оно слишком длинное
+            const truncatedMessage = lastMsg.message.length > 30 
+                ? lastMsg.message.substring(0, 30) + '...' 
+                : lastMsg.message;
+            
+            return isOwnMessage ? `Вы: ${truncatedMessage}` : truncatedMessage;
+        }
+        return 'Нет сообщений';
+    } catch (error) {
+        console.error('Error getting last message:', error);
+        return 'Нет сообщений';
+    }
 }
 
 // Глобальная переменная для текущего собеседника
@@ -45,7 +84,7 @@ function createFriendElement(friend) {
             <img src="${friend.avatarUrl ? `/api/${friend.avatarUrl}` : '../assets/default-avatar.png'}" alt="Avatar" class="friend-avatar">
             <div class="friend-info">
                 <div class="friend-name">${friend.username}</div>
-                <div class="last-message">${friend.lastMessage || 'Нет сообщений'}</div>
+                <div class="last-message">${friend.lastMessage}</div>
             </div>
         </div>
     `;
@@ -272,7 +311,7 @@ async function sendMessage() {
             body: JSON.stringify({
                 to: currentChatPartner,
                 message: message,
-                isRead: false // Изначально сообщение не прочитано
+                isRead: false
             })
         });
 
@@ -294,6 +333,9 @@ async function sendMessage() {
                 top: chatMessages.scrollHeight,
                 behavior: 'smooth'
             });
+
+            // Обновляем список друзей для отображения последнего сообщения
+            loadFriendsList();
         }
     } catch (error) {
         console.error('Error sending message:', error);
