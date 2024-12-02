@@ -78,7 +78,7 @@
             <!-- Контейнер входа -->
             <div id="login-container" style="display: none;">
                 <h2>Вход в систему</h2>
-                <form id="login-form">
+                <form id="login-form" onsubmit="handleLogin(event)">
                     <div class="form-group">
                         <label for="login-username">Имя:</label>
                         <input type="text" id="login-username" required>
@@ -91,7 +91,7 @@
                         </div>
                     </div>
                     <button type="submit" class="btn primary-btn">Войти</button>
-                    <button type="button" id="anonymous-login-btn" class="btn secondary-btn">
+                    <button type="button" id="anonymous-login-btn" class="btn secondary-btn" onclick="handleAnonymousLogin()">
                         Анонимный вход
                     </button>
                     <button type="button" class="btn register-btn" onclick="showRegisterForm()">
@@ -103,7 +103,7 @@
             <!-- Форма регистрации -->
             <div id="register-container" style="display: none;">
                 <h2>Регистрация</h2>
-                <form id="register-form">
+                <form id="register-form" onsubmit="handleRegister(event)">
                     <div class="form-group">
                         <label for="reg-username">Имя пользователя:</label>
                         <input type="text" id="reg-username" required>
@@ -231,7 +231,7 @@
     </main>
 
     <script>
-    // Определяем функции переключения форм глобально
+    // Определяем функции переключения форм г��обально
     function showLoginForm() {
         document.getElementById('login-container').style.display = 'block';
         document.getElementById('register-container').style.display = 'none';
@@ -243,7 +243,6 @@
     }
     </script>
 
-    <script src="profile.js"></script>
     <script src="../main.js"></script>
     <script src="../Profile/profile.js"></script>
     
@@ -269,7 +268,7 @@
                 </a>
             </li>
             <li>
-                <a href="profile.html">
+                <a href="profile.html" class="active">
                     <i class="fas fa-user"></i>
                     <span>Профиль</span>
                 </a>
