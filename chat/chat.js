@@ -23,13 +23,9 @@ async function getLastMessages() {
     try {
         const response = await fetch('/api/chat/last-messages', {
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
             }
         });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
 
         const data = await response.json();
         return data.success ? data.data : {};
@@ -42,39 +38,24 @@ async function getLastMessages() {
 // Функция для загрузки списка друзей с последними сообщениями
 async function loadFriendsList() {
     try {
-        const response = await fetch('/api/chat/friends', {
+        const response = await fetch('/api/friends', {
             headers: {
                 'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
             }
         });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
 
         const data = await response.json();
         const lastMessages = await getLastMessages();
 
         if (data.success) {
             const friendsList = document.getElementById('friends-list');
-            if (!friendsList) {
-                console.error('Friends list element not found');
-                return;
-            }
-
             friendsList.innerHTML = data.data.map(friend => {
                 const lastMessage = lastMessages[friend.username] || { message: 'Нет сообщений', timestamp: null };
                 return createFriendElement(friend, lastMessage);
             }).join('');
-        } else {
-            console.error('Failed to load friends list:', data.message);
         }
     } catch (error) {
         console.error('Error loading friends list:', error);
-        const friendsList = document.getElementById('friends-list');
-        if (friendsList) {
-            friendsList.innerHTML = '<div class="error-message">Не удалось загрузить список друзей</div>';
-        }
     }
 }
 
@@ -138,12 +119,6 @@ const styles = `
     color: var(--text-secondary);
     font-size: 0.8rem;
     white-space: nowrap;
-}
-
-.error-message {
-    padding: 20px;
-    color: var(--text-color);
-    text-align: center;
 }
 `;
 
@@ -282,7 +257,7 @@ async function checkNewMessages() {
 // Запускаем периодическую проверку новых сообщений
 setInterval(checkNewMessages, 5000);
 
-// Обработчик события вид��мости страницы
+// Обработчик события видимости страницы
 document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && currentChatPartner) {
         markMessagesAsRead(currentChatPartner);
