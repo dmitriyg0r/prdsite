@@ -190,6 +190,7 @@
     transition: all 0.3s ease;
     font-size: 14px;
     white-space: nowrap;
+    min-width: 180px;
 }
 
 .change-role-btn:hover:not(:disabled) {
@@ -210,15 +211,13 @@
     border-radius: 4px;
     cursor: pointer;
     transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 
-.delete-btn:hover:not(:disabled) {
-    background-color: #ff6666;
-}
-
-.delete-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+.delete-btn i {
+    font-size: 14px;
 }
 
 /* Темная тема */
@@ -281,6 +280,13 @@
     .users-table th,
     .users-table td {
         padding: 8px 10px;
+    }
+
+    .change-role-btn,
+    .delete-btn {
+        padding: 4px 8px;
+        font-size: 12px;
+        min-width: auto;
     }
 }
 
