@@ -29,12 +29,7 @@ function loadFriendsList() {
     .then(data => {
         if (data.success) {
             const friendsListDiv = document.getElementById('friends-list');
-            friendsListDiv.innerHTML = data.data.map(friend => `
-                <div class="chat-partner" onclick="openChat('${friend.username}', '${friend.avatarUrl}')">
-                    <img src="${friend.avatarUrl ? `/api/${friend.avatarUrl}` : '../assets/default-avatar.png'}" alt="Avatar" class="friend-avatar">
-                    <span>${friend.username}</span>
-                </div>
-            `).join('');
+            friendsListDiv.innerHTML = data.data.map(friend => createFriendElement(friend)).join('');
         }
     })
     .catch(error => console.error('Error loading friends list:', error));
@@ -64,7 +59,6 @@ async function openChat(username, avatarUrl) {
     const allChats = document.querySelectorAll('.chat-partner');
     allChats.forEach(chat => chat.classList.remove('active'));
     const currentChat = Array.from(allChats).find(chat => 
-        chat.querySelector('span').textContent === username ||
         chat.querySelector('.friend-name').textContent === username
     );
     if (currentChat) {
