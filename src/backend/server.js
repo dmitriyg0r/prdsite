@@ -642,27 +642,39 @@ app.post('/api/friends/reject/:requestId', (req, res) => {
 });
 
 // Маршрут для получения списка друзей
-app.get('/api/friends/list', (req, res) => {
-    const username = req.headers.authorization?.split(' ')[1];
-
-    if (!username) {
+app.get('/api/chat/friends', (req, res) => {
+    const currentUser = req.headers.authorization?.split(' ')[1];
+    
+    if (!currentUser) {
         return res.status(401).json({
             success: false,
-            message: 'Требуется авторизация'
+            message: 'Unauthorized'
         });
     }
 
-    const friendsList = friendships
-        .filter(f => f.user1 === username || f.user2 === username)
-        .map(f => {
-            const friendUsername = f.user1 === username ? f.user2 : f.user1;
-            const friend = users.find(u => u.username === friendUsername);
-            return {
-                username: friendUsername,
-                avatarUrl: friend?.avatar,
-                online: true // В будущем здесь можно реализ��вать реальную роверку онлайн-статуса
-            };
+    // Находим текущего пользователя
+    const user = users.find(u => u.username === currentUser);
+    
+    if (!user || !user.friends) {
+        return res.json({
+            success: true,
+            data: []
         });
+    }
+
+    // Получаем список друзей с их данными
+    const friendsList = user.friends
+        .map(friendUsername => {
+            const friend = users.find(u => u.username === friendUsername);
+            if (friend) {
+                return {
+                    username: friend.username,
+                    avatarUrl: friend.avatar || null
+                };
+            }
+            return null;
+        })
+        .filter(friend => friend !== null); // Убираем null значения
 
     res.json({
         success: true,
@@ -670,36 +682,65 @@ app.get('/api/friends/list', (req, res) => {
     });
 });
 
-// Маршрут для удаления друга
-app.delete('/api/friends/remove/:friendUsername', (req, res) => {
-    const { friendUsername } = req.params;
-    const username = req.headers.authorization?.split(' ')[1];
-
-    if (!username) {
+// Маршрут для получения последних сообщений
+app.get('/api/chat/last-messages', (req, res) => {
+    const currentUser = req.headers.authorization?.split(' ')[1];
+    
+    if (!currentUser) {
         return res.status(401).json({
             success: false,
-            message: 'Требуется авторизация'
+            message: 'Unauthorized'
         });
     }
 
-    const friendshipIndex = friendships.findIndex(
-        f => (f.user1 === username && f.user2 === friendUsername) ||
-             (f.user1 === friendUsername && f.user2 === username)
-    );
-
-    if (friendshipIndex === -1) {
-        return res.status(404).json({
-            success: false,
-            message: 'Дружба не найдена'
+    // Находим текущего пользователя и его друзей
+    const user = users.find(u => u.username === currentUser);
+    if (!user || !user.friends) {
+        return res.json({
+            success: true,
+            data: {}
         });
     }
 
-    friendships.splice(friendshipIndex, 1);
-    saveFriendships(friendships);
+    // Получаем последние сообщения только для друзей
+    const lastMessages = {};
+    messages.forEach(msg => {
+        if ((msg.from === currentUser || msg.to === currentUser) && 
+            user.friends.includes(msg.from === currentUser ? msg.to : msg.from)) {
+            const otherUser = msg.from === currentUser ? msg.to : msg.from;
+            if (!lastMessages[otherUser] || new Date(msg.timestamp) > new Date(lastMessages[otherUser].timestamp)) {
+                lastMessages[otherUser] = {
+                    message: msg.message,
+                    timestamp: msg.timestamp
+                };
+            }
+        }
+    });
 
     res.json({
         success: true,
-        message: 'Друг удален'
+        data: lastMessages
+    });
+});
+
+// Маршрут для проверки статуса дружбы
+app.get('/api/chat/check-friendship/:username', (req, res) => {
+    const currentUser = req.headers.authorization?.split(' ')[1];
+    const targetUsername = req.params.username;
+    
+    if (!currentUser) {
+        return res.status(401).json({
+            success: false,
+            message: 'Unauthorized'
+        });
+    }
+
+    const user = users.find(u => u.username === currentUser);
+    const isFriend = user && user.friends && user.friends.includes(targetUsername);
+
+    res.json({
+        success: true,
+        data: { isFriend }
     });
 });
 
@@ -1008,62 +1049,6 @@ app.post('/api/schedule/update', (req, res) => {
             message: 'Ошибка при обновлении расписания'
         });
     }
-});
-
-// Маршрут для получения последних сообщений
-app.get('/api/chat/last-messages', (req, res) => {
-    const currentUser = req.headers.authorization?.split(' ')[1];
-    
-    if (!currentUser) {
-        return res.status(400).json({
-            success: false,
-            message: 'Unauthorized'
-        });
-    }
-
-    // Получаем последние сообщения для каждого чата
-    const lastMessages = {};
-    messages.forEach(msg => {
-        if (msg.from === currentUser || msg.to === currentUser) {
-            const otherUser = msg.from === currentUser ? msg.to : msg.from;
-            if (!lastMessages[otherUser] || new Date(msg.timestamp) > new Date(lastMessages[otherUser].timestamp)) {
-                lastMessages[otherUser] = {
-                    message: msg.message,
-                    timestamp: msg.timestamp
-                };
-            }
-        }
-    });
-
-    res.json({
-        success: true,
-        data: lastMessages
-    });
-});
-
-// Маршрут для получения списка друзей (всех пользователей)
-app.get('/api/chat/friends', (req, res) => {
-    const currentUser = req.headers.authorization?.split(' ')[1];
-    
-    if (!currentUser) {
-        return res.status(401).json({
-            success: false,
-            message: 'Unauthorized'
-        });
-    }
-
-    // Получаем список всех пользователей, кроме текущего
-    const friendsList = users
-        .filter(user => user.username !== currentUser)
-        .map(user => ({
-            username: user.username,
-            avatarUrl: user.avatar || null
-        }));
-
-    res.json({
-        success: true,
-        data: friendsList
-    });
 });
 
 // Запуск сервера
