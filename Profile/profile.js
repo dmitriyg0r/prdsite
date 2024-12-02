@@ -1,3 +1,184 @@
+// Определяем базовый URL API
+const API_BASE_URL = 'https://adminflow.ru/api';
+
+// Вспомогательные функции
+const showError = (message) => {
+    const errorMessage = document.getElementById('error-message');
+    if (errorMessage) {
+        errorMessage.textContent = message;
+        errorMessage.style.display = 'block';
+        errorMessage.style.backgroundColor = '#ff4444';
+        
+        setTimeout(() => {
+            errorMessage.style.display = 'none';
+        }, 5000);
+    }
+};
+
+const showSuccess = (message) => {
+    const errorMessage = document.getElementById('error-message');
+    if (errorMessage) {
+        errorMessage.textContent = message;
+        errorMessage.style.display = 'block';
+        errorMessage.style.backgroundColor = '#4CAF50';
+        
+        setTimeout(() => {
+            errorMessage.style.display = 'none';
+        }, 3000);
+    }
+};
+
+const togglePassword = (formType) => {
+    const passwordInput = formType === 'login' 
+        ? document.getElementById('login-password')
+        : document.getElementById('reg-password');
+    const eyeIcon = passwordInput.nextElementSibling;
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        eyeIcon.classList.add('show');
+    } else {
+        passwordInput.type = 'password';
+        eyeIcon.classList.remove('show');
+    }
+};
+
+// Функция для входа
+async function handleLogin(event) {
+    event.preventDefault();
+    console.log('Login attempt started');
+
+    const username = document.getElementById('login-username').value;
+    const password = document.getElementById('login-password').value;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ username, password }),
+            credentials: 'include'
+        });
+
+        console.log('Login response status:', response.status);
+
+        // Проверяем статус ответа
+        if (!response.ok) {
+            if (response.status === 502) {
+                throw new Error('Сервер временно недоступен. Пожалуйста, попробуйте позже.');
+            }
+            
+            // Пытаемся получить текст ошибки из ответа
+            let errorMessage;
+            try {
+                const errorData = await response.json();
+                errorMessage = errorData.message;
+            } catch (e) {
+                errorMessage = 'Ошибка при попытке входа';
+            }
+            throw new Error(errorMessage);
+        }
+
+        // Пытаемся распарсить JSON только если ответ успешный
+        let data;
+        try {
+            data = await response.json();
+        } catch (e) {
+            console.error('Error parsing response:', e);
+            throw new Error('Некорректный ответ от сервера');
+        }
+
+        if (data.success) {
+            localStorage.setItem('user', JSON.stringify(data));
+            showSuccess('Успешный вход');
+            
+            // Скрываем контейнер входа
+            const loginContainer = document.getElementById('login-container');
+            if (loginContainer) {
+                loginContainer.style.display = 'none';
+            }
+            
+            // Показываем профиль
+            showProfile(data);
+        } else {
+            throw new Error(data.message || 'Ошибка входа');
+        }
+    } catch (error) {
+        console.error('Login error:', error);
+        showError(error.message || 'Произошла ошибка при попытке входа');
+        
+        // Очищаем поле пароля при ошибке
+        const passwordInput = document.getElementById('login-password');
+        if (passwordInput) {
+            passwordInput.value = '';
+        }
+    }
+}
+
+// Функция для анонимного входа
+async function handleAnonymousLogin() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/anonymous-login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            localStorage.setItem('user', JSON.stringify(data));
+            showSuccess('Анонимный вход выполнен успешно');
+            showProfile(data);
+        } else {
+            throw new Error(data.message || 'Ошибка при анонимном входе');
+        }
+    } catch (error) {
+        console.error('Anonymous login error:', error);
+        showError(error.message || 'Ошибка при попытке анонимного входа');
+    }
+}
+
+// Функция отображеня профиля
+function showProfile(userData) {
+    // Скрываем все контейнеры авторизации
+    const authContainers = document.querySelectorAll('#login-container, #register-container');
+    authContainers.forEach(container => {
+        if (container) container.style.display = 'none';
+    });
+    
+    // Показываем информацию профиля
+    const profileInfo = document.getElementById('profile-info');
+    if (profileInfo) {
+        profileInfo.style.display = 'block';
+    }
+    
+    // Обновляем информацию профиля
+    const profileUsername = document.getElementById('profile-username');
+    const profileRole = document.getElementById('profile-role');
+    const userAvatar = document.getElementById('user-avatar');
+    
+    if (profileUsername) profileUsername.textContent = userData.data.username;
+    if (profileRole) profileRole.textContent = userData.data.role;
+    
+    // Загружаем аватар пользователя
+    loadUserAvatar(userData.data.username);
+
+    // Инициализируем загрузку аватара
+    initializeAvatarUpload();
+    
+    // Показываем админ-панель для администраторов
+    const adminSection = document.getElementById('admin-section');
+    if (adminSection && userData.data.role === 'Admin') {
+        adminSection.style.display = 'block';
+        loadUsers();
+    }
+}
+
+// Функция загрузки списка ользователей
 async function loadUsers() {
     try {
         const user = JSON.parse(localStorage.getItem('user'));
@@ -813,7 +994,12 @@ function displayUsers(users) {
                     <span>${user.username}</span>
                 </div>
             </td>
-            <td>${user.role}</td>
+            <td>
+                <div class="role-container">
+                    <span class="current-role">${user.role}</span>
+                </div>
+            </td>
+            <td>${new Date(user.createdAt).toLocaleString()}</td>
             <td>
                 <button class="btn change-role-btn" 
                         onclick="changeRole('${user.username}', '${user.role === 'Admin' ? 'User' : 'Admin'}')"
@@ -821,7 +1007,6 @@ function displayUsers(users) {
                     ${user.role === 'Admin' ? 'Сделать пользователем' : 'Сделать админом'}
                 </button>
             </td>
-            <td>${new Date(user.createdAt).toLocaleString()}</td>
             <td>
                 <button class="btn delete-btn" onclick="deleteUser('${user.username}')"
                         ${user.role === 'Admin' && adminsCount === 1 ? 'disabled' : ''}>
