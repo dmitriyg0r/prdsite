@@ -30,9 +30,12 @@ function loadFriendsList() {
         if (data.success) {
             const friendsListDiv = document.getElementById('friends-list');
             friendsListDiv.innerHTML = data.data.map(friend => `
-                <div class="chat-partner" onclick="openChat('${friend.username}', '${friend.avatarUrl}')">
+                <div class="chat-partner" data-username="${friend.username}" onclick="openChat('${friend.username}', '${friend.avatarUrl ? `/api/${friend.avatarUrl}` : '../assets/default-avatar.png'}')">
                     <img src="${friend.avatarUrl ? `/api/${friend.avatarUrl}` : '../assets/default-avatar.png'}" alt="Avatar" class="friend-avatar">
-                    <span>${friend.username}</span>
+                    <div class="friend-info">
+                        <div class="friend-name">${friend.username}</div>
+                        <div class="last-message">${friend.lastMessage || 'Нет сообщений'}</div>
+                    </div>
                 </div>
             `).join('');
         }
@@ -43,31 +46,23 @@ function loadFriendsList() {
 // Глобальная переменная для текущего собеседника
 let currentChatPartner = null;
 
-// Функция для создания элемента в списке друзей
-function createFriendElement(friend) {
-    return `
-        <div class="chat-partner" onclick="openChat('${friend.username}', '${friend.avatarUrl ? `/api/${friend.avatarUrl}` : '../assets/default-avatar.png'}')">
-            <img src="${friend.avatarUrl ? `/api/${friend.avatarUrl}` : '../assets/default-avatar.png'}" alt="Avatar" class="friend-avatar">
-            <div class="friend-info">
-                <div class="friend-name">${friend.username}</div>
-                <div class="last-message">${friend.lastMessage || 'Нет сообщений'}</div>
-            </div>
-        </div>
-    `;
-}
-
 // Функция для открытия чата с пользователем
 async function openChat(username, avatarUrl) {
     currentChatPartner = username;
     
     // Обновляем активный чат в списке
-    const chatPartners = document.querySelectorAll('.chat-partner');
-    chatPartners.forEach(partner => {
+    const allChatPartners = document.querySelectorAll('.chat-partner');
+    allChatPartners.forEach(partner => {
         partner.classList.remove('active');
-        if (partner.querySelector('.friend-name').textContent === username) {
-            partner.classList.add('active');
-        }
     });
+
+    // Находим и активируем текущий чат
+    const currentPartner = Array.from(allChatPartners).find(partner => 
+        partner.getAttribute('data-username') === username
+    );
+    if (currentPartner) {
+        currentPartner.classList.add('active');
+    }
 
     // Показываем заголовок чата и скрываем плейсхолдер
     const chatHeader = document.getElementById('chat-header');
@@ -86,7 +81,7 @@ async function openChat(username, avatarUrl) {
     if (chatHeaderName) {
         chatHeaderName.textContent = username;
     }
-    if (chatHeaderAvatar) {
+    if (chatHeaderAvatar && avatarUrl) {
         chatHeaderAvatar.src = `/api/${avatarUrl}`;
     }
 
