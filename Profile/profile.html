@@ -53,7 +53,7 @@
         <!-- Переключатель темы после навигации -->
         <div class="theme-switch-wrapper">
             <div class="theme-toggle-container">
-                <!-- Добавляем иконку для закрытого ��еню -->
+                <!-- Добавляем иконку для закрытого еню -->
                 <i class="fas fa-sun theme-icon"></i>
                 <input type="checkbox" id="theme-toggle" class="theme-checkbox">
                 <label for="theme-toggle" class="theme-label">
@@ -212,14 +212,32 @@
                     <table class="users-table">
                         <thead>
                             <tr>
-                                <th>Имя пользователя</th>
+                                <th>Пользователь</th>
                                 <th>Роль</th>
                                 <th>Дата регистрации</th>
                                 <th>Действия</th>
                             </tr>
                         </thead>
                         <tbody id="users-table-body">
-                            <!-- Данные будут добавлены динамически через JavaScript -->
+                            <!-- Шаблон для строки таблицы -->
+                            <tr>
+                                <td class="user-row">
+                                    <img src="" alt="Avatar" class="user-table-avatar">
+                                    <span>Username</span>
+                                </td>
+                                <td>
+                                    <select class="role-select" onchange="updateUserRole(this.dataset.username, this.value)">
+                                        <option value="User">User</option>
+                                        <option value="Admin">Admin</option>
+                                    </select>
+                                </td>
+                                <td>Date</td>
+                                <td>
+                                    <button class="btn delete-btn">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>

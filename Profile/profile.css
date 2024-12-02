@@ -1225,13 +1225,15 @@
 
 /* Стили для выпадающего списка ролей */
 .role-select {
-    padding: 6px 10px;
+    padding: 8px 12px;
     border: 1px solid var(--border-color);
     border-radius: 4px;
     background: var(--input-background);
     color: var(--text-color);
     cursor: pointer;
     transition: all 0.3s ease;
+    width: 100px;
+    font-size: 14px;
 }
 
 .role-select:disabled {
@@ -1247,4 +1249,15 @@
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 2px rgba(var(--button-background-rgb), 0.2);
+}
+
+/* Стили для темной темы */
+[data-theme="dark"] .role-select {
+    background: var(--surface);
+    color: var(--text-color);
+}
+
+/* Стили для ячейки с ролью */
+.users-table td:nth-child(2) {
+    text-align: center;
 }
