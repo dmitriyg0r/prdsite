@@ -1002,7 +1002,7 @@
     color: var(--text-color);
 }
 
-/* Анимация для сообщений */
+/* Анимац��я для сообщений */
 @keyframes messageAppear {
     from {
         opacity: 0;
@@ -1221,4 +1221,30 @@
 .friends-table td:first-child {
     padding: 8px;
     width: 60px;
+}
+
+/* Стили для выпадающего списка ролей */
+.role-select {
+    padding: 6px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: var(--input-background);
+    color: var(--text-color);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.role-select:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.role-select:hover:not(:disabled) {
+    border-color: var(--primary-color);
+}
+
+.role-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(var(--button-background-rgb), 0.2);
 }

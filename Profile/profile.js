@@ -511,7 +511,7 @@ function initializeAvatarUpload() {
         };
         reader.readAsDataURL(file);
 
-        // Загружаем файл на сервер
+        // Загружаем файл на ��ервер
         await uploadAvatar(file);
     });
 }
@@ -571,7 +571,7 @@ async function loadUserAvatar(username) {
 
 // Добавляем новые функции для работы с друзьями
 
-// Показать модальное окно добавления друга
+// По��азать модальное окно добавления друга
 function showAddFriendModal() {
     const modal = document.getElementById('add-friend-modal');
     modal.style.display = 'block';
@@ -632,7 +632,7 @@ async function searchUsers(searchTerm) {
     }, 300); // Задержка для предотвращения частых запросов
 }
 
-// Отправка запроса в друзья
+// Отправка запроса �� друзья
 async function sendFriendRequest(targetUsername) {
     try {
         const response = await fetch(`${API_BASE_URL}/friends/request`, {
@@ -683,7 +683,7 @@ async function loadFriendRequests() {
                                 Принять
                             </button>
                             <button class="btn danger-btn" onclick="rejectFriendRequest('${request.id}')">
-                                Отклонить
+                                Откло��ить
                             </button>
                         </div>
                     </div>
@@ -976,5 +976,65 @@ function startCheckingMessages() {
 
 function stopCheckingMessages() {
     clearInterval(checkMessagesInterval);
+}
+
+// Функция для отображения пользователей в таблице
+function displayUsers(users) {
+    const tableBody = document.getElementById('users-table-body');
+    tableBody.innerHTML = users.map(user => `
+        <tr>
+            <td class="user-row">
+                ${user.avatarUrl ? 
+                    `<img src="${user.avatarUrl}" alt="Avatar" class="user-table-avatar">` : 
+                    '<i class="fas fa-user"></i>'
+                }
+                ${user.username}
+            </td>
+            <td>
+                <select class="role-select" onchange="updateUserRole('${user.username}', this.value)" 
+                        ${user.role === 'Admin' && 
+                          users.filter(u => u.role === 'Admin').length === 1 ? 
+                          'disabled' : ''}>
+                    <option value="User" ${user.role === 'User' ? 'selected' : ''}>User</option>
+                    <option value="Admin" ${user.role === 'Admin' ? 'selected' : ''}>Admin</option>
+                </select>
+            </td>
+            <td>${new Date(user.createdAt).toLocaleString()}</td>
+            <td>
+                <button class="btn delete-btn" onclick="deleteUser('${user.username}')"
+                        ${user.role === 'Admin' && 
+                          users.filter(u => u.role === 'Admin').length === 1 ? 
+                          'disabled' : ''}>
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// Функция для обновления роли пользователя
+async function updateUserRole(username, newRole) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/users/${username}/role`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
+            },
+            body: JSON.stringify({ newRole })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            showSuccess('Роль пользователя успешно обновлена');
+            loadUsers(); // Перезагружаем список пользователей
+        } else {
+            showError(data.message);
+        }
+    } catch (error) {
+        console.error('Error updating user role:', error);
+        showError('Ошибка при обновлении роли пользователя');
+    }
 }
 
