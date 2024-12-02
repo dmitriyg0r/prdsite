@@ -422,7 +422,7 @@ async function deleteUser(username) {
             // Перезагружаем список пользователей
             loadUsers();
         } else {
-            throw new Error(data.message || 'Ошибка при удалении пользов��теля');
+            throw new Error(data.message || 'Ошибка при удалении пользователя');
         }
     } catch (error) {
         console.error('Error deleting user:', error);
@@ -640,7 +640,7 @@ async function loadUserAvatar(username) {
 
 // Добавляем новые функции для работы с друзьями
 
-// Поазать модальное окно добавления д��уга
+// Поазать модальное окно добавления дуга
 function showAddFriendModal() {
     const modal = document.getElementById('add-friend-modal');
     modal.style.display = 'block';
@@ -928,7 +928,7 @@ function openChat(username) {
     startCheckingMessages();
 }
 
-// Функция зак��ытия чата
+// Функция закытия чата
 function closeChat() {
     stopCheckingMessages();
     currentChatPartner = null;
@@ -1137,4 +1137,30 @@ async function changeRole(username, newRole) {
         showError('Ошибка при изменении роли пользователя');
     }
 }
+
+// Функция для инициализации профиля пользователя
+function initializeUserProfile() {
+    const currentUser = JSON.parse(localStorage.getItem('user'));
+    if (!currentUser?.data) return;
+
+    // Обновляем отображение имени пользователя и роли
+    const profileUsername = document.getElementById('profile-username');
+    const profileRole = document.getElementById('profile-role');
+
+    if (profileUsername) {
+        profileUsername.textContent = currentUser.data.username;
+    }
+    if (profileRole) {
+        profileRole.textContent = currentUser.data.role;
+    }
+
+    // Обновляем интерфейс в зависимости от роли
+    updateInterfaceBasedOnRole(currentUser.data.role);
+}
+
+// Вызываем инициализацию профиля при загрузке страницы
+document.addEventListener('DOMContentLoaded', () => {
+    initializeUserProfile();
+    startRoleChecking(); // Запускаем проверку роли
+});
 
