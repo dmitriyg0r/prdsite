@@ -776,7 +776,7 @@ app.post('/api/chat/send', messageUpload.single('file'), (req, res) => {
         if (req.file) {
             newMessage.attachment = {
                 filename: req.file.originalname,
-                path: `/uploads/messages/${req.file.filename}`,
+                path: `/api/uploads/messages/${req.file.filename}`,
                 size: req.file.size
             };
         }
@@ -797,10 +797,20 @@ app.post('/api/chat/send', messageUpload.single('file'), (req, res) => {
     }
 });
 
-// Добавляем маршрут для доступа к файлам сообщений
+// Обновляем маршрут для доступа к файлам
+app.use('/api/uploads/messages', express.static(path.join(__dirname, 'uploads', 'messages')));
+
+// Добавляем отдельный маршрут для проверки существования файла
 app.get('/api/uploads/messages/:filename', (req, res) => {
     const filepath = path.join(__dirname, 'uploads', 'messages', req.params.filename);
-    res.sendFile(filepath);
+    if (fs.existsSync(filepath)) {
+        res.sendFile(filepath);
+    } else {
+        res.status(404).json({
+            success: false,
+            message: 'Файл не найден'
+        });
+    }
 });
 
 // Маршрут для удаления сообщения

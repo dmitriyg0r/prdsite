@@ -308,7 +308,7 @@ async function checkMessageStatus() {
     }
 }
 
-// Обновляем функцию создания элемента сообщения
+// Обновленная функция создания элемента сообщения
 function createMessageElement(message) {
     const currentUser = JSON.parse(localStorage.getItem('user')).data.username;
     const isSent = message.from === currentUser;
@@ -327,17 +327,20 @@ function createMessageElement(message) {
         const fileExtension = message.attachment.filename.split('.').pop().toLowerCase();
         const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(fileExtension);
         
+        // Получаем полный URL файла
+        const fileUrl = new URL(message.attachment.path, window.location.origin).href;
+        
         if (isImage) {
             attachmentHtml = `
                 <div class="message-attachment">
-                    <img src="${message.attachment.path}" 
+                    <img src="${fileUrl}" 
                          alt="${message.attachment.filename}" 
-                         onclick="openImageModal('${message.attachment.path}')"
+                         onclick="openImageModal('${fileUrl}')"
+                         onerror="this.onerror=null; this.src='../assets/error-image.png';"
                          loading="lazy">
                 </div>
             `;
         } else {
-            // Определяем иконку файла в зависимости от типа
             let fileIcon = 'fa-file';
             if (fileExtension === 'pdf') fileIcon = 'fa-file-pdf';
             else if (['doc', 'docx'].includes(fileExtension)) fileIcon = 'fa-file-word';
@@ -345,7 +348,7 @@ function createMessageElement(message) {
 
             attachmentHtml = `
                 <div class="message-attachment">
-                    <div class="file-preview" onclick="downloadFile('${message.attachment.path}', '${message.attachment.filename}')">
+                    <div class="file-preview" onclick="downloadFile('${fileUrl}', '${message.attachment.filename}')">
                         <i class="fas ${fileIcon} file-icon"></i>
                         <div class="file-info">
                             <span class="file-name">${message.attachment.filename}</span>
@@ -562,7 +565,7 @@ function handleFileSelect(event) {
 
     // Проверяем размер файла (5MB = 5 * 1024 * 1024 bytes)
     if (file.size > 5 * 1024 * 1024) {
-        alert('Файл слишк��м большой. Максимальный размер: 5MB');
+        alert('Файл слишкм большой. Максимальный размер: 5MB');
         event.target.value = ''; // Очищаем input
         return;
     }
@@ -641,17 +644,19 @@ function closeImageModal() {
     }
 }
 
-async function downloadFile(path, filename) {
+async function downloadFile(url, filename) {
     try {
-        const response = await fetch(path);
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Network response was not ok');
+        
         const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
+        const downloadUrl = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = url;
+        a.href = downloadUrl;
         a.download = filename;
         document.body.appendChild(a);
         a.click();
-        window.URL.revokeObjectURL(url);
+        window.URL.revokeObjectURL(downloadUrl);
         document.body.removeChild(a);
     } catch (error) {
         console.error('Error downloading file:', error);
