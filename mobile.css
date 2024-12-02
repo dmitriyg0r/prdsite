@@ -180,3 +180,38 @@ main {
         font-size: 11px;
     }
 }
+
+@media (max-width: 768px) {
+    :root {
+        --sidebar-width: 100%;
+        --sidebar-height: 60px;
+    }
+    
+    .sidebar {
+        bottom: 0;
+        width: 100%;
+        height: var(--sidebar-height);
+        
+        &:hover {
+            width: 100%;
+        }
+    }
+    
+    .sidebar-nav {
+        flex-direction: row;
+        justify-content: space-around;
+    }
+    
+    main {
+        margin-left: 0;
+        margin-bottom: var(--sidebar-height);
+    }
+    
+    .table-container {
+        overflow-x: auto;
+        
+        table {
+            min-width: 600px;
+        }
+    }
+}
