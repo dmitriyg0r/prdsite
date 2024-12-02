@@ -1,0 +1,97 @@
+/* Мобильные стили */
+@media screen and (max-width: 768px) {
+    /* Скрываем боковое меню на мобильных устройствах */
+    .sidebar {
+        display: none;
+    }
+
+    /* Основные стили для мобильной версии */
+    body {
+        padding-bottom: 60px;
+        margin-left: 0;
+    }
+
+    /* Стили для мобильного меню */
+    .mobile-nav {
+        display: block;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background-color: var(--bg-color);
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+    }
+
+    .mobile-nav ul {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        margin: 0;
+        padding: 8px 0;
+        list-style: none;
+    }
+
+    .mobile-nav ul li a {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-decoration: none;
+        color: var(--text-color);
+        font-size: 0.75rem;
+        padding: 5px;
+    }
+
+    .mobile-nav ul li a i {
+        font-size: 1.5rem;
+        margin-bottom: 4px;
+    }
+
+    /* Адаптация контента */
+    .container {
+        width: 100%;
+        padding: 0 15px;
+        margin: 0 auto;
+    }
+
+    /* Адаптация таблицы расписания */
+    .table-container {
+        overflow-x: auto;
+        margin: 0 -15px;
+        padding: 0 15px;
+    }
+
+    table {
+        min-width: 800px;
+    }
+
+    /* Адаптация размеров текста */
+    h1 {
+        font-size: 1.8rem;
+        margin: 15px 0;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+    }
+
+    p {
+        font-size: 1rem;
+        line-height: 1.4;
+    }
+}
+
+/* Темная тема для мобильной версии */
+@media screen and (max-width: 768px) {
+    body[data-theme="dark"] .mobile-nav {
+        background-color: var(--bg-color);
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
+    }
+}
+
+/* Скрываем мобильное меню на десктопе */
+@media screen and (min-width: 769px) {
+    .mobile-nav {
+        display: none;
+    }
+}
