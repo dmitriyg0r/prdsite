@@ -7,8 +7,13 @@
 
     /* Основные стили для мобильной версии */
     body {
-        padding-bottom: 60px;
+        padding-bottom: 70px;
         margin-left: 0;
+        background-color: var(--bg-color);
+    }
+
+    main {
+        padding: 15px;
     }
 
     /* Стили для мобильного меню */
@@ -18,9 +23,10 @@
         bottom: 0;
         left: 0;
         width: 100%;
-        background-color: var(--bg-color);
-        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+        background-color: var(--sidebar-bg);
+        border-top: 1px solid var(--border-color);
         z-index: 1000;
+        padding: 8px 0;
     }
 
     .mobile-nav ul {
@@ -28,7 +34,7 @@
         justify-content: space-around;
         align-items: center;
         margin: 0;
-        padding: 8px 0;
+        padding: 0;
         list-style: none;
     }
 
@@ -39,12 +45,24 @@
         text-decoration: none;
         color: var(--text-color);
         font-size: 0.75rem;
-        padding: 5px;
+        padding: 8px;
+        transition: all 0.3s ease;
     }
 
     .mobile-nav ul li a i {
-        font-size: 1.5rem;
+        font-size: 1.4rem;
         margin-bottom: 4px;
+        color: var(--text-color);
+    }
+
+    .mobile-nav ul li a:hover,
+    .mobile-nav ul li a:active {
+        color: var(--accent-color);
+    }
+
+    .mobile-nav ul li a:hover i,
+    .mobile-nav ul li a:active i {
+        color: var(--accent-color);
     }
 
     /* Адаптация контента */
@@ -59,33 +77,102 @@
         overflow-x: auto;
         margin: 0 -15px;
         padding: 0 15px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
     }
 
     table {
         min-width: 800px;
+        border-collapse: collapse;
+        margin: 15px 0;
+    }
+
+    table th,
+    table td {
+        padding: 10px;
+        font-size: 0.9rem;
+    }
+
+    /* Стили для новостей */
+    .news {
+        margin: 20px 0;
+        padding: 15px;
+        border-radius: 10px;
+        background-color: var(--card-bg);
+    }
+
+    .news-title {
+        font-size: 1.5rem;
+        margin-bottom: 15px;
+    }
+
+    /* Кнопка добавления поста */
+    .add-post-btn {
+        position: fixed;
+        right: 15px;
+        bottom: 80px;
+        z-index: 999;
+        padding: 12px 20px;
+        border-radius: 25px;
+        background-color: var(--accent-color);
+        color: white;
+        border: none;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Модальное окно */
+    .modal-content {
+        width: 90%;
+        max-width: 500px;
+        margin: 20px auto;
+        padding: 20px;
+        border-radius: 10px;
     }
 
     /* Адаптация размеров текста */
     h1 {
-        font-size: 1.8rem;
+        font-size: 1.6rem;
         margin: 15px 0;
     }
 
     h2 {
-        font-size: 1.5rem;
+        font-size: 1.4rem;
+        margin: 12px 0;
     }
 
     p {
         font-size: 1rem;
-        line-height: 1.4;
+        line-height: 1.5;
+        margin: 10px 0;
+    }
+
+    /* Улучшенные отступы для контента */
+    .text-container {
+        padding: 20px 15px;
+    }
+
+    .dz {
+        font-size: 1.2rem;
+        text-align: center;
+        margin: 15px 0;
+    }
+
+    .ps {
+        text-align: center;
+        font-size: 0.9rem;
+        color: var(--text-secondary);
     }
 }
 
 /* Темная тема для мобильной версии */
 @media screen and (max-width: 768px) {
     body[data-theme="dark"] .mobile-nav {
-        background-color: var(--bg-color);
-        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
+        background-color: var(--sidebar-bg);
+        border-top: 1px solid var(--border-color);
+    }
+
+    body[data-theme="dark"] .news {
+        background-color: var(--card-bg);
     }
 }
 
