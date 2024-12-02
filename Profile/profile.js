@@ -305,58 +305,6 @@ function handleLogout() {
     stopRoleChecking(); // Останавливаем проверку роли при выходе
 }
 
-// Глобальные переменные (объявляем только один раз)
-const DEFAULT_AVATAR = '/assets/default-avatar.png';
-let currentUser = null;
-let searchTimeout = null; // Единственное объявление searchTimeout
-
-// Функция инициализации профиля пользователя
-async function initializeUserProfile(userData) {
-    try {
-        currentUser = userData;
-        
-        // Обновляем UI элементы
-        updateUIElements();
-        
-        // Загружаем список друзей
-        await loadFriendsList();
-        
-        // Проверяем роль пользователя
-        const role = await checkUserRole();
-        handleUserRole(role);
-        
-        console.log('User profile initialized successfully');
-    } catch (error) {
-        console.error('Error initializing user profile:', error);
-    }
-}
-
-// Функция обновления UI элементов
-function updateUIElements() {
-    // Обновляем аватар
-    const avatarImg = document.getElementById('userAvatar');
-    if (avatarImg) {
-        avatarImg.src = currentUser.avatarUrl ? `/api/${currentUser.avatarUrl}` : DEFAULT_AVATAR;
-        avatarImg.onerror = function() {
-            this.src = DEFAULT_AVATAR;
-        };
-    }
-
-    // Обновляем имя пользователя
-    const usernameElement = document.getElementById('username');
-    if (usernameElement && currentUser.username) {
-        usernameElement.textContent = currentUser.username;
-    }
-
-    // Обновляем другие элементы UI в зависимости от ваших потребностей
-}
-
-// Функция для обработки роли пользователя
-function handleUserRole(role) {
-    // Здесь логика обработки роли пользователя
-    console.log('User role:', role);
-}
-
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', async () => {
     try {
@@ -365,9 +313,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Проверяем наличие сохраненной сессии
         const savedSession = localStorage.getItem('user');
         if (savedSession) {
+            console.log('Found saved session');
             const userData = JSON.parse(savedSession);
             if (userData && userData.data) {
-                await initializeUserProfile(userData.data);
+                await initializeUserInterface(userData.data);
             }
         }
 
@@ -408,13 +357,7 @@ function attachEventHandlers() {
         logoutBtn.addEventListener('click', handleLogout);
         console.log('Logout handler attached');
     }
-
-    // Добавляем другие обработчики событий по необходимости
 }
-
-// Экспортируем функции, которые могут понадобиться в других частях приложения
-window.initializeUserProfile = initializeUserProfile;
-window.handleUserRole = handleUserRole;
 
 // Функция для удаления пользователя
 async function deleteUser(username) {
@@ -677,7 +620,9 @@ function showAddFriendModal() {
         modal.style.display = 'none';
     };
 }
+
 // Поиск пользователей
+let searchTimeout;
 async function searchUsers(searchTerm) {
     const searchResults = document.getElementById('search-results');
     
@@ -733,7 +678,7 @@ async function sendFriendRequest(targetUsername) {
         const data = await response.json();
 
         if (data.success) {
-            showSuccess('Запрос в др��зья отправлен');
+            showSuccess('Запрос в друзья отправлен');
             document.getElementById('add-friend-modal').style.display = 'none';
         } else {
             throw new Error(data.message);
@@ -1129,24 +1074,29 @@ async function changeRole(username, newRole) {
     }
 }
 
-// Функция для инициализации пользовательского интерфейса
-function initializeUserInterface(userData) {
-    // Здесь должна быть логика инициализации интерфейса
-    console.log('Initializing user interface with data:', userData);
+// Функция для инициализации профиля пользователя
+function initializeUserProfile() {
+    const currentUser = JSON.parse(localStorage.getItem('user'));
+    if (!currentUser?.data) return;
 
-    // Пример: отображение аватара
-    displayAvatar(userData.avatarUrl);
-}
+    // Обновляем отображение имени пользователя и роли
+    const profileUsername = document.getElementById('profile-username');
+    const profileRole = document.getElementById('profile-role');
+    const chatLink = document.getElementById('chat-link');
 
-// Функция для отображения аватара
-function displayAvatar(avatarUrl) {
-    const avatarImg = document.getElementById('userAvatar');
-    if (avatarImg) {
-        avatarImg.src = avatarUrl ? `/api/${avatarUrl}` : '/assets/default-avatar.png';
-        avatarImg.onerror = function() {
-            this.src = '/assets/default-avatar.png';
-        };
+    if (profileUsername) {
+        profileUsername.textContent = currentUser.data.username;
     }
+    if (profileRole) {
+        profileRole.textContent = currentUser.data.role;
+    }
+    // Показываем ссылку на чат, если пользователь авторизован
+    if (chatLink) {
+        chatLink.style.display = 'block';
+    }
+
+    // Обновляем интерфейс в зависимости от роли
+    updateInterfaceBasedOnRole(currentUser.data.role);
 }
 
 // Вызываем инициализацию профиля при загрузке страницы
