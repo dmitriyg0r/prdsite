@@ -187,6 +187,20 @@ async function searchUsers(searchTerm) {
 // Функция для отображения стены друга
 async function showFriendWall(username) {
     try {
+        // Скрываем форму создания поста при просмотре чужой стены
+        const postForm = document.querySelector('.post-form');
+        const wallTitle = document.querySelector('.wall-section h3');
+        const currentUser = JSON.parse(localStorage.getItem('user'));
+        
+        if (username === currentUser.data.username) {
+            postForm.style.display = 'block';
+            wallTitle.textContent = 'Моя стена';
+        } else {
+            postForm.style.display = 'none';
+            wallTitle.textContent = `Стена пользователя ${username}`;
+        }
+
+        // Загружаем посты друга
         const response = await apiRequest(`/posts/user/${username}`);
 
         if (response.success) {
@@ -194,9 +208,25 @@ async function showFriendWall(username) {
             postsContainer.innerHTML = response.data.map(post => `
                 <div class="post">
                     <div class="post-header">
-                        <img src="${user.avatarUrl ? `${API_BASE_URL}${user.avatarUrl}` : `${API_BASE_URL}/uploads/avatars/default-avatar.png`}" alt="Avatar"> 
+                        <img src="${post.authorAvatar ? `${API_BASE_URL}${post.authorAvatar}` : `${API_BASE_URL}/uploads/avatars/default-avatar.png`}" 
                              alt="Avatar" class="post-avatar">
-                        // ... остальной код ...
+                        <div class="post-info">
+                            <div class="post-author">${post.author}</div>
+                            <div class="post-date">${new Date(post.createdAt).toLocaleString()}</div>
+                        </div>
+                    </div>
+                    <div class="post-content">${post.content}</div>
+                    ${post.image ? `<img src="${API_BASE_URL}${post.image}" alt="Post image" class="post-image">` : ''}
+                    <div class="post-actions">
+                        <div class="post-action" onclick="likePost('${post.id}')">
+                            <i class="fas fa-heart ${post.likedBy.includes(currentUser.data.username) ? 'liked' : ''}"></i>
+                            <span>${post.likes || 0}</span>
+                        </div>
+                        ${post.author === currentUser.data.username ? `
+                            <div class="post-action" onclick="deletePost('${post.id}')">
+                                <i class="fas fa-trash"></i>
+                            </div>
+                        ` : ''}
                     </div>
                 </div>
             `).join('');
