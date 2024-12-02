@@ -131,7 +131,7 @@ export function handleLogout() {
 }
 
 // Функция для отображения профиля
-export function showProfile(userData) {
+function showProfile(userData) {
     // Скрываем все контейнеры авторизации
     const authContainers = document.querySelectorAll('#login-container, #register-container');
     authContainers.forEach(container => {
@@ -227,8 +227,12 @@ function initializeAvatarUpload() {
     }
 }
 
-// Экспортируем дополнительные функции
+// Экспортируем все функции в одном месте в конце файла
 export {
+    handleLogin,
+    handleRegister,
+    handleLogout,
+    handleAnonymousLogin,
     showProfile,
     loadUserAvatar,
     initializeAvatarUpload
