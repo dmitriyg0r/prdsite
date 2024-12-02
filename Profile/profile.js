@@ -43,6 +43,73 @@ const togglePassword = (formType) => {
     }
 };
 
+// Глобальная переменная для интервала проверки роли
+let roleCheckInterval;
+
+// Функция проверки роли пользователя
+async function checkUserRole() {
+    try {
+        const currentUser = JSON.parse(localStorage.getItem('user'));
+        if (!currentUser?.data?.username) return;
+
+        const response = await fetch(`${API_BASE_URL}/users/check-role`, {
+            headers: {
+                'Authorization': `Bearer ${currentUser.data.username}`
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success && data.data.role !== currentUser.data.role) {
+            // Обновляем роль в localStorage
+            currentUser.data.role = data.data.role;
+            localStorage.setItem('user', JSON.stringify(currentUser));
+
+            // Обновляем отображение роли в профиле
+            const profileRole = document.getElementById('profile-role');
+            if (profileRole) {
+                profileRole.textContent = data.data.role;
+            }
+
+            // Обновляем интерфейс в зависимости от роли
+            updateInterfaceBasedOnRole(data.data.role);
+        }
+    } catch (error) {
+        console.error('Error checking user role:', error);
+    }
+}
+
+// Функция обновления интерфейса на основе роли
+function updateInterfaceBasedOnRole(role) {
+    const adminSection = document.getElementById('admin-section');
+    if (adminSection) {
+        adminSection.style.display = role === 'Admin' ? 'block' : 'none';
+    }
+    
+    // Здесь можно добавить другие элементы интерфейса, которые зависят от роли
+}
+
+// Функция запуска проверки роли
+function startRoleChecking() {
+    // Проверяем роль сразу при запуске
+    checkUserRole();
+    
+    // Устанавливаем интервал проверки (каждые 30 секунд)
+    roleCheckInterval = setInterval(checkUserRole, 30000);
+}
+
+// Функция остановки проверки роли
+function stopRoleChecking() {
+    clearInterval(roleCheckInterval);
+}
+
+// Добавляем проверку роли при определенных событиях
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+        checkUserRole();
+    }
+});
+
 // Функция для входа
 async function handleLogin(event) {
     event.preventDefault();
@@ -102,6 +169,7 @@ async function handleLogin(event) {
             
             // Показываем профиль
             showProfile(data);
+            startRoleChecking(); // Запускаем проверку роли после успешного входа
         } else {
             throw new Error(data.message || 'Ошибка входа');
         }
@@ -246,6 +314,7 @@ function handleLogout() {
         console.error('Error during logout:', error);
         showError('Ошибка при выходе из системы');
     }
+    stopRoleChecking(); // Останавливаем проверку роли при выходе
 }
 
 // Инициализация при загрузке страницы
@@ -353,7 +422,7 @@ async function deleteUser(username) {
             // Перезагружаем список пользователей
             loadUsers();
         } else {
-            throw new Error(data.message || 'Ошибка при удалении пользователя');
+            throw new Error(data.message || 'Ошибка при удалении пользов��теля');
         }
     } catch (error) {
         console.error('Error deleting user:', error);
@@ -571,7 +640,7 @@ async function loadUserAvatar(username) {
 
 // Добавляем новые функции для работы с друзьями
 
-// Поазать модальное окно добавления друга
+// Поазать модальное окно добавления д��уга
 function showAddFriendModal() {
     const modal = document.getElementById('add-friend-modal');
     modal.style.display = 'block';
@@ -859,7 +928,7 @@ function openChat(username) {
     startCheckingMessages();
 }
 
-// Функция закрытия чата
+// Функция зак��ытия чата
 function closeChat() {
     stopCheckingMessages();
     currentChatPartner = null;
@@ -894,7 +963,7 @@ async function loadChatHistory(username) {
                 if (scrolledToBottom) {
                     chatMessages.scrollTop = chatMessages.scrollHeight;
                 } else {
-                    // Сохраняем текущую позицию ��рокрутки
+                    // Сохраняем текущую позицию прокрутки
                     chatMessages.scrollTop = chatMessages.scrollTop;
                 }
             }
@@ -1058,20 +1127,8 @@ async function changeRole(username, newRole) {
 
         if (data.success) {
             showSuccess('Роль пользователя успешно обновлена');
-            // Сразу загружаем обновленный список пользователей
             await loadUsers();
-            
-            // Если текущий пользователь изменил свою роль, обновляем информацию в localStorage
-            const currentUser = JSON.parse(localStorage.getItem('user'));
-            if (currentUser?.data?.username === username) {
-                currentUser.data.role = newRole;
-                localStorage.setItem('user', JSON.stringify(currentUser));
-                // Обновляем отображение роли в профиле, если такой элемент существует
-                const profileRole = document.getElementById('profile-role');
-                if (profileRole) {
-                    profileRole.textContent = newRole;
-                }
-            }
+            await checkUserRole(); // Проверяем роль после изменения
         } else {
             showError(data.message || 'Ошибка при обновлении роли');
         }
