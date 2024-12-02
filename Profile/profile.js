@@ -23,7 +23,7 @@ import {
     sendMessage,
     deleteMessage,
     initializeChatHandlers
-} from './modules/chat.js';
+} from './modules/chatModule.js';
 
 import {
     loadFriendsList,

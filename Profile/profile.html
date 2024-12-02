@@ -297,9 +297,8 @@
     </nav>
 
     <script type="module">
-        import { initializeChat } from './Profile/modules/chat.js';
+        import { initializeChat } from './modules/chatModule.js';  // Изменено с chat.js на chatModule.js
         
-        // Инициализация чата после загрузки DOM
         document.addEventListener('DOMContentLoaded', () => {
             initializeChat();
         });
