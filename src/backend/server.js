@@ -660,7 +660,7 @@ app.get('/api/friends/list', (req, res) => {
             return {
                 username: friendUsername,
                 avatarUrl: friend?.avatar,
-                online: true // В будущем здесь можно реализовать реальную роверку онлайн-статуса
+                online: true // В будущем здесь можно реализ��вать реальную роверку онлайн-статуса
             };
         });
 
@@ -1038,6 +1038,31 @@ app.get('/api/chat/last-messages', (req, res) => {
     res.json({
         success: true,
         data: lastMessages
+    });
+});
+
+// Маршрут для получения списка друзей (всех пользователей)
+app.get('/api/chat/friends', (req, res) => {
+    const currentUser = req.headers.authorization?.split(' ')[1];
+    
+    if (!currentUser) {
+        return res.status(401).json({
+            success: false,
+            message: 'Unauthorized'
+        });
+    }
+
+    // Получаем список всех пользователей, кроме текущего
+    const friendsList = users
+        .filter(user => user.username !== currentUser)
+        .map(user => ({
+            username: user.username,
+            avatarUrl: user.avatar || null
+        }));
+
+    res.json({
+        success: true,
+        data: friendsList
     });
 });
 

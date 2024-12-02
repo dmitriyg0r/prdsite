@@ -42,9 +42,9 @@ async function getLastMessages() {
 // Функция для загрузки списка друзей с последними сообщениями
 async function loadFriendsList() {
     try {
-        const response = await fetch('/api/friends', {
+        const response = await fetch('/api/chat/friends', {
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
             }
         });
 
@@ -71,7 +71,6 @@ async function loadFriendsList() {
         }
     } catch (error) {
         console.error('Error loading friends list:', error);
-        // Можно добавить отображение ошибки для пользователя
         const friendsList = document.getElementById('friends-list');
         if (friendsList) {
             friendsList.innerHTML = '<div class="error-message">Не удалось загрузить список друзей</div>';
@@ -283,7 +282,7 @@ async function checkNewMessages() {
 // Запускаем периодическую проверку новых сообщений
 setInterval(checkNewMessages, 5000);
 
-// Обработчик события видимости страницы
+// Обработчик события вид��мости страницы
 document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && currentChatPartner) {
         markMessagesAsRead(currentChatPartner);
