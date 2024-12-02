@@ -660,7 +660,7 @@ app.get('/api/friends/list', (req, res) => {
             return {
                 username: friendUsername,
                 avatarUrl: friend?.avatar,
-                online: true // В будущем здесь можно реализовать реальную роверку онлайн-стат��са
+                online: true // В будущем здесь можно реализовать реальную роверку онлайн-статса
             };
         });
 
@@ -1030,6 +1030,77 @@ app.get('/api/users/:username', (req, res) => {
             createdAt: user.createdAt
         }
     });
+});
+
+// Загрузка списка друзей
+app.get('/api/friends', (req, res) => {
+    try {
+        const username = req.headers.authorization?.split(' ')[1];
+        if (!username) {
+            return res.status(401).json({
+                success: false,
+                message: 'Требуется авторизация'
+            });
+        }
+
+        // Находим все дружеские связи пользователя
+        const userFriends = friendships.filter(f => 
+            f.user1 === username || f.user2 === username
+        );
+
+        // Получаем информацию о друзьях
+        const friendsList = userFriends.map(friendship => {
+            const friendUsername = friendship.user1 === username ? friendship.user2 : friendship.user1;
+            const friend = users.find(u => u.username === friendUsername);
+            
+            if (friend) {
+                return {
+                    username: friend.username,
+                    avatarUrl: friend.avatarUrl,
+                    online: friend.lastActive ? (Date.now() - friend.lastActive < 300000) : false // 5 минут
+                };
+            }
+            return null;
+        }).filter(Boolean); // Удаляем null значения
+
+        res.json({
+            success: true,
+            data: friendsList
+        });
+    } catch (error) {
+        console.error('Error loading friends:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Ошибка при загрузке списка друзей'
+        });
+    }
+});
+
+// Обновление времени последней активности пользователя
+app.post('/api/user/activity', (req, res) => {
+    try {
+        const username = req.headers.authorization?.split(' ')[1];
+        if (!username) {
+            return res.status(401).json({
+                success: false,
+                message: 'Требуется авторизация'
+            });
+        }
+
+        const user = users.find(u => u.username === username);
+        if (user) {
+            user.lastActive = Date.now();
+            saveUsers(users);
+        }
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error updating user activity:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Ошибка при обновлении активности пользователя'
+        });
+    }
 });
 
 // Запуск сервера

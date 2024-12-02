@@ -868,7 +868,7 @@ async function rejectFriendRequest(requestId) {
 // Загрузка списка друзей
 async function loadFriendsList() {
     try {
-        const response = await fetch('/api/user/friends', {
+        const response = await fetch(`${API_BASE_URL}/friends`, {
             headers: {
                 'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
             }
@@ -879,6 +879,38 @@ async function loadFriendsList() {
         }
 
         const data = await response.json();
+        
+        if (data.success) {
+            const friendsList = document.getElementById('friends-list');
+            if (friendsList) {
+                friendsList.innerHTML = data.data.map(friend => `
+                    <tr>
+                        <td>
+                            <img src="${friend.avatarUrl || '/api/assets/default-avatar.png'}" 
+                                 alt="Avatar" 
+                                 class="friend-avatar"
+                                 onerror="this.src='/api/assets/default-avatar.png'">
+                        </td>
+                        <td>${friend.username}</td>
+                        <td>
+                            <span class="friend-status">
+                                ${friend.online ? 'Онлайн' : 'Оффлайн'}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="friend-actions">
+                                <button class="btn primary-btn" onclick="openChat('${friend.username}')">
+                                    <i class="fas fa-comment"></i> Чат
+                                </button>
+                                <button class="btn danger-btn" onclick="removeFriend('${friend.username}')">
+                                    <i class="fas fa-user-minus"></i> Удалить
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+        }
         return data;
     } catch (error) {
         console.error('Error loading friends list:', error);
@@ -912,6 +944,48 @@ async function removeFriend(friendUsername) {
     }
 }
 
+async function updateUserActivity() {
+    try {
+        const userData = localStorage.getItem('user');
+        if (!userData) return;
+
+        await fetch(`${API_BASE_URL}/user/activity`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${JSON.parse(userData).data.username}`
+            }
+        });
+    } catch (error) {
+        console.error('Error updating user activity:', error);
+    }
+}
+
+// Добавляем интервал обновления активности в DOMContentLoaded
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        console.log('Page loaded, initializing...');
+        
+        // Проверяем авторизацию
+        const userData = checkAuth();
+        
+        if (userData) {
+            // Пользователь авторизован
+            await initializeUserInterface(userData);
+            startRoleChecking();
+            
+            // Запускаем обновление активности
+            updateUserActivity();
+            setInterval(updateUserActivity, 60000); // Обновляем каждую минуту
+        } else {
+            // Пользователь не авторизован
+            showLoginForm();
+        }
+
+    } catch (error) {
+        console.error('Error during initialization:', error);
+        showError('Ошибка при инициализации страницы');
+    }
+});
 // Глобальная переменная для хранения текущего собеседника
 let currentChatPartner = null;
 
