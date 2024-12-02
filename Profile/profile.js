@@ -1058,13 +1058,23 @@ async function changeRole(username, newRole) {
 
         if (data.success) {
             showSuccess('Роль пользователя успешно обновлена');
-            loadUsers(); // Перезагружаем список пользователей
+            await loadUsers();
+            
+            const currentUser = JSON.parse(localStorage.getItem('user'));
+            if (currentUser?.data?.username === username) {
+                currentUser.data.role = newRole;
+                localStorage.setItem('user', JSON.stringify(currentUser));
+                const profileRole = document.getElementById('profile-role');
+                if (profileRole) {
+                    profileRole.textContent = newRole;
+                }
+            }
         } else {
             showError(data.message || 'Ошибка при обновлении роли');
         }
     } catch (error) {
-        console.error('Error loading users:', error);
-        showError('Ошибка при загрузке списка пользователей');
+        console.error('Error changing role:', error);
+        showError('Ошибка при изменении роли пользователя');
     }
 }
 
