@@ -1000,6 +1000,7 @@ function displayUsers(users) {
                     <button class="btn change-role-btn" 
                             onclick="changeRole('${user.username}', '${user.role === 'Admin' ? 'User' : 'Admin'}')"
                             ${user.role === 'Admin' && adminsCount === 1 ? 'disabled' : ''}>
+                        <i class="fas fa-exchange-alt"></i>
                         ${user.role === 'Admin' ? 'Сделать пользователем' : 'Сделать админом'}
                     </button>
                 </div>
