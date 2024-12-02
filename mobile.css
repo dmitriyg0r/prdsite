@@ -65,27 +65,36 @@ main {
     display: none;
 }
 
-/* Медиа-запрос для мобильных устройств (ширина экрана до 768px) */
-@media screen and (max-width: 768px) {
-    /* Основные стили для мобильных устройств */
-    body {
-        font-size: 14px;
-        padding: 5px;
-    }
-
-    /* Переопределяем все существующие стили для sidebar */
+/* Сначала определяем стили для десктопов (больше 768px) */
+@media screen and (min-width: 769px) {
     .sidebar {
-        position: fixed !important; /* Используем !important для переопределения */
-        top: auto !important;      /* Отменяем позиционирование сверху */
-        bottom: 0 !important;      /* Фиксируем внизу */
+        position: fixed;
+        width: 70px;
+        height: 100vh;
+        top: 0;
+        left: 0;
+    }
+}
+
+/* Затем определяем стили только для мобильных устройств */
+@media screen and (max-width: 768px) {
+    /* Мобильное меню */
+    .sidebar {
+        position: fixed !important;
+        top: auto !important;
+        bottom: 0 !important;
         left: 0 !important;
         width: 100% !important;
         height: 60px !important;
         flex-direction: row !important;
         padding: 0 !important;
-        z-index: 9999 !important;  /* Максимальный z-index */
+        z-index: 9999 !important;
         background: var(--sidebar-background);
         box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .sidebar:hover {
+        width: 100% !important; /* Отменяем расширение при наведении на мобильных */
     }
 
     .sidebar-logo {
@@ -121,11 +130,11 @@ main {
         display: none !important;
     }
 
-    /* Обеспечиваем отступ для контента */
+    /* Основной контент */
     main {
         margin-left: 0 !important;
         padding: 10px !important;
-        padding-bottom: 70px !important; /* Отступ для нижней панели */
+        padding-bottom: 70px !important;
     }
 
     /* Адаптация заголовка */
@@ -135,7 +144,7 @@ main {
         margin-bottom: 15px;
     }
 
-    /* Адаптация таблицы расписания */
+    /* Адаптация таблицы */
     .table-container {
         overflow-x: auto;
         margin: 10px 0;
@@ -143,39 +152,12 @@ main {
     }
 
     table {
-        min-width: 600px; /* Минимальная ширина для горизонтальной прокрутки */
+        min-width: 600px;
     }
 
     th, td {
         padding: 8px 5px;
         font-size: 12px;
-    }
-
-    /* Адаптация новостного раздела */
-    .news {
-        margin: 15px 0;
-    }
-
-    .news-title {
-        font-size: 1.3em;
-    }
-
-    .news-description {
-        font-size: 0.9em;
-    }
-
-    /* Адаптация кнопки добавления поста */
-    .add-post-btn {
-        padding: 8px 16px;
-        font-size: 14px;
-        margin: 15px auto;
-    }
-
-    /* Адаптация модального окна */
-    .modal-content {
-        width: 90%;
-        padding: 15px;
-        margin: 20% auto;
     }
 
     /* Адаптация футера */
@@ -184,37 +166,9 @@ main {
         width: 100%;
         padding: 20px 10px;
     }
-
-    .dz {
-        font-size: 1.2em;
-    }
-
-    .ps {
-        font-size: 0.9em;
-    }
-
-    /* Стили для формы создания поста */
-    #postForm textarea {
-        height: 100px;
-    }
-
-    .file-input-label {
-        padding: 8px 12px;
-        font-size: 14px;
-    }
-
-    /* Адаптация новостных карточек */
-    .news-card {
-        margin: 10px 0;
-        padding: 12px;
-    }
-
-    .news-card img {
-        max-height: 200px;
-    }
 }
 
-/* Медиа-запрос для очень маленьких экранов (ширина до 320px) */
+/* Стили для очень маленьких экранов */
 @media screen and (max-width: 320px) {
     .sidebar-link i {
         font-size: 16px;
