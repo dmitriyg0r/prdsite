@@ -438,7 +438,7 @@ app.get('/api/uploads/avatars/:filename', (req, res) => {
     }
 });
 
-// Маршрут для получения информации об аватаре пользо��ателя
+// Маршрут для получения информации об аватаре пользователя
 app.get('/api/users/:username/avatar', (req, res) => {
     const { username } = req.params;
     const user = users.find(u => u.username === username);
@@ -670,7 +670,7 @@ app.get('/api/friends/list', (req, res) => {
     });
 });
 
-// Марш��ут для удаления друга
+// Маршрут для удаления друга
 app.delete('/api/friends/remove/:friendUsername', (req, res) => {
     const { friendUsername } = req.params;
     const username = req.headers.authorization?.split(' ')[1];
@@ -735,7 +735,7 @@ app.get('/api/chat/history/:username', (req, res) => {
     }
 });
 
-// Маршрут ��ля отправки сообщения
+// Маршрут для отправки сообщения
 app.post('/api/chat/send', (req, res) => {
     console.log('POST /api/chat/send вызван');
     const { to, message } = req.body;
@@ -1106,7 +1106,7 @@ app.post('/api/user/activity', (req, res) => {
 // Запуск сервера
 const PORT = process.env.PORT || 5003;
 app.listen(PORT, () => {
-    console.log(`Сервер зап��щен на порту ${PORT}`);
+    console.log(`Сервер запущен на порту ${PORT}`);
     console.log('Доступные маршруты:');
     console.log('POST /api/register');
     console.log('POST /api/auth/login');
@@ -1155,71 +1155,3 @@ app.get('/api/uploads/avatars/default-avatar.png', (req, res) => {
         res.status(404).send('Default avatar not found');
     }
 });
-
-// Добавляем обработку ошибок
-app.use((err, req, res, next) => {
-    console.error('Server error:', err);
-    res.status(500).json({
-        success: false,
-        message: 'Внутренняя ошибка сервера'
-    });
-});
-
-// Обновляем обработку статических файлов для аватаров
-app.use('/api/uploads/avatars', (req, res, next) => {
-    console.log('Avatar request:', req.path);
-    express.static(path.join(__dirname, 'uploads', 'avatars'))(req, res, err => {
-        if (err) {
-            console.error('Static file error:', err);
-            next(err);
-        }
-    });
-});
-
-// Обновляем обработчик для default-avatar.png
-app.get('/api/uploads/avatars/default-avatar.png', (req, res) => {
-    console.log('Default avatar requested');
-    const defaultAvatarPath = path.join(__dirname, 'assets', 'default-avatar.png');
-    
-    try {
-        if (fs.existsSync(defaultAvatarPath)) {
-            res.sendFile(defaultAvatarPath);
-        } else {
-            console.error('Default avatar not found at:', defaultAvatarPath);
-            res.status(404).json({
-                success: false,
-                message: 'Default avatar not found'
-            });
-        }
-    } catch (error) {
-        console.error('Error serving default avatar:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Error serving default avatar'
-        });
-    }
-});
-
-// Проверяем и создаем необходимые директории при запуске
-try {
-    const dirs = [
-        path.join(__dirname, 'uploads'),
-        path.join(__dirname, 'uploads', 'avatars'),
-        path.join(__dirname, 'assets')
-    ];
-
-    dirs.forEach(dir => {
-        if (!fs.existsSync(dir)) {
-            console.log('Creating directory:', dir);
-            fs.mkdirSync(dir, { recursive: true });
-        }
-    });
-
-    // Проверяем наличие default-avatar.png
-    const defaultAvatarPath = path.join(__dirname, 'assets', 'default-avatar.png');
-    if (!fs.existsSync(defaultAvatarPath)) {
-        console.error('Warning: default-avatar.png not found at:', defaultAvatarPath);
-    }
-} catch (error) {
-    console.error('Error setting up directories:', error);
-}
