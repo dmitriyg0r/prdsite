@@ -39,7 +39,7 @@ async function createPost() {
 async function loadPosts() {
     try {
         const userData = JSON.parse(localStorage.getItem('user'));
-        const response = await apiRequest(`/posts/${userData.data.username}`);
+        const response = await apiRequest(`/posts/user/${userData.data.username}`);
 
         if (response.success) {
             const postsContainer = document.getElementById('posts-container');
