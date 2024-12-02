@@ -742,7 +742,7 @@ async function searchUsers(searchTerm) {
                 searchResults.innerHTML = data.data
                     .map(user => `
                         <div class="search-result-item" onclick="sendFriendRequest('${user.username}')">
-                            <img src="${user.avatarUrl || '../assets/default-avatar.png'}" alt="Avatar">
+                            <img src="${user.avatarUrl || '/api/uploads/avatars/default-avatar.png'}" alt="Avatar">
                             <span>${user.username}</span>
                         </div>
                     `)
@@ -799,7 +799,7 @@ async function loadFriendRequests() {
                 .map(request => `
                     <div class="friend-request-item">
                         <div class="user-info">
-                            <img src="${request.avatarUrl || '../assets/default-avatar.png'}" alt="Avatar" class="friend-avatar">
+                            <img src="${request.avatarUrl || '/api/uploads/avatars/default-avatar.png'}" alt="Avatar" class="friend-avatar">
                             <span>${request.username}</span>
                         </div>
                         <div class="request-actions">
