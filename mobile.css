@@ -31,8 +31,8 @@
         left: 0;
         right: 0;
         width: 100vw;
-        background-color: var(--sidebar-bg);
-        border-top: 1px solid var(--border-color);
+        background: #1a1a1a;
+        border-top: 1px solid #2c2c2c;
         z-index: 1000;
         margin: 0;
         padding: 0;
@@ -46,6 +46,7 @@
         padding: 0;
         list-style: none;
         width: 100vw;
+        background: #1a1a1a;
     }
 
     .mobile-nav ul li {
@@ -61,7 +62,7 @@
         align-items: center;
         justify-content: center;
         text-decoration: none;
-        color: var(--text-color);
+        color: #ffffff;
         font-size: 0.75rem;
         padding: 8px 0;
         width: 100%;
@@ -70,7 +71,7 @@
     .mobile-nav ul li a i {
         font-size: 1.4rem;
         margin-bottom: 4px;
-        color: var(--text-color);
+        color: #ffffff;
     }
 
     /* Фиксированная ширина контейнера */
@@ -141,8 +142,22 @@
 /* Темная тема для мобильной версии */
 @media screen and (max-width: 768px) {
     body[data-theme="dark"] .mobile-nav {
-        background-color: var(--sidebar-bg);
-        border-top: 1px solid var(--border-color);
+        background: #1a1a1a;
+        border-top: 1px solid #2c2c2c;
+    }
+
+    body[data-theme="light"] .mobile-nav {
+        background: #ffffff;
+        border-top: 1px solid #e0e0e0;
+    }
+
+    body[data-theme="light"] .mobile-nav ul {
+        background: #ffffff;
+    }
+
+    body[data-theme="light"] .mobile-nav ul li a,
+    body[data-theme="light"] .mobile-nav ul li a i {
+        color: #1a1a1a;
     }
 }
 
