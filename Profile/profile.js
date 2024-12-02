@@ -1074,29 +1074,24 @@ async function changeRole(username, newRole) {
     }
 }
 
-// Функция для инициализации профиля пользователя
-function initializeUserProfile() {
-    const currentUser = JSON.parse(localStorage.getItem('user'));
-    if (!currentUser?.data) return;
+// Функция для инициализации пользовательского интерфейса
+function initializeUserInterface(userData) {
+    // Здесь должна быть логика инициализации интерфейса
+    console.log('Initializing user interface with data:', userData);
 
-    // Обновляем отображение имени пользователя и роли
-    const profileUsername = document.getElementById('profile-username');
-    const profileRole = document.getElementById('profile-role');
-    const chatLink = document.getElementById('chat-link');
+    // Пример: отображение аватара
+    displayAvatar(userData.avatarUrl);
+}
 
-    if (profileUsername) {
-        profileUsername.textContent = currentUser.data.username;
+// Функция для отображения аватара
+function displayAvatar(avatarUrl) {
+    const avatarImg = document.getElementById('userAvatar');
+    if (avatarImg) {
+        avatarImg.src = avatarUrl ? `/api/${avatarUrl}` : '/assets/default-avatar.png';
+        avatarImg.onerror = function() {
+            this.src = '/assets/default-avatar.png';
+        };
     }
-    if (profileRole) {
-        profileRole.textContent = currentUser.data.role;
-    }
-    // Показываем ссылку на чат, если пользователь авторизован
-    if (chatLink) {
-        chatLink.style.display = 'block';
-    }
-
-    // Обновляем интерфейс в зависимости от роли
-    updateInterfaceBasedOnRole(currentUser.data.role);
 }
 
 // Вызываем инициализацию профиля при загрузке страницы
