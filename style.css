@@ -1061,14 +1061,3 @@ body[data-theme="dark"] *::-webkit-scrollbar-thumb:hover {
     width: 0;
   }
 
-.change-role-btn {
-    display: inline-block; /* Убедитесь, что кнопка отображается */
-    background-color: #4CAF50; /* Цвет фона */
-    color: white; /* Цвет текста */
-    padding: 6px 12px; /* Отступы */
-    border: none; /* Без границы */
-    border-radius: 4px; /* Скругленные углы */
-    cursor: pointer; /* Курсор указателя */
-    transition: all 0.3s ease; /* Плавный переход */
-    font-size: 14px; /* Размер шрифта */
-}

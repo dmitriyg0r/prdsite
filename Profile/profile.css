@@ -181,16 +181,15 @@
 
 /* Стили для кнопки смены роли */
 .change-role-btn {
-    padding: 6px 12px;
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 14px;
-    white-space: nowrap;
-    min-width: 180px;
+    display: inline-block; /* Убедитесь, что кнопка отображается */
+    background-color: #4CAF50; /* Цвет фона */
+    color: white; /* Цвет текста */
+    padding: 6px 12px; /* Отступы */
+    border: none; /* Без границы */
+    border-radius: 4px; /* Скругленные углы */
+    cursor: pointer; /* Курсор указателя */
+    transition: all 0.3s ease; /* Плавный переход */
+    font-size: 14px; /* Размер шрифта */
 }
 
 .change-role-btn:hover:not(:disabled) {
