@@ -237,7 +237,18 @@ function createMessageElement(message) {
 // Запускаем периодическую проверку статуса сообщений
 setInterval(checkMessageStatus, 3000);
 
-// Обработчик отправки сообщения
+// Добавляем обработчик события keypress для поля ввода
+document.getElementById('messageInput').addEventListener('keypress', function(event) {
+    // Проверяем, была ли нажата клавиша Enter (код 13)
+    if (event.key === 'Enter' && !event.shiftKey) {
+        // Предотвращаем стандартное поведение (перенос строки)
+        event.preventDefault();
+        // Вызываем функцию отправки сообщения
+        sendMessage();
+    }
+});
+
+// Обработчик клика по кнопке отправки
 document.getElementById('sendMessage').addEventListener('click', sendMessage);
 
 async function sendMessage() {
