@@ -345,12 +345,52 @@ function handleLogout() {
     stopRoleChecking(); // Останавливаем проверку роли при выходе
 }
 
-// Инициализация при загрузке страницы
+// Функция для проверки авторизации и отображения соответствующего контента
+function checkAuthAndShowContent() {
+    const userData = localStorage.getItem('user');
+    const loginContainer = document.getElementById('login-container');
+    const profileInfo = document.getElementById('profile-info');
+    const adminSection = document.getElementById('admin-section');
+
+    if (!userData) {
+        // Пользователь не авторизован - показываем форму входа
+        if (loginContainer) loginContainer.style.display = 'block';
+        if (profileInfo) profileInfo.style.display = 'none';
+        if (adminSection) adminSection.style.display = 'none';
+    } else {
+        try {
+            const user = JSON.parse(userData);
+            if (user?.data?.username) {
+                // Пользователь авторизован - показываем информацию профиля
+                if (loginContainer) loginContainer.style.display = 'none';
+                if (profileInfo) profileInfo.style.display = 'block';
+                
+                // Проверяем роль для отображения админ-панели
+                if (adminSection && user.data.role === 'Admin') {
+                    adminSection.style.display = 'block';
+                }
+            } else {
+                throw new Error('Invalid user data');
+            }
+        } catch (e) {
+            console.error('Error parsing user data:', e);
+            localStorage.removeItem('user');
+            if (loginContainer) loginContainer.style.display = 'block';
+            if (profileInfo) profileInfo.style.display = 'none';
+            if (adminSection) adminSection.style.display = 'none';
+        }
+    }
+}
+
+// Модифицируем обработчик DOMContentLoaded
 document.addEventListener('DOMContentLoaded', async () => {
     try {
         console.log('Page loaded, initializing...');
         
-        // Проверяем наличие сохраненной сессии
+        // Проверяем авторизацию и показываем соответствующий контент
+        checkAuthAndShowContent();
+        
+        // Инициализируем интерфейс если пользователь авторизован
         const savedSession = localStorage.getItem('user');
         if (savedSession) {
             try {
