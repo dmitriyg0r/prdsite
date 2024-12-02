@@ -12,18 +12,30 @@
     background-color: var(--background-color);
 }
 
+/* Область со списком друзей */
 .chat-partners-area {
-    width: 300px;
+    width: 320px;
     background-color: var(--text-container-background);
     border-right: 1px solid var(--border-color);
     overflow-y: auto;
-}
-
-.chat-main {
-    flex: 1;
     display: flex;
     flex-direction: column;
-    background-color: var(--background-color);
+}
+
+/* Заголовок списка чатов */
+.chat-list-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    background-color: var(--text-container-background);
+    z-index: 1;
+}
+
+.chat-list-header h2 {
+    margin: 0;
+    color: var(--text-color);
+    font-size: 1.5rem;
 }
 
 /* Стили для списка друзей */
@@ -35,10 +47,15 @@
     align-items: center;
     gap: 15px;
     border-bottom: 1px solid var(--border-color);
+    position: relative;
 }
 
 .chat-partner:hover {
     background-color: var(--button-secondary);
+}
+
+.chat-partner.active {
+    background-color: rgba(var(--button-background-rgb), 0.1);
 }
 
 .friend-avatar {
@@ -47,6 +64,56 @@
     border-radius: 50%;
     object-fit: cover;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.friend-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.friend-name {
+    font-weight: 500;
+    color: var(--text-color);
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.last-message {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Основная область чата */
+.chat-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--background-color);
+}
+
+/* Заголовок чата */
+.chat-header {
+    padding: 15px 20px;
+    background-color: var(--text-container-background);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.chat-header .friend-avatar {
+    width: 40px;
+    height: 40px;
+}
+
+.chat-header .friend-name {
+    font-size: 1.2rem;
+    margin: 0;
 }
 
 /* Область сообщений */
@@ -61,38 +128,47 @@
 
 /* Стили для сообщений */
 .message {
-    display: inline-block;
-    padding: 12px 16px;
-    margin-bottom: 10px;
-    border-radius: 20px;
     max-width: 70%;
+    margin-bottom: 10px;
     position: relative;
     word-wrap: break-word;
 }
 
+.message-content {
+    padding: 12px 16px;
+    border-radius: 16px;
+    position: relative;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
 .message-sent {
+    align-self: flex-end;
+}
+
+.message-sent .message-content {
     background-color: var(--primary-color);
     color: var(--button-text);
-    margin-left: auto;
     border-bottom-right-radius: 4px;
 }
 
 .message-received {
+    align-self: flex-start;
+}
+
+.message-received .message-content {
     background-color: var(--text-container-background);
     color: var(--text-color);
-    margin-right: auto;
     border-bottom-left-radius: 4px;
 }
 
-/* Стили для времени и статуса сообщения */
 .message-info {
     display: flex;
     align-items: center;
     justify-content: flex-end;
     gap: 4px;
-    font-size: 11px;
     margin-top: 4px;
-    opacity: 0.7;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
 }
 
 .message-time {
@@ -108,14 +184,12 @@
     font-size: 12px;
 }
 
-/* Цвет для непрочитанного сообщения */
 .status-sent i {
-    color: #a9a9a9;
+    color: var(--text-secondary);
 }
 
-/* Цвет для прочитанного сообщения */
 .status-read i {
-    color: #4CAF50;
+    color: var(--primary-color);
 }
 
 /* Область ввода */
@@ -170,11 +244,14 @@
 /* Адаптивность для мобильных устройств */
 @media (max-width: 768px) {
     .chat-partners-area {
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
         width: 100%;
-        position: absolute;
-        height: calc(100vh - 70px);
         transform: translateX(-100%);
         transition: transform 0.3s ease;
+        z-index: 1000;
     }
 
     .chat-partners-area.active {
@@ -184,4 +261,28 @@
     .chat-main {
         width: 100%;
     }
+
+    .chat-header {
+        padding: 10px 15px;
+    }
+
+    .input-area {
+        padding: 15px;
+    }
+}
+
+/* Анимации */
+@keyframes messageAppear {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.message {
+    animation: messageAppear 0.3s ease-out;
 }
