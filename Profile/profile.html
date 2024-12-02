@@ -205,6 +205,29 @@
                                 </div>
                             </div>
                         </div>
+                        <!-- Добавляем секцию стены после информации о пользователе -->
+                        <div class="wall-section">
+                            <h3>Моя стена</h3>
+                            
+                            <!-- Форма создания поста -->
+                            <div class="post-form">
+                                <textarea id="post-content" placeholder="Что у вас нового?"></textarea>
+                                <div class="post-form-actions">
+                                    <label for="post-image" class="attach-image-btn">
+                                        <i class="fas fa-image"></i>
+                                        <input type="file" id="post-image" accept="image/*" style="display: none;">
+                                    </label>
+                                    <button class="btn primary-btn" onclick="createPost()">
+                                        <i class="fas fa-paper-plane"></i> Опубликовать
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Контейнер для постов -->
+                            <div id="posts-container">
+                                <!-- Посты будут добавляться динамически -->
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -231,7 +254,7 @@
     </main>
 
     <script>
-    // Определяем функции переключения форм г��обально
+    // Определяем функции переключения форм глобально
     function showLoginForm() {
         document.getElementById('login-container').style.display = 'block';
         document.getElementById('register-container').style.display = 'none';

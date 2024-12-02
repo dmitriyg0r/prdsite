@@ -244,6 +244,9 @@ function showProfile(userData) {
         adminSection.style.display = 'block';
         loadUsers();
     }
+
+    // Загружаем посты
+    loadPosts();
 }
 
 // Функция загрузки списка ользователей
@@ -659,7 +662,7 @@ function showAddFriendModal() {
     };
 }
 
-// Поиск пользователей
+// Поиск пол��зователе��
 let searchTimeout;
 async function searchUsers(searchTerm) {
     const searchResults = document.getElementById('search-results');
@@ -1168,4 +1171,142 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeUserProfile();
     startRoleChecking(); // Запускаем проверку роли
 });
+
+// Функция создания нового поста
+async function createPost() {
+    const content = document.getElementById('post-content').value;
+    const imageInput = document.getElementById('post-image');
+    const file = imageInput.files[0];
+
+    if (!content && !file) {
+        showError('Добавьте текст или изображение для публикации');
+        return;
+    }
+
+    try {
+        const formData = new FormData();
+        formData.append('content', content);
+        if (file) {
+            formData.append('image', file);
+        }
+
+        const userData = JSON.parse(localStorage.getItem('user'));
+        const response = await fetch(`${API_BASE_URL}/posts/create`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${userData.data.username}`
+            },
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            document.getElementById('post-content').value = '';
+            imageInput.value = '';
+            loadPosts();
+            showSuccess('Пост опубликован');
+        } else {
+            throw new Error(data.message);
+        }
+    } catch (error) {
+        console.error('Error creating post:', error);
+        showError(error.message || 'Ошибка при создании поста');
+    }
+}
+
+// Функция загрузки постов
+async function loadPosts() {
+    try {
+        const userData = JSON.parse(localStorage.getItem('user'));
+        const response = await fetch(`${API_BASE_URL}/posts/${userData.data.username}`, {
+            headers: {
+                'Authorization': `Bearer ${userData.data.username}`
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            const postsContainer = document.getElementById('posts-container');
+            postsContainer.innerHTML = data.data.map(post => `
+                <div class="post">
+                    <div class="post-header">
+                        <img src="${post.authorAvatar || '/api/uploads/avatars/default-avatar.png'}" 
+                             alt="Avatar" class="post-avatar">
+                        <div class="post-info">
+                            <div class="post-author">${post.author}</div>
+                            <div class="post-date">${new Date(post.createdAt).toLocaleString()}</div>
+                        </div>
+                    </div>
+                    <div class="post-content">${post.content}</div>
+                    ${post.image ? `<img src="${post.image}" alt="Post image" class="post-image">` : ''}
+                    <div class="post-actions">
+                        <div class="post-action" onclick="likePost('${post.id}')">
+                            <i class="fas fa-heart"></i>
+                            <span>${post.likes || 0}</span>
+                        </div>
+                        ${post.author === userData.data.username ? `
+                            <div class="post-action" onclick="deletePost('${post.id}')">
+                                <i class="fas fa-trash"></i>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+    } catch (error) {
+        console.error('Error loading posts:', error);
+        showError('Ошибка при загрузке постов');
+    }
+}
+
+// Функция для лайка поста
+async function likePost(postId) {
+    try {
+        const userData = JSON.parse(localStorage.getItem('user'));
+        const response = await fetch(`${API_BASE_URL}/posts/${postId}/like`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${userData.data.username}`
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            loadPosts();
+        }
+    } catch (error) {
+        console.error('Error liking post:', error);
+        showError('Ошибка при попытке поставить лайк');
+    }
+}
+
+// Функция удаления поста
+async function deletePost(postId) {
+    if (!confirm('Вы уверены, что хотите удалить этот пост?')) {
+        return;
+    }
+
+    try {
+        const userData = JSON.parse(localStorage.getItem('user'));
+        const response = await fetch(`${API_BASE_URL}/posts/${postId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${userData.data.username}`
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            loadPosts();
+            showSuccess('Пост удален');
+        }
+    } catch (error) {
+        console.error('Error deleting post:', error);
+        showError('Ошибка при удалении поста');
+    }
+}
 

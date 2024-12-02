@@ -1369,3 +1369,131 @@
     align-items: center;
     justify-content: center;
 }
+
+/* Стили для стены */
+.wall-section {
+    margin-top: 30px;
+    padding: 20px;
+    background: var(--text-container-background);
+    border-radius: 15px;
+    box-shadow: var(--text-container-shadow);
+}
+
+.wall-section h3 {
+    margin-bottom: 20px;
+    color: var(--text-color);
+    font-size: 20px;
+}
+
+/* Стили для формы создания поста */
+.post-form {
+    margin-bottom: 30px;
+    background: var(--background-color);
+    padding: 15px;
+    border-radius: 10px;
+}
+
+.post-form textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--input-background);
+    color: var(--text-color);
+    resize: vertical;
+    margin-bottom: 10px;
+}
+
+.post-form-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.attach-image-btn {
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 4px;
+    color: var(--text-color);
+    transition: all 0.3s ease;
+}
+
+.attach-image-btn:hover {
+    background: var(--text-container-background);
+}
+
+/* Стили для постов */
+.post {
+    background: var(--background-color);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.post-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.post-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 12px;
+}
+
+.post-info {
+    flex-grow: 1;
+}
+
+.post-author {
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.post-date {
+    font-size: 0.9em;
+    color: var(--text-secondary);
+}
+
+.post-content {
+    color: var(--text-color);
+    margin-bottom: 15px;
+    line-height: 1.5;
+}
+
+.post-image {
+    max-width: 100%;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.post-actions {
+    display: flex;
+    gap: 15px;
+    color: var(--text-secondary);
+}
+
+.post-action {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: color 0.3s ease;
+}
+
+.post-action:hover {
+    color: var(--primary-color);
+}
+
+/* Темная тема */
+[data-theme="dark"] .post {
+    background: var(--surface);
+}
+
+[data-theme="dark"] .post-form {
+    background: var(--surface);
+}

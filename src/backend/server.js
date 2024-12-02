@@ -12,6 +12,7 @@ const FRIENDS_DB_PATH = path.join(__dirname, 'friends.json');
 const FRIEND_REQUESTS_DB_PATH = path.join(__dirname, 'friend_requests.json');
 const MESSAGES_DB_PATH = path.join(__dirname, 'messages.json');
 const SCHEDULE_PATH = path.join(__dirname, 'schedule.json');
+const POSTS_DB_PATH = path.join(__dirname, 'posts.json');
 
 // Загрузка данных при старте
 let users = loadUsers();
@@ -19,6 +20,7 @@ let friendships = loadFriendships();
 let friendRequests = loadFriendRequests();
 let messages = loadMessages();
 let schedule = loadSchedule();
+let posts = loadPosts();
 
 // Функции для работы с пользователями
 function loadUsers() {
@@ -128,6 +130,26 @@ function saveSchedule(schedule) {
         fs.writeFileSync(SCHEDULE_PATH, JSON.stringify(schedule, null, 2));
     } catch (error) {
         console.error('Error saving schedule:', error);
+    }
+}
+
+// Загрузка и сохранение постов
+function loadPosts() {
+    try {
+        if (fs.existsSync(POSTS_DB_PATH)) {
+            return JSON.parse(fs.readFileSync(POSTS_DB_PATH, 'utf8'));
+        }
+    } catch (error) {
+        console.error('Error loading posts:', error);
+    }
+    return [];
+}
+
+function savePosts() {
+    try {
+        fs.writeFileSync(POSTS_DB_PATH, JSON.stringify(posts, null, 2));
+    } catch (error) {
+        console.error('Error saving posts:', error);
     }
 }
 
@@ -394,7 +416,7 @@ app.post('/api/upload-avatar', upload.single('avatar'), (req, res) => {
     const user = users.find(u => u.username === username);
     
     if (!user) {
-        // Удаляем загруженный файл, если пользоватеь не найден
+        // Удаляем загруженный файл, ес��и пользоватеь не найден
         fs.unlinkSync(req.file.path);
         return res.status(404).json({
             success: false,
@@ -1048,6 +1070,137 @@ app.post('/api/schedule/update', (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Ошибка при обновлении расписания'
+        });
+    }
+});
+
+// Маршрут для создания поста
+app.post('/api/posts/create', upload.single('image'), (req, res) => {
+    const { content } = req.body;
+    const author = req.headers.authorization.split(' ')[1];
+
+    try {
+        const newPost = {
+            id: Date.now().toString(),
+            author,
+            content,
+            createdAt: new Date(),
+            likes: 0,
+            likedBy: []
+        };
+
+        if (req.file) {
+            newPost.image = `/api/uploads/posts/${req.file.filename}`;
+        }
+
+        posts.unshift(newPost);
+        savePosts();
+
+        res.json({
+            success: true,
+            data: newPost
+        });
+    } catch (error) {
+        console.error('Error creating post:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Ошибка при создании поста'
+        });
+    }
+});
+
+// Маршрут для получения постов пользователя
+app.get('/api/posts/:username', (req, res) => {
+    const { username } = req.params;
+    
+    try {
+        const userPosts = posts
+            .filter(post => post.author === username)
+            .map(post => {
+                const user = users.find(u => u.username === post.author);
+                return {
+                    ...post,
+                    authorAvatar: user?.avatar || null
+                };
+            });
+
+        res.json({
+            success: true,
+            data: userPosts
+        });
+    } catch (error) {
+        console.error('Error getting posts:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Ошибка при получении постов'
+        });
+    }
+});
+
+// Маршрут для лайка поста
+app.post('/api/posts/:postId/like', (req, res) => {
+    const { postId } = req.params;
+    const username = req.headers.authorization.split(' ')[1];
+
+    try {
+        const post = posts.find(p => p.id === postId);
+        if (!post) {
+            return res.status(404).json({
+                success: false,
+                message: 'Пост не найден'
+            });
+        }
+
+        const likedIndex = post.likedBy.indexOf(username);
+        if (likedIndex === -1) {
+            post.likedBy.push(username);
+            post.likes++;
+        } else {
+            post.likedBy.splice(likedIndex, 1);
+            post.likes--;
+        }
+
+        savePosts();
+
+        res.json({
+            success: true,
+            data: post
+        });
+    } catch (error) {
+        console.error('Error liking post:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Ошибка при попытке поставить лайк'
+        });
+    }
+});
+
+// Маршрут для удаления поста
+app.delete('/api/posts/:postId', (req, res) => {
+    const { postId } = req.params;
+    const username = req.headers.authorization.split(' ')[1];
+
+    try {
+        const postIndex = posts.findIndex(p => p.id === postId && p.author === username);
+        if (postIndex === -1) {
+            return res.status(404).json({
+                success: false,
+                message: 'Пост не найден или у вас нет прав на его удаление'
+            });
+        }
+
+        posts.splice(postIndex, 1);
+        savePosts();
+
+        res.json({
+            success: true,
+            message: 'Пост успешно удален'
+        });
+    } catch (error) {
+        console.error('Error deleting post:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Ошибка при удалении поста'
         });
     }
 });
