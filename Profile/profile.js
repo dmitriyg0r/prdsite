@@ -18,14 +18,6 @@ import {
 } from './modules/auth.js';
 
 import {
-    openChat,
-    closeChat,
-    sendMessage,
-    deleteMessage,
-    initializeChatHandlers
-} from './modules/chatModule.js';
-
-import {
     loadFriendsList,
     loadFriendRequests,
     sendFriendRequest,
@@ -59,11 +51,6 @@ window.handleRegister = handleRegister;
 window.handleLogout = handleLogout;
 window.handleAnonymousLogin = handleAnonymousLogin;
 window.togglePassword = togglePassword;
-
-window.openChat = openChat;
-window.closeChat = closeChat;
-window.sendMessage = sendMessage;
-window.deleteMessage = deleteMessage;
 
 window.loadFriendsList = loadFriendsList;
 window.loadFriendRequests = loadFriendRequests;
@@ -112,7 +99,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         // Инициализируем обработчики
-        initializeChatHandlers();
         initializePostHandlers();
 
         // Инициализируем поиск пользователей
