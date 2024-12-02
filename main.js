@@ -44,23 +44,3 @@ function isMobileDevice() {
     // Возвращаем true только если это реально мобильное устройство
     return mobileUserAgent && isMobileWidth;
 }
-
-// Функция для загрузки мобильных стилей
-function loadMobileStyles() {
-    if (isMobileDevice()) {
-        const mobileStylesheet = document.createElement('link');
-        mobileStylesheet.rel = 'stylesheet';
-        mobileStylesheet.href = 'mobile.css';
-        document.head.appendChild(mobileStylesheet);
-        document.body.classList.add('mobile-device');
-    } else {
-        // Удаляем класс mobile-device, если это не мобильное устройство
-        document.body.classList.remove('mobile-device');
-    }
-}
-
-// Запускаем определение устройства при загрузке страницы
-document.addEventListener('DOMContentLoaded', loadMobileStyles);
-
-// Добавляем проверку при изменении размера окна
-window.addEventListener('resize', loadMobileStyles);
