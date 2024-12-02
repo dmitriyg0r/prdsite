@@ -1058,12 +1058,15 @@ async function changeRole(username, newRole) {
 
         if (data.success) {
             showSuccess('Роль пользователя успешно обновлена');
+            // Сразу загружаем обновленный список пользователей
             await loadUsers();
             
+            // Если текущий пользователь изменил свою роль, обновляем информацию в localStorage
             const currentUser = JSON.parse(localStorage.getItem('user'));
             if (currentUser?.data?.username === username) {
                 currentUser.data.role = newRole;
                 localStorage.setItem('user', JSON.stringify(currentUser));
+                // Обновляем отображение роли в профиле, если такой элемент существует
                 const profileRole = document.getElementById('profile-role');
                 if (profileRole) {
                     profileRole.textContent = newRole;
