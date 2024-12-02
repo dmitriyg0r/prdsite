@@ -214,21 +214,38 @@ async function checkNewMessages() {
         const data = await response.json();
 
         if (data.success && data.data.length > 0) {
-            // Добавляем новые сообщения в чат
+            const currentUser = JSON.parse(localStorage.getItem('user')).data.username;
             const chatMessages = document.getElementById('messages');
+            
             data.data.forEach(message => {
                 chatMessages.insertAdjacentHTML('beforeend', createMessageElement(message));
                 
-                // Показываем уведомление, если вкладка не активна
-                if (document.hidden && message.from !== JSON.parse(localStorage.getItem('user')).data.username) {
-                    console.log('Пытаемся показать уведомление для сообщения:', message);
+                // Показываем уведомление только если:
+                // 1. Вкладка не активна
+                // 2. Сообщение не от текущего пользователя
+                // 3. Документ скрыт
+                if (message.from !== currentUser && 
+                    (document.hidden || !document.hasFocus())) {
+                    console.group('Попытка показа уведомления');
+                    console.log('Сообщение от:', message.from);
+                    console.log('Текущий пользователь:', currentUser);
+                    console.log('Документ скрыт:', document.hidden);
+                    console.log('Документ в фокусе:', document.hasFocus());
+                    console.log('Текст сообщения:', message.message);
+                    console.groupEnd();
+                    
+                    // Пробуем создать тестовое уведомление
+                    try {
+                        new Notification('Тестовое уведомление');
+                    } catch (error) {
+                        console.error('Ошибка при создании тестового уведомления:', error);
+                    }
+                    
                     showNotification(message.message, message.from);
                 }
             });
             
             chatMessages.scrollTop = chatMessages.scrollHeight;
-            
-            // Отмечаем новые сообщения как прочитанные
             markMessagesAsRead(currentChatPartner);
         }
     } catch (error) {
@@ -397,60 +414,88 @@ async function requestNotificationPermission() {
 
 // Обновленная функция показа уведомлений
 async function showNotification(message, from) {
-    console.log('Начало показа уведомления:', { message, from, permission: Notification.permission });
-
+    console.group('Показ уведомления');
+    console.log('Параметры:', { message, from });
+    console.log('Текущий статус разрешения:', Notification.permission);
+    console.log('Поддержка уведомлений:', 'Notification' in window);
+    
     try {
-        // Проверяем поддержку уведомлений
         if (!("Notification" in window)) {
-            console.warn("Этот браузер не поддерживает уведомления");
+            console.error("Уведомления не поддерживаются");
             return;
         }
 
-        // Если разрешение еще не запрошено, запрашиваем его
-        if (Notification.permission === "default") {
+        // Повторно запрашиваем разрешение, если оно не получено
+        if (Notification.permission !== "granted") {
             const permission = await Notification.requestPermission();
-            console.log('Получено разрешение:', permission);
-            if (permission !== 'granted') return;
+            console.log('Новый статус разрешения:', permission);
+            if (permission !== 'granted') {
+                console.warn('Разрешение не получено');
+                return;
+            }
         }
 
-        // Показываем уведомление только если есть разрешение
-        if (Notification.permission === "granted") {
-            const notificationOptions = {
-                body: message,
-                icon: "../flow.ico",
-                tag: `chat-message-${Date.now()}`, // Уникальный тег для каждого уведомления
-                requireInteraction: true,
-                silent: false // Включаем звук уведомления
-            };
+        // Создаем уведомление с уникальным идентификатором
+        const notificationId = `msg_${Date.now()}`;
+        const notificationOptions = {
+            body: message,
+            icon: "/flow.ico", // Используем абсолютный путь
+            tag: notificationId,
+            requireInteraction: true,
+            renotify: true, // Показывать каждое новое уведомление
+            silent: false,
+            timestamp: Date.now()
+        };
 
-            const notification = new Notification(`Новое сообщение от ${from}`, notificationOptions);
+        console.log('Создание уведомления с опциями:', notificationOptions);
 
-            notification.onclick = function() {
-                console.log('Уведомление нажато');
-                window.focus();
-                if (typeof openChat === 'function') {
-                    openChat(from);
-                }
-                notification.close();
-            };
+        const notification = new Notification(
+            `Сообщение от ${from}`, 
+            notificationOptions
+        );
 
-            notification.onshow = function() {
-                console.log('Уведомление показано');
-            };
+        // Добавляем обработчики событий
+        notification.addEventListener('show', () => {
+            console.log(`Уведомление ${notificationId} показано`);
+        });
 
-            notification.onerror = function(error) {
-                console.error('Ошибка показа уведомления:', error);
-            };
+        notification.addEventListener('error', (e) => {
+            console.error(`Ошибка уведомления ${notificationId}:`, e);
+        });
 
-            // Автоматически закрываем уведомление через 5 секунд
-            setTimeout(() => {
-                notification.close();
-            }, 5000);
+        notification.addEventListener('click', () => {
+            console.log(`Уведомление ${notificationId} нажато`);
+            window.focus();
+            openChat(from);
+            notification.close();
+        });
 
-        } else {
-            console.warn('Нет разрешения на показ уведомлений. Текущий статус:', Notification.permission);
-        }
+        // Автоматическое закрытие через 10 секунд
+        setTimeout(() => {
+            notification.close();
+            console.log(`Уведомление ${notificationId} автоматически закрыто`);
+        }, 10000);
+
     } catch (error) {
         console.error('Ошибка при создании уведомления:', error);
+    } finally {
+        console.groupEnd();
     }
-} 
+}
+
+// Добавляем обработчик видимости страницы
+document.addEventListener('visibilitychange', () => {
+    console.log('Изменение видимости страницы:', {
+        hidden: document.hidden,
+        visibilityState: document.visibilityState
+    });
+});
+
+// Добавляем обработчик фокуса окна
+window.addEventListener('focus', () => {
+    console.log('Окно получило фокус');
+});
+
+window.addEventListener('blur', () => {
+    console.log('Окно потеряло фокус');
+}); 
