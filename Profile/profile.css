@@ -888,7 +888,7 @@
     transform: none;
 }
 
-/* Стили для мо��ального окна чата */
+/* Стили для моального окна чата */
 .chat-messages {
     flex-grow: 1;
     overflow-y: auto;
@@ -1225,10 +1225,10 @@
 
 /* Стили для выпадающего списка ролей */
 .role-select {
-    padding: 8px 12px;
+    padding: 6px 10px;
     border: 1px solid var(--border-color);
     border-radius: 4px;
-    background: var(--input-background);
+    background: var(--background-color);
     color: var(--text-color);
     cursor: pointer;
     transition: all 0.3s ease;
@@ -1242,19 +1242,14 @@
 }
 
 .role-select:hover:not(:disabled) {
-    border-color: var(--primary-color);
-}
-
-.role-select:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(var(--button-background-rgb), 0.2);
+    border-color: #2196F3;
 }
 
 /* Стили для темной темы */
 [data-theme="dark"] .role-select {
     background: var(--surface);
     color: var(--text-color);
+    border-color: rgba(255, 255, 255, 0.1);
 }
 
 /* Стили для ячейки с ролью */
