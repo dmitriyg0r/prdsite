@@ -60,6 +60,17 @@ function createFriendElement(friend) {
 async function openChat(username, avatarUrl) {
     currentChatPartner = username;
     
+    // Убираем класс active у всех чатов и добавляем его текущему
+    const allChats = document.querySelectorAll('.chat-partner');
+    allChats.forEach(chat => chat.classList.remove('active'));
+    const currentChat = Array.from(allChats).find(chat => 
+        chat.querySelector('span').textContent === username ||
+        chat.querySelector('.friend-name').textContent === username
+    );
+    if (currentChat) {
+        currentChat.classList.add('active');
+    }
+    
     // Показываем заголовок чата и скрываем плейсхолдер
     const chatHeader = document.getElementById('chat-header');
     const chatPlaceholder = document.getElementById('chat-placeholder');
