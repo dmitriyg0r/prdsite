@@ -999,7 +999,6 @@ function displayUsers(users) {
                     <span class="current-role">${user.role}</span>
                 </div>
             </td>
-            <td>${new Date(user.createdAt).toLocaleString()}</td>
             <td>
                 <button class="btn change-role-btn" 
                         onclick="changeRole('${user.username}', '${user.role === 'Admin' ? 'User' : 'Admin'}')"
@@ -1007,6 +1006,7 @@ function displayUsers(users) {
                     ${user.role === 'Admin' ? 'Сделать пользователем' : 'Сделать админом'}
                 </button>
             </td>
+            <td>${new Date(user.createdAt).toLocaleString()}</td>
             <td>
                 <button class="btn delete-btn" onclick="deleteUser('${user.username}')"
                         ${user.role === 'Admin' && adminsCount === 1 ? 'disabled' : ''}>
