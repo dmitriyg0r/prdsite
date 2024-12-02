@@ -44,3 +44,30 @@ function isMobileDevice() {
     // Возвращаем true только если это реально мобильное устройство
     return mobileUserAgent && isMobileWidth;
 }
+
+// Функция для входа в систему
+async function login(username, password) {
+    try {
+        const response = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username, password })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+            // Сохраняем роль пользователя
+            localStorage.setItem('userRole', data.data.role);
+            localStorage.setItem('username', data.data.username);
+            return true;
+        } else {
+            return false;
+        }
+    } catch (error) {
+        console.error('Error during login:', error);
+        return false;
+    }
+}
