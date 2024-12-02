@@ -886,10 +886,10 @@ async function loadFriendsList() {
                 friendsList.innerHTML = data.data.map(friend => `
                     <tr>
                         <td>
-                            <img src="${friend.avatarUrl || '/api/uploads/avatars/'}" 
+                            <img src="${friend.avatarUrl || '/api/uploads/avatars/default-avatar.png'}" 
                                  alt="Avatar" 
                                  class="friend-avatar"
-                                 onerror="this.src='/api/uploads/avatars/'">
+                                 onerror="this.src='/api/uploads/avatars/default-avatar.png'">
                         </td>
                         <td>${friend.username}</td>
                         <td>
