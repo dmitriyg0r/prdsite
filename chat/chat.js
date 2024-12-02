@@ -1,4 +1,5 @@
 let activeContextMenu = null;
+let currentAttachment = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
     const currentUser = JSON.parse(localStorage.getItem('user'));
@@ -28,9 +29,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (chatPlaceholder) {
         chatPlaceholder.style.display = 'flex';
     }
-
-    // Добавляем глобальную переменную для хранения текущего файла
-    let currentAttachment = null;
 
     // Добавляем обработчики событий для прикрепления файлов
     const fileInput = document.getElementById('fileInput');
@@ -259,7 +257,7 @@ async function checkNewMessages() {
             data.data.forEach(message => {
                 chatMessages.insertAdjacentHTML('beforeend', createMessageElement(message));
                 
-                // Показ��ваем уведомление только если:
+                // Показваем уведомление только если:
                 // 1. Вкладка не активна
                 // 2. Сообщение не от текущего пользователя
                 // 3. Документ скрыт
@@ -453,7 +451,7 @@ async function sendMessage() {
                 message: message,
                 timestamp: new Date(),
                 isRead: false,
-                attachment: data.data.attachment // Добавляем информацию о прикрепленном файле
+                attachment: data.data.attachment
             });
 
             chatMessages.insertAdjacentHTML('beforeend', newMessage);
@@ -603,7 +601,7 @@ function handleFileSelect(event) {
     updateAttachmentPreview(file);
 }
 
-// Функция для обновления превью прикрепленного файл��
+// Функция для обновления превью прикрепленного файла
 function updateAttachmentPreview(file) {
     const preview = document.getElementById('attachmentPreview');
     const fileSize = formatFileSize(file.size);
