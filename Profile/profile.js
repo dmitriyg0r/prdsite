@@ -1284,9 +1284,9 @@ function updateProfileDisplay(userData) {
     if (profileUsername) profileUsername.textContent = userData.username;
     if (profileRole) profileRole.textContent = userData.role;
     if (userAvatar) {
-        userAvatar.src = userData.avatar || '/api/assets/default-avatar.png';
+        userAvatar.src = userData.avatar || '/api/uploads/avatars/';
         userAvatar.onerror = function() {
-            this.src = '/api/assets/default-avatar.png';
+            this.src = '/api/uploads/avatars/default-avatar.png';
         };
     }
 }

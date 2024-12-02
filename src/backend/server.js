@@ -910,7 +910,7 @@ app.post('/api/chat/mark-as-read', (req, res) => {
         });
     }
 
-    // Находим все непрочитанные сообщения от указанного пользователя
+    // Находи�� все непрочитанные сообщения от указанного пользователя
     messages = messages.map(msg => {
         if (msg.from === fromUser && msg.to === currentUser && !msg.isRead) {
             return { ...msg, isRead: true };
@@ -1112,4 +1112,33 @@ app.listen(PORT, () => {
     console.log('POST /api/auth/login');
     console.log('POST /api/auth/anonymous-login');
     console.log('GET  /api/users');
+});
+
+// Ensure these directories are created and accessible
+const path = require('path');
+const fs = require('fs');
+
+// Create necessary directories if they don't exist
+const uploadsDir = path.join(__dirname, 'uploads');
+const avatarsDir = path.join(uploadsDir, 'avatars');
+if (!fs.existsSync(avatarsDir)) {
+    fs.mkdirSync(avatarsDir, { recursive: true });
+}
+
+// Serve static files for avatars
+app.use('/api/uploads/avatars', express.static(avatarsDir));
+
+// Handle avatar requests
+app.get('/api/uploads/avatars/:filename', (req, res) => {
+    const filename = req.params.filename;
+    const filepath = path.join(avatarsDir, filename);
+    const defaultAvatarPath = path.join(__dirname, 'assets', 'default-avatar.png');
+    
+    if (fs.existsSync(filepath)) {
+        res.sendFile(filepath);
+    } else if (filename === 'default-avatar.png' && fs.existsSync(defaultAvatarPath)) {
+        res.sendFile(defaultAvatarPath);
+    } else {
+        res.status(404).send('Avatar not found');
+    }
 });
