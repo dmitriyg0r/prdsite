@@ -138,15 +138,10 @@ async function openChat(username, avatarUrl) {
     const allChatPartners = document.querySelectorAll('.chat-partner');
     allChatPartners.forEach(partner => {
         partner.classList.remove('active');
+        if (partner.getAttribute('data-username') === username) {
+            partner.classList.add('active');
+        }
     });
-
-    // Находим и активируем текущий чат
-    const currentPartner = Array.from(allChatPartners).find(partner => 
-        partner.getAttribute('data-username') === username
-    );
-    if (currentPartner) {
-        currentPartner.classList.add('active');
-    }
 
     // Показываем заголовок чата и скрываем плейсхолдер
     const chatHeader = document.getElementById('chat-header');
