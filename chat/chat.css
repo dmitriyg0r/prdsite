@@ -55,7 +55,8 @@
 }
 
 .chat-partner.active {
-    background-color: rgba(var(--button-background-rgb), 0.1);
+    background-color: rgba(var(--button-background-rgb), 0.15);
+    border-left: 4px solid var(--primary-color);
 }
 
 .friend-avatar {
@@ -63,7 +64,6 @@
     height: 50px;
     border-radius: 50%;
     object-fit: cover;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .friend-info {
@@ -104,6 +104,7 @@
     display: flex;
     align-items: center;
     gap: 15px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .chat-header .friend-avatar {
@@ -132,6 +133,7 @@
     margin-bottom: 10px;
     position: relative;
     word-wrap: break-word;
+    animation: messageAppear 0.3s ease-out;
 }
 
 .message-content {
@@ -200,6 +202,7 @@
     display: flex;
     gap: 10px;
     align-items: center;
+    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .input-area input {
@@ -281,10 +284,6 @@
         opacity: 1;
         transform: translateY(0);
     }
-}
-
-.message {
-    animation: messageAppear 0.3s ease-out;
 }
 
 .chat-placeholder {
