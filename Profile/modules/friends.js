@@ -194,7 +194,7 @@ async function showFriendWall(username) {
             postsContainer.innerHTML = response.data.map(post => `
                 <div class="post">
                     <div class="post-header">
-                        <img src="${post.authorAvatar ? `${API_BASE_URL}${post.authorAvatar}` : `${API_BASE_URL}/uploads/avatars/default-avatar.png`}" 
+                        <img src="${user.avatarUrl ? `${API_BASE_URL}${user.avatarUrl}` : `${API_BASE_URL}/uploads/avatars/default-avatar.png`}" alt="Avatar"> 
                              alt="Avatar" class="post-avatar">
                         // ... остальной код ...
                     </div>
