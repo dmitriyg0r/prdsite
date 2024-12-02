@@ -85,6 +85,13 @@
                 </div>
                 <div id="messages" class="messages-area"></div>
                 <div class="input-area">
+                    <div class="attachment-wrapper">
+                        <input type="file" id="fileInput" class="file-input" accept="image/*,.pdf,.doc,.docx,.txt">
+                        <button id="attachButton" class="attach-button">
+                            <i class="fas fa-paperclip"></i>
+                        </button>
+                        <div id="attachmentPreview" class="attachment-preview"></div>
+                    </div>
                     <input type="text" id="messageInput" placeholder="Введите сообщение...">
                     <button id="sendMessage">
                         <i class="fas fa-paper-plane"></i>

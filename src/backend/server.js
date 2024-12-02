@@ -394,7 +394,7 @@ app.post('/api/upload-avatar', upload.single('avatar'), (req, res) => {
     const user = users.find(u => u.username === username);
     
     if (!user) {
-        // Удаляем загруженный файл, если пользовате��ь не найден
+        // Удаляем загруженный файл, если пользоватеь не найден
         fs.unlinkSync(req.file.path);
         return res.status(404).json({
             success: false,
@@ -735,36 +735,54 @@ app.get('/api/chat/history/:username', (req, res) => {
     }
 });
 
-// Маршрут для отправки сообщения
-app.post('/api/chat/send', (req, res) => {
-    console.log('POST /api/chat/send вызван');
+// Обновляем конфигурацию multer для обработки файлов сообщений
+const messageFileStorage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        const uploadDir = path.join(__dirname, 'uploads', 'messages');
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+        }
+        cb(null, uploadDir);
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, `message-${uniqueSuffix}${path.extname(file.originalname)}`);
+    }
+});
+
+const messageUpload = multer({
+    storage: messageFileStorage,
+    limits: {
+        fileSize: 5 * 1024 * 1024 // 5MB
+    }
+});
+
+// Обновляем маршрут отправки сообщения
+app.post('/api/chat/send', messageUpload.single('file'), (req, res) => {
     const { to, message } = req.body;
     const from = req.headers.authorization.split(' ')[1];
 
     try {
-        if (!message || !to) {
-            return res.status(400).json({
-                success: false,
-                message: 'Необходимо указать получателя и текст сообщения'
-            });
-        }
-
         const newMessage = {
             from,
             to,
             message,
             timestamp: new Date(),
-            id: Date.now().toString()
+            id: Date.now().toString(),
+            isRead: false
         };
+
+        // Если есть прикрепленный файл, добавляем информацию о нем
+        if (req.file) {
+            newMessage.attachment = {
+                filename: req.file.originalname,
+                path: `/uploads/messages/${req.file.filename}`,
+                size: req.file.size
+            };
+        }
 
         messages.push(newMessage);
         saveMessages(messages);
-
-        console.log('Сообщение отправлено:', {
-            from,
-            to,
-            messageId: newMessage.id
-        });
 
         res.json({
             success: true,
@@ -774,10 +792,15 @@ app.post('/api/chat/send', (req, res) => {
         console.error('Error sending message:', error);
         res.status(500).json({
             success: false,
-            message: 'Ошибка при отправке сообщения',
-            error: error.message
+            message: 'Ошибка при отправке сообщения'
         });
     }
+});
+
+// Добавляем маршрут для доступа к файлам сообщений
+app.get('/api/uploads/messages/:filename', (req, res) => {
+    const filepath = path.join(__dirname, 'uploads', 'messages', req.params.filename);
+    res.sendFile(filepath);
 });
 
 // Маршрут для удаления сообщения

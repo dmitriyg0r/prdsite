@@ -26,6 +26,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (chatPlaceholder) {
         chatPlaceholder.style.display = 'flex';
     }
+
+    // Добавляем глобальную переменную для хранения текущего файла
+    let currentAttachment = null;
+
+    // Добавляем обработчики событий для прикрепления файлов
+    const fileInput = document.getElementById('fileInput');
+    const attachButton = document.getElementById('attachButton');
+    const attachmentPreview = document.getElementById('attachmentPreview');
+
+    attachButton.addEventListener('click', () => {
+        fileInput.click();
+    });
+
+    fileInput.addEventListener('change', handleFileSelect);
 });
 
 // Функция для загрузки списка друзей
@@ -308,10 +322,24 @@ function createMessageElement(message) {
             : '<div class="message-status status-sent"><i class="fas fa-check"></i></div>';
     }
 
+    // Добавляем разметку для прикрепленного файла
+    let attachmentHtml = '';
+    if (message.attachment) {
+        attachmentHtml = `
+            <div class="message-attachment">
+                <a href="${message.attachment.url}" target="_blank" class="attachment-link">
+                    <i class="fas fa-file"></i>
+                    <span>${message.attachment.filename}</span>
+                </a>
+            </div>
+        `;
+    }
+
     return `
         <div class="message ${isSent ? 'message-sent' : 'message-received'}" data-message-id="${message.id}">
             <div class="message-content">
                 ${message.message}
+                ${attachmentHtml}
                 <div class="message-info">
                     <span class="message-time">${time}</span>
                     ${statusIcon}
@@ -342,20 +370,23 @@ async function sendMessage() {
     const input = document.getElementById('messageInput');
     const message = input.value.trim();
 
-    if (!message || !currentChatPartner) return;
+    if ((!message && !currentAttachment) || !currentChatPartner) return;
 
     try {
+        const formData = new FormData();
+        formData.append('to', currentChatPartner);
+        formData.append('message', message);
+        
+        if (currentAttachment) {
+            formData.append('file', currentAttachment);
+        }
+
         const response = await fetch('/api/chat/send', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
             },
-            body: JSON.stringify({
-                to: currentChatPartner,
-                message: message,
-                isRead: false
-            })
+            body: formData
         });
 
         const data = await response.json();
@@ -366,18 +397,19 @@ async function sendMessage() {
                 from: JSON.parse(localStorage.getItem('user')).data.username,
                 message: message,
                 timestamp: new Date(),
-                isRead: false
+                isRead: false,
+                attachment: data.data.attachment // Добавляем информацию о прикрепленном файле
             });
 
             chatMessages.insertAdjacentHTML('beforeend', newMessage);
             input.value = '';
+            removeAttachment(); // Очищаем прикрепленный файл
 
             chatMessages.scrollTo({
                 top: chatMessages.scrollHeight,
                 behavior: 'smooth'
             });
 
-            // Обновляем список друзей для отображения последнего сообщения
             loadFriendsList();
         }
     } catch (error) {
@@ -498,4 +530,55 @@ window.addEventListener('focus', () => {
 
 window.addEventListener('blur', () => {
     console.log('Окно потеряло фокус');
-}); 
+});
+
+// Функция для обработки выбора файла
+function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Проверяем размер файла (5MB = 5 * 1024 * 1024 bytes)
+    if (file.size > 5 * 1024 * 1024) {
+        alert('Файл слишком большой. Максимальный размер: 5MB');
+        event.target.value = ''; // Очищаем input
+        return;
+    }
+
+    currentAttachment = file;
+    updateAttachmentPreview(file);
+}
+
+// Функция для обновления превью прикрепленного файла
+function updateAttachmentPreview(file) {
+    const preview = document.getElementById('attachmentPreview');
+    const fileSize = formatFileSize(file.size);
+
+    preview.innerHTML = `
+        <div class="file-info">
+            <span class="file-name">${file.name}</span>
+            <span class="file-size">${fileSize}</span>
+        </div>
+        <button class="remove-attachment" onclick="removeAttachment()">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    preview.classList.add('active');
+}
+
+// Функция для форматирования размера файла
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// Функция для удаления прикрепленного файла
+function removeAttachment() {
+    currentAttachment = null;
+    document.getElementById('fileInput').value = '';
+    const preview = document.getElementById('attachmentPreview');
+    preview.innerHTML = '';
+    preview.classList.remove('active');
+} 

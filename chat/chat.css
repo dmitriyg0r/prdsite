@@ -300,3 +300,75 @@
 .chat-placeholder h3 {
     margin: 0;
 }
+
+/* Стили для области прикрепления файлов */
+.attachment-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.file-input {
+    display: none;
+}
+
+.attach-button {
+    background: none;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: color 0.3s ease;
+}
+
+.attach-button:hover {
+    color: var(--primary-color);
+}
+
+.attachment-preview {
+    display: none;
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    background-color: var(--text-container-background);
+    padding: 8px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 8px;
+    max-width: 200px;
+}
+
+.attachment-preview.active {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.attachment-preview .file-info {
+    display: flex;
+    flex-direction: column;
+    font-size: 12px;
+}
+
+.attachment-preview .file-name {
+    color: var(--text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.attachment-preview .file-size {
+    color: var(--text-secondary);
+}
+
+.attachment-preview .remove-attachment {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 4px;
+}
+
+.attachment-preview .remove-attachment:hover {
+    color: #ff4444;
+}
