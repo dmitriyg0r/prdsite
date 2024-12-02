@@ -82,7 +82,7 @@ async function openChat(username, avatarUrl) {
         chatHeaderName.textContent = username;
     }
     if (chatHeaderAvatar && avatarUrl) {
-        chatHeaderAvatar.src = `/api/${avatarUrl}`;
+        chatHeaderAvatar.src = avatarUrl;
     }
 
     try {
