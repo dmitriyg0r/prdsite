@@ -1,8 +1,18 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     const currentUser = JSON.parse(localStorage.getItem('user'));
     if (!currentUser || !currentUser.data) {
         window.location.href = '../Profile/profile.html';
         return;
+    }
+
+    // Запрашиваем разрешение на уведомления при первой загрузке
+    if ("Notification" in window) {
+        console.log('Текущий статус разрешения:', Notification.permission);
+        if (Notification.permission === "default") {
+            await requestNotificationPermission();
+        }
+    } else {
+        console.log('Уведомления не поддерживаются в этом браузере');
     }
 
     loadFriendsList();
@@ -15,11 +25,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (chatPlaceholder) {
         chatPlaceholder.style.display = 'flex';
-    }
-
-    // Запрашиваем разрешение на показ уведомлений
-    if ("Notification" in window) {
-        Notification.requestPermission();
     }
 });
 
@@ -376,31 +381,56 @@ function updateMessageStatus(messageId, isRead) {
     }
 }
 
-// Добавляем функцию для показа уведомлений
-function showNotification(message, from) {
+// Функция для запроса разрешения на уведомления
+async function requestNotificationPermission() {
+    try {
+        // Явно запрашиваем разрешение и ждем ответа
+        const permission = await Notification.requestPermission();
+        console.log('Статус разрешения уведомлений:', permission);
+        return permission === 'granted';
+    } catch (error) {
+        console.error('Ошибка при запросе разрешения на уведомления:', error);
+        return false;
+    }
+}
+
+// Обновленная функция показа уведомлений
+async function showNotification(message, from) {
+    console.log('Попытка показать уведомление:', { message, from });
+
     // Проверяем поддержку уведомлений
     if (!("Notification" in window)) {
-        console.log("Уведомления не поддерживаются");
+        console.log("Этот браузер не поддерживает уведомления");
         return;
     }
 
-    // Запрашиваем разрешение на показ уведомлений при первом вызове
+    // Если разрешение еще не запрошено, запрашиваем его
     if (Notification.permission === "default") {
-        Notification.requestPermission();
+        const granted = await requestNotificationPermission();
+        if (!granted) return;
     }
 
-    // Показываем уведомление, если есть разрешение
+    // Показываем уведомление только если есть разрешение
     if (Notification.permission === "granted") {
-        const notification = new Notification("Новое сообщение", {
-            body: `${from}: ${message}`,
-            icon: "../flow.ico",
-            tag: "chat-message"
-        });
+        try {
+            const notification = new Notification("Новое сообщение от " + from, {
+                body: message,
+                icon: "../flow.ico",
+                tag: "chat-message",
+                requireInteraction: true // Уведомление не будет автоматически скрываться
+            });
 
-        // Добавляем обработчик клика по уведомлению
-        notification.onclick = function() {
-            window.focus();
-            openChat(from);
-        };
+            notification.onclick = function() {
+                window.focus();
+                openChat(from);
+                notification.close();
+            };
+
+            console.log('Уведомление успешно создано');
+        } catch (error) {
+            console.error('Ошибка при создании уведомления:', error);
+        }
+    } else {
+        console.log('Нет разрешения на показ уведомлений. Текущий статус:', Notification.permission);
     }
 } 
