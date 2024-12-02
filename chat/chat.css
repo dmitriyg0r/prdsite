@@ -584,3 +584,13 @@
 .context-menu-item.reply {
     color: var(--primary-color);
 }
+
+/* Добавьте стили для ссылки на чат */
+.sidebar-link[href="chat.html"] {
+    display: none; /* По умолчанию скрыт */
+}
+
+/* Когда пользователь авторизован, JavaScript изменит display на flex */
+.sidebar-link[href="chat.html"].show {
+    display: flex;
+}

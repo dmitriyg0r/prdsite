@@ -188,17 +188,15 @@
 
                             <!-- Добавляем здесь модальное окно чата -->
                             <div id="chat-modal" class="modal">
-                                <div class="modal-content chat-modal-content">
+                                <div class="modal-content">
                                     <div class="chat-header">
-                                        <h3>Чат с <span id="chat-username"></span></h3>
                                         <span class="close">&times;</span>
+                                        <h3>Чат с <span id="chat-username"></span></h3>
                                     </div>
-                                    <div class="chat-messages" id="chat-messages">
-                                        <!-- Сообщения будут добавляться динамически -->
-                                    </div>
+                                    <div id="chat-messages" class="chat-messages"></div>
                                     <div class="chat-input-container">
-                                        <input type="text" id="chat-input" placeholder="Введите сообщение...">
-                                        <button class="btn primary-btn" onclick="sendMessage()">
+                                        <textarea id="chat-input" placeholder="Введите сообщение..."></textarea>
+                                        <button onclick="sendMessage()" class="btn primary-btn">
                                             <i class="fas fa-paper-plane"></i>
                                         </button>
                                     </div>
@@ -297,5 +295,14 @@
             </li>
         </ul>
     </nav>
+
+    <script type="module">
+        import { initializeChat } from './Profile/modules/chat.js';
+        
+        // Инициализация чата после загрузки DOM
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeChat();
+        });
+    </script>
 </body>
 </html>

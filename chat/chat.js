@@ -2,6 +2,22 @@ let activeContextMenu = null;
 let currentAttachment = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
+    // Проверяем авторизацию
+    const user = localStorage.getItem('user');
+    const chatLink = document.querySelector('a[href="chat.html"]');
+    
+    if (!user) {
+        // Если пользователь не авторизован, скрываем ссылку на чат
+        if (chatLink) {
+            chatLink.style.display = 'none';
+        }
+    } else {
+        // Если пользователь авторизован, показываем ссылку
+        if (chatLink) {
+            chatLink.style.display = 'flex';
+        }
+    }
+
     const currentUser = JSON.parse(localStorage.getItem('user'));
     if (!currentUser || !currentUser.data) {
         window.location.href = '../Profile/profile.html';
@@ -815,4 +831,14 @@ function cancelReply() {
     if (replyPreview) {
         replyPreview.remove();
     }
-} 
+}
+
+// Добавьте слушатель события storage для отслеживания изменений в localStorage
+window.addEventListener('storage', (e) => {
+    if (e.key === 'user') {
+        const chatLink = document.querySelector('a[href="chat.html"]');
+        if (chatLink) {
+            chatLink.style.display = e.newValue ? 'flex' : 'none';
+        }
+    }
+}); 
