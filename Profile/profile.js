@@ -985,25 +985,27 @@ function displayUsers(users) {
     
     tableBody.innerHTML = users.map(user => `
         <tr>
-            <td class="user-row">
-                ${user.avatarUrl ? 
-                    `<img src="${user.avatarUrl}" alt="Avatar" class="user-table-avatar">` : 
-                    '<i class="fas fa-user"></i>'
-                }
-                <span>${user.username}</span>
+            <td>
+                <div class="user-row">
+                    ${user.avatarUrl ? 
+                        `<img src="${user.avatarUrl}" alt="Avatar" class="user-table-avatar">` : 
+                        '<i class="fas fa-user"></i>'
+                    }
+                    <span>${user.username}</span>
+                </div>
             </td>
             <td>${user.role}</td>
             <td>
-                <select class="role-select" onchange="updateUserRole('${user.username}', this.value)"
-                    ${user.role === 'Admin' && adminsCount === 1 ? 'disabled' : ''}>
-                    <option value="User" ${user.role === 'User' ? 'selected' : ''}>User</option>
-                    <option value="Admin" ${user.role === 'Admin' ? 'selected' : ''}>Admin</option>
-                </select>
+                <button class="btn change-role-btn" 
+                        onclick="changeRole('${user.username}', '${user.role === 'Admin' ? 'User' : 'Admin'}')"
+                        ${user.role === 'Admin' && adminsCount === 1 ? 'disabled' : ''}>
+                    ${user.role === 'Admin' ? 'Сделать пользователем' : 'Сделать админом'}
+                </button>
             </td>
             <td>${new Date(user.createdAt).toLocaleString()}</td>
             <td>
                 <button class="btn delete-btn" onclick="deleteUser('${user.username}')"
-                    ${user.role === 'Admin' && adminsCount === 1 ? 'disabled' : ''}>
+                        ${user.role === 'Admin' && adminsCount === 1 ? 'disabled' : ''}>
                     <i class="fas fa-trash"></i>
                 </button>
             </td>
@@ -1011,8 +1013,8 @@ function displayUsers(users) {
     `).join('');
 }
 
-// Функция для обновления роли пользователя
-async function updateUserRole(username, newRole) {
+// Функция для смены роли
+async function changeRole(username, newRole) {
     try {
         const response = await fetch(`${API_BASE_URL}/users/${username}/role`, {
             method: 'PUT',
@@ -1029,7 +1031,7 @@ async function updateUserRole(username, newRole) {
             showSuccess('Роль пользователя успешно обновлена');
             loadUsers(); // Перезагружаем список пользователей
         } else {
-            showError(data.message);
+            showError(data.message || 'Ошибка при обновлении роли');
         }
     } catch (error) {
         console.error('Error updating user role:', error);
