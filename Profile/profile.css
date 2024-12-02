@@ -1236,31 +1236,42 @@
 
 /* Стили для выпадающего списка ролей */
 .role-select {
-    padding: 6px 10px;
+    width: 100%;
+    padding: 8px;
     border: 1px solid var(--border-color);
     border-radius: 4px;
     background: var(--background-color);
     color: var(--text-color);
     cursor: pointer;
     transition: all 0.3s ease;
-    width: 100px;
     font-size: 14px;
 }
 
 .role-select:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+    background: var(--text-container-background);
 }
 
 .role-select:hover:not(:disabled) {
-    border-color: #2196F3;
+    border-color: var(--primary-color);
+}
+
+.role-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(var(--button-background-rgb), 0.2);
 }
 
 /* Стили для темной темы */
 [data-theme="dark"] .role-select {
     background: var(--surface);
     color: var(--text-color);
-    border-color: rgba(255, 255, 255, 0.1);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .role-select:disabled {
+    background: var(--text-container-background);
 }
 
 /* Стили для ячейки с ролью */
