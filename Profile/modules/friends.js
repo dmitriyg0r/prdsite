@@ -248,3 +248,32 @@ export {
     searchUsers,
     showFriendWall
 };
+
+// В функции, которая создает список друзей, измените обработчик клика на чат
+function createFriendElement(friend) {
+    return `
+        <tr>
+            <td>
+                <img src="${friend.avatar || '../assets/default-avatar.png'}" alt="Avatar" class="friend-avatar">
+            </td>
+            <td>${friend.username}</td>
+            <td>${friend.status || 'Offline'}</td>
+            <td>
+                <button class="btn primary-btn" onclick="openFriendChat('${friend.username}')">
+                    <i class="fas fa-comments"></i> Чат
+                </button>
+                <button class="btn danger-btn" onclick="removeFriend('${friend.username}')">
+                    <i class="fas fa-user-minus"></i>
+                </button>
+            </td>
+        </tr>
+    `;
+}
+
+// Добавьте новую функцию для открытия чата
+window.openFriendChat = function(username) {
+    // Сохраняем имя пользователя для чата в localStorage
+    localStorage.setItem('chatPartner', username);
+    // Перенаправляем на страницу чата
+    window.location.href = '../chat/chat.html';
+};

@@ -6,15 +6,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     const user = localStorage.getItem('user');
     const chatLink = document.querySelector('a[href="chat.html"]');
     
-    if (!user) {
-        // Если пользователь не авторизован, скрываем ссылку на чат
-        if (chatLink) {
-            chatLink.style.display = 'none';
-        }
-    } else {
-        // Если пользователь авторизован, показываем ссылку
+    if (user) {
         if (chatLink) {
             chatLink.style.display = 'flex';
+        }
+        
+        // Проверяем, есть ли сохраненный партнер для чата
+        const chatPartner = localStorage.getItem('chatPartner');
+        if (chatPartner) {
+            // Открываем чат с этим пользователем
+            openChat(chatPartner);
+            // Очищаем сохраненного партнера
+            localStorage.removeItem('chatPartner');
+        }
+    } else {
+        if (chatLink) {
+            chatLink.style.display = 'none';
         }
     }
 
