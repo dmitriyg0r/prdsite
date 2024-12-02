@@ -1024,7 +1024,7 @@ app.post('/api/schedule/update', (req, res) => {
     const { tableId, scheduleData } = req.body;
     const username = req.headers.authorization?.split(' ')[1];
 
-    // Проверяем права администратора
+    // Прове��яем права администратора
     const user = users.find(u => u.username === username);
     if (!user || user.role !== 'Admin') {
         return res.status(403).json({
@@ -1060,4 +1060,60 @@ app.listen(PORT, () => {
     console.log('POST /api/auth/login');
     console.log('POST /api/auth/anonymous-login');
     console.log('GET  /api/users');
+});
+
+// Обновляем пути к API
+app.get('/api/user/check-role', (req, res) => {
+    const currentUser = req.headers.authorization?.split(' ')[1];
+    
+    if (!currentUser) {
+        return res.status(401).json({
+            success: false,
+            message: 'Unauthorized'
+        });
+    }
+
+    const user = users.find(u => u.username === currentUser);
+    
+    res.json({
+        success: true,
+        data: {
+            role: user ? user.role : 'user'
+        }
+    });
+});
+
+app.get('/api/user/friends', (req, res) => {
+    const currentUser = req.headers.authorization?.split(' ')[1];
+    
+    if (!currentUser) {
+        return res.status(401).json({
+            success: false,
+            message: 'Unauthorized'
+        });
+    }
+
+    const user = users.find(u => u.username === currentUser);
+    
+    if (!user || !user.friends) {
+        return res.json({
+            success: true,
+            data: []
+        });
+    }
+
+    const friendsList = user.friends
+        .map(friendUsername => {
+            const friend = users.find(u => u.username === friendUsername);
+            return friend ? {
+                username: friend.username,
+                avatarUrl: friend.avatar || null
+            } : null;
+        })
+        .filter(Boolean);
+
+    res.json({
+        success: true,
+        data: friendsList
+    });
 });

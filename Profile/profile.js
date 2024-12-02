@@ -49,33 +49,21 @@ let roleCheckInterval;
 // Функция проверки роли пользователя
 async function checkUserRole() {
     try {
-        const currentUser = JSON.parse(localStorage.getItem('user'));
-        if (!currentUser?.data?.username) return;
-
-        const response = await fetch(`${API_BASE_URL}/users/check-role`, {
+        const response = await fetch('/api/user/check-role', {
             headers: {
-                'Authorization': `Bearer ${currentUser.data.username}`
+                'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
             }
         });
 
-        const data = await response.json();
-
-        if (data.success && data.data.role !== currentUser.data.role) {
-            // Обновляем роль в localStorage
-            currentUser.data.role = data.data.role;
-            localStorage.setItem('user', JSON.stringify(currentUser));
-
-            // Обновляем отображение роли в профиле
-            const profileRole = document.getElementById('profile-role');
-            if (profileRole) {
-                profileRole.textContent = data.data.role;
-            }
-
-            // Обновляем интерфейс в зависимости от роли
-            updateInterfaceBasedOnRole(data.data.role);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
+
+        const data = await response.json();
+        return data.success ? data.data.role : null;
     } catch (error) {
         console.error('Error checking user role:', error);
+        return null;
     }
 }
 
@@ -318,84 +306,58 @@ function handleLogout() {
 }
 
 // Инициализация при загрузке страницы
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('Page loaded, initializing...');
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        console.log('Page loaded, initializing...');
+        
+        // Проверяем наличие сохраненной сессии
+        const savedSession = localStorage.getItem('user');
+        if (savedSession) {
+            console.log('Found saved session');
+            const userData = JSON.parse(savedSession);
+            if (userData && userData.data) {
+                await initializeUserInterface(userData.data);
+            }
+        }
 
-    const loginContainer = document.getElementById('login-container');
-    const profileInfo = document.getElementById('profile-info');
-    const registerForm = document.getElementById('register-form');
-    const loginForm = document.getElementById('login-form');
-    const anonymousLoginBtn = document.getElementById('anonymous-login-btn');
-    const logoutBtn = document.querySelector('.danger-btn');
-
-    // Проверяем сохраненную сессию
-    const userData = localStorage.getItem('user');
-    if (userData) {
-        console.log('Found saved session');
-        try {
-            const parsedUserData = JSON.parse(userData);
-            // Скрываем контейнер входа и показываем профиль
-            if (loginContainer) {
-                loginContainer.style.display = 'none';
-            }
-            if (profileInfo) {
-                profileInfo.style.display = 'block';
-            }
-            showProfile(parsedUserData);
-            
-            // Загружаем списки друзей и запросов
-            loadFriendRequests();
-            loadFriendsList();
-        } catch (e) {
-            console.error('Error parsing saved session:', e);
-            localStorage.removeItem('user');
-            // В случае ошибки показываем форму входа
-            if (loginContainer) {
-                loginContainer.style.display = 'block';
-            }
-            if (profileInfo) {
-                profileInfo.style.display = 'none';
-            }
-        }
-    } else {
-        // Если нет сохраненной сессии, показываем форму входа
-        if (loginContainer) {
-            loginContainer.style.display = 'block';
-        }
-        if (profileInfo) {
-            profileInfo.style.display = 'none';
-        }
+        // Прикрепляем обработчики событий
+        attachEventHandlers();
+        
+    } catch (error) {
+        console.error('Error during initialization:', error);
     }
+});
 
-    // Привязываем обработчики событий
+// Функция для прикрепления обработчиков событий
+function attachEventHandlers() {
+    // Register form
+    const registerForm = document.getElementById('registerForm');
     if (registerForm) {
         registerForm.addEventListener('submit', handleRegister);
         console.log('Register form handler attached');
     }
-    
+
+    // Login form
+    const loginForm = document.getElementById('loginForm');
     if (loginForm) {
         loginForm.addEventListener('submit', handleLogin);
         console.log('Login form handler attached');
     }
 
-    if (anonymousLoginBtn) {
-        anonymousLoginBtn.addEventListener('click', handleAnonymousLogin);
+    // Anonymous login
+    const anonLoginBtn = document.getElementById('anonymousLogin');
+    if (anonLoginBtn) {
+        anonLoginBtn.addEventListener('click', handleAnonymousLogin);
         console.log('Anonymous login handler attached');
     }
 
+    // Logout
+    const logoutBtn = document.getElementById('logoutButton');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', handleLogout);
         console.log('Logout handler attached');
     }
-
-    // Инициализация поиска друзей
-    const friendSearch = document.getElementById('friend-search');
-    if (friendSearch) {
-        friendSearch.addEventListener('input', (e) => {
-            searchUsers(e.target.value);
-        });
-    }
-});
+}
 
 // Функция для удаления пользователя
 async function deleteUser(username) {
@@ -813,47 +775,21 @@ async function rejectFriendRequest(requestId) {
 // Загрузка списка друзей
 async function loadFriendsList() {
     try {
-        const response = await fetch(`${API_BASE_URL}/friends/list`, {
+        const response = await fetch('/api/user/friends', {
             headers: {
                 'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
             }
         });
 
-        const data = await response.json();
-
-        if (data.success) {
-            const friendsList = document.getElementById('friends-list');
-            friendsList.innerHTML = data.data
-                .map(friend => `
-                    <tr>
-                        <td>
-                            <img src="${friend.avatarUrl ? `${API_BASE_URL}${friend.avatarUrl}` : '../assets/default-avatar.png'}" 
-                                alt="Avatar" 
-                                class="friend-avatar">
-                        </td>
-                        <td>${friend.username}</td>
-                        <td>
-                            <span class="friend-status ${friend.online ? 'status-online' : 'status-offline'}">
-                                ${friend.online ? 'Онлайн' : 'Оффлайн'}
-                            </span>
-                        </td>
-                        <td>
-                            <div class="friend-actions">
-                                <button class="btn chat-btn" onclick="openChat('${friend.username}')">
-                                    <i class="fas fa-comment"></i> Чат
-                                </button>
-                                <button class="btn danger-btn" onclick="removeFriend('${friend.username}')">
-                                    <i class="fas fa-user-minus"></i> Удалить
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                `)
-                .join('');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
+
+        const data = await response.json();
+        return data;
     } catch (error) {
         console.error('Error loading friends list:', error);
-        showError('Ошибка при загрузке списка друзей');
+        return { success: false, data: [] };
     }
 }
 
