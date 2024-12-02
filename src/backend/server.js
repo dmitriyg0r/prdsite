@@ -394,7 +394,7 @@ app.post('/api/upload-avatar', upload.single('avatar'), (req, res) => {
     const user = users.find(u => u.username === username);
     
     if (!user) {
-        // Удаляем загруженный файл, если пользоватеь не найден
+        // Удаляем загруженный файл, если пользовате��ь не найден
         fs.unlinkSync(req.file.path);
         return res.status(404).json({
             success: false,
@@ -660,7 +660,7 @@ app.get('/api/friends/list', (req, res) => {
             return {
                 username: friendUsername,
                 avatarUrl: friend?.avatar,
-                online: true // В будущем здесь можно реализовать реальную роверку онлайн-статса
+                online: true // В будущем здесь можно реализовать реальную роверку онлайн-статуса
             };
         });
 
@@ -910,7 +910,7 @@ app.post('/api/chat/mark-as-read', (req, res) => {
         });
     }
 
-    // Находи все непрочитанные сообщения от указанного пользователя
+    // Находим все непрочитанные сообщения от указанного пользователя
     messages = messages.map(msg => {
         if (msg.from === fromUser && msg.to === currentUser && !msg.isRead) {
             return { ...msg, isRead: true };
@@ -1010,99 +1010,6 @@ app.post('/api/schedule/update', (req, res) => {
     }
 });
 
-// Маршрут для получения информации о пользователе
-app.get('/api/users/:username', (req, res) => {
-    const { username } = req.params;
-    const user = users.find(u => u.username === username);
-
-    if (!user) {
-        return res.status(404).json({
-            success: false,
-            message: 'Пользователь не найден'
-        });
-    }
-
-    res.json({
-        success: true,
-        data: {
-            username: user.username,
-            role: user.role,
-            createdAt: user.createdAt
-        }
-    });
-});
-
-// Загрузка списка друзей
-app.get('/api/friends', (req, res) => {
-    try {
-        const username = req.headers.authorization?.split(' ')[1];
-        if (!username) {
-            return res.status(401).json({
-                success: false,
-                message: 'Требуется авторизация'
-            });
-        }
-
-        // Находим все дружеские связи пользователя
-        const userFriends = friendships.filter(f => 
-            f.user1 === username || f.user2 === username
-        );
-
-        // Получаем информацию о друзьях
-        const friendsList = userFriends.map(friendship => {
-            const friendUsername = friendship.user1 === username ? friendship.user2 : friendship.user1;
-            const friend = users.find(u => u.username === friendUsername);
-            
-            if (friend) {
-                return {
-                    username: friend.username,
-                    avatarUrl: friend.avatarUrl,
-                    online: friend.lastActive ? (Date.now() - friend.lastActive < 300000) : false // 5 минут
-                };
-            }
-            return null;
-        }).filter(Boolean); // Удаляем null значения
-
-        res.json({
-            success: true,
-            data: friendsList
-        });
-    } catch (error) {
-        console.error('Error loading friends:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Ошибка при загрузке списка друзей'
-        });
-    }
-});
-
-// Обновление времени последней активности пользователя
-app.post('/api/user/activity', (req, res) => {
-    try {
-        const username = req.headers.authorization?.split(' ')[1];
-        if (!username) {
-            return res.status(401).json({
-                success: false,
-                message: 'Требуется авторизация'
-            });
-        }
-
-        const user = users.find(u => u.username === username);
-        if (user) {
-            user.lastActive = Date.now();
-            saveUsers(users);
-        }
-
-        res.json({ success: true });
-    } catch (error) {
-        console.error('Error updating user activity:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Ошибка при обновлении активности пользователя'
-        });
-    }
-});
-
 // Запуск сервера
 const PORT = process.env.PORT || 5003;
 app.listen(PORT, () => {
@@ -1112,46 +1019,4 @@ app.listen(PORT, () => {
     console.log('POST /api/auth/login');
     console.log('POST /api/auth/anonymous-login');
     console.log('GET  /api/users');
-});
-
-// Ensure these directories are created and accessible
-const path = require('path');
-const fs = require('fs');
-
-// Create necessary directories if they don't exist
-const uploadsDir = path.join(__dirname, 'uploads');
-const avatarsDir = path.join(uploadsDir, 'avatars');
-if (!fs.existsSync(avatarsDir)) {
-    fs.mkdirSync(avatarsDir, { recursive: true });
-}
-
-// Serve static files for avatars
-app.use('/api/uploads/avatars', express.static(avatarsDir));
-
-// Handle avatar requests
-app.get('/api/uploads/avatars/:filename', (req, res) => {
-    const filename = req.params.filename;
-    const filepath = path.join(avatarsDir, filename);
-    const defaultAvatarPath = path.join(__dirname, 'assets', 'default-avatar.png');
-    
-    if (fs.existsSync(filepath)) {
-        res.sendFile(filepath);
-    } else if (filename === 'default-avatar.png' && fs.existsSync(defaultAvatarPath)) {
-        res.sendFile(defaultAvatarPath);
-    } else {
-        res.status(404).send('Avatar not found');
-    }
-});
-
-// Добавляем обработку статических файлов для аватаров
-app.use('/api/uploads/avatars', express.static(path.join(__dirname, 'uploads', 'avatars')));
-
-// Добавляем обработчик для default-avatar.png
-app.get('/api/uploads/avatars/default-avatar.png', (req, res) => {
-    const defaultAvatarPath = path.join(__dirname, 'assets', 'default-avatar.png');
-    if (fs.existsSync(defaultAvatarPath)) {
-        res.sendFile(defaultAvatarPath);
-    } else {
-        res.status(404).send('Default avatar not found');
-    }
 });
