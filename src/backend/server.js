@@ -11,12 +11,14 @@ const DB_PATH = path.join(__dirname, 'users.json');
 const FRIENDS_DB_PATH = path.join(__dirname, 'friends.json');
 const FRIEND_REQUESTS_DB_PATH = path.join(__dirname, 'friend_requests.json');
 const MESSAGES_DB_PATH = path.join(__dirname, 'messages.json');
+const SCHEDULE_PATH = path.join(__dirname, 'schedule.json');
 
 // Загрузка данных при старте
 let users = loadUsers();
 let friendships = loadFriendships();
 let friendRequests = loadFriendRequests();
 let messages = loadMessages();
+let schedule = loadSchedule();
 
 // Функции для работы с пользователями
 function loadUsers() {
@@ -106,6 +108,26 @@ function saveMessages(messages) {
         fs.writeFileSync(MESSAGES_DB_PATH, JSON.stringify(messages, null, 2));
     } catch (error) {
         console.error('Error saving messages:', error);
+    }
+}
+
+// Функции для работы с расписанием
+function loadSchedule() {
+    try {
+        if (fs.existsSync(SCHEDULE_PATH)) {
+            return JSON.parse(fs.readFileSync(SCHEDULE_PATH, 'utf8'));
+        }
+    } catch (error) {
+        console.error('Error loading schedule:', error);
+    }
+    return {};
+}
+
+function saveSchedule(schedule) {
+    try {
+        fs.writeFileSync(SCHEDULE_PATH, JSON.stringify(schedule, null, 2));
+    } catch (error) {
+        console.error('Error saving schedule:', error);
     }
 }
 
@@ -372,7 +394,7 @@ app.post('/api/upload-avatar', upload.single('avatar'), (req, res) => {
     const user = users.find(u => u.username === username);
     
     if (!user) {
-        // Удаляем загруженный файл, если пользователь не найден
+        // Удаляем загруженный файл, если пользовате��ь не найден
         fs.unlinkSync(req.file.path);
         return res.status(404).json({
             success: false,
@@ -954,6 +976,38 @@ app.get('/api/chat/message-status/:username', (req, res) => {
         success: true,
         data: messageStatuses
     });
+});
+
+// Маршрут для обновления расписания
+app.post('/api/schedule/update', (req, res) => {
+    const { tableId, scheduleData } = req.body;
+    const username = req.headers.authorization?.split(' ')[1];
+
+    // Проверяем права администратора
+    const user = users.find(u => u.username === username);
+    if (!user || user.role !== 'Admin') {
+        return res.status(403).json({
+            success: false,
+            message: 'Недостаточно прав для редактирования расписания'
+        });
+    }
+
+    try {
+        const schedule = loadSchedule();
+        schedule[tableId] = scheduleData;
+        saveSchedule(schedule);
+
+        res.json({
+            success: true,
+            message: 'Расписание успешно обновлено'
+        });
+    } catch (error) {
+        console.error('Error updating schedule:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Ошибка при обновлении расписания'
+        });
+    }
 });
 
 // Запуск сервера
