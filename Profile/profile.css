@@ -888,7 +888,7 @@
     transform: none;
 }
 
-/* Стили для модального окна чата */
+/* Стили для мо��ального окна чата */
 .chat-messages {
     flex-grow: 1;
     overflow-y: auto;
