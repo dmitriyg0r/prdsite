@@ -981,6 +981,8 @@ function stopCheckingMessages() {
 // Функция для отображения пользователей в таблице
 function displayUsers(users) {
     const tableBody = document.getElementById('users-table-body');
+    const adminsCount = users.filter(user => user.role === 'Admin').length;
+    
     tableBody.innerHTML = users.map(user => `
         <tr>
             <td class="user-row">
@@ -988,25 +990,20 @@ function displayUsers(users) {
                     `<img src="${user.avatarUrl}" alt="Avatar" class="user-table-avatar">` : 
                     '<i class="fas fa-user"></i>'
                 }
-                ${user.username}
+                <span>${user.username}</span>
             </td>
+            <td>${user.role}</td>
             <td>
-                <select class="role-select" 
-                        onchange="updateUserRole('${user.username}', this.value)"
-                        ${user.role === 'Admin' && 
-                          users.filter(u => u.role === 'Admin').length === 1 ? 
-                          'disabled' : ''}>
+                <select class="role-select" onchange="updateUserRole('${user.username}', this.value)"
+                    ${user.role === 'Admin' && adminsCount === 1 ? 'disabled' : ''}>
                     <option value="User" ${user.role === 'User' ? 'selected' : ''}>User</option>
                     <option value="Admin" ${user.role === 'Admin' ? 'selected' : ''}>Admin</option>
                 </select>
             </td>
             <td>${new Date(user.createdAt).toLocaleString()}</td>
             <td>
-                <button class="btn delete-btn" 
-                        onclick="deleteUser('${user.username}')"
-                        ${user.role === 'Admin' && 
-                          users.filter(u => u.role === 'Admin').length === 1 ? 
-                          'disabled' : ''}>
+                <button class="btn delete-btn" onclick="deleteUser('${user.username}')"
+                    ${user.role === 'Admin' && adminsCount === 1 ? 'disabled' : ''}>
                     <i class="fas fa-trash"></i>
                 </button>
             </td>

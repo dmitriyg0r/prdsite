@@ -213,7 +213,8 @@
                         <thead>
                             <tr>
                                 <th>Пользователь</th>
-                                <th>Роль</th>
+                                <th>Текущая роль</th>
+                                <th>Изменить роль</th>
                                 <th>Дата регистрации</th>
                                 <th>Действия</th>
                             </tr>
@@ -224,6 +225,12 @@
                                 <td class="user-row">
                                     <img src="" alt="Avatar" class="user-table-avatar">
                                     <span>Username</span>
+                                </td>
+                                <td>
+                                    <select class="role-select" onchange="updateUserRole('username', this.value)">
+                                        <option value="User">User</option>
+                                        <option value="Admin">Admin</option>
+                                    </select>
                                 </td>
                                 <td>
                                     <select class="role-select" onchange="updateUserRole('username', this.value)">
