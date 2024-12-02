@@ -991,7 +991,8 @@ function displayUsers(users) {
                 ${user.username}
             </td>
             <td>
-                <select class="role-select" onchange="updateUserRole('${user.username}', this.value)" 
+                <select class="role-select" 
+                        onchange="updateUserRole('${user.username}', this.value)"
                         ${user.role === 'Admin' && 
                           users.filter(u => u.role === 'Admin').length === 1 ? 
                           'disabled' : ''}>
@@ -1001,7 +1002,8 @@ function displayUsers(users) {
             </td>
             <td>${new Date(user.createdAt).toLocaleString()}</td>
             <td>
-                <button class="btn delete-btn" onclick="deleteUser('${user.username}')"
+                <button class="btn delete-btn" 
+                        onclick="deleteUser('${user.username}')"
                         ${user.role === 'Admin' && 
                           users.filter(u => u.role === 'Admin').length === 1 ? 
                           'disabled' : ''}>
