@@ -87,6 +87,17 @@ function stopRoleChecking() {
     }
 }
 
+// Функция для открытия чата с пользователем
+function openChat(username) {
+    // Сохраняем выбранного пользователя в localStorage
+    localStorage.setItem('chatPartner', username);
+    // Перенаправляем на страницу чата
+    window.location.href = '../chat/chat.html';
+}
+
+// Делаем функцию доступной глобально
+window.openChat = openChat;
+
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', async () => {
     try {
