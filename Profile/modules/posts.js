@@ -1,7 +1,7 @@
 import { API_BASE_URL, showError, showSuccess, apiRequest } from './utils.js';
 
 // Функция создания нового поста
-export async function createPost() {
+async function createPost() {
     const content = document.getElementById('post-content').value;
     const imageInput = document.getElementById('post-image');
     const file = imageInput.files[0];
@@ -36,7 +36,7 @@ export async function createPost() {
 }
 
 // Функция загрузки постов
-export async function loadPosts() {
+async function loadPosts() {
     try {
         const userData = JSON.parse(localStorage.getItem('user'));
         const response = await apiRequest(`/posts/${userData.data.username}`);
@@ -76,7 +76,7 @@ export async function loadPosts() {
 }
 
 // Функция для лайка поста
-export async function likePost(postId) {
+async function likePost(postId) {
     try {
         const response = await apiRequest(`/posts/${postId}/like`, {
             method: 'POST'
@@ -92,7 +92,7 @@ export async function likePost(postId) {
 }
 
 // Функция удаления поста
-export async function deletePost(postId) {
+async function deletePost(postId) {
     if (!confirm('Вы уверены, что хотите удалить этот пост?')) {
         return;
     }
@@ -113,7 +113,7 @@ export async function deletePost(postId) {
 }
 
 // Функция для предпросмотра изображения
-export function previewPostImage(input) {
+function previewPostImage(input) {
     const preview = document.getElementById('post-image-preview');
     const previewContainer = document.getElementById('image-preview-container');
     
@@ -133,7 +133,7 @@ export function previewPostImage(input) {
 }
 
 // Функция для удаления предпросмотра изображения
-export function removeImagePreview() {
+function removeImagePreview() {
     const input = document.getElementById('post-image');
     const preview = document.getElementById('post-image-preview');
     const previewContainer = document.getElementById('image-preview-container');
@@ -144,8 +144,7 @@ export function removeImagePreview() {
 }
 
 // Инициализация обработчиков событий для постов
-export function initializePostHandlers() {
-    // Обработчик предпросмотра изображения
+function initializePostHandlers() {
     const imageInput = document.getElementById('post-image');
     if (imageInput) {
         imageInput.addEventListener('change', function() {
@@ -153,7 +152,6 @@ export function initializePostHandlers() {
         });
     }
 
-    // Обработчик кнопки удаления предпросмотра
     const removePreviewButton = document.getElementById('remove-preview');
     if (removePreviewButton) {
         removePreviewButton.addEventListener('click', removeImagePreview);
@@ -169,8 +167,13 @@ export function initializePostHandlers() {
     }
 }
 
-// Экспортируем все функции
+// Единственный экспорт всех функций в конце файла
 export {
+    createPost,
+    loadPosts,
+    likePost,
+    deletePost,
     previewPostImage,
-    removeImagePreview
+    removeImagePreview,
+    initializePostHandlers
 };
