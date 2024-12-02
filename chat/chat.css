@@ -372,3 +372,103 @@
 .attachment-preview .remove-attachment:hover {
     color: #ff4444;
 }
+
+/* Добавьте эти стили к существующим */
+
+.message-attachment {
+    margin-top: 8px;
+    max-width: 300px;
+}
+
+.message-attachment img {
+    max-width: 100%;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.message-attachment img:hover {
+    transform: scale(1.02);
+}
+
+.message-attachment .file-preview {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    background: rgba(var(--button-background-rgb), 0.1);
+    border-radius: 8px;
+    gap: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.message-attachment .file-preview:hover {
+    background: rgba(var(--button-background-rgb), 0.2);
+}
+
+.message-attachment .file-icon {
+    font-size: 24px;
+    color: var(--primary-color);
+}
+
+.message-attachment .file-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+}
+
+.message-attachment .file-name {
+    color: var(--text-color);
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.message-attachment .file-size {
+    color: var(--text-secondary);
+    font-size: 12px;
+}
+
+/* Стили для модального окна с изображением */
+.image-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.image-modal.active {
+    display: flex;
+}
+
+.image-modal img {
+    max-width: 90%;
+    max-height: 90vh;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+.image-modal .close-button {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 8px;
+}
+
+.image-modal .close-button:hover {
+    color: var(--primary-color);
+}

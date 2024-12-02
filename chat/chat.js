@@ -308,13 +308,12 @@ async function checkMessageStatus() {
     }
 }
 
-// Функция для создания элемента сообщения
+// Обновляем функцию создания элемента сообщения
 function createMessageElement(message) {
     const currentUser = JSON.parse(localStorage.getItem('user')).data.username;
     const isSent = message.from === currentUser;
     const time = new Date(message.timestamp).toLocaleTimeString();
     
-    // Определяем статус сообщения
     let statusIcon = '';
     if (isSent) {
         statusIcon = message.isRead 
@@ -322,23 +321,47 @@ function createMessageElement(message) {
             : '<div class="message-status status-sent"><i class="fas fa-check"></i></div>';
     }
 
-    // Добавляем разметку для прикрепленного файла
+    // Создаем разметку для прикрепленного файла
     let attachmentHtml = '';
     if (message.attachment) {
-        attachmentHtml = `
-            <div class="message-attachment">
-                <a href="${message.attachment.url}" target="_blank" class="attachment-link">
-                    <i class="fas fa-file"></i>
-                    <span>${message.attachment.filename}</span>
-                </a>
-            </div>
-        `;
+        const fileExtension = message.attachment.filename.split('.').pop().toLowerCase();
+        const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(fileExtension);
+        
+        if (isImage) {
+            attachmentHtml = `
+                <div class="message-attachment">
+                    <img src="${message.attachment.path}" 
+                         alt="${message.attachment.filename}" 
+                         onclick="openImageModal('${message.attachment.path}')"
+                         loading="lazy">
+                </div>
+            `;
+        } else {
+            // Определяем иконку файла в зависимости от типа
+            let fileIcon = 'fa-file';
+            if (fileExtension === 'pdf') fileIcon = 'fa-file-pdf';
+            else if (['doc', 'docx'].includes(fileExtension)) fileIcon = 'fa-file-word';
+            else if (['txt'].includes(fileExtension)) fileIcon = 'fa-file-text';
+
+            attachmentHtml = `
+                <div class="message-attachment">
+                    <div class="file-preview" onclick="downloadFile('${message.attachment.path}', '${message.attachment.filename}')">
+                        <i class="fas ${fileIcon} file-icon"></i>
+                        <div class="file-info">
+                            <span class="file-name">${message.attachment.filename}</span>
+                            <span class="file-size">${formatFileSize(message.attachment.size)}</span>
+                        </div>
+                        <i class="fas fa-download"></i>
+                    </div>
+                </div>
+            `;
+        }
     }
 
     return `
         <div class="message ${isSent ? 'message-sent' : 'message-received'}" data-message-id="${message.id}">
             <div class="message-content">
-                ${message.message}
+                ${message.message ? `<div class="message-text">${message.message}</div>` : ''}
                 ${attachmentHtml}
                 <div class="message-info">
                     <span class="message-time">${time}</span>
@@ -539,7 +562,7 @@ function handleFileSelect(event) {
 
     // Проверяем размер файла (5MB = 5 * 1024 * 1024 bytes)
     if (file.size > 5 * 1024 * 1024) {
-        alert('Файл слишком большой. Максимальный размер: 5MB');
+        alert('Файл слишк��м большой. Максимальный размер: 5MB');
         event.target.value = ''; // Очищаем input
         return;
     }
@@ -581,4 +604,64 @@ function removeAttachment() {
     const preview = document.getElementById('attachmentPreview');
     preview.innerHTML = '';
     preview.classList.remove('active');
-} 
+}
+
+// Добавляем функции для работы с изображениями и файлами
+function openImageModal(imagePath) {
+    // Создаем модальное окно, если его еще нет
+    let modal = document.querySelector('.image-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.className = 'image-modal';
+        modal.innerHTML = `
+            <button class="close-button" onclick="closeImageModal()">
+                <i class="fas fa-times"></i>
+            </button>
+            <img src="" alt="Preview">
+        `;
+        document.body.appendChild(modal);
+    }
+
+    const modalImg = modal.querySelector('img');
+    modalImg.src = imagePath;
+    modal.classList.add('active');
+
+    // Закрытие по клику вне изображения
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeImageModal();
+        }
+    });
+}
+
+function closeImageModal() {
+    const modal = document.querySelector('.image-modal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
+
+async function downloadFile(path, filename) {
+    try {
+        const response = await fetch(path);
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+    } catch (error) {
+        console.error('Error downloading file:', error);
+        alert('Ошибка при скачивании файла');
+    }
+}
+
+// Добавляем обработчик клавиши Escape для закрытия модального окна
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        closeImageModal();
+    }
+}); 
