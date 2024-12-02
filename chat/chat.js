@@ -30,16 +30,15 @@ function loadFriendsList() {
     .catch(error => console.error('Error loading friends list:', error));
 }
 
-// Функция для открытия чата с другом
-function openChat(username) {
-    // Set the current chat partner
-    currentChatPartner = username;
-    loadChatHistory(username);
-}
+// Глобальная переменная для текущего собеседника
+let currentChatPartner = null;
 
-// Функция для загрузки истории чата
-async function loadChatHistory(username) {
+// Функция для открытия чата с пользователем
+async function openChat(username) {
+    currentChatPartner = username;
+    
     try {
+        // Загружаем историю сообщений
         const response = await fetch(`/api/chat/history/${username}`, {
             headers: {
                 'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
@@ -51,11 +50,87 @@ async function loadChatHistory(username) {
         if (data.success) {
             const chatMessages = document.getElementById('messages');
             chatMessages.innerHTML = data.data.map(message => createMessageElement(message)).join('');
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // Отмечаем все непрочитанные сообщения как прочитанные
+            markMessagesAsRead(username);
         }
     } catch (error) {
         console.error('Error loading chat history:', error);
     }
 }
+
+// Функция для отметки сообщений как прочитанных
+async function markMessagesAsRead(fromUser) {
+    try {
+        const response = await fetch('/api/chat/mark-as-read', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
+            },
+            body: JSON.stringify({
+                fromUser: fromUser
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Обновляем статус сообщений в интерфейсе
+            const messages = document.querySelectorAll('.message-received');
+            messages.forEach(message => {
+                const statusElement = message.querySelector('.message-status');
+                if (statusElement) {
+                    statusElement.className = 'message-status status-read';
+                    statusElement.innerHTML = '<i class="fas fa-check-double"></i>';
+                }
+            });
+        }
+    } catch (error) {
+        console.error('Error marking messages as read:', error);
+    }
+}
+
+// Функция для проверки новых сообщений
+async function checkNewMessages() {
+    if (!currentChatPartner) return;
+
+    try {
+        const response = await fetch(`/api/chat/new-messages/${currentChatPartner}`, {
+            headers: {
+                'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success && data.data.length > 0) {
+            // Добавляем новые сообщения в чат
+            const chatMessages = document.getElementById('messages');
+            data.data.forEach(message => {
+                chatMessages.insertAdjacentHTML('beforeend', createMessageElement(message));
+            });
+            
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // Отмечаем новые сообщения как прочитанные
+            markMessagesAsRead(currentChatPartner);
+        }
+    } catch (error) {
+        console.error('Error checking new messages:', error);
+    }
+}
+
+// Запускаем периодическую проверку новых сообщений
+setInterval(checkNewMessages, 5000);
+
+// Обработчик события видимости страницы
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && currentChatPartner) {
+        markMessagesAsRead(currentChatPartner);
+    }
+});
 
 // Функция для создания элемента сообщения
 function createMessageElement(message) {

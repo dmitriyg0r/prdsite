@@ -624,7 +624,7 @@ app.get('/api/friends/list', (req, res) => {
             return {
                 username: friendUsername,
                 avatarUrl: friend?.avatar,
-                online: true // В будущем здесь можно реализовать реальную проверку онлайн-статуса
+                online: true // В будущем здесь можно реализовать реальную ��роверку онлайн-статуса
             };
         });
 
@@ -859,6 +859,60 @@ app.get('/api/chat/partners', (req, res) => {
     res.json({
         success: true,
         data: chatPartners
+    });
+});
+
+// Маршрут для отметки сообщений как прочитанных
+app.post('/api/chat/mark-as-read', (req, res) => {
+    const { fromUser } = req.body;
+    const currentUser = req.headers.authorization?.split(' ')[1];
+
+    if (!currentUser || !fromUser) {
+        return res.status(400).json({
+            success: false,
+            message: 'Недостаточно данных'
+        });
+    }
+
+    // Находим все непрочитанные сообщения от указанного пользователя
+    messages = messages.map(msg => {
+        if (msg.from === fromUser && msg.to === currentUser && !msg.isRead) {
+            return { ...msg, isRead: true };
+        }
+        return msg;
+    });
+
+    // Сохраняем обновленные сообщения
+    saveMessages(messages);
+
+    res.json({
+        success: true,
+        message: 'Сообщения отмечены как прочитанные'
+    });
+});
+
+// Маршрут для получения новых сообщений
+app.get('/api/chat/new-messages/:username', (req, res) => {
+    const { username } = req.params;
+    const currentUser = req.headers.authorization?.split(' ')[1];
+
+    if (!currentUser || !username) {
+        return res.status(400).json({
+            success: false,
+            message: 'Недостаточно данных'
+        });
+    }
+
+    // Получаем новые непрочитанные сообщения
+    const newMessages = messages.filter(msg => 
+        msg.from === username && 
+        msg.to === currentUser && 
+        !msg.isRead
+    );
+
+    res.json({
+        success: true,
+        data: newMessages
     });
 });
 
