@@ -55,19 +55,32 @@ async function checkUserRole() {
             return null;
         }
 
-        const user = JSON.parse(userData);
-        if (!user?.data?.username) {
-            console.log('Invalid user data format');
+        let user;
+        try {
+            user = JSON.parse(userData);
+        } catch (e) {
+            console.log('Failed to parse user data:', e);
+            localStorage.removeItem('user'); // Clear invalid data
             return null;
         }
 
-        const response = await fetch('/api/user/check-role', {
+        if (!user?.data?.username) {
+            console.log('Invalid user data format');
+            localStorage.removeItem('user'); // Clear invalid data
+            return null;
+        }
+
+        const response = await fetch(`${API_BASE_URL}/user/check-role`, {
             headers: {
                 'Authorization': `Bearer ${user.data.username}`
             }
         });
 
         if (!response.ok) {
+            if (response.status === 401) {
+                localStorage.removeItem('user'); // Clear invalid session
+                return null;
+            }
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
@@ -91,17 +104,26 @@ function updateInterfaceBasedOnRole(role) {
 
 // Функция запуска проверки роли
 function startRoleChecking() {
-    const userData = localStorage.getItem('user');
-    if (!userData) {
-        console.log('No user logged in, skipping role check');
-        return;
-    }
+    try {
+        const userData = localStorage.getItem('user');
+        if (!userData) {
+            console.log('No user logged in, skipping role check');
+            return;
+        }
 
-    // Проверяем роль сразу при запуске
-    checkUserRole();
-    
-    // Устанавливаем интервал проверки (каждые 30 секунд)
-    roleCheckInterval = setInterval(checkUserRole, 30000);
+        // Проверяем роль сразу при запуске
+        checkUserRole().catch(console.error);
+        
+        // Устанавливаем интервал проверки (каждые 30 секунд)
+        if (roleCheckInterval) {
+            clearInterval(roleCheckInterval);
+        }
+        roleCheckInterval = setInterval(() => {
+            checkUserRole().catch(console.error);
+        }, 30000);
+    } catch (error) {
+        console.error('Error starting role check:', error);
+    }
 }
 
 // Функция остановки проверки роли
@@ -331,10 +353,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Проверяем наличие сохраненной сессии
         const savedSession = localStorage.getItem('user');
         if (savedSession) {
-            console.log('Found saved session');
-            const userData = JSON.parse(savedSession);
-            if (userData && userData.data) {
-                await initializeUserInterface(userData.data);
+            try {
+                const userData = JSON.parse(savedSession);
+                if (userData && userData.data) {
+                    await initializeUserInterface(userData.data);
+                    startRoleChecking();
+                }
+            } catch (e) {
+                console.error('Error parsing saved session:', e);
+                localStorage.removeItem('user');
             }
         }
 
