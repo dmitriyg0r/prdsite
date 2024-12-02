@@ -372,10 +372,24 @@ app.post('/api/upload-avatar', upload.single('avatar'), (req, res) => {
     const user = users.find(u => u.username === username);
     
     if (!user) {
+        // Удаляем загруженный файл, если пользователь не найден
+        fs.unlinkSync(req.file.path);
         return res.status(404).json({
             success: false,
             message: 'Пользователь не найден'
         });
+    }
+
+    // Удаляем старую аватарку, если она существует
+    if (user.avatar) {
+        const oldAvatarPath = path.join(__dirname, user.avatar);
+        try {
+            if (fs.existsSync(oldAvatarPath)) {
+                fs.unlinkSync(oldAvatarPath);
+            }
+        } catch (error) {
+            console.error('Error deleting old avatar:', error);
+        }
     }
 
     user.avatar = `/uploads/avatars/${req.file.filename}`;
