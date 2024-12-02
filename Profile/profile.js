@@ -301,7 +301,7 @@ async function loadUsers() {
                     <tr>
                         <td>
                             <div class="user-row">
-                                <img src="${user.avatarUrl ? `${API_BASE_URL}${user.avatarUrl}` : '../assets/default-avatar.png'}" 
+                                <img src="${user.avatarUrl ? `${API_BASE_URL}${user.avatarUrl}` : '/api/uploads/avatars/default-avatar.png'}" 
                                      alt="Avatar" 
                                      class="user-table-avatar">
                                 <span>${user.username}</span>
@@ -886,10 +886,10 @@ async function loadFriendsList() {
                 friendsList.innerHTML = data.data.map(friend => `
                     <tr>
                         <td>
-                            <img src="${friend.avatarUrl || '/api/assets/default-avatar.png'}" 
+                            <img src="${friend.avatarUrl || '/api/uploads/avatars/'}" 
                                  alt="Avatar" 
                                  class="friend-avatar"
-                                 onerror="this.src='/api/assets/default-avatar.png'">
+                                 onerror="this.src='/api/uploads/avatars/'">
                         </td>
                         <td>${friend.username}</td>
                         <td>
@@ -1286,7 +1286,7 @@ function updateProfileDisplay(userData) {
     if (userAvatar) {
         userAvatar.src = userData.avatar || '/api/uploads/avatars/';
         userAvatar.onerror = function() {
-            this.src = '/api/uploads/avatars/default-avatar.png';
+            this.src = '/api/uploads/avatars/';
         };
     }
 }
