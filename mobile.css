@@ -65,18 +65,7 @@ main {
     display: none;
 }
 
-/* Сначала определяем стили для десктопов (больше 768px) */
-@media screen and (min-width: 769px) {
-    .sidebar {
-        position: fixed;
-        width: 70px;
-        height: 100vh;
-        top: 0;
-        left: 0;
-    }
-}
-
-/* Затем определяем стили только для мобильных устройств */
+/* Стили только для мобильных устройств */
 @media screen and (max-width: 768px) {
     /* Мобильное меню */
     .sidebar {
@@ -94,7 +83,7 @@ main {
     }
 
     .sidebar:hover {
-        width: 100% !important; /* Отменяем расширение при наведении на мобильных */
+        width: 100% !important;
     }
 
     .sidebar-logo {
