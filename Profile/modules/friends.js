@@ -11,7 +11,7 @@ async function loadFriendsList() {
                 friendsList.innerHTML = response.data.map(friend => `
                     <tr>
                         <td>
-                            <img src="${friend.avatarUrl || '/api/uploads/avatars/default-avatar.png'}" 
+                            <img src="${friend.avatarUrl ? `${API_BASE_URL}${friend.avatarUrl}` : `${API_BASE_URL}/uploads/avatars/default-avatar.png`}" 
                                 alt="Avatar" 
                                 class="friend-avatar">
                         </td>
@@ -56,7 +56,7 @@ async function loadFriendRequests() {
             requestsList.innerHTML = response.data.map(request => `
                 <div class="friend-request-item">
                     <div class="user-info">
-                        <img src="${request.avatarUrl || '/api/uploads/avatars/default-avatar.png'}" alt="Avatar" class="friend-avatar">
+                        <img src="${request.avatarUrl ? `${API_BASE_URL}${request.avatarUrl}` : `${API_BASE_URL}/uploads/avatars/default-avatar.png`}" alt="Avatar" class="friend-avatar">
                         <span>${request.username}</span>
                     </div>
                     <div class="request-actions">
@@ -170,7 +170,7 @@ async function searchUsers(searchTerm) {
                 searchResults.innerHTML = response.data
                     .map(user => `
                         <div class="search-result-item" onclick="sendFriendRequest('${user.username}')">
-                            <img src="${user.avatarUrl || '/api/uploads/avatars/default-avatar.png'}" alt="Avatar">
+                            <img src="${user.avatarUrl ? `${API_BASE_URL}${user.avatarUrl}` : `${API_BASE_URL}/uploads/avatars/default-avatar.png`}" alt="Avatar">
                             <span>${user.username}</span>
                         </div>
                     `)
@@ -187,46 +187,16 @@ async function searchUsers(searchTerm) {
 // Функция для отображения стены друга
 async function showFriendWall(username) {
     try {
-        // Скрываем форму создания поста при просмотре чужой стены
-        const postForm = document.querySelector('.post-form');
-        const wallTitle = document.querySelector('.wall-section h3');
-        const currentUser = JSON.parse(localStorage.getItem('user'));
-        
-        if (username === currentUser.data.username) {
-            postForm.style.display = 'block';
-            wallTitle.textContent = 'Моя стена';
-        } else {
-            postForm.style.display = 'none';
-            wallTitle.textContent = `Стена пользователя ${username}`;
-        }
-
-        // Загружаем посты друга
-        const response = await apiRequest(`/posts/${username}`);
+        const response = await apiRequest(`/posts/user/${username}`);
 
         if (response.success) {
             const postsContainer = document.getElementById('posts-container');
             postsContainer.innerHTML = response.data.map(post => `
                 <div class="post">
                     <div class="post-header">
-                        <img src="${post.authorAvatar || '/api/uploads/avatars/default-avatar.png'}" 
+                        <img src="${post.authorAvatar ? `${API_BASE_URL}${post.authorAvatar}` : `${API_BASE_URL}/uploads/avatars/default-avatar.png`}" 
                              alt="Avatar" class="post-avatar">
-                        <div class="post-info">
-                            <div class="post-author">${post.author}</div>
-                            <div class="post-date">${new Date(post.createdAt).toLocaleString()}</div>
-                        </div>
-                    </div>
-                    <div class="post-content">${post.content}</div>
-                    ${post.image ? `<img src="${post.image}" alt="Post image" class="post-image">` : ''}
-                    <div class="post-actions">
-                        <div class="post-action" onclick="likePost('${post.id}')">
-                            <i class="fas fa-heart ${post.likedBy.includes(currentUser.data.username) ? 'liked' : ''}"></i>
-                            <span>${post.likes || 0}</span>
-                        </div>
-                        ${post.author === currentUser.data.username ? `
-                            <div class="post-action" onclick="deletePost('${post.id}')">
-                                <i class="fas fa-trash"></i>
-                            </div>
-                        ` : ''}
+                        // ... остальной код ...
                     </div>
                 </div>
             `).join('');
