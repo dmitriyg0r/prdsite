@@ -994,13 +994,13 @@ function displayUsers(users) {
                     <span>${user.username}</span>
                 </div>
             </td>
-            <td>${user.role}</td>
             <td>
-                <button class="btn change-role-btn" 
-                        onclick="changeRole('${user.username}', '${user.role === 'Admin' ? 'User' : 'Admin'}')"
+                <select class="role-select" 
+                        onchange="changeRole('${user.username}', this.value)"
                         ${user.role === 'Admin' && adminsCount === 1 ? 'disabled' : ''}>
-                    ${user.role === 'Admin' ? 'Сделать пользователем' : 'Сделать админом'}
-                </button>
+                    <option value="User" ${user.role === 'User' ? 'selected' : ''}>User</option>
+                    <option value="Admin" ${user.role === 'Admin' ? 'selected' : ''}>Admin</option>
+                </select>
             </td>
             <td>${new Date(user.createdAt).toLocaleString()}</td>
             <td>
