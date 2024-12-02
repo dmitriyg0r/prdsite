@@ -525,3 +525,62 @@
         transform: translateX(30px);
     }
 }
+
+/* Добавляем стили для ответов на сообщения */
+.reply-preview {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: var(--text-container-background);
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    border-left: 3px solid var(--primary-color);
+}
+
+.reply-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-color);
+    font-size: 0.9rem;
+}
+
+.reply-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+}
+
+.cancel-reply {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 4px;
+}
+
+.cancel-reply:hover {
+    color: #ff4444;
+}
+
+.reply-to {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 4px;
+    padding: 4px 8px;
+    background-color: rgba(var(--button-background-rgb), 0.1);
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.reply-line {
+    width: 2px;
+    background-color: var(--primary-color);
+}
+
+/* Обновляем стили контекстного меню */
+.context-menu-item.reply {
+    color: var(--primary-color);
+}

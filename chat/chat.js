@@ -329,6 +329,19 @@ function createMessageElement(message) {
             : '<div class="message-status status-sent"><i class="fas fa-check"></i></div>';
     }
 
+    // Создаем разметку для ответа, если есть
+    let replyHtml = '';
+    if (message.replyTo) {
+        replyHtml = `
+            <div class="reply-to">
+                <div class="reply-line"></div>
+                <div class="reply-content">
+                    <span class="reply-text">${message.replyTo.text}</span>
+                </div>
+            </div>
+        `;
+    }
+
     // Создаем разметку для прикрепленного файла
     let attachmentHtml = '';
     if (message.attachment) {
@@ -374,6 +387,7 @@ function createMessageElement(message) {
              data-message-id="${message.id}"
              oncontextmenu="showContextMenu(event, this)">
             <div class="message-content">
+                ${replyHtml}
                 ${message.message ? `<div class="message-text">${message.message}</div>` : ''}
                 ${attachmentHtml}
                 <div class="message-info">
@@ -407,6 +421,7 @@ document.getElementById('sendMessage').addEventListener('click', sendMessage);
 async function sendMessage() {
     const input = document.getElementById('messageInput');
     const message = input.value.trim();
+    const replyPreview = document.getElementById('replyPreview');
 
     if ((!message && !currentAttachment) || !currentChatPartner) return;
 
@@ -417,6 +432,11 @@ async function sendMessage() {
         
         if (currentAttachment) {
             formData.append('file', currentAttachment);
+        }
+        
+        // Добавляем информацию об ответе, если есть
+        if (replyPreview) {
+            formData.append('replyTo', replyPreview.dataset.replyToId);
         }
 
         const response = await fetch('/api/chat/send', {
@@ -436,12 +456,17 @@ async function sendMessage() {
                 message: message,
                 timestamp: new Date(),
                 isRead: false,
-                attachment: data.data.attachment
+                attachment: data.data.attachment,
+                replyTo: replyPreview ? {
+                    messageId: replyPreview.dataset.replyToId,
+                    text: replyPreview.querySelector('.reply-text').textContent
+                } : null
             });
 
             chatMessages.insertAdjacentHTML('beforeend', newMessage);
             input.value = '';
-            removeAttachment(); // Очищаем прикрепленный файл
+            removeAttachment();
+            cancelReply();
 
             chatMessages.scrollTo({
                 top: chatMessages.scrollHeight,
@@ -644,22 +669,30 @@ document.addEventListener('keydown', (e) => {
 function showContextMenu(e, messageElement) {
     e.preventDefault();
     
-    // Проверяем, является ли сообщение нашим
-    const messageContent = messageElement.querySelector('.message-content');
-    if (!messageElement.classList.contains('message-sent')) {
-        return; // Не показываем меню для чужих сообщений
-    }
-
     const contextMenu = document.querySelector('.context-menu');
+    const isOwnMessage = messageElement.classList.contains('message-sent');
+    
+    // Обновляем содержимое меню в зависимости от типа сообщения
+    contextMenu.innerHTML = isOwnMessage 
+        ? `
+            <div class="context-menu-item delete" data-action="delete">
+                <i class="fas fa-trash"></i>
+                Удалить
+            </div>
+        `
+        : `
+            <div class="context-menu-item reply" data-action="reply">
+                <i class="fas fa-reply"></i>
+                Ответить
+            </div>
+        `;
     
     // Позиционируем меню
-    const rect = messageElement.getBoundingClientRect();
     const x = e.clientX;
     const y = e.clientY;
     
-    // Проверяем, не выходит ли меню за пределы экрана
-    const menuWidth = 150; // Примерная ширина меню
-    const menuHeight = 40; // Примерная высота меню
+    const menuWidth = 150;
+    const menuHeight = 40;
     
     const rightEdge = window.innerWidth - menuWidth;
     const bottomEdge = window.innerHeight - menuHeight;
@@ -667,11 +700,12 @@ function showContextMenu(e, messageElement) {
     contextMenu.style.left = `${Math.min(x, rightEdge)}px`;
     contextMenu.style.top = `${Math.min(y, bottomEdge)}px`;
     
-    // Сохраняем ID сообщения в меню
+    // Сохраняем ID сообщения и его текст в меню
     const messageId = messageElement.dataset.messageId;
+    const messageText = messageElement.querySelector('.message-text')?.textContent || '';
     contextMenu.dataset.messageId = messageId;
+    contextMenu.dataset.messageText = messageText;
     
-    // Показываем меню
     contextMenu.classList.add('active');
     activeContextMenu = contextMenu;
 }
@@ -684,7 +718,7 @@ function hideContextMenu() {
     }
 }
 
-// Добавляем обработчик для действий контекстного меню
+// Обновляем обработчик действий контекстного меню
 document.addEventListener('click', async (e) => {
     const menuItem = e.target.closest('.context-menu-item');
     if (!menuItem) return;
@@ -692,9 +726,12 @@ document.addEventListener('click', async (e) => {
     const action = menuItem.dataset.action;
     const contextMenu = menuItem.closest('.context-menu');
     const messageId = contextMenu.dataset.messageId;
+    const messageText = contextMenu.dataset.messageText;
 
     if (action === 'delete') {
         await deleteMessage(messageId);
+    } else if (action === 'reply') {
+        handleReply(messageId, messageText);
     }
 
     hideContextMenu();
@@ -743,4 +780,39 @@ document.addEventListener('keydown', (e) => {
 // Закрываем контекстное меню при скролле
 document.getElementById('messages').addEventListener('scroll', () => {
     hideContextMenu();
-}); 
+});
+
+// Добавляем функцию для обработки ответа на сообщение
+function handleReply(messageId, messageText) {
+    const input = document.getElementById('messageInput');
+    const replyPreview = document.getElementById('replyPreview');
+    
+    // Создаем или обновляем предпросмотр ответа
+    if (!replyPreview) {
+        const preview = document.createElement('div');
+        preview.id = 'replyPreview';
+        preview.innerHTML = `
+            <div class="reply-content">
+                <i class="fas fa-reply"></i>
+                <span class="reply-text">${messageText}</span>
+            </div>
+            <button class="cancel-reply" onclick="cancelReply()">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        preview.dataset.replyToId = messageId;
+        
+        const inputArea = document.querySelector('.input-area');
+        inputArea.insertBefore(preview, input);
+    }
+    
+    input.focus();
+}
+
+// Добавляем функцию для отмены ответа
+function cancelReply() {
+    const replyPreview = document.getElementById('replyPreview');
+    if (replyPreview) {
+        replyPreview.remove();
+    }
+} 
