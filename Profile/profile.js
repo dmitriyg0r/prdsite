@@ -1,5 +1,5 @@
 // Определяем базовый URL API
-const API_BASE_URL = 'https://adminflow.ru/api';
+const API_BASE_URL = window.location.origin + '/api';
 
 // Вспомогательные функции
 const showError = (message) => {
@@ -60,17 +60,18 @@ async function checkUserRole() {
             user = JSON.parse(userData);
         } catch (e) {
             console.log('Failed to parse user data:', e);
-            localStorage.removeItem('user'); // Clear invalid data
+            localStorage.removeItem('user');
             return null;
         }
 
         if (!user?.data?.username) {
             console.log('Invalid user data format');
-            localStorage.removeItem('user'); // Clear invalid data
+            localStorage.removeItem('user');
             return null;
         }
 
-        const response = await fetch(`${API_BASE_URL}/user/check-role`, {
+        // Используем endpoint для получения информации о пользователе
+        const response = await fetch(`${API_BASE_URL}/users/${user.data.username}`, {
             headers: {
                 'Authorization': `Bearer ${user.data.username}`
             }
@@ -78,14 +79,21 @@ async function checkUserRole() {
 
         if (!response.ok) {
             if (response.status === 401) {
-                localStorage.removeItem('user'); // Clear invalid session
+                localStorage.removeItem('user');
+                window.location.reload();
                 return null;
             }
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const data = await response.json();
-        return data.success ? data.data.role : null;
+        if (data.success) {
+            // Обновляем роль в локальном хранилище
+            user.data.role = data.data.role;
+            localStorage.setItem('user', JSON.stringify(user));
+            return data.data.role;
+        }
+        return null;
     } catch (error) {
         console.error('Error checking user role:', error);
         return null;
@@ -486,7 +494,7 @@ async function editUser(userId) {
         }
 
         const newUsername = prompt('Введите новое имя пользователя:');
-        const newRole = prompt('Введите новую роль (Admin/User):');
+        const newRole = prompt('Введит�� новую роль (Admin/User):');
 
         if (!newUsername || !newRole) return;
 
@@ -1159,34 +1167,60 @@ async function changeRole(username, newRole) {
     }
 }
 
-// Функция для инициализации профиля пользователя
+// Обновляем функцию инициализации профиля
 function initializeUserProfile() {
-    const currentUser = JSON.parse(localStorage.getItem('user'));
-    if (!currentUser?.data) return;
-
-    // Обновляем отображение имени пользователя и роли
-    const profileUsername = document.getElementById('profile-username');
-    const profileRole = document.getElementById('profile-role');
-    const chatLink = document.getElementById('chat-link');
-
-    if (profileUsername) {
-        profileUsername.textContent = currentUser.data.username;
-    }
-    if (profileRole) {
-        profileRole.textContent = currentUser.data.role;
-    }
-    // Показываем ссылку на чат, если пользователь авторизован
-    if (chatLink) {
-        chatLink.style.display = 'block';
+    const userData = localStorage.getItem('user');
+    if (!userData) {
+        showLoginForm();
+        return;
     }
 
-    // Обновляем интерфейс в зависимости от роли
-    updateInterfaceBasedOnRole(currentUser.data.role);
+    try {
+        const user = JSON.parse(userData);
+        if (user?.data?.username) {
+            updateProfileDisplay(user.data);
+            if (user.data.role === 'Admin') {
+                loadUsers();
+            }
+        } else {
+            showLoginForm();
+        }
+    } catch (e) {
+        console.error('Error initializing profile:', e);
+        showLoginForm();
+    }
 }
 
-// Вызываем инициализацию профиля при загрузке страницы
+// Добавляем функцию обновления отображения профиля
+function updateProfileDisplay(userData) {
+    const profileInfo = document.getElementById('profile-info');
+    const loginContainer = document.getElementById('login-container');
+    const adminSection = document.getElementById('admin-section');
+    const chatLink = document.getElementById('chat-link');
+
+    if (profileInfo) profileInfo.style.display = 'block';
+    if (loginContainer) loginContainer.style.display = 'none';
+    if (adminSection) adminSection.style.display = userData.role === 'Admin' ? 'block' : 'none';
+    if (chatLink) chatLink.style.display = 'block';
+
+    const profileUsername = document.getElementById('profile-username');
+    const profileRole = document.getElementById('profile-role');
+    const userAvatar = document.getElementById('user-avatar');
+
+    if (profileUsername) profileUsername.textContent = userData.username;
+    if (profileRole) profileRole.textContent = userData.role;
+    if (userAvatar) {
+        userAvatar.src = userData.avatar || '/api/assets/default-avatar.png';
+        userAvatar.onerror = function() {
+            this.src = '/api/assets/default-avatar.png';
+        };
+    }
+}
+
+// Обновляем обработчик DOMContentLoaded
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('Page loaded, initializing...');
     initializeUserProfile();
-    startRoleChecking(); // Запускаем проверку роли
+    startRoleChecking();
 });
 
