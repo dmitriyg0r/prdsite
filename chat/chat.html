@@ -64,7 +64,16 @@
                 <div class="chat-list-header">
                     <h2>Чаты</h2>
                 </div>
-                <div id="friends-list"></div>
+                <div id="friends-list">
+                    <!-- Пример элемента списка друзей -->
+                    <div class="chat-partner" onclick="openChat('Имя пользователя', 'путь/к/аватару.png')">
+                        <img src="путь/к/аватару.png" alt="Avatar" class="friend-avatar">
+                        <div class="friend-info">
+                            <div class="friend-name">Имя пользователя</div>
+                            <div class="last-message">Последнее сообщение...</div>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="chat-main">
                 <div class="chat-header">

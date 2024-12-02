@@ -20,7 +20,7 @@ function loadFriendsList() {
         if (data.success) {
             const friendsListDiv = document.getElementById('friends-list');
             friendsListDiv.innerHTML = data.data.map(friend => `
-                <div class="chat-partner" onclick="openChat('${friend.username}')">
+                <div class="chat-partner" onclick="openChat('${friend.username}', '${friend.avatarUrl}')">
                     <img src="${friend.avatarUrl ? `/api/${friend.avatarUrl}` : '../assets/default-avatar.png'}" alt="Avatar" class="friend-avatar">
                     <span>${friend.username}</span>
                 </div>
@@ -34,9 +34,19 @@ function loadFriendsList() {
 let currentChatPartner = null;
 
 // Функция для открытия чата с пользователем
-async function openChat(username) {
+async function openChat(username, avatarUrl) {
     currentChatPartner = username;
     
+    // Обновляем заголовок чата
+    const chatHeaderName = document.getElementById('chat-header-name');
+    const chatHeaderAvatar = document.getElementById('chat-header-avatar');
+    if (chatHeaderName) {
+        chatHeaderName.textContent = username;
+    }
+    if (chatHeaderAvatar) {
+        chatHeaderAvatar.src = avatarUrl || '../assets/default-avatar.png';
+    }
+
     try {
         // Загружаем историю сообщений
         const response = await fetch(`/api/chat/history/${username}`, {
@@ -179,10 +189,12 @@ function createMessageElement(message) {
 
     return `
         <div class="message ${isSent ? 'message-sent' : 'message-received'}" data-message-id="${message.id}">
-            ${message.message}
-            <div class="message-info">
-                <span class="message-time">${time}</span>
-                ${statusIcon}
+            <div class="message-content">
+                ${message.message}
+                <div class="message-info">
+                    <span class="message-time">${time}</span>
+                    ${statusIcon}
+                </div>
             </div>
         </div>
     `;
