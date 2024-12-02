@@ -259,7 +259,7 @@ function createFriendElement(friend) {
             <td>${friend.username}</td>
             <td>${friend.status || 'Offline'}</td>
             <td>
-                <button class="btn primary-btn" onclick="window.location.href='../chat/chat.html'">
+                <button class="btn primary-btn" onclick="goToChat()">
                     <i class="fas fa-comments"></i> Чат
                 </button>
                 <button class="btn danger-btn" onclick="removeFriend('${friend.username}')">
@@ -270,10 +270,7 @@ function createFriendElement(friend) {
     `;
 }
 
-// Добавьте новую функцию для открытия чата
-window.openFriendChat = function(username) {
-    // Сохраняем имя пользователя для чата в localStorage
-    localStorage.setItem('chatPartner', username);
-    // Перенаправляем на страницу чата
+// Добавляем функцию для перехода в чат
+window.goToChat = function() {
     window.location.href = '../chat/chat.html';
 };
