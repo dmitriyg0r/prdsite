@@ -132,7 +132,7 @@ document.addEventListener('visibilitychange', () => {
     }
 });
 
-// Функция для создания элемента сообщения
+// Функция для создания элемента сообщен��я
 function createMessageElement(message) {
     const currentUser = JSON.parse(localStorage.getItem('user')).data.username;
     const isSent = message.from === currentUser;
