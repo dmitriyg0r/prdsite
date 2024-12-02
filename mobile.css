@@ -9,15 +9,17 @@
     body {
         padding-bottom: 70px;
         margin-left: 0;
-        width: 100%;
-        min-width: 320px;
+        width: 100vw;
+        min-width: 100vw;
+        overflow-x: hidden;
     }
 
     /* Фиксированная ширина контента */
     main {
-        width: 100%;
-        max-width: 100%;
-        margin: 0 auto;
+        width: 100vw;
+        max-width: 100vw;
+        margin: 0;
+        padding: 0;
         overflow-x: hidden;
     }
 
@@ -27,35 +29,42 @@
         position: fixed;
         bottom: 0;
         left: 0;
-        width: 100%;
+        right: 0;
+        width: 100vw;
         background-color: var(--sidebar-bg);
         border-top: 1px solid var(--border-color);
         z-index: 1000;
+        margin: 0;
+        padding: 0;
     }
 
     .mobile-nav ul {
         display: flex;
-        justify-content: space-around;
+        justify-content: space-between;
         align-items: center;
         margin: 0;
-        padding: 8px 0;
+        padding: 0;
         list-style: none;
-        width: 100%;
+        width: 100vw;
     }
 
     .mobile-nav ul li {
         flex: 1;
         text-align: center;
+        margin: 0;
+        padding: 0;
     }
 
     .mobile-nav ul li a {
         display: flex;
         flex-direction: column;
         align-items: center;
+        justify-content: center;
         text-decoration: none;
         color: var(--text-color);
         font-size: 0.75rem;
-        padding: 8px 4px;
+        padding: 8px 0;
+        width: 100%;
     }
 
     .mobile-nav ul li a i {
@@ -66,35 +75,42 @@
 
     /* Фиксированная ширина контейнера */
     .container {
-        width: 100%;
-        max-width: 100%;
-        margin: 0 auto;
+        width: 100vw;
+        max-width: 100vw;
+        margin: 0;
+        padding: 0;
         box-sizing: border-box;
     }
 
     /* Адаптация таблицы расписания */
     .table-container {
-        width: 100%;
-        max-width: 100%;
+        width: 100vw;
+        max-width: 100vw;
         overflow-x: auto;
+        margin: 0;
+        padding: 0;
     }
 
     table {
         width: 100%;
         min-width: 800px;
         border-collapse: collapse;
+        margin: 0;
     }
 
     /* Стили для новостей */
     .news {
-        width: 100%;
-        max-width: 100%;
-        margin: 20px auto;
+        width: 100vw;
+        max-width: 100vw;
+        margin: 20px 0;
+        padding: 0;
         box-sizing: border-box;
     }
 
     .news-content {
-        width: 100%;
+        width: 100vw;
+        margin: 0;
+        padding: 0;
     }
 
     /* Кнопка добавления поста */
@@ -107,16 +123,17 @@
 
     /* Модальное окно */
     .modal-content {
-        width: 90%;
+        width: 90vw;
         margin: 20px auto;
         box-sizing: border-box;
     }
 
     /* Текстовый контейнер */
     .text-container {
-        width: 100%;
-        max-width: 100%;
-        margin: 0 auto;
+        width: 100vw;
+        max-width: 100vw;
+        margin: 0;
+        padding: 0 15px;
         box-sizing: border-box;
     }
 }
