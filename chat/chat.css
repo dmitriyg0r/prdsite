@@ -2,12 +2,17 @@ body, html {
     height: 100%;
     margin: 0;
     font-family: 'Roboto', sans-serif;
+    background-color: var(--background-color);
 }
 
 .chat-container {
     display: flex;
     height: 100vh;
     background-color: var(--background-color);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 20px;
 }
 
 .chat-partners-area {
@@ -15,29 +20,32 @@ body, html {
     background-color: var(--sidebar-background);
     color: var(--header-text);
     overflow-y: auto;
-    padding: 10px;
+    padding: 20px;
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
 }
 
 .chat-partner {
-    padding: 10px;
+    padding: 15px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: background-color 0.3s, transform 0.2s;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 15px;
     border-radius: 8px;
+    margin-bottom: 10px;
 }
 
 .chat-partner:hover {
     background-color: var(--sidebar-hover);
+    transform: scale(1.02);
 }
 
 .friend-avatar {
-    width: 40px;
-    height: 40px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
     object-fit: cover;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .messages-area {
@@ -48,46 +56,57 @@ body, html {
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
+    border-left: 1px solid var(--border-color);
 }
 
 .input-area {
     display: flex;
-    padding: 10px;
+    padding: 15px;
     background-color: var(--text-container-background);
     border-top: 1px solid var(--border-color);
 }
 
 .input-area input {
     flex: 1;
-    padding: 10px;
+    padding: 12px;
     border: 1px solid var(--border-color);
-    border-radius: 4px;
+    border-radius: 20px;
     margin-right: 10px;
     background-color: var(--input-background);
     color: var(--text-color);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: border-color 0.3s;
+}
+
+.input-area input:focus {
+    border-color: var(--primary-color);
+    outline: none;
 }
 
 .input-area button {
-    padding: 10px 20px;
+    padding: 12px 20px;
     background-color: var(--primary-color);
     color: var(--button-text);
     border: none;
-    border-radius: 4px;
+    border-radius: 20px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: background-color 0.3s, transform 0.2s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .input-area button:hover {
     background-color: var(--button-hover);
+    transform: scale(1.05);
 }
 
 .message {
     background-color: var(--card-background);
-    padding: 10px;
+    padding: 15px;
     margin-bottom: 10px;
-    border-radius: 4px;
+    border-radius: 20px;
     word-wrap: break-word;
-    max-width: 60%;
+    max-width: 70%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .message-sent {
