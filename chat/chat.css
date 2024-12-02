@@ -84,11 +84,38 @@
     border-bottom-left-radius: 4px;
 }
 
-.message-time {
+/* Стили для времени и статуса сообщения */
+.message-info {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
     font-size: 11px;
     margin-top: 4px;
     opacity: 0.7;
-    display: block;
+}
+
+.message-time {
+    margin: 0;
+}
+
+.message-status {
+    display: flex;
+    align-items: center;
+}
+
+.message-status i {
+    font-size: 12px;
+}
+
+/* Цвет для непрочитанного сообщения */
+.status-sent i {
+    color: #a9a9a9;
+}
+
+/* Цвет для прочитанного сообщения */
+.status-read i {
+    color: #4CAF50;
 }
 
 /* Область ввода */

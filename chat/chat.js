@@ -62,11 +62,22 @@ function createMessageElement(message) {
     const currentUser = JSON.parse(localStorage.getItem('user')).data.username;
     const isSent = message.from === currentUser;
     const time = new Date(message.timestamp).toLocaleTimeString();
+    
+    // Определяем статус сообщения
+    let statusIcon = '';
+    if (isSent) {
+        statusIcon = message.isRead 
+            ? '<div class="message-status status-read"><i class="fas fa-check-double"></i></div>'
+            : '<div class="message-status status-sent"><i class="fas fa-check"></i></div>';
+    }
 
     return `
         <div class="message ${isSent ? 'message-sent' : 'message-received'}">
             ${message.message}
-            <div class="message-time">${time}</div>
+            <div class="message-info">
+                <span class="message-time">${time}</span>
+                ${statusIcon}
+            </div>
         </div>
     `;
 }
@@ -89,7 +100,8 @@ async function sendMessage() {
             },
             body: JSON.stringify({
                 to: currentChatPartner,
-                message: message
+                message: message,
+                isRead: false // Изначально сообщение не прочитано
             })
         });
 
@@ -100,7 +112,8 @@ async function sendMessage() {
             const newMessage = createMessageElement({
                 from: JSON.parse(localStorage.getItem('user')).data.username,
                 message: message,
-                timestamp: new Date()
+                timestamp: new Date(),
+                isRead: false
             });
 
             chatMessages.insertAdjacentHTML('beforeend', newMessage);
@@ -113,5 +126,19 @@ async function sendMessage() {
         }
     } catch (error) {
         console.error('Error sending message:', error);
+    }
+}
+
+// Функция для обновления статуса сообщения
+function updateMessageStatus(messageId, isRead) {
+    const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+    if (messageElement) {
+        const statusElement = messageElement.querySelector('.message-status');
+        if (statusElement) {
+            statusElement.className = `message-status status-${isRead ? 'read' : 'sent'}`;
+            statusElement.innerHTML = isRead 
+                ? '<i class="fas fa-check-double"></i>'
+                : '<i class="fas fa-check"></i>';
+        }
     }
 } 
