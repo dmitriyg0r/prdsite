@@ -254,7 +254,7 @@ function showProfile(userData) {
         if (container) container.style.display = 'none';
     });
     
-    // Показываем информацию профиля
+    // Показываем информацию профи��я
     const profileInfo = document.getElementById('profile-info');
     if (profileInfo) {
         profileInfo.style.display = 'block';
@@ -390,7 +390,7 @@ function checkAuthAndShowContent() {
     }
 }
 
-// Модифицируем обработчик DOMContentLoaded
+// Модифицируем ��бработчик DOMContentLoaded
 document.addEventListener('DOMContentLoaded', async () => {
     try {
         console.log('Page loaded, initializing...');
@@ -494,7 +494,7 @@ async function editUser(userId) {
         }
 
         const newUsername = prompt('Введите новое имя пользователя:');
-        const newRole = prompt('Введит�� новую роль (Admin/User):');
+        const newRole = prompt('Введит новую роль (Admin/User):');
 
         if (!newUsername || !newRole) return;
 
@@ -671,7 +671,7 @@ async function uploadAvatar(file) {
         }
     } catch (error) {
         console.error('Error uploading avatar:', error);
-        showError(error.message || 'Произошла ошибка при загрузке аватара');
+        showError(error.message || 'Произош��а ошибка при загрузке аватара');
     }
 }
 
@@ -927,7 +927,7 @@ function openChat(username) {
     // Загружаем историю сообщений
     loadChatHistory(username);
     
-    // Очищаем поле ввода
+    // Очищ��ем поле ввода
     document.getElementById('chat-input').value = '';
     
     // Устанавливаем фокус на поле ввода
@@ -1223,4 +1223,141 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeUserProfile();
     startRoleChecking();
 });
+
+// Функция проверки авторизации
+function checkAuth() {
+    const userData = localStorage.getItem('user');
+    if (!userData) {
+        return null;
+    }
+
+    try {
+        const user = JSON.parse(userData);
+        if (user?.data?.username) {
+            return user.data;
+        }
+    } catch (e) {
+        console.error('Error parsing user data:', e);
+    }
+    return null;
+}
+
+// Функция инициализации пользовательского интерфейса
+async function initializeUserInterface(userData) {
+    try {
+        if (!userData) {
+            showLoginForm();
+            return;
+        }
+
+        // Обновляем отображение профиля
+        updateProfileDisplay(userData);
+
+        // Инициализируем загрузку аватара
+        initializeAvatarUpload();
+
+        // Если пользователь админ, загружаем список пользователей
+        if (userData.role === 'Admin') {
+            await loadUsers();
+        }
+
+        // Загружаем список друзей
+        await loadFriendsList();
+        
+        // Загружаем запросы в друзья
+        await loadFriendRequests();
+
+    } catch (error) {
+        console.error('Error initializing user interface:', error);
+        showError('Ошибка при инициализации интерфейса');
+    }
+}
+
+// Обновляем обработчик DOMContentLoaded
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        console.log('Page loaded, initializing...');
+        
+        // Проверяем авторизацию
+        const userData = checkAuth();
+        
+        if (userData) {
+            // Пользователь авторизован
+            await initializeUserInterface(userData);
+            startRoleChecking();
+        } else {
+            // Пользователь не авторизован
+            showLoginForm();
+        }
+
+    } catch (error) {
+        console.error('Error during initialization:', error);
+        showError('Ошибка при инициализации страницы');
+    }
+});
+
+// Обновляем функцию handleLogin
+async function handleLogin(event) {
+    event.preventDefault();
+    console.log('Login attempt started');
+
+    try {
+        const username = document.getElementById('login-username').value;
+        const password = document.getElementById('login-password').value;
+
+        const response = await fetch(`${API_BASE_URL}/auth/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username, password })
+        });
+
+        console.log('Login response status:', response.status);
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Сохраняем данные пользователя
+            localStorage.setItem('user', JSON.stringify({
+                data: {
+                    username: data.data.username,
+                    role: data.data.role
+                }
+            }));
+
+            // Инициализируем интерфейс
+            await initializeUserInterface(data.data);
+            startRoleChecking();
+            
+            showSuccess('Вход выполнен успешно!');
+        } else {
+            throw new Error(data.message || 'Ошибка входа');
+        }
+    } catch (error) {
+        console.error('Login error:', error);
+        showError(error.message || 'Ошибка при входе в систему');
+    }
+}
+
+// Обновляем функцию handleLogout
+function handleLogout() {
+    try {
+        localStorage.removeItem('user');
+        stopRoleChecking(); // Останавливаем проверку роли
+        showLoginForm();
+        showSuccess('Выход выполнен успешно');
+    } catch (error) {
+        console.error('Logout error:', error);
+        showError('Ошибка при выходе из системы');
+    }
+}
+
+// Добавляем функцию остановки проверки роли
+function stopRoleChecking() {
+    if (roleCheckInterval) {
+        clearInterval(roleCheckInterval);
+        roleCheckInterval = null;
+    }
+}
 
