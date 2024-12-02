@@ -1,7 +1,7 @@
 import { API_BASE_URL, showError, showSuccess, apiRequest } from './utils.js';
 
-// Функция для входа в систему
-export async function handleLogin(event) {
+// Функции без export в их определении
+async function handleLogin(event) {
     event.preventDefault();
     console.log('Login attempt started');
 
@@ -41,8 +41,7 @@ export async function handleLogin(event) {
     }
 }
 
-// Функция для регистрации
-export async function handleRegister(event) {
+async function handleRegister(event) {
     event.preventDefault();
 
     const username = document.getElementById('reg-username').value;
@@ -82,8 +81,7 @@ export async function handleRegister(event) {
     }
 }
 
-// Функция для анонимного входа
-export async function handleAnonymousLogin() {
+async function handleAnonymousLogin() {
     try {
         const response = await apiRequest('/auth/anonymous-login', {
             method: 'POST'
@@ -100,8 +98,7 @@ export async function handleAnonymousLogin() {
     }
 }
 
-// Функция для выхода из системы
-export function handleLogout() {
+function handleLogout() {
     console.log('Logging out...');
     try {
         // Очищаем данные пользователя
@@ -130,7 +127,6 @@ export function handleLogout() {
     }
 }
 
-// Функция для отображения профиля
 function showProfile(userData) {
     // Скрываем все контейнеры авторизации
     const authContainers = document.querySelectorAll('#login-container, #register-container');
@@ -169,7 +165,6 @@ function showProfile(userData) {
     loadPosts();
 }
 
-// Функция для загрузки аватара пользователя
 async function loadUserAvatar(username) {
     try {
         const response = await apiRequest(`/users/${username}/avatar`);
@@ -182,7 +177,6 @@ async function loadUserAvatar(username) {
         }
     } catch (error) {
         console.error('Error loading avatar:', error);
-        // Используем аватар по умолчанию в случае ошибки
         const userAvatar = document.getElementById('user-avatar');
         if (userAvatar) {
             userAvatar.src = '/assets/default-avatar.png';
@@ -190,7 +184,6 @@ async function loadUserAvatar(username) {
     }
 }
 
-// Функция для инициализации загрузки аватара
 function initializeAvatarUpload() {
     const avatarInput = document.getElementById('avatar-input');
     if (avatarInput) {
@@ -227,7 +220,7 @@ function initializeAvatarUpload() {
     }
 }
 
-// Экспортируем все функции в одном месте в конце файла
+// Единственный экспорт всех функций в конце файла
 export {
     handleLogin,
     handleRegister,
