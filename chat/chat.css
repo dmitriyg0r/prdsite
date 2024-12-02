@@ -55,34 +55,40 @@
     overflow-y: auto;
     padding: 20px;
     background-color: var(--background-color);
+    display: flex;
+    flex-direction: column;
 }
 
 /* Стили для сообщений */
 .message {
+    display: inline-block;
     padding: 12px 16px;
     margin-bottom: 10px;
     border-radius: 20px;
     max-width: 70%;
     position: relative;
+    word-wrap: break-word;
 }
 
 .message-sent {
-    align-self: flex-end;
     background-color: var(--primary-color);
     color: var(--button-text);
     margin-left: auto;
+    border-bottom-right-radius: 4px;
 }
 
 .message-received {
-    align-self: flex-start;
     background-color: var(--text-container-background);
     color: var(--text-color);
+    margin-right: auto;
+    border-bottom-left-radius: 4px;
 }
 
 .message-time {
     font-size: 11px;
     margin-top: 4px;
     opacity: 0.7;
+    display: block;
 }
 
 /* Область ввода */
