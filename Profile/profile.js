@@ -511,7 +511,7 @@ function initializeAvatarUpload() {
         };
         reader.readAsDataURL(file);
 
-        // Загружаем файл на ��ервер
+        // Загружаем файл на ервер
         await uploadAvatar(file);
     });
 }
@@ -571,7 +571,7 @@ async function loadUserAvatar(username) {
 
 // Добавляем новые функции для работы с друзьями
 
-// По��азать модальное окно добавления друга
+// Поазать модальное окно добавления друга
 function showAddFriendModal() {
     const modal = document.getElementById('add-friend-modal');
     modal.style.display = 'block';
@@ -632,7 +632,7 @@ async function searchUsers(searchTerm) {
     }, 300); // Задержка для предотвращения частых запросов
 }
 
-// Отправка запроса �� друзья
+// Отправка запроса  друзья
 async function sendFriendRequest(targetUsername) {
     try {
         const response = await fetch(`${API_BASE_URL}/friends/request`, {
@@ -683,7 +683,7 @@ async function loadFriendRequests() {
                                 Принять
                             </button>
                             <button class="btn danger-btn" onclick="rejectFriendRequest('${request.id}')">
-                                Откло��ить
+                                Отклоить
                             </button>
                         </div>
                     </div>
@@ -894,7 +894,7 @@ async function loadChatHistory(username) {
                 if (scrolledToBottom) {
                     chatMessages.scrollTop = chatMessages.scrollHeight;
                 } else {
-                    // Сохраняем текущую позицию прокрутки
+                    // Сохраняем текущую позицию ��рокрутки
                     chatMessages.scrollTop = chatMessages.scrollTop;
                 }
             }
@@ -981,35 +981,65 @@ function stopCheckingMessages() {
 // Функция для отображения пользователей в таблице
 function displayUsers(users) {
     const tableBody = document.getElementById('users-table-body');
-    const adminsCount = users.filter(user => user.role === 'Admin').length;
-    
+    if (!tableBody) {
+        console.error('Table body element not found!');
+        return;
+    }
+
     console.log('Displaying users:', users); // Отладочный вывод
     
-    tableBody.innerHTML = users.map(user => `
-        <tr>
-            <td>
-                <div class="user-row">
-                    <i class="fas fa-user"></i>
-                    <span>${user.username}</span>
-                </div>
-            </td>
-            <td>
-                ${user.role}
-                <button 
-                    class="btn change-role-btn" 
-                    onclick="changeRole('${user.username}', '${user.role === 'Admin' ? 'User' : 'Admin'}')"
-                >
-                    Изменить роль
-                </button>
-            </td>
-            <td>${new Date(user.createdAt).toLocaleString()}</td>
-            <td>
-                <button class="btn delete-btn" onclick="deleteUser('${user.username}')">
-                    Удалить
-                </button>
-            </td>
-        </tr>
-    `).join('');
+    try {
+        tableBody.innerHTML = users.map(user => `
+            <tr>
+                <td>
+                    <div class="user-row">
+                        <i class="fas fa-user"></i>
+                        <span>${user.username}</span>
+                    </div>
+                </td>
+                <td>
+                    ${user.role}
+                    <button 
+                        class="btn change-role-btn" 
+                        onclick="changeRole('${user.username}', '${user.role === 'Admin' ? 'User' : 'Admin'}')"
+                    >
+                        Изменить роль
+                    </button>
+                </td>
+                <td>${new Date(user.createdAt).toLocaleString()}</td>
+                <td>
+                    <button class="btn delete-btn" onclick="deleteUser('${user.username}')">
+                        Удалить
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    } catch (error) {
+        console.error('Error displaying users:', error);
+    }
+}
+
+// Функция для загрузки пользователей
+async function loadUsers() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/users`, {
+            headers: {
+                'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
+            }
+        });
+
+        const data = await response.json();
+        console.log('Loaded users data:', data); // Отладочный вывод
+
+        if (data.success) {
+            displayUsers(data.data);
+        } else {
+            throw new Error(data.message || 'Failed to load users');
+        }
+    } catch (error) {
+        console.error('Error loading users:', error);
+        showError('Ошибка при загрузке списка пользователей');
+    }
 }
 
 // Функция для смены роли
