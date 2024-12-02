@@ -394,7 +394,7 @@ app.post('/api/upload-avatar', upload.single('avatar'), (req, res) => {
     const user = users.find(u => u.username === username);
     
     if (!user) {
-        // Удаляем загруженный файл, если пользовате��ь не найден
+        // Удаляем загруженный файл, если пользоватеь не найден
         fs.unlinkSync(req.file.path);
         return res.status(404).json({
             success: false,
@@ -1008,6 +1008,37 @@ app.post('/api/schedule/update', (req, res) => {
             message: 'Ошибка при обновлении расписания'
         });
     }
+});
+
+// Маршрут для получения последних сообщений
+app.get('/api/chat/last-messages', (req, res) => {
+    const currentUser = req.headers.authorization?.split(' ')[1];
+    
+    if (!currentUser) {
+        return res.status(400).json({
+            success: false,
+            message: 'Unauthorized'
+        });
+    }
+
+    // Получаем последние сообщения для каждого чата
+    const lastMessages = {};
+    messages.forEach(msg => {
+        if (msg.from === currentUser || msg.to === currentUser) {
+            const otherUser = msg.from === currentUser ? msg.to : msg.from;
+            if (!lastMessages[otherUser] || new Date(msg.timestamp) > new Date(lastMessages[otherUser].timestamp)) {
+                lastMessages[otherUser] = {
+                    message: msg.message,
+                    timestamp: msg.timestamp
+                };
+            }
+        }
+    });
+
+    res.json({
+        success: true,
+        data: lastMessages
+    });
 });
 
 // Запуск сервера
