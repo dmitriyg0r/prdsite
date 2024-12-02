@@ -16,6 +16,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (chatPlaceholder) {
         chatPlaceholder.style.display = 'flex';
     }
+
+    // Запрашиваем разрешение на показ уведомлений
+    if ("Notification" in window) {
+        Notification.requestPermission();
+    }
 });
 
 // Функция для загрузки списка друзей
@@ -208,6 +213,11 @@ async function checkNewMessages() {
             const chatMessages = document.getElementById('messages');
             data.data.forEach(message => {
                 chatMessages.insertAdjacentHTML('beforeend', createMessageElement(message));
+                
+                // Показываем уведомление, если вкладка не активна
+                if (document.hidden) {
+                    showNotification(message.message, message.from);
+                }
             });
             
             chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -363,5 +373,34 @@ function updateMessageStatus(messageId, isRead) {
                 ? '<i class="fas fa-check-double"></i>'
                 : '<i class="fas fa-check"></i>';
         }
+    }
+}
+
+// Добавляем функцию для показа уведомлений
+function showNotification(message, from) {
+    // Проверяем поддержку уведомлений
+    if (!("Notification" in window)) {
+        console.log("Уведомления не поддерживаются");
+        return;
+    }
+
+    // Запрашиваем разрешение на показ уведомлений при первом вызове
+    if (Notification.permission === "default") {
+        Notification.requestPermission();
+    }
+
+    // Показываем уведомление, если есть разрешение
+    if (Notification.permission === "granted") {
+        const notification = new Notification("Новое сообщение", {
+            body: `${from}: ${message}`,
+            icon: "../flow.ico",
+            tag: "chat-message"
+        });
+
+        // Добавляем обработчик клика по уведомлению
+        notification.onclick = function() {
+            window.focus();
+            openChat(from);
+        };
     }
 } 
