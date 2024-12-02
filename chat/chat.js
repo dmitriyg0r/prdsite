@@ -18,136 +18,48 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Функция для получения последних сообщений
-async function getLastMessages() {
-    try {
-        const response = await fetch('/api/chat/last-messages', {
-            headers: {
-                'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
-            }
-        });
-
-        const data = await response.json();
-        return data.success ? data.data : {};
-    } catch (error) {
-        console.error('Error fetching last messages:', error);
-        return {};
-    }
-}
-
-// Функция для загрузки списка друзей с последними сообщениями
-async function loadFriendsList() {
-    try {
-        const response = await fetch('/api/friends', {
-            headers: {
-                'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
-            }
-        });
-
-        const data = await response.json();
-        const lastMessages = await getLastMessages();
-
-        if (data.success) {
-            const friendsList = document.getElementById('friends-list');
-            friendsList.innerHTML = data.data.map(friend => {
-                const lastMessage = lastMessages[friend.username] || { message: 'Нет сообщений', timestamp: null };
-                return createFriendElement(friend, lastMessage);
-            }).join('');
+// Функция для загрузки списка друзей
+function loadFriendsList() {
+    fetch('/api/friends/list', {
+        headers: {
+            'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
         }
-    } catch (error) {
-        console.error('Error loading friends list:', error);
-    }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const friendsListDiv = document.getElementById('friends-list');
+            friendsListDiv.innerHTML = data.data.map(friend => `
+                <div class="chat-partner" onclick="openChat('${friend.username}', '${friend.avatarUrl}')">
+                    <img src="${friend.avatarUrl ? `/api/${friend.avatarUrl}` : '../assets/default-avatar.png'}" alt="Avatar" class="friend-avatar">
+                    <span>${friend.username}</span>
+                </div>
+            `).join('');
+        }
+    })
+    .catch(error => console.error('Error loading friends list:', error));
 }
+
+// Глобальная переменная для текущего собеседника
+let currentChatPartner = null;
 
 // Функция для создания элемента в списке друзей
-function createFriendElement(friend, lastMessage) {
-    const messageTime = lastMessage.timestamp ? new Date(lastMessage.timestamp).toLocaleTimeString() : '';
-    const messageText = lastMessage.message.length > 30 
-        ? lastMessage.message.substring(0, 30) + '...' 
-        : lastMessage.message;
-
+function createFriendElement(friend) {
     return `
-        <div class="chat-partner" data-username="${friend.username}" onclick="openChat('${friend.username}', '${friend.avatarUrl ? `/api/${friend.avatarUrl}` : '../assets/default-avatar.png'}')">
+        <div class="chat-partner" onclick="openChat('${friend.username}', '${friend.avatarUrl ? `/api/${friend.avatarUrl}` : '../assets/default-avatar.png'}')">
             <img src="${friend.avatarUrl ? `/api/${friend.avatarUrl}` : '../assets/default-avatar.png'}" alt="Avatar" class="friend-avatar">
             <div class="friend-info">
                 <div class="friend-name">${friend.username}</div>
-                <div class="last-message-container">
-                    <span class="last-message">${messageText}</span>
-                    ${messageTime ? `<span class="last-message-time">${messageTime}</span>` : ''}
-                </div>
+                <div class="last-message">${friend.lastMessage || 'Нет сообщений'}</div>
             </div>
         </div>
     `;
 }
 
-// Обновляем последнее сообщение в списке чатов
-function updateLastMessage(username, message) {
-    const chatPartner = document.querySelector(`.chat-partner[data-username="${username}"]`);
-    if (chatPartner) {
-        const lastMessageElement = chatPartner.querySelector('.last-message');
-        const lastMessageTimeElement = chatPartner.querySelector('.last-message-time');
-        
-        if (lastMessageElement) {
-            const messageText = message.length > 30 ? message.substring(0, 30) + '...' : message;
-            lastMessageElement.textContent = messageText;
-        }
-        
-        if (lastMessageTimeElement) {
-            lastMessageTimeElement.textContent = new Date().toLocaleTimeString();
-        }
-    }
-}
-
-// Добавляем стили для последнего сообщения
-const styles = `
-.last-message-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 10px;
-}
-
-.last-message {
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.last-message-time {
-    color: var(--text-secondary);
-    font-size: 0.8rem;
-    white-space: nowrap;
-}
-`;
-
-// Добавляем стили на страницу
-const styleSheet = document.createElement("style");
-styleSheet.textContent = styles;
-document.head.appendChild(styleSheet);
-
-// Глобальная переменная для текущего собеседника
-let currentChatPartner = null;
-
 // Функция для открытия чата с пользователем
 async function openChat(username, avatarUrl) {
     currentChatPartner = username;
     
-    // Обновляем активный чат в списке
-    const allChatPartners = document.querySelectorAll('.chat-partner');
-    allChatPartners.forEach(partner => {
-        partner.classList.remove('active');
-    });
-
-    // Находим и активируем текущий чат
-    const currentPartner = Array.from(allChatPartners).find(partner => 
-        partner.getAttribute('data-username') === username
-    );
-    if (currentPartner) {
-        currentPartner.classList.add('active');
-    }
-
     // Показываем заголовок чата и скрываем плейсхолдер
     const chatHeader = document.getElementById('chat-header');
     const chatPlaceholder = document.getElementById('chat-placeholder');
@@ -165,8 +77,8 @@ async function openChat(username, avatarUrl) {
     if (chatHeaderName) {
         chatHeaderName.textContent = username;
     }
-    if (chatHeaderAvatar && avatarUrl) {
-        chatHeaderAvatar.src = avatarUrl;
+    if (chatHeaderAvatar) {
+        chatHeaderAvatar.src = `/api/${avatarUrl}`;
     }
 
     try {
@@ -377,9 +289,6 @@ async function sendMessage() {
                 top: chatMessages.scrollHeight,
                 behavior: 'smooth'
             });
-
-            // Обновляем последнее сообщение в списке чатов
-            updateLastMessage(currentChatPartner, message);
         }
     } catch (error) {
         console.error('Error sending message:', error);
