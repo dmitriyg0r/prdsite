@@ -1,5 +1,5 @@
 // Определяем базовый URL API
-const API_BASE_URL = window.location.origin + '/api';
+const API_BASE_URL = 'https://adminflow.ru/api';
 
 // Вспомогательные функции
 const showError = (message) => {
@@ -49,54 +49,33 @@ let roleCheckInterval;
 // Функция проверки роли пользователя
 async function checkUserRole() {
     try {
-        const userData = localStorage.getItem('user');
-        if (!userData) {
-            console.log('No user data found in localStorage');
-            return null;
-        }
+        const currentUser = JSON.parse(localStorage.getItem('user'));
+        if (!currentUser?.data?.username) return;
 
-        let user;
-        try {
-            user = JSON.parse(userData);
-        } catch (e) {
-            console.log('Failed to parse user data:', e);
-            localStorage.removeItem('user');
-            return null;
-        }
-
-        if (!user?.data?.username) {
-            console.log('Invalid user data format');
-            localStorage.removeItem('user');
-            return null;
-        }
-
-        // Используем endpoint для получения информации о пользователе
-        const response = await fetch(`${API_BASE_URL}/users/${user.data.username}`, {
+        const response = await fetch(`${API_BASE_URL}/users/check-role`, {
             headers: {
-                'Authorization': `Bearer ${user.data.username}`
+                'Authorization': `Bearer ${currentUser.data.username}`
             }
         });
 
-        if (!response.ok) {
-            if (response.status === 401) {
-                localStorage.removeItem('user');
-                window.location.reload();
-                return null;
-            }
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
         const data = await response.json();
-        if (data.success) {
-            // Обновляем роль в локальном хранилище
-            user.data.role = data.data.role;
-            localStorage.setItem('user', JSON.stringify(user));
-            return data.data.role;
+
+        if (data.success && data.data.role !== currentUser.data.role) {
+            // Обновляем роль в localStorage
+            currentUser.data.role = data.data.role;
+            localStorage.setItem('user', JSON.stringify(currentUser));
+
+            // Обновляем отображение роли в профиле
+            const profileRole = document.getElementById('profile-role');
+            if (profileRole) {
+                profileRole.textContent = data.data.role;
+            }
+
+            // Обновляем интерфейс в зависимости от роли
+            updateInterfaceBasedOnRole(data.data.role);
         }
-        return null;
     } catch (error) {
         console.error('Error checking user role:', error);
-        return null;
     }
 }
 
@@ -112,26 +91,11 @@ function updateInterfaceBasedOnRole(role) {
 
 // Функция запуска проверки роли
 function startRoleChecking() {
-    try {
-        const userData = localStorage.getItem('user');
-        if (!userData) {
-            console.log('No user logged in, skipping role check');
-            return;
-        }
-
-        // Проверяем роль сразу при запуске
-        checkUserRole().catch(console.error);
-        
-        // Устанавливаем интервал проверки (каждые 30 секунд)
-        if (roleCheckInterval) {
-            clearInterval(roleCheckInterval);
-        }
-        roleCheckInterval = setInterval(() => {
-            checkUserRole().catch(console.error);
-        }, 30000);
-    } catch (error) {
-        console.error('Error starting role check:', error);
-    }
+    // Проверяем роль сразу при запуске
+    checkUserRole();
+    
+    // Устанавливаем интервал проверки (каждые 30 секунд)
+    roleCheckInterval = setInterval(checkUserRole, 30000);
 }
 
 // Функция остановки проверки роли
@@ -254,7 +218,7 @@ function showProfile(userData) {
         if (container) container.style.display = 'none';
     });
     
-    // Показываем информацию профи��я
+    // Показываем информацию профиля
     const profileInfo = document.getElementById('profile-info');
     if (profileInfo) {
         profileInfo.style.display = 'block';
@@ -301,7 +265,7 @@ async function loadUsers() {
                     <tr>
                         <td>
                             <div class="user-row">
-                                <img src="${user.avatarUrl ? `${API_BASE_URL}${user.avatarUrl}` : '/api/uploads/avatars/default-avatar.png'}" 
+                                <img src="${user.avatarUrl ? `${API_BASE_URL}${user.avatarUrl}` : '../assets/default-avatar.png'}" 
                                      alt="Avatar" 
                                      class="user-table-avatar">
                                 <span>${user.username}</span>
@@ -353,104 +317,85 @@ function handleLogout() {
     stopRoleChecking(); // Останавливаем проверку роли при выходе
 }
 
-// Функция для проверки авторизации и отображения соответствующего контента
-function checkAuthAndShowContent() {
-    const userData = localStorage.getItem('user');
+// Инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('Page loaded, initializing...');
+
     const loginContainer = document.getElementById('login-container');
     const profileInfo = document.getElementById('profile-info');
-    const adminSection = document.getElementById('admin-section');
+    const registerForm = document.getElementById('register-form');
+    const loginForm = document.getElementById('login-form');
+    const anonymousLoginBtn = document.getElementById('anonymous-login-btn');
+    const logoutBtn = document.querySelector('.danger-btn');
 
-    if (!userData) {
-        // Пользователь не авторизован - показываем форму входа
-        if (loginContainer) loginContainer.style.display = 'block';
-        if (profileInfo) profileInfo.style.display = 'none';
-        if (adminSection) adminSection.style.display = 'none';
-    } else {
+    // Проверяем сохраненную сессию
+    const userData = localStorage.getItem('user');
+    if (userData) {
+        console.log('Found saved session');
         try {
-            const user = JSON.parse(userData);
-            if (user?.data?.username) {
-                // Пользователь авторизован - показываем информацию профиля
-                if (loginContainer) loginContainer.style.display = 'none';
-                if (profileInfo) profileInfo.style.display = 'block';
-                
-                // Проверяем роль для отображения админ-панели
-                if (adminSection && user.data.role === 'Admin') {
-                    adminSection.style.display = 'block';
-                }
-            } else {
-                throw new Error('Invalid user data');
+            const parsedUserData = JSON.parse(userData);
+            // Скрываем контейнер входа и показываем профиль
+            if (loginContainer) {
+                loginContainer.style.display = 'none';
             }
+            if (profileInfo) {
+                profileInfo.style.display = 'block';
+            }
+            showProfile(parsedUserData);
+            
+            // Загружаем списки друзей и запросов
+            loadFriendRequests();
+            loadFriendsList();
         } catch (e) {
-            console.error('Error parsing user data:', e);
+            console.error('Error parsing saved session:', e);
             localStorage.removeItem('user');
-            if (loginContainer) loginContainer.style.display = 'block';
-            if (profileInfo) profileInfo.style.display = 'none';
-            if (adminSection) adminSection.style.display = 'none';
-        }
-    }
-}
-
-// Модифицируем ��бработчик DOMContentLoaded
-document.addEventListener('DOMContentLoaded', async () => {
-    try {
-        console.log('Page loaded, initializing...');
-        
-        // Проверяем авторизацию и показываем соответствующий контент
-        checkAuthAndShowContent();
-        
-        // Инициализируем интерфейс если пользователь авторизован
-        const savedSession = localStorage.getItem('user');
-        if (savedSession) {
-            try {
-                const userData = JSON.parse(savedSession);
-                if (userData && userData.data) {
-                    await initializeUserInterface(userData.data);
-                    startRoleChecking();
-                }
-            } catch (e) {
-                console.error('Error parsing saved session:', e);
-                localStorage.removeItem('user');
+            // В случае ошибки показываем форму входа
+            if (loginContainer) {
+                loginContainer.style.display = 'block';
+            }
+            if (profileInfo) {
+                profileInfo.style.display = 'none';
             }
         }
-
-        // Прикрепляем обработчики событий
-        attachEventHandlers();
-        
-    } catch (error) {
-        console.error('Error during initialization:', error);
+    } else {
+        // Если нет сохраненной сессии, показываем форму входа
+        if (loginContainer) {
+            loginContainer.style.display = 'block';
+        }
+        if (profileInfo) {
+            profileInfo.style.display = 'none';
+        }
     }
-});
 
-// Функция для прикрепления обработчиков событий
-function attachEventHandlers() {
-    // Register form
-    const registerForm = document.getElementById('registerForm');
+    // Привязываем обработчики событий
     if (registerForm) {
         registerForm.addEventListener('submit', handleRegister);
         console.log('Register form handler attached');
     }
-
-    // Login form
-    const loginForm = document.getElementById('loginForm');
+    
     if (loginForm) {
         loginForm.addEventListener('submit', handleLogin);
         console.log('Login form handler attached');
     }
 
-    // Anonymous login
-    const anonLoginBtn = document.getElementById('anonymousLogin');
-    if (anonLoginBtn) {
-        anonLoginBtn.addEventListener('click', handleAnonymousLogin);
+    if (anonymousLoginBtn) {
+        anonymousLoginBtn.addEventListener('click', handleAnonymousLogin);
         console.log('Anonymous login handler attached');
     }
 
-    // Logout
-    const logoutBtn = document.getElementById('logoutButton');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', handleLogout);
         console.log('Logout handler attached');
     }
-}
+
+    // Инициализация поиска друзей
+    const friendSearch = document.getElementById('friend-search');
+    if (friendSearch) {
+        friendSearch.addEventListener('input', (e) => {
+            searchUsers(e.target.value);
+        });
+    }
+});
 
 // Функция для удаления пользователя
 async function deleteUser(username) {
@@ -494,7 +439,7 @@ async function editUser(userId) {
         }
 
         const newUsername = prompt('Введите новое имя пользователя:');
-        const newRole = prompt('Введит новую роль (Admin/User):');
+        const newRole = prompt('Введите новую роль (Admin/User):');
 
         if (!newUsername || !newRole) return;
 
@@ -671,7 +616,7 @@ async function uploadAvatar(file) {
         }
     } catch (error) {
         console.error('Error uploading avatar:', error);
-        showError(error.message || 'Произош��а ошибка при загрузке аватара');
+        showError(error.message || 'Произошла ошибка при загрузке аватара');
     }
 }
 
@@ -742,7 +687,7 @@ async function searchUsers(searchTerm) {
                 searchResults.innerHTML = data.data
                     .map(user => `
                         <div class="search-result-item" onclick="sendFriendRequest('${user.username}')">
-                            <img src="${user.avatarUrl || '/api/uploads/avatars/default-avatar.png'}" alt="Avatar">
+                            <img src="${user.avatarUrl || '../assets/default-avatar.png'}" alt="Avatar">
                             <span>${user.username}</span>
                         </div>
                     `)
@@ -799,7 +744,7 @@ async function loadFriendRequests() {
                 .map(request => `
                     <div class="friend-request-item">
                         <div class="user-info">
-                            <img src="${request.avatarUrl || '/api/uploads/avatars/default-avatar.png'}" alt="Avatar" class="friend-avatar">
+                            <img src="${request.avatarUrl || '../assets/default-avatar.png'}" alt="Avatar" class="friend-avatar">
                             <span>${request.username}</span>
                         </div>
                         <div class="request-actions">
@@ -868,38 +813,33 @@ async function rejectFriendRequest(requestId) {
 // Загрузка списка друзей
 async function loadFriendsList() {
     try {
-        const response = await fetch(`${API_BASE_URL}/friends`, {
+        const response = await fetch(`${API_BASE_URL}/friends/list`, {
             headers: {
                 'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
             }
         });
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
         const data = await response.json();
-        
+
         if (data.success) {
             const friendsList = document.getElementById('friends-list');
-            if (friendsList) {
-                friendsList.innerHTML = data.data.map(friend => `
+            friendsList.innerHTML = data.data
+                .map(friend => `
                     <tr>
                         <td>
-                            <img src="${friend.avatarUrl || '/api/uploads/avatars/default-avatar.png'}" 
-                                 alt="Avatar" 
-                                 class="friend-avatar"
-                                 onerror="this.src='/api/uploads/avatars/default-avatar.png'">
+                            <img src="${friend.avatarUrl ? `${API_BASE_URL}${friend.avatarUrl}` : '../assets/default-avatar.png'}" 
+                                alt="Avatar" 
+                                class="friend-avatar">
                         </td>
                         <td>${friend.username}</td>
                         <td>
-                            <span class="friend-status">
+                            <span class="friend-status ${friend.online ? 'status-online' : 'status-offline'}">
                                 ${friend.online ? 'Онлайн' : 'Оффлайн'}
                             </span>
                         </td>
                         <td>
                             <div class="friend-actions">
-                                <button class="btn primary-btn" onclick="openChat('${friend.username}')">
+                                <button class="btn chat-btn" onclick="openChat('${friend.username}')">
                                     <i class="fas fa-comment"></i> Чат
                                 </button>
                                 <button class="btn danger-btn" onclick="removeFriend('${friend.username}')">
@@ -908,13 +848,12 @@ async function loadFriendsList() {
                             </div>
                         </td>
                     </tr>
-                `).join('');
-            }
+                `)
+                .join('');
         }
-        return data;
     } catch (error) {
         console.error('Error loading friends list:', error);
-        return { success: false, data: [] };
+        showError('Ошибка при загрузке списка друзей');
     }
 }
 
@@ -944,48 +883,6 @@ async function removeFriend(friendUsername) {
     }
 }
 
-async function updateUserActivity() {
-    try {
-        const userData = localStorage.getItem('user');
-        if (!userData) return;
-
-        await fetch(`${API_BASE_URL}/user/activity`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${JSON.parse(userData).data.username}`
-            }
-        });
-    } catch (error) {
-        console.error('Error updating user activity:', error);
-    }
-}
-
-// Добавляем интервал обновления активности в DOMContentLoaded
-document.addEventListener('DOMContentLoaded', async () => {
-    try {
-        console.log('Page loaded, initializing...');
-        
-        // Проверяем авторизацию
-        const userData = checkAuth();
-        
-        if (userData) {
-            // Пользователь авторизован
-            await initializeUserInterface(userData);
-            startRoleChecking();
-            
-            // Запускаем обновление активности
-            updateUserActivity();
-            setInterval(updateUserActivity, 60000); // Обновляем каждую минуту
-        } else {
-            // Пользователь не авторизован
-            showLoginForm();
-        }
-
-    } catch (error) {
-        console.error('Error during initialization:', error);
-        showError('Ошибка при инициализации страницы');
-    }
-});
 // Глобальная переменная для хранения текущего собеседника
 let currentChatPartner = null;
 
@@ -1001,7 +898,7 @@ function openChat(username) {
     // Загружаем историю сообщений
     loadChatHistory(username);
     
-    // Очищ��ем поле ввода
+    // Очищаем поле ввода
     document.getElementById('chat-input').value = '';
     
     // Устанавливаем фокус на поле ввода
@@ -1241,197 +1138,34 @@ async function changeRole(username, newRole) {
     }
 }
 
-// Обновляем функцию инициализации профиля
+// Функция для инициализации профиля пользователя
 function initializeUserProfile() {
-    const userData = localStorage.getItem('user');
-    if (!userData) {
-        showLoginForm();
-        return;
-    }
+    const currentUser = JSON.parse(localStorage.getItem('user'));
+    if (!currentUser?.data) return;
 
-    try {
-        const user = JSON.parse(userData);
-        if (user?.data?.username) {
-            updateProfileDisplay(user.data);
-            if (user.data.role === 'Admin') {
-                loadUsers();
-            }
-        } else {
-            showLoginForm();
-        }
-    } catch (e) {
-        console.error('Error initializing profile:', e);
-        showLoginForm();
-    }
-}
-
-// Добавляем функцию обновления отображения профиля
-function updateProfileDisplay(userData) {
-    const profileInfo = document.getElementById('profile-info');
-    const loginContainer = document.getElementById('login-container');
-    const adminSection = document.getElementById('admin-section');
-    const chatLink = document.getElementById('chat-link');
-
-    if (profileInfo) profileInfo.style.display = 'block';
-    if (loginContainer) loginContainer.style.display = 'none';
-    if (adminSection) adminSection.style.display = userData.role === 'Admin' ? 'block' : 'none';
-    if (chatLink) chatLink.style.display = 'block';
-
+    // Обновляем отображение имени пользователя и роли
     const profileUsername = document.getElementById('profile-username');
     const profileRole = document.getElementById('profile-role');
-    const userAvatar = document.getElementById('user-avatar');
+    const chatLink = document.getElementById('chat-link');
 
-    if (profileUsername) profileUsername.textContent = userData.username;
-    if (profileRole) profileRole.textContent = userData.role;
-    if (userAvatar) {
-        userAvatar.src = userData.avatar || '/api/uploads/avatars/';
-        userAvatar.onerror = function() {
-            this.src = '/api/uploads/avatars/';
-        };
+    if (profileUsername) {
+        profileUsername.textContent = currentUser.data.username;
     }
+    if (profileRole) {
+        profileRole.textContent = currentUser.data.role;
+    }
+    // Показываем ссылку на чат, если пользователь авторизован
+    if (chatLink) {
+        chatLink.style.display = 'block';
+    }
+
+    // Обновляем интерфейс в зависимости от роли
+    updateInterfaceBasedOnRole(currentUser.data.role);
 }
 
-// Обновляем обработчик DOMContentLoaded
+// Вызываем инициализацию профиля при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('Page loaded, initializing...');
     initializeUserProfile();
-    startRoleChecking();
+    startRoleChecking(); // Запускаем проверку роли
 });
-
-// Функция проверки авторизации
-function checkAuth() {
-    const userData = localStorage.getItem('user');
-    if (!userData) {
-        return null;
-    }
-
-    try {
-        const user = JSON.parse(userData);
-        if (user?.data?.username) {
-            return user.data;
-        }
-    } catch (e) {
-        console.error('Error parsing user data:', e);
-    }
-    return null;
-}
-
-// Функция инициализации пользовательского интерфейса
-async function initializeUserInterface(userData) {
-    try {
-        if (!userData) {
-            showLoginForm();
-            return;
-        }
-
-        // Обновляем отображение профиля
-        updateProfileDisplay(userData);
-
-        // Инициализируем загрузку аватара
-        initializeAvatarUpload();
-
-        // Если пользователь админ, загружаем список пользователей
-        if (userData.role === 'Admin') {
-            await loadUsers();
-        }
-
-        // Загружаем список друзей
-        await loadFriendsList();
-        
-        // Загружаем запросы в друзья
-        await loadFriendRequests();
-
-    } catch (error) {
-        console.error('Error initializing user interface:', error);
-        showError('Ошибка при инициализации интерфейса');
-    }
-}
-
-// Обновляем обработчик DOMContentLoaded
-document.addEventListener('DOMContentLoaded', async () => {
-    try {
-        console.log('Page loaded, initializing...');
-        
-        // Проверяем авторизацию
-        const userData = checkAuth();
-        
-        if (userData) {
-            // Пользователь авторизован
-            await initializeUserInterface(userData);
-            startRoleChecking();
-        } else {
-            // Пользователь не авторизован
-            showLoginForm();
-        }
-
-    } catch (error) {
-        console.error('Error during initialization:', error);
-        showError('Ошибка при инициализации страницы');
-    }
-});
-
-// Обновляем функцию handleLogin
-async function handleLogin(event) {
-    event.preventDefault();
-    console.log('Login attempt started');
-
-    try {
-        const username = document.getElementById('login-username').value;
-        const password = document.getElementById('login-password').value;
-
-        const response = await fetch(`${API_BASE_URL}/auth/login`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ username, password })
-        });
-
-        console.log('Login response status:', response.status);
-
-        const data = await response.json();
-
-        if (data.success) {
-            // Сохраняем данные пользователя
-            localStorage.setItem('user', JSON.stringify({
-                data: {
-                    username: data.data.username,
-                    role: data.data.role
-                }
-            }));
-
-            // Инициализируем интерфейс
-            await initializeUserInterface(data.data);
-            startRoleChecking();
-            
-            showSuccess('Вход выполнен успешно!');
-        } else {
-            throw new Error(data.message || 'Ошибка входа');
-        }
-    } catch (error) {
-        console.error('Login error:', error);
-        showError(error.message || 'Ошибка при входе в систему');
-    }
-}
-
-// Обновляем функцию handleLogout
-function handleLogout() {
-    try {
-        localStorage.removeItem('user');
-        stopRoleChecking(); // Останавливаем проверку роли
-        showLoginForm();
-        showSuccess('Выход выполнен успешно');
-    } catch (error) {
-        console.error('Logout error:', error);
-        showError('Ошибка при выходе из системы');
-    }
-}
-
-// Добавляем функцию остановки проверки роли
-function stopRoleChecking() {
-    if (roleCheckInterval) {
-        clearInterval(roleCheckInterval);
-        roleCheckInterval = null;
-    }
-}
 
