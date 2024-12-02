@@ -40,6 +40,16 @@ function loadFriendsList() {
                 })
             );
             friendsListDiv.innerHTML = friendsWithMessages.map(friend => createFriendElement(friend)).join('');
+
+            // Повторно добавляем класс active к текущему чату
+            if (currentChatPartner) {
+                const currentChat = Array.from(document.querySelectorAll('.chat-partner')).find(chat => 
+                    chat.querySelector('.friend-name').textContent === currentChatPartner
+                );
+                if (currentChat) {
+                    currentChat.classList.add('active');
+                }
+            }
         }
     })
     .catch(error => console.error('Error loading friends list:', error));
