@@ -239,10 +239,9 @@ async function markMessagesAsRead(fromUser) {
 
 // Обновленная функция для проверки новых сообщений
 async function checkNewMessages() {
-    if (!currentChatPartner) return;
-
     try {
-        const response = await fetch(`/api/chat/new-messages/${currentChatPartner}`, {
+        // Получаем все новые сообщения, а не только от текущего собеседника
+        const response = await fetch(`/api/chat/new-messages`, {
             headers: {
                 'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
             }
@@ -255,35 +254,21 @@ async function checkNewMessages() {
             const chatMessages = document.getElementById('messages');
             
             data.data.forEach(message => {
-                chatMessages.insertAdjacentHTML('beforeend', createMessageElement(message));
-                
-                // Показваем уведомление только если:
-                // 1. Вкладка не активна
-                // 2. Сообщение не от текущего пользователя
-                // 3. Документ скрыт
-                if (message.from !== currentUser && 
-                    (document.hidden || !document.hasFocus())) {
-                    console.group('Попытка показа уведомления');
-                    console.log('Сообщение от:', message.from);
-                    console.log('Текущий пользователь:', currentUser);
-                    console.log('Документ скрыт:', document.hidden);
-                    console.log('Документ в фокусе:', document.hasFocus());
-                    console.log('Текст сообщения:', message.message);
-                    console.groupEnd();
-                    
-                    // Пробуем создать тестовое уведомление
-                    try {
-                        new Notification('Тестовое уведомление');
-                    } catch (error) {
-                        console.error('Ошибка при создании тестового уведомления:', error);
-                    }
-                    
+                // Если открыт чат с отправителем, добавляем сообщение в чат
+                if (currentChatPartner === message.from) {
+                    chatMessages.insertAdjacentHTML('beforeend', createMessageElement(message));
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                    markMessagesAsRead(currentChatPartner);
+                } else if (message.from !== currentUser) {
+                    // Показываем уведомление только если:
+                    // 1. Чат с этим пользователем не открыт
+                    // 2. Сообщение не от текущего пользователя
                     showNotification(message.message, message.from);
                 }
             });
             
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-            markMessagesAsRead(currentChatPartner);
+            // Обновляем список друзей для отображения последних сообщений
+            loadFriendsList();
         }
     } catch (error) {
         console.error('Error checking new messages:', error);
@@ -499,72 +484,29 @@ async function requestNotificationPermission() {
 
 // Обновленная функция показа уведомлений
 async function showNotification(message, from) {
-    console.group('Показ уведомления');
-    console.log('Параметры:', { message, from });
-    console.log('Текущий статус разрешения:', Notification.permission);
-    console.log('Поддержка уведомлений:', 'Notification' in window);
-    
     try {
-        if (!("Notification" in window)) {
-            console.error("Уведомления не поддерживаются");
-            return;
+        if (!("Notification" in window)) return;
+        
+        if (Notification.permission === "granted") {
+            const notification = new Notification(`Сообщение от ${from}`, {
+                body: message,
+                icon: "/flow.ico",
+                tag: `msg_${from}`, // Группируем уведомления по отправителю
+                requireInteraction: false,
+                silent: false
+            });
+
+            notification.onclick = () => {
+                window.focus();
+                openChat(from);
+                notification.close();
+            };
+
+            // Автоматически закрываем через 5 секунд
+            setTimeout(() => notification.close(), 5000);
         }
-
-        // Повторно запрашиваем разрешение, если оно не получено
-        if (Notification.permission !== "granted") {
-            const permission = await Notification.requestPermission();
-            console.log('Новый статус разрешения:', permission);
-            if (permission !== 'granted') {
-                console.warn('Разрешение не получено');
-                return;
-            }
-        }
-
-        // Создаем уведомление с уникальным идентификатором
-        const notificationId = `msg_${Date.now()}`;
-        const notificationOptions = {
-            body: message,
-            icon: "/flow.ico", // Используем абсолютный путь
-            tag: notificationId,
-            requireInteraction: true,
-            renotify: true, // Показывать каждое новое уведомление
-            silent: false,
-            timestamp: Date.now()
-        };
-
-        console.log('Создание уведомления с опциями:', notificationOptions);
-
-        const notification = new Notification(
-            `Сообщение от ${from}`, 
-            notificationOptions
-        );
-
-        // Добавляем обработчики событий
-        notification.addEventListener('show', () => {
-            console.log(`Уведомление ${notificationId} показано`);
-        });
-
-        notification.addEventListener('error', (e) => {
-            console.error(`Ошибка уведомления ${notificationId}:`, e);
-        });
-
-        notification.addEventListener('click', () => {
-            console.log(`Уведомление ${notificationId} нажато`);
-            window.focus();
-            openChat(from);
-            notification.close();
-        });
-
-        // Автоматическое закрытие через 10 секунд
-        setTimeout(() => {
-            notification.close();
-            console.log(`Уведомление ${notificationId} автоматически закрыто`);
-        }, 10000);
-
     } catch (error) {
         console.error('Ошибка при создании уведомления:', error);
-    } finally {
-        console.groupEnd();
     }
 }
 
