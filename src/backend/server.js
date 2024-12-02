@@ -910,7 +910,7 @@ app.post('/api/chat/mark-as-read', (req, res) => {
         });
     }
 
-    // Находи�� все непрочитанные сообщения от указанного пользователя
+    // Находи все непрочитанные сообщения от указанного пользователя
     messages = messages.map(msg => {
         if (msg.from === fromUser && msg.to === currentUser && !msg.isRead) {
             return { ...msg, isRead: true };
@@ -1140,5 +1140,18 @@ app.get('/api/uploads/avatars/:filename', (req, res) => {
         res.sendFile(defaultAvatarPath);
     } else {
         res.status(404).send('Avatar not found');
+    }
+});
+
+// Добавляем обработку статических файлов для аватаров
+app.use('/api/uploads/avatars', express.static(path.join(__dirname, 'uploads', 'avatars')));
+
+// Добавляем обработчик для default-avatar.png
+app.get('/api/uploads/avatars/default-avatar.png', (req, res) => {
+    const defaultAvatarPath = path.join(__dirname, 'assets', 'default-avatar.png');
+    if (fs.existsSync(defaultAvatarPath)) {
+        res.sendFile(defaultAvatarPath);
+    } else {
+        res.status(404).send('Default avatar not found');
     }
 });
