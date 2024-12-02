@@ -147,65 +147,76 @@
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
+    background: var(--background-color);
+    border-radius: 8px;
+    overflow: hidden;
 }
 
 .users-table th,
 .users-table td {
-    padding: 10px;
-    border: 1px solid #ddd;
+    padding: 12px;
     text-align: left;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .users-table th {
-    background-color: #f5f5f5;
-    font-weight: bold;
+    background-color: var(--surface);
+    color: var(--text-color);
+    font-weight: 600;
 }
 
-.users-table tr:nth-child(even) {
-    background-color: var(--text-container-background);
+.user-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-.users-table tr:hover {
-    background-color: var(--text-container-background);
+.user-table-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
 }
 
-.action-btn {
-    padding: 8px 16px;
+/* Стили для кнопки смены роли */
+.change-role-btn {
+    padding: 6px 12px;
+    background-color: var(--primary-color);
+    color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
+    transition: all 0.3s ease;
     font-size: 14px;
-    transition: background-color 0.3s;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
 }
 
-.primary-btn {
-    background-color: #4CAF50;
-    color: white;
+.change-role-btn:hover:not(:disabled) {
+    background-color: var(--primary-color-hover);
 }
 
-.primary-btn:hover {
-    transform: none;
+.change-role-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
-.edit-btn {
-    background-color: #2196F3;
-    color: white;
-}
-
-.edit-btn:hover {
-    transform: none;
-}
-
+/* Стили для кнопки удаления */
 .delete-btn {
-    background-color: #f44336;
+    padding: 6px 12px;
+    background-color: #ff4444;
     color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
-.delete-btn:hover {
-    transform: none;
+.delete-btn:hover:not(:disabled) {
+    background-color: #ff6666;
+}
+
+.delete-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 /* Темная тема */
