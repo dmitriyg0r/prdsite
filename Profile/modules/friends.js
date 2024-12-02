@@ -1,9 +1,14 @@
 import { API_BASE_URL, showError, showSuccess, apiRequest } from './utils.js';
 
 // Функция загрузки списка друзей
-export async function loadFriendsList() {
+async function loadFriendsList() {
     try {
-        const response = await apiRequest('/friends');
+        const response = await apiRequest('/api/friends', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
+            }
+        });
 
         if (response.success) {
             const friendsList = document.getElementById('friends-list');
@@ -11,7 +16,7 @@ export async function loadFriendsList() {
                 friendsList.innerHTML = response.data.map(friend => `
                     <tr>
                         <td>
-                            <img src="${friend.avatar || '/api/uploads/avatars/default-avatar.png'}" 
+                            <img src="${friend.avatar || '/assets/default-avatar.png'}" 
                                  alt="Avatar" class="friend-avatar">
                         </td>
                         <td>
@@ -46,9 +51,9 @@ export async function loadFriendsList() {
 }
 
 // Функция загрузки входящих заявок в друзья
-export async function loadFriendRequests() {
+async function loadFriendRequests() {
     try {
-        const response = await apiRequest('/friends/requests');
+        const response = await apiRequest('/api/friends/requests');
 
         if (response.success) {
             const requestsList = document.getElementById('friend-requests-list');
@@ -80,9 +85,9 @@ export async function loadFriendRequests() {
 }
 
 // Функция отправки заявки в друзья
-export async function sendFriendRequest(username) {
+async function sendFriendRequest(username) {
     try {
-        const response = await apiRequest('/friends/request', {
+        const response = await apiRequest('/api/friends/request', {
             method: 'POST',
             body: JSON.stringify({ username })
         });
@@ -97,7 +102,7 @@ export async function sendFriendRequest(username) {
 }
 
 // Функция принятия заявки в друзья
-export async function acceptFriendRequest(username) {
+async function acceptFriendRequest(username) {
     try {
         const response = await apiRequest(`/friends/accept/${username}`, {
             method: 'POST'
@@ -115,7 +120,7 @@ export async function acceptFriendRequest(username) {
 }
 
 // Функция отклонения заявки в друзья
-export async function rejectFriendRequest(username) {
+async function rejectFriendRequest(username) {
     try {
         const response = await apiRequest(`/friends/reject/${username}`, {
             method: 'POST'
@@ -132,7 +137,7 @@ export async function rejectFriendRequest(username) {
 }
 
 // Функция удаления из друзей
-export async function removeFriend(username) {
+async function removeFriend(username) {
     if (!confirm(`Вы уверены, что хотите удалить ${username} из друзей?`)) {
         return;
     }
@@ -153,7 +158,7 @@ export async function removeFriend(username) {
 }
 
 // Функция поиска пользователей
-export async function searchUsers(query) {
+async function searchUsers(query) {
     try {
         const response = await apiRequest(`/users/search?query=${encodeURIComponent(query)}`);
 
@@ -188,7 +193,7 @@ function updateFriendRequestsCounter(count) {
 }
 
 // Функция отображения стены друга
-export async function showFriendWall(username) {
+async function showFriendWall(username) {
     try {
         // Скрываем форму создания поста при просмотре чужой стены
         const postForm = document.querySelector('.post-form');
@@ -252,5 +257,13 @@ function createPostElement(post) {
 // Экспортируем все функции
 export {
     updateFriendRequestsCounter,
-    createPostElement
+    createPostElement,
+    loadFriendsList,
+    loadFriendRequests,
+    sendFriendRequest,
+    acceptFriendRequest,
+    rejectFriendRequest,
+    removeFriend,
+    searchUsers,
+    showFriendWall
 };
