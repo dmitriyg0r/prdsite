@@ -33,6 +33,19 @@ function loadFriendsList() {
 // Глобальная переменная для текущего собеседника
 let currentChatPartner = null;
 
+// Функция для создания элемента в списке друзей
+function createFriendElement(friend) {
+    return `
+        <div class="chat-partner" onclick="openChat('${friend.username}', '${friend.avatarUrl ? `/api/${friend.avatarUrl}` : '../assets/default-avatar.png'}')">
+            <img src="${friend.avatarUrl ? `/api/${friend.avatarUrl}` : '../assets/default-avatar.png'}" alt="Avatar" class="friend-avatar">
+            <div class="friend-info">
+                <div class="friend-name">${friend.username}</div>
+                <div class="last-message">${friend.lastMessage || 'Нет сообщений'}</div>
+            </div>
+        </div>
+    `;
+}
+
 // Функция для открытия чата с пользователем
 async function openChat(username, avatarUrl) {
     currentChatPartner = username;
@@ -44,7 +57,7 @@ async function openChat(username, avatarUrl) {
         chatHeaderName.textContent = username;
     }
     if (chatHeaderAvatar) {
-        chatHeaderAvatar.src = avatarUrl || '../assets/default-avatar.png';
+        chatHeaderAvatar.src = avatarUrl;
     }
 
     try {
