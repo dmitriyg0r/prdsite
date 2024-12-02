@@ -983,33 +983,29 @@ function displayUsers(users) {
     const tableBody = document.getElementById('users-table-body');
     const adminsCount = users.filter(user => user.role === 'Admin').length;
     
+    console.log('Displaying users:', users); // Отладочный вывод
+    
     tableBody.innerHTML = users.map(user => `
         <tr>
             <td>
                 <div class="user-row">
-                    ${user.avatarUrl ? 
-                        `<img src="${user.avatarUrl}" alt="Avatar" class="user-table-avatar">` : 
-                        '<i class="fas fa-user"></i>'
-                    }
+                    <i class="fas fa-user"></i>
                     <span>${user.username}</span>
                 </div>
             </td>
             <td>
-                <div class="role-container">
-                    <span class="current-role">${user.role}</span>
-                    <button class="btn change-role-btn" 
-                            onclick="changeRole('${user.username}', '${user.role === 'Admin' ? 'User' : 'Admin'}')"
-                            ${user.role === 'Admin' && adminsCount === 1 ? 'disabled' : ''}>
-                        <i class="fas fa-exchange-alt"></i>
-                        ${user.role === 'Admin' ? 'Сделать пользователем' : 'Сделать админом'}
-                    </button>
-                </div>
+                ${user.role}
+                <button 
+                    class="btn change-role-btn" 
+                    onclick="changeRole('${user.username}', '${user.role === 'Admin' ? 'User' : 'Admin'}')"
+                >
+                    Изменить роль
+                </button>
             </td>
             <td>${new Date(user.createdAt).toLocaleString()}</td>
             <td>
-                <button class="btn delete-btn" onclick="deleteUser('${user.username}')"
-                        ${user.role === 'Admin' && adminsCount === 1 ? 'disabled' : ''}>
-                    <i class="fas fa-trash"></i> Удалить
+                <button class="btn delete-btn" onclick="deleteUser('${user.username}')">
+                    Удалить
                 </button>
             </td>
         </tr>
