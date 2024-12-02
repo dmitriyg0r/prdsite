@@ -394,7 +394,7 @@ app.post('/api/upload-avatar', upload.single('avatar'), (req, res) => {
     const user = users.find(u => u.username === username);
     
     if (!user) {
-        // Удаляем загруженный файл, если пользовате��ь не найден
+        // Удаляем загруженный файл, если пользоватеь не найден
         fs.unlinkSync(req.file.path);
         return res.status(404).json({
             success: false,
@@ -660,7 +660,7 @@ app.get('/api/friends/list', (req, res) => {
             return {
                 username: friendUsername,
                 avatarUrl: friend?.avatar,
-                online: true // В будущем здесь можно реализовать реальную роверку онлайн-статуса
+                online: true // В будущем здесь можно реализовать реальную роверку онлайн-стат��са
             };
         });
 
@@ -1008,6 +1008,28 @@ app.post('/api/schedule/update', (req, res) => {
             message: 'Ошибка при обновлении расписания'
         });
     }
+});
+
+// Маршрут для получения информации о пользователе
+app.get('/api/users/:username', (req, res) => {
+    const { username } = req.params;
+    const user = users.find(u => u.username === username);
+
+    if (!user) {
+        return res.status(404).json({
+            success: false,
+            message: 'Пользователь не найден'
+        });
+    }
+
+    res.json({
+        success: true,
+        data: {
+            username: user.username,
+            role: user.role,
+            createdAt: user.createdAt
+        }
+    });
 });
 
 // Запуск сервера
