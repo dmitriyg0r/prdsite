@@ -60,8 +60,17 @@
     <!-- Основной контент -->
     <main class="main-content">
         <div class="chat-wrapper">
-            <div id="friends-list" class="chat-partners-area"></div>
+            <div class="chat-partners-area">
+                <div class="chat-list-header">
+                    <h2>Чаты</h2>
+                </div>
+                <div id="friends-list"></div>
+            </div>
             <div class="chat-main">
+                <div class="chat-header">
+                    <img src="../assets/default-avatar.png" alt="Avatar" class="friend-avatar" id="chat-header-avatar">
+                    <h3 class="friend-name" id="chat-header-name">Выберите чат</h3>
+                </div>
                 <div id="messages" class="messages-area"></div>
                 <div class="input-area">
                     <input type="text" id="messageInput" placeholder="Введите сообщение...">
