@@ -6,15 +6,9 @@ export const showError = (message) => {
         errorMessage.textContent = message;
         errorMessage.style.display = 'block';
         errorMessage.style.backgroundColor = '#ff4444';
-        errorMessage.classList.add('fade-in');
         
         setTimeout(() => {
-            errorMessage.classList.remove('fade-in');
-            errorMessage.classList.add('fade-out');
-            setTimeout(() => {
-                errorMessage.style.display = 'none';
-                errorMessage.classList.remove('fade-out');
-            }, 300);
+            errorMessage.style.display = 'none';
         }, 5000);
     }
 };
@@ -25,15 +19,9 @@ export const showSuccess = (message) => {
         errorMessage.textContent = message;
         errorMessage.style.display = 'block';
         errorMessage.style.backgroundColor = '#4CAF50';
-        errorMessage.classList.add('fade-in');
         
         setTimeout(() => {
-            errorMessage.classList.remove('fade-in');
-            errorMessage.classList.add('fade-out');
-            setTimeout(() => {
-                errorMessage.style.display = 'none';
-                errorMessage.classList.remove('fade-out');
-            }, 300);
+            errorMessage.style.display = 'none';
         }, 3000);
     }
 };
@@ -53,51 +41,34 @@ export const togglePassword = (formType) => {
     }
 };
 
-export const checkAuth = () => {
-    const userData = localStorage.getItem('user');
-    if (!userData) return null;
-    
-    try {
-        return JSON.parse(userData);
-    } catch (error) {
-        console.error('Error parsing user data:', error);
-        localStorage.removeItem('user');
-        return null;
-    }
-};
-
 export const apiRequest = async (endpoint, options = {}) => {
     try {
-        const userData = checkAuth();
-        const defaultHeaders = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
+        const userData = JSON.parse(localStorage.getItem('user'));
+        const headers = {
+            'Accept': 'application/json',
+            ...options.headers
         };
 
         if (userData?.data?.username) {
-            defaultHeaders['Authorization'] = `Bearer ${userData.data.username}`;
+            headers['Authorization'] = `Bearer ${userData.data.username}`;
+        }
+
+        if (options.body && !(options.body instanceof FormData)) {
+            headers['Content-Type'] = 'application/json';
         }
 
         const response = await fetch(`${API_BASE_URL}${endpoint}`, {
             ...options,
-            headers: {
-                ...defaultHeaders,
-                ...options.headers
-            }
+            headers
         });
 
+        const data = await response.json();
+
         if (!response.ok) {
-            if (response.status === 401) {
-                localStorage.removeItem('user');
-                window.location.reload();
-                throw new Error('Сессия истекла. Пожалуйста, войдите снова.');
-            }
-            
-            const errorData = await response.json();
-            throw new Error(errorData.message || 'Произошла ошибка при выполнении запроса');
+            throw new Error(data.message || 'Произошла ошибка при выполнении запроса');
         }
 
-        return await response.json();
+        return data;
     } catch (error) {
         console.error('API Request Error:', error);
         throw error;
@@ -181,7 +152,6 @@ export default {
     showError,
     showSuccess,
     togglePassword,
-    checkAuth,
     apiRequest,
     formatDate,
     debounce,
