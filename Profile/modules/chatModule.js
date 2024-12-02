@@ -265,5 +265,6 @@ export {
     initializeChatHandlers,
     createMessageElement,
     markMessagesAsRead,
-    checkNewMessages
+    checkNewMessages,
+    initializeChat
 };
