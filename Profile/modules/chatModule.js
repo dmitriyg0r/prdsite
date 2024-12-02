@@ -242,9 +242,27 @@ export function initializeChatHandlers() {
     }
 }
 
+// Функция инициализации чата
+export function initializeChat() {
+    // Инициализация обработчиков событий чата
+    initializeChatHandlers();
+    
+    // Проверяем наличие сохраненного партнера для чата
+    const chatPartner = localStorage.getItem('chatPartner');
+    if (chatPartner) {
+        openChat(chatPartner);
+        localStorage.removeItem('chatPartner');
+    }
+}
+
 // Экспортируем все необходимые функции
 export {
     currentChatPartner,
+    openChat,
+    closeChat,
+    sendMessage,
+    deleteMessage,
+    initializeChatHandlers,
     createMessageElement,
     markMessagesAsRead,
     checkNewMessages
