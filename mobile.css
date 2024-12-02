@@ -1,0 +1,228 @@
+/* Основные стили для мобильных устройств */
+body {
+    font-size: 14px;
+    padding: 10px;
+}
+
+/* Стили для бокового меню на мобильных устройствах */
+.sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+    box-shadow: none;
+    padding: 10px 0;
+}
+
+.sidebar-link {
+    padding: 10px 15px;
+    margin: 2px 0;
+    font-size: 14px;
+}
+
+/* Скрываем текст в боковом меню на мобильных устройствах */
+.sidebar-link span {
+    display: none;
+}
+
+/* Стили для основного контента */
+main {
+    margin-left: 0;
+    padding: 10px;
+}
+
+/* Стили для заголовка */
+.zagolovok {
+    font-size: 1.8em;
+    margin-top: 20px;
+}
+
+/* Стили для кнопок */
+.add-post-btn {
+    padding: 10px 20px;
+    font-size: 14px;
+}
+
+/* Стили для таблицы */
+.table-container {
+    overflow-x: auto;
+    margin: 20px 0;
+}
+
+/* Стили для формы входа */
+#login-container {
+    margin: 20px auto;
+    padding: 15px;
+}
+
+/* Стили для переключателя темы */
+.theme-toggle-container {
+    padding: 10px 5px;
+    margin: 2px 5px;
+}
+
+/* Скрываем иконку в боковом меню на мобильных устройствах */
+.theme-icon {
+    display: none;
+}
+
+/* Медиа-запрос для мобильных устройств (ширина экрана до 768px) */
+@media screen and (max-width: 768px) {
+    /* Основные стили для мобильных устройств */
+    body {
+        font-size: 14px;
+        padding: 5px;
+    }
+
+    /* Адаптация бокового меню */
+    .sidebar {
+        width: 100%;
+        height: 60px;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+        padding: 5px 0;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .sidebar-logo {
+        display: none;
+    }
+
+    .sidebar-nav {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+        width: 100%;
+    }
+
+    .sidebar-link {
+        padding: 8px;
+        margin: 0;
+        flex: 1;
+        text-align: center;
+    }
+
+    .sidebar-link span {
+        display: none;
+    }
+
+    .sidebar-link i {
+        font-size: 18px;
+    }
+
+    /* Скрываем переключатель темы в нижней панели */
+    .theme-switch-wrapper {
+        display: none;
+    }
+
+    /* Адаптация основного контента */
+    main {
+        margin-left: 0;
+        padding: 10px;
+        margin-bottom: 70px; /* Отступ для нижней панели навигации */
+    }
+
+    /* Адаптация заголовка */
+    .zagolovok {
+        font-size: 1.5em;
+        margin-top: 15px;
+        margin-bottom: 15px;
+    }
+
+    /* Адаптация таблицы расписания */
+    .table-container {
+        overflow-x: auto;
+        margin: 10px 0;
+        border-radius: 10px;
+    }
+
+    table {
+        min-width: 600px; /* Минимальная ширина для горизонтальной прокрутки */
+    }
+
+    th, td {
+        padding: 8px 5px;
+        font-size: 12px;
+    }
+
+    /* Адаптация новостного раздела */
+    .news {
+        margin: 15px 0;
+    }
+
+    .news-title {
+        font-size: 1.3em;
+    }
+
+    .news-description {
+        font-size: 0.9em;
+    }
+
+    /* Адаптация кнопки добавления поста */
+    .add-post-btn {
+        padding: 8px 16px;
+        font-size: 14px;
+        margin: 15px auto;
+    }
+
+    /* Адаптация модального окна */
+    .modal-content {
+        width: 90%;
+        padding: 15px;
+        margin: 20% auto;
+    }
+
+    /* Адаптация футера */
+    .container {
+        margin-left: 0;
+        width: 100%;
+        padding: 20px 10px;
+    }
+
+    .dz {
+        font-size: 1.2em;
+    }
+
+    .ps {
+        font-size: 0.9em;
+    }
+
+    /* Стили для формы создания поста */
+    #postForm textarea {
+        height: 100px;
+    }
+
+    .file-input-label {
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+
+    /* Адаптация новостных карточек */
+    .news-card {
+        margin: 10px 0;
+        padding: 12px;
+    }
+
+    .news-card img {
+        max-height: 200px;
+    }
+}
+
+/* Медиа-запрос для очень маленьких экранов (ширина до 320px) */
+@media screen and (max-width: 320px) {
+    .sidebar-link i {
+        font-size: 16px;
+    }
+
+    .zagolovok {
+        font-size: 1.3em;
+    }
+
+    th, td {
+        padding: 5px 3px;
+        font-size: 11px;
+    }
+}
