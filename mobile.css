@@ -66,123 +66,116 @@ main {
 }
 
 /* Стили только для мобильных устройств */
-@media screen and (max-width: 768px) {
-    /* Сброс десктопных стилей для sidebar */
-    .sidebar {
-        all: unset; /* Сбрасываем все предыдущие стили */
-        /* Затем применяем мобильные стили */
-        position: fixed !important;
-        bottom: 0 !important;
-        left: 0 !important;
-        width: 100% !important;
-        height: 60px !important;
-        background: var(--sidebar-background) !important;
-        display: flex !important;
-        flex-direction: row !important;
-        z-index: 9999 !important;
-        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1) !important;
-    }
-
-    /* Отключаем эффект при наведении на мобильных */
-    .sidebar:hover {
-        all: unset; /* Сбрасываем все эффекты наведения */
-        position: fixed !important;
-        bottom: 0 !important;
-        left: 0 !important;
-        width: 100% !important;
-        height: 60px !important;
-        background: var(--sidebar-background) !important;
-        display: flex !important;
-        flex-direction: row !important;
-        z-index: 9999 !important;
-        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1) !important;
-    }
-
-    .sidebar-logo {
-        display: none !important;
-    }
-
-    .sidebar-nav {
-        all: unset;
-        display: flex !important;
-        flex-direction: row !important;
-        justify-content: space-around !important;
-        width: 100% !important;
-        align-items: center !important;
-    }
-
-    .sidebar-link {
-        all: unset;
-        flex: 1 !important;
-        display: flex !important;
-        justify-content: center !important;
-        align-items: center !important;
-        color: white !important;
-        padding: 8px !important;
-    }
-
-    .sidebar-link span {
-        display: none !important;
-    }
-
-    .sidebar-link i {
-        font-size: 18px !important;
-        margin: 0 !important;
-    }
-
-    .theme-switch-wrapper {
-        display: none !important;
-    }
-
-    /* Основной контент */
-    main {
-        margin-left: 0 !important;
-        padding: 10px !important;
-        padding-bottom: 70px !important;
-    }
-
-    /* Адаптация заголовка */
-    .zagolovok {
-        font-size: 1.5em;
-        margin-top: 15px;
-        margin-bottom: 15px;
-    }
-
-    /* Адаптация таблицы */
-    .table-container {
-        overflow-x: auto;
-        margin: 10px 0;
-        border-radius: 10px;
-    }
-
-    table {
-        min-width: 600px;
-    }
-
-    th, td {
-        padding: 8px 5px;
-        font-size: 12px;
-    }
-
-    /* Адаптация футера */
-    .container {
-        margin-left: 0;
-        width: 100%;
-        padding: 20px 10px;
-    }
+.mobile-device .sidebar {
+    all: unset;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 60px !important;
+    background: var(--sidebar-background) !important;
+    display: flex !important;
+    flex-direction: row !important;
+    z-index: 9999 !important;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1) !important;
 }
 
-/* Стили для очень маленьких экранов */
+.mobile-device .sidebar:hover {
+    all: unset;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 60px !important;
+    background: var(--sidebar-background) !important;
+    display: flex !important;
+    flex-direction: row !important;
+    z-index: 9999 !important;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1) !important;
+}
+
+.mobile-device .sidebar-logo {
+    display: none !important;
+}
+
+.mobile-device .sidebar-nav {
+    all: unset;
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-around !important;
+    width: 100% !important;
+    align-items: center !important;
+}
+
+.mobile-device .sidebar-link {
+    all: unset;
+    flex: 1 !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    color: white !important;
+    padding: 8px !important;
+}
+
+.mobile-device .sidebar-link span {
+    display: none !important;
+}
+
+.mobile-device .sidebar-link i {
+    font-size: 18px !important;
+    margin: 0 !important;
+}
+
+.mobile-device .theme-switch-wrapper {
+    display: none !important;
+}
+
+.mobile-device main {
+    margin-left: 0 !important;
+    padding: 10px !important;
+    padding-bottom: 70px !important;
+}
+
+.mobile-device .zagolovok {
+    font-size: 1.5em;
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.mobile-device .table-container {
+    overflow-x: auto;
+    margin: 10px 0;
+    border-radius: 10px;
+}
+
+.mobile-device table {
+    min-width: 600px;
+}
+
+.mobile-device th,
+.mobile-device td {
+    padding: 8px 5px;
+    font-size: 12px;
+}
+
+.mobile-device .container {
+    margin-left: 0;
+    width: 100%;
+    padding: 20px 10px;
+}
+
+/* Стили для очень маленьких мобильных экранов */
 @media screen and (max-width: 320px) {
-    .sidebar-link i {
+    .mobile-device .sidebar-link i {
         font-size: 16px;
     }
 
-    .zagolovok {
+    .mobile-device .zagolovok {
         font-size: 1.3em;
     }
 
-    th, td {
+    .mobile-device th,
+    .mobile-device td {
         padding: 5px 3px;
         font-size: 11px;
     }

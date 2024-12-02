@@ -25,3 +25,29 @@ function toggleTheme() {
 if (themeToggle) {
     themeToggle.addEventListener('change', toggleTheme);
 }
+// Функция для определения мобильного устройства
+function isMobileDevice() {
+    return (
+        navigator.userAgent.match(/Android/i) ||
+        navigator.userAgent.match(/webOS/i) ||
+        navigator.userAgent.match(/iPhone/i) ||
+        navigator.userAgent.match(/iPad/i) ||
+        navigator.userAgent.match(/iPod/i) ||
+        navigator.userAgent.match(/BlackBerry/i) ||
+        navigator.userAgent.match(/Windows Phone/i)
+    );
+}
+
+// Функция для загрузки мобильных стилей
+function loadMobileStyles() {
+    if (isMobileDevice()) {
+        const mobileStylesheet = document.createElement('link');
+        mobileStylesheet.rel = 'stylesheet';
+        mobileStylesheet.href = '../mobile.css';
+        document.head.appendChild(mobileStylesheet);
+        document.body.classList.add('mobile-device');
+    }
+}
+
+// Запускаем определение устройства при загрузке страницы
+document.addEventListener('DOMContentLoaded', loadMobileStyles);
