@@ -813,15 +813,15 @@ app.get('/api/uploads/messages/:filename', (req, res) => {
     }
 });
 
-// Маршрут для удаления сообщения
+// Обновляем маршрут удаления сообщения
 app.delete('/api/chat/message/:messageId', (req, res) => {
-    console.log('DELETE /api/chat/message/:messageId вызван');
     const { messageId } = req.params;
     const currentUser = req.headers.authorization.split(' ')[1];
 
     try {
-        const messageIndex = messages.findIndex(
-            msg => msg.id === messageId && msg.from === currentUser
+        // Находим индекс сообщения
+        const messageIndex = messages.findIndex(msg => 
+            msg.id === messageId && msg.from === currentUser
         );
 
         if (messageIndex === -1) {
@@ -831,10 +831,20 @@ app.delete('/api/chat/message/:messageId', (req, res) => {
             });
         }
 
+        // Если у сообщения есть прикрепленный файл, удаляем его
+        const message = messages[messageIndex];
+        if (message.attachment) {
+            const filePath = path.join(__dirname, 'uploads', 'messages', 
+                path.basename(message.attachment.path));
+            
+            if (fs.existsSync(filePath)) {
+                fs.unlinkSync(filePath);
+            }
+        }
+
+        // Удаляем сообщение из массива
         messages.splice(messageIndex, 1);
         saveMessages(messages);
-
-        console.log('Сообщение удалено:', { messageId });
 
         res.json({
             success: true,
@@ -844,8 +854,7 @@ app.delete('/api/chat/message/:messageId', (req, res) => {
         console.error('Error deleting message:', error);
         res.status(500).json({
             success: false,
-            message: 'Ошибка при удалении сообщения',
-            error: error.message
+            message: 'Ошибка при удалении сообщения'
         });
     }
 });

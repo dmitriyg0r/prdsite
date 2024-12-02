@@ -472,3 +472,56 @@
 .image-modal .close-button:hover {
     color: var(--primary-color);
 }
+
+/* Добавьте эти стили к существующим */
+
+.context-menu {
+    position: fixed;
+    background: var(--text-container-background);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 8px 0;
+    min-width: 150px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    display: none;
+}
+
+.context-menu.active {
+    display: block;
+}
+
+.context-menu-item {
+    padding: 8px 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-color);
+    transition: background-color 0.2s ease;
+}
+
+.context-menu-item:hover {
+    background-color: var(--button-secondary);
+}
+
+.context-menu-item.delete {
+    color: #ff4444;
+}
+
+.context-menu-item i {
+    font-size: 14px;
+    width: 16px;
+}
+
+/* Добавляем стиль для сообщения при удалении */
+.message.deleting {
+    animation: messageDelete 0.3s ease forwards;
+}
+
+@keyframes messageDelete {
+    to {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+}

@@ -1,3 +1,5 @@
+let activeContextMenu = null;
+
 document.addEventListener('DOMContentLoaded', async () => {
     const currentUser = JSON.parse(localStorage.getItem('user'));
     if (!currentUser || !currentUser.data) {
@@ -40,6 +42,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     fileInput.addEventListener('change', handleFileSelect);
+
+    // Добавляем контекстное меню в DOM
+    const contextMenu = document.createElement('div');
+    contextMenu.className = 'context-menu';
+    contextMenu.innerHTML = `
+        <div class="context-menu-item delete" data-action="delete">
+            <i class="fas fa-trash"></i>
+            Удалить
+        </div>
+    `;
+    document.body.appendChild(contextMenu);
+
+    // Обработчик клика вне контекстного меню
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.context-menu')) {
+            hideContextMenu();
+        }
+    });
+
+    // Отключаем стандартное контекстное меню в области сообщений
+    document.getElementById('messages').addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+    });
 });
 
 // Функция для загрузки списка друзей
@@ -234,7 +259,7 @@ async function checkNewMessages() {
             data.data.forEach(message => {
                 chatMessages.insertAdjacentHTML('beforeend', createMessageElement(message));
                 
-                // Показываем уведомление только если:
+                // Показ��ваем уведомление только если:
                 // 1. Вкладка не активна
                 // 2. Сообщение не от текущего пользователя
                 // 3. Документ скрыт
@@ -361,8 +386,10 @@ function createMessageElement(message) {
         }
     }
 
-    return `
-        <div class="message ${isSent ? 'message-sent' : 'message-received'}" data-message-id="${message.id}">
+    const messageElement = `
+        <div class="message ${isSent ? 'message-sent' : 'message-received'}" 
+             data-message-id="${message.id}"
+             oncontextmenu="showContextMenu(event, this)">
             <div class="message-content">
                 ${message.message ? `<div class="message-text">${message.message}</div>` : ''}
                 ${attachmentHtml}
@@ -373,6 +400,8 @@ function createMessageElement(message) {
             </div>
         </div>
     `;
+
+    return messageElement;
 }
 
 // Запускаем периодическую проверку статуса сообщений
@@ -574,7 +603,7 @@ function handleFileSelect(event) {
     updateAttachmentPreview(file);
 }
 
-// Функция для обновления превью прикрепленного файла
+// Функция для обновления превью прикрепленного файл��
 function updateAttachmentPreview(file) {
     const preview = document.getElementById('attachmentPreview');
     const fileSize = formatFileSize(file.size);
@@ -669,4 +698,109 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         closeImageModal();
     }
+});
+
+// Функция для показа контекстного меню
+function showContextMenu(e, messageElement) {
+    e.preventDefault();
+    
+    // Проверяем, является ли сообщение нашим
+    const messageContent = messageElement.querySelector('.message-content');
+    if (!messageElement.classList.contains('message-sent')) {
+        return; // Не показываем меню для чужих сообщений
+    }
+
+    const contextMenu = document.querySelector('.context-menu');
+    
+    // Позиционируем меню
+    const rect = messageElement.getBoundingClientRect();
+    const x = e.clientX;
+    const y = e.clientY;
+    
+    // Проверяем, не выходит ли меню за пределы экрана
+    const menuWidth = 150; // Примерная ширина меню
+    const menuHeight = 40; // Примерная высота меню
+    
+    const rightEdge = window.innerWidth - menuWidth;
+    const bottomEdge = window.innerHeight - menuHeight;
+    
+    contextMenu.style.left = `${Math.min(x, rightEdge)}px`;
+    contextMenu.style.top = `${Math.min(y, bottomEdge)}px`;
+    
+    // Сохраняем ID сообщения в меню
+    const messageId = messageElement.dataset.messageId;
+    contextMenu.dataset.messageId = messageId;
+    
+    // Показываем меню
+    contextMenu.classList.add('active');
+    activeContextMenu = contextMenu;
+}
+
+// Функция для скрытия контекстного меню
+function hideContextMenu() {
+    if (activeContextMenu) {
+        activeContextMenu.classList.remove('active');
+        activeContextMenu = null;
+    }
+}
+
+// Добавляем обработчик для действий контекстного меню
+document.addEventListener('click', async (e) => {
+    const menuItem = e.target.closest('.context-menu-item');
+    if (!menuItem) return;
+
+    const action = menuItem.dataset.action;
+    const contextMenu = menuItem.closest('.context-menu');
+    const messageId = contextMenu.dataset.messageId;
+
+    if (action === 'delete') {
+        await deleteMessage(messageId);
+    }
+
+    hideContextMenu();
+});
+
+// Функция удаления сообщения
+async function deleteMessage(messageId) {
+    try {
+        const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+        if (!messageElement) return;
+
+        // Добавляем анимацию удаления
+        messageElement.classList.add('deleting');
+
+        const response = await fetch(`/api/chat/message/${messageId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Ждем окончания анимации перед удалением элемента
+            setTimeout(() => {
+                messageElement.remove();
+            }, 300);
+        } else {
+            messageElement.classList.remove('deleting');
+            throw new Error(data.message);
+        }
+    } catch (error) {
+        console.error('Error deleting message:', error);
+        alert('Ошибка при удалении сообщения');
+    }
+}
+
+// Закрываем контекстное меню при нажатии Escape
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        hideContextMenu();
+    }
+});
+
+// Закрываем контекстное меню при скролле
+document.getElementById('messages').addEventListener('scroll', () => {
+    hideContextMenu();
 }); 
