@@ -5,7 +5,7 @@ let currentChatPartner = null;
 let checkMessagesInterval;
 
 // Функция открытия чата
-export async function openChat(username) {
+async function openChat(username) {
     currentChatPartner = username;
     
     const chatContainer = document.getElementById('chat-container');
@@ -33,7 +33,7 @@ export async function openChat(username) {
 }
 
 // Функция закрытия чата
-export function closeChat() {
+function closeChat() {
     const chatContainer = document.getElementById('chat-container');
     if (chatContainer) {
         chatContainer.style.display = 'none';
@@ -44,7 +44,7 @@ export function closeChat() {
 }
 
 // Функция загрузки истории сообщений
-export async function loadChatHistory(username) {
+async function loadChatHistory(username) {
     try {
         const response = await apiRequest(`/chat/history/${username}`);
 
@@ -73,7 +73,7 @@ export async function loadChatHistory(username) {
 }
 
 // Функция отправки сообщения
-export async function sendMessage() {
+async function sendMessage() {
     const input = document.getElementById('chat-input');
     const fileInput = document.getElementById('chat-file-input');
     const message = input.value.trim();
@@ -194,19 +194,19 @@ async function checkNewMessages() {
 }
 
 // Функция для начала проверки сообщений
-export function startCheckingMessages() {
+function startCheckingMessages() {
     if (currentChatPartner) {
         checkMessagesInterval = setInterval(checkNewMessages, 5000);
     }
 }
 
 // Функция для остановки проверки сообщений
-export function stopCheckingMessages() {
+function stopCheckingMessages() {
     clearInterval(checkMessagesInterval);
 }
 
 // Функция для удаления сообщения
-export async function deleteMessage(messageId) {
+async function deleteMessage(messageId) {
     try {
         const response = await apiRequest(`/chat/message/${messageId}`, {
             method: 'DELETE'
@@ -223,7 +223,7 @@ export async function deleteMessage(messageId) {
 }
 
 // Инициализация обработчиков событий
-export function initializeChatHandlers() {
+function initializeChatHandlers() {
     // Обработчик отправки сообщения по Enter
     const chatInput = document.getElementById('chat-input');
     if (chatInput) {
@@ -243,7 +243,7 @@ export function initializeChatHandlers() {
 }
 
 // Функция инициализации чата
-export function initializeChat() {
+function initializeChat() {
     // Инициализация обработчиков событий чата
     initializeChatHandlers();
     
@@ -255,7 +255,7 @@ export function initializeChat() {
     }
 }
 
-// Экспортируем все необходимые функции
+// Заменяем множественные экспорты на один общий экспорт
 export {
     currentChatPartner,
     openChat,
