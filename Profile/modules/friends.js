@@ -249,7 +249,7 @@ export {
     showFriendWall
 };
 
-// В функции, которая создает список друзей, измените обработчик клика на чат
+// В функции, которая создает список друзей, упростим обработчик клика на чат
 function createFriendElement(friend) {
     return `
         <tr>
@@ -259,7 +259,7 @@ function createFriendElement(friend) {
             <td>${friend.username}</td>
             <td>${friend.status || 'Offline'}</td>
             <td>
-                <button class="btn primary-btn" onclick="openFriendChat('${friend.username}')">
+                <button class="btn primary-btn" onclick="window.location.href='../chat/chat.html'">
                     <i class="fas fa-comments"></i> Чат
                 </button>
                 <button class="btn danger-btn" onclick="removeFriend('${friend.username}')">
