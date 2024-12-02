@@ -6,6 +6,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     loadFriendsList();
+
+    const chatHeader = document.getElementById('chat-header');
+    const chatPlaceholder = document.getElementById('chat-placeholder');
+    
+    if (chatHeader) {
+        chatHeader.style.display = 'none';
+    }
+    if (chatPlaceholder) {
+        chatPlaceholder.style.display = 'flex';
+    }
 });
 
 // Функция для загрузки списка друзей
@@ -49,6 +59,17 @@ function createFriendElement(friend) {
 // Функция для открытия чата с пользователем
 async function openChat(username, avatarUrl) {
     currentChatPartner = username;
+    
+    // Показываем заголовок чата и скрываем плейсхолдер
+    const chatHeader = document.getElementById('chat-header');
+    const chatPlaceholder = document.getElementById('chat-placeholder');
+    
+    if (chatHeader) {
+        chatHeader.style.display = 'flex';
+    }
+    if (chatPlaceholder) {
+        chatPlaceholder.style.display = 'none';
+    }
     
     // Обновляем заголовок чата
     const chatHeaderName = document.getElementById('chat-header-name');

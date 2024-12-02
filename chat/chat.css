@@ -286,3 +286,18 @@
 .message {
     animation: messageAppear 0.3s ease-out;
 }
+
+.chat-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--text-secondary);
+    font-size: 1.2rem;
+    text-align: center;
+    padding: 20px;
+}
+
+.chat-placeholder h3 {
+    margin: 0;
+}
