@@ -45,7 +45,113 @@ const togglePassword = (formType) => {
 
 // Глобальная переменная для интервала проверки роли
 let roleCheckInterval;
+// Функция для отображения стены друга
+async function showFriendWall(username) {
+    // Скрываем форму создания поста при просмотре чужой стены
+    const postForm = document.querySelector('.post-form');
+    const wallTitle = document.querySelector('.wall-section h3');
+    
+    if (username === JSON.parse(localStorage.getItem('user')).data.username) {
+        postForm.style.display = 'block';
+        wallTitle.textContent = 'Моя стена';
+    } else {
+        postForm.style.display = 'none';
+        wallTitle.textContent = `Стена пользователя ${username}`;
+    }
 
+    // Загружаем посты друга
+    try {
+        const userData = JSON.parse(localStorage.getItem('user'));
+        const response = await fetch(`${API_BASE_URL}/posts/${username}`, {
+            headers: {
+                'Authorization': `Bearer ${userData.data.username}`
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            const postsContainer = document.getElementById('posts-container');
+            postsContainer.innerHTML = data.data.map(post => `
+                <div class="post">
+                    <div class="post-header">
+                        <img src="${post.authorAvatar || '/api/uploads/avatars/default-avatar.png'}" 
+                             alt="Avatar" class="post-avatar">
+                        <div class="post-info">
+                            <div class="post-author">${post.author}</div>
+                            <div class="post-date">${new Date(post.createdAt).toLocaleString()}</div>
+                        </div>
+                    </div>
+                    <div class="post-content">${post.content}</div>
+                    ${post.image ? `<img src="${post.image}" alt="Post image" class="post-image">` : ''}
+                    <div class="post-actions">
+                        <div class="post-action" onclick="likePost('${post.id}')">
+                            <i class="fas fa-heart ${post.likedBy.includes(userData.data.username) ? 'liked' : ''}"></i>
+                            <span>${post.likes || 0}</span>
+                        </div>
+                        ${post.author === userData.data.username ? `
+                            <div class="post-action" onclick="deletePost('${post.id}')">
+                                <i class="fas fa-trash"></i>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+    } catch (error) {
+        console.error('Error loading friend posts:', error);
+        showError('Ошибка при загрузке постов');
+    }
+}
+
+// Обновляем функцию загрузки списка друзей, добавляя обработчик клика
+async function loadFriendsList() {
+    try {
+        const userData = JSON.parse(localStorage.getItem('user'));
+        const response = await fetch(`${API_BASE_URL}/friends`, {
+            headers: {
+                'Authorization': `Bearer ${userData.data.username}`
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            const friendsList = document.getElementById('friends-list');
+            friendsList.innerHTML = data.data.map(friend => `
+                <tr>
+                    <td>
+                        <img src="${friend.avatar || '/api/uploads/avatars/default-avatar.png'}" 
+                             alt="Avatar" class="friend-avatar">
+                    </td>
+                    <td>
+                        <span class="friend-username" onclick="showFriendWall('${friend.username}')" style="cursor: pointer;">
+                            ${friend.username}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="friend-status ${friend.online ? 'online' : 'offline'}">
+                            ${friend.online ? 'Онлайн' : 'Оффлайн'}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="friend-actions">
+                            <button class="btn primary-btn" onclick="openChat('${friend.username}')">
+                                <i class="fas fa-comment"></i> Чат
+                            </button>
+                            <button class="btn danger-btn" onclick="removeFriend('${friend.username}')">
+                                <i class="fas fa-user-minus"></i> Удалить
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+    } catch (error) {
+        console.error('Error loading friends list:', error);
+        showError('Ошибка при загрузке списка друзей');
+    }
+}
 // Функция проверки роли пользователя
 async function checkUserRole() {
     try {

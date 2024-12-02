@@ -416,7 +416,7 @@ app.post('/api/upload-avatar', upload.single('avatar'), (req, res) => {
     const user = users.find(u => u.username === username);
     
     if (!user) {
-        // Удаляем загруженный файл, ес��и пользоватеь не найден
+        // Удаляем загруженный файл, еси пользоватеь не найден
         fs.unlinkSync(req.file.path);
         return res.status(404).json({
             success: false,
@@ -1109,9 +1109,10 @@ app.post('/api/posts/create', upload.single('image'), (req, res) => {
     }
 });
 
-// Маршрут для получения постов пользователя
+// Обновляем маршрут для получения постов пользователя
 app.get('/api/posts/:username', (req, res) => {
     const { username } = req.params;
+    const currentUser = req.headers.authorization.split(' ')[1];
     
     try {
         const userPosts = posts
@@ -1120,7 +1121,8 @@ app.get('/api/posts/:username', (req, res) => {
                 const user = users.find(u => u.username === post.author);
                 return {
                     ...post,
-                    authorAvatar: user?.avatar || null
+                    authorAvatar: user?.avatar || null,
+                    likedBy: post.likedBy || []
                 };
             });
 

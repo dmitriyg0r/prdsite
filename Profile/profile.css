@@ -1497,3 +1497,30 @@
 [data-theme="dark"] .post-form {
     background: var(--surface);
 }
+
+/* Стили для имени друга */
+.friend-username {
+    color: var(--text-color);
+    text-decoration: underline;
+    transition: color 0.3s ease;
+}
+
+.friend-username:hover {
+    color: var(--primary-color);
+}
+
+/* Стили для лайкнутых постов */
+.post-action .fa-heart.liked {
+    color: #ff4444;
+}
+
+/* Анимация для лайка */
+@keyframes likeAnimation {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+.post-action .fa-heart.liked {
+    animation: likeAnimation 0.3s ease;
+}
