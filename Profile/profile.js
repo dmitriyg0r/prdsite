@@ -73,6 +73,8 @@ window.deleteUser = deleteUser;
 window.createUser = createUser;
 window.checkUserRole = checkUserRole;
 
+window.toggleFriendsList = toggleFriendsList;
+
 // Глобальная переменная для интервала проверки роли
 let roleCheckInterval;
 
