@@ -1,0 +1,103 @@
+/* Область ввода */
+.input-area {
+    padding: 20px;
+    background-color: var(--text-container-background);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.input-area input {
+    flex: 1;
+    padding: 12px 20px;
+    border: 1px solid var(--border-color);
+    border-radius: 24px;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    font-size: 15px;
+    transition: all 0.3s ease;
+}
+
+.input-area input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(var(--button-background-rgb), 0.1);
+}
+
+.input-area button {
+    padding: 12px 24px;
+    background-color: var(--primary-color);
+    color: var(--button-text);
+    border: none;
+    border-radius: 24px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.input-area button:hover {
+    background-color: var(--button-hover);
+    transform: translateY(-1px);
+}
+
+.input-area button i {
+    font-size: 16px;
+}
+
+/* Стили для области ответа на сообщение */
+.reply-preview {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: var(--text-container-background);
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    border-left: 3px solid var(--primary-color);
+}
+
+.reply-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-color);
+    font-size: 0.9rem;
+}
+
+.reply-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+}
+
+.cancel-reply {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 4px;
+}
+
+.cancel-reply:hover {
+    color: #ff4444;
+}
+
+.reply-to {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 4px;
+    padding: 4px 8px;
+    background-color: rgba(var(--button-background-rgb), 0.1);
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.reply-line {
+    width: 2px;
+    background-color: var(--primary-color);
+} 
