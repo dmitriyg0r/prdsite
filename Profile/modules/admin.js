@@ -150,7 +150,8 @@ async function checkUserRole() {
         const currentUser = JSON.parse(localStorage.getItem('user'));
         if (!currentUser?.data?.username) return;
 
-        const response = await fetch(`${API_BASE_URL}/users/check-role`, {
+        // Временно используем существующий эндпоинт для получения информации о пользователе
+        const response = await fetch(`${API_BASE_URL}/users/${currentUser.data.username}`, {
             headers: {
                 'Accept': 'application/json',
                 'Authorization': `Bearer ${currentUser.data.username}`
@@ -160,7 +161,7 @@ async function checkUserRole() {
         // Проверяем тип контента
         const contentType = response.headers.get('content-type');
         if (!contentType || !contentType.includes('application/json')) {
-            console.error('Получен неверный тип контента:', contentType);
+            console.warn('Получен неверный тип контента:', contentType);
             return;
         }
 
@@ -172,12 +173,8 @@ async function checkUserRole() {
             updateInterfaceBasedOnRole(data.data.role);
         }
     } catch (error) {
-        // Игнорируем ошибку 404, так как эндпоинт может быть временно недоступен
-        if (error.message.includes('404')) {
-            console.warn('Эндпоинт проверки роли недоступен');
-            return;
-        }
-        console.error('Error checking user role:', error);
+        // В случае ошибки просто логируем её, но не прерываем работу приложения
+        console.warn('Не удалось проверить роль пользователя:', error);
     }
 }
 
