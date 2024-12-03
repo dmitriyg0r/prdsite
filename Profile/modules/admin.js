@@ -150,31 +150,15 @@ async function checkUserRole() {
         const currentUser = JSON.parse(localStorage.getItem('user'));
         if (!currentUser?.data?.username) return;
 
-        // Временно используем существующий эндпоинт для получения информации о пользователе
-        const response = await fetch(`${API_BASE_URL}/users/${currentUser.data.username}`, {
-            headers: {
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${currentUser.data.username}`
-            }
-        });
-
-        // Проверяем тип контента
-        const contentType = response.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-            console.warn('Получен неверный тип контента:', contentType);
-            return;
-        }
-
-        const data = await response.json();
-
-        if (data.success && data.data.role !== currentUser.data.role) {
-            currentUser.data.role = data.data.role;
-            localStorage.setItem('user', JSON.stringify(currentUser));
-            updateInterfaceBasedOnRole(data.data.role);
-        }
+        // Временно используем данные из localStorage
+        const currentRole = currentUser.data.role;
+        updateInterfaceBasedOnRole(currentRole);
+        
+        // Логируем информацию для отладки
+        console.log('Текущая роль пользователя:', currentRole);
+        
     } catch (error) {
-        // В случае ошибки просто логируем её, но не прерываем работу приложения
-        console.warn('Не удалось проверить роль пользователя:', error);
+        console.warn('Ошибка при проверке роли пользователя:', error);
     }
 }
 
@@ -184,6 +168,9 @@ function updateInterfaceBasedOnRole(role) {
     if (adminSection) {
         adminSection.style.display = role === 'Admin' ? 'block' : 'none';
     }
+    
+    // Добавляем логирование для отладки
+    console.log('Обновление интерфейса для роли:', role);
 }
 
 // Единственный экспорт всех функций в конце файла
