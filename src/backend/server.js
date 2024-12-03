@@ -6,6 +6,8 @@ const path = require('path');
 const authRoutes = require('./routes/auth');
 const usersRoutes = require('./routes/users');
 const chatRoutes = require('./routes/chat');
+const postsRoutes = require('./routes/posts');
+const friendsRoutes = require('./routes/friends');
 
 const app = express();
 
@@ -26,9 +28,17 @@ app.use((req, res, next) => {
     next();
 });
 
-// Проверка авторизации
+// Проверка авторизации (исключаем публичные маршруты)
 app.use((req, res, next) => {
-    if (req.path.startsWith('/api/') && !req.path.includes('/auth/')) {
+    const publicPaths = [
+        '/api/auth/login',
+        '/api/auth/register',
+        '/api/auth/anonymous-login',
+        '/api/uploads'
+    ];
+    
+    if (req.path.startsWith('/api/') && 
+        !publicPaths.some(path => req.path.startsWith(path))) {
         const authHeader = req.headers.authorization;
         if (!authHeader) {
             return res.status(401).json({
@@ -40,13 +50,15 @@ app.use((req, res, next) => {
     next();
 });
 
-// Маршруты
+// Статические файлы (размещаем до маршрутов API)
+app.use('/api/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Маршруты API
 app.use('/api/auth', authRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/chat', chatRoutes);
-
-// Статические файлы
-app.use('/api/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/api/posts', postsRoutes);
+app.use('/api/friends', friendsRoutes);
 
 // Запуск сервера
 const PORT = process.env.PORT || 5003;
