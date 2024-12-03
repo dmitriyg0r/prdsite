@@ -1633,3 +1633,36 @@
 .add-friend-btn:hover {
     background-color: var(--primary-color-hover);
 }
+
+.main-content {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+#profile-container {
+    flex: 1;
+    max-width: 70%;
+}
+
+.friend-requests-container {
+    flex: 0 0 25%;
+    max-width: 25%;
+    background: var(--text-container-background);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: var(--text-container-shadow);
+    overflow-y: auto;
+    max-height: 600px;
+}
+
+.friend-requests-container h3 {
+    margin-bottom: 15px;
+    color: var(--text-color);
+}
+
+#friend-requests-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
