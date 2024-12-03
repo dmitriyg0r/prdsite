@@ -1,3 +1,33 @@
+/* Область сообщений */
+.messages-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    background-color: var(--background-color);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    position: relative;
+}
+
+/* Скроллбар для области сообщений */
+.messages-area::-webkit-scrollbar {
+    width: 6px;
+}
+
+.messages-area::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.messages-area::-webkit-scrollbar-thumb {
+    background-color: var(--border-color);
+    border-radius: 3px;
+}
+
+.messages-area::-webkit-scrollbar-thumb:hover {
+    background-color: var(--text-secondary);
+}
+
 /* Стили для сообщений */
 .message {
     max-width: 70%;
@@ -18,8 +48,20 @@
     align-self: flex-end;
 }
 
+.message-sent .message-content {
+    background-color: var(--primary-color);
+    color: var(--button-text);
+    border-bottom-right-radius: 4px;
+}
+
 .message-received {
     align-self: flex-start;
+}
+
+.message-received .message-content {
+    background-color: var(--text-container-background);
+    color: var(--text-color);
+    border-bottom-left-radius: 4px;
 }
 
 .message-info {
@@ -32,7 +74,145 @@
     color: var(--text-secondary);
 }
 
+.message-time {
+    margin: 0;
+}
+
 .message-status {
     display: flex;
     align-items: center;
-} 
+}
+
+.message-status i {
+    font-size: 12px;
+}
+
+.status-sent i {
+    color: var(--text-secondary);
+}
+
+.status-read i {
+    color: var(--primary-color);
+}
+
+/* Плейсхолдер для пустого чата */
+.chat-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--text-secondary);
+    font-size: 1.2rem;
+    text-align: center;
+    padding: 20px;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.chat-placeholder h3 {
+    margin: 0;
+}
+
+.chat-placeholder i {
+    font-size: 3rem;
+    color: var(--text-secondary);
+    opacity: 0.5;
+}
+
+/* Группировка сообщений по дате */
+.message-date-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 20px 0;
+    position: relative;
+}
+
+.message-date-divider::before,
+.message-date-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background-color: var(--border-color);
+}
+
+.message-date {
+    padding: 0 15px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    background-color: var(--background-color);
+}
+
+/* Индикатор печатания */
+.typing-indicator {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 12px;
+    background-color: var(--text-container-background);
+    border-radius: 16px;
+    align-self: flex-start;
+    margin-bottom: 10px;
+    animation: fadeIn 0.3s ease;
+}
+
+.typing-dot {
+    width: 6px;
+    height: 6px;
+    background-color: var(--text-secondary);
+    border-radius: 50%;
+    animation: typingAnimation 1.4s infinite ease-in-out;
+}
+
+.typing-dot:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-dot:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes typingAnimation {
+    0%, 60%, 100% {
+        transform: translateY(0);
+    }
+    30% {
+        transform: translateY(-4px);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Стили для непрочитанных сообщений */
+.unread-messages-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 20px 0;
+    position: relative;
+}
+
+.unread-messages-label {
+    background-color: var(--primary-color);
+    color: var(--button-text);
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+/* Стили для выделенного текста в сообщениях */
+.message-content ::selection {
+    background-color: rgba(var(--button-background-rgb), 0.3);
+    color: inherit;
+}
+ 
