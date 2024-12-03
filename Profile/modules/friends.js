@@ -4,6 +4,7 @@ import { API_BASE_URL, showError, showSuccess, apiRequest } from './utils.js';
 async function loadFriendsList() {
     try {
         const response = await apiRequest('/friends/list');
+        console.log('Friends list response:', response);
 
         if (response.success) {
             const friendsList = document.getElementById('friends-list');
