@@ -101,6 +101,17 @@ function openChat(username) {
 // Делаем функцию доступной глобально
 window.openChat = openChat;
 
+// Функция для отображения модального окна добавления друга
+function showAddFriendModal() {
+    const addFriendModal = document.getElementById('add-friend-modal');
+    if (addFriendModal) {
+        addFriendModal.style.display = 'block';
+    }
+}
+
+// Делаем функцию доступной глобально
+window.showAddFriendModal = showAddFriendModal;
+
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', async () => {
     try {

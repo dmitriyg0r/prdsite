@@ -180,14 +180,11 @@
                             </div>
 
                             <!-- Модальное окно для добавления друга -->
-                            <div id="add-friend-modal" class="modal">
+                            <div id="add-friend-modal" class="modal" style="display: none;">
                                 <div class="modal-content">
-                                    <span class="close">&times;</span>
-                                    <h3>Добавить друга</h3>
-                                    <div class="search-container">
-                                        <input type="text" id="friend-search" placeholder="Введите никнейм...">
-                                        <div id="search-results" class="search-results"></div>
-                                    </div>
+                                    <span class="close" onclick="this.parentElement.parentElement.style.display='none'">&times;</span>
+                                    <h2>Добавить друга</h2>
+                                    <!-- Форма или контент для добавления друга -->
                                 </div>
                             </div>
                         <!-- Добавляем секцию стены после информации о пользователе -->
