@@ -101,23 +101,6 @@ function openChat(username) {
 // Делаем функцию доступной глобально
 window.openChat = openChat;
 
-function toggleFriendsList() {
-    const friendsPreview = document.getElementById('friends-preview');
-    if (friendsPreview) {
-        if (friendsPreview.style.display === 'none') {
-            friendsPreview.style.display = 'block';
-            displayFriendsPreview(); // Загружаем друзей при открытии
-            friendsPreview.classList.add('expanded');
-            friendsPreview.classList.remove('collapsed');
-        } else {
-            friendsPreview.classList.remove('expanded');
-            friendsPreview.classList.add('collapsed');
-            setTimeout(() => {
-                friendsPreview.style.display = 'none';
-            }, 300);
-        }
-    }
-}
 // Функция для отображения модального окна добавления друга
 function showAddFriendModal() {
     const addFriendModal = document.getElementById('add-friend-modal');
