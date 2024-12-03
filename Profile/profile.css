@@ -1594,3 +1594,42 @@
     margin: 0;
     overflow: hidden;
 }
+
+/* Добавляем стили для контейнера кнопок */
+.friends-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    align-items: stretch;
+}
+
+.friends-toggle-btn {
+    flex-grow: 1;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.add-friend-btn {
+    padding: 10px;
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: unset;
+    width: auto;
+}
+
+/* Обновляем стили для кнопок, чтобы они были одинаковой высоты */
+.friends-buttons .btn {
+    margin: 0;
+    height: 100%;
+    border-radius: 8px;
+}
+
+/* Добавляем эффект при наведении */
+.add-friend-btn:hover {
+    background-color: var(--primary-color-hover);
+}

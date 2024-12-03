@@ -137,13 +137,19 @@
                             </div>
                         </div>
                         <div class="user-info">
+                            <img src="../assets/default-avatar.png" alt="User Avatar" id="user-avatar">
                             <p class="username">Имя пользователя: <span id="profile-username"></span></p>
                             <p class="role">Роль: <span id="profile-role"></span></p>
                             
-                            <!-- Добавляем кнопку для отображения друзей -->
-                            <button class="btn primary-btn friends-toggle-btn" onclick="toggleFriendsList()">
-                                <i class="fas fa-users"></i> Список друзей
-                            </button>
+                            <!-- Обновляем контейнер для кнопок -->
+                            <div class="friends-buttons">
+                                <button class="btn primary-btn friends-toggle-btn" onclick="toggleFriendsList()">
+                                    <i class="fas fa-users"></i> Список друзей
+                                </button>
+                                <button class="btn primary-btn add-friend-btn" onclick="showAddFriendModal()">
+                                    <i class="fas fa-user-plus"></i>
+                                </button>
+                            </div>
                             
                             <!-- Контейнер для списка друзей -->
                             <div id="friends-preview" class="friends-preview" style="display: none;">
