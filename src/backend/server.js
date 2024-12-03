@@ -53,3 +53,5 @@ const PORT = process.env.PORT || 5003;
 app.listen(PORT, () => {
     console.log(`Сервер запущен на порту ${PORT}`);
 });
+
+module.exports = app;
