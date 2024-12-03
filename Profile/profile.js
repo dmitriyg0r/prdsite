@@ -112,6 +112,14 @@ function showAddFriendModal() {
 // Делаем функцию доступной глобально
 window.showAddFriendModal = showAddFriendModal;
 
+// Функция для отображения кнопки чата в сайдбаре
+function showChatButton() {
+    const chatLink = document.getElementById('chat-link');
+    if (chatLink) {
+        chatLink.style.display = 'flex'; // Используем flex для соответствия стилям сайдбара
+    }
+}
+
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', async () => {
     try {
@@ -121,6 +129,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const user = JSON.parse(userData);
             await showProfile(user);
             startRoleChecking();
+            showChatButton(); // Показываем кнопку чата после авторизации
         }
 
         // Инициализируем обработчики
@@ -181,4 +190,22 @@ window.addEventListener('unhandledrejection', (event) => {
     console.error('Unhandled promise rejection:', event.reason);
     showError('Произошла ошибка при выполнении асинхронной операции');
 });
+
+// Также добавляем скрытие кнопки при выходе
+window.handleLogout = async () => {
+    try {
+        // ... существующий код логаута ...
+        
+        // Скрываем кнопку чата
+        const chatLink = document.getElementById('chat-link');
+        if (chatLink) {
+            chatLink.style.display = 'none';
+        }
+        
+        // ... остальной существующий код логаута ...
+    } catch (error) {
+        console.error('Logout error:', error);
+        showError('Ошибка при выходе из системы');
+    }
+};
 
