@@ -151,7 +151,7 @@
                             </div>
                         </div>
                         
-                        <!-- Заявки в друзья находятся внутри avatar-section -->
+                        <!-- Добавляем секцию заявок в друзья -->
                         <div class="friend-requests">
                             <h3>Заявки в друзья</h3>
                             <div id="friend-requests-list">
@@ -171,18 +171,36 @@
                                             <th>Действия</th>
                                         </tr>
                                     </thead>
-                                    <tbody id="friends-list">
-                                        <!-- Список друзей будет добавляться динамически -->
-                                    </tbody>
-                                </table>
-                            </div>
-                            
-                            <!-- Заявки в друзья -->
-                            <div class="friend-requests">
-                                <h3>Заявки в друзья</h3>
-                                <div id="friend-requests-list">
-                                    <!-- Заявки будут добавляться динамически -->
+
+                            <!-- Модальное окно для добавления друга -->
+                            <div id="add-friend-modal" class="modal" style="display: none;">
+                                <div class="modal-content">
+                                    <span class="close" onclick="this.parentElement.parentElement.style.display='none'">&times;</span>
+                                    <h2>Добавить друга</h2>
+                                    <!-- Форма или контент для добавления друга -->
                                 </div>
+                            </div>
+                        <!-- Добавляем секцию стены после информации о пользователе -->
+                        <div class="wall-section">
+                            <h3>Моя стена</h3>
+                            
+                            <!-- Форма создания поста -->
+                            <div class="post-form">
+                                <textarea id="post-content" placeholder="Что у вас нового?"></textarea>
+                                <div class="post-form-actions">
+                                    <label for="post-image" class="attach-image-btn">
+                                        <i class="fas fa-image"></i>
+                                        <input type="file" id="post-image" accept="image/*" style="display: none;">
+                                    </label>
+                                    <button class="btn primary-btn" onclick="createPost()">
+                                        <i class="fas fa-paper-plane"></i> Опубликовать
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Контейнер для постов -->
+                            <div id="posts-container">
+                                <!-- Посты будут добавляться динамически -->
                             </div>
                         </div>
                     </div>
