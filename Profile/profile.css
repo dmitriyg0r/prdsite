@@ -1666,3 +1666,16 @@
     flex-direction: column;
     gap: 10px;
 }
+
+.user-info, .friend-requests {
+    width: 100%; /* Устанавливаем одинаковую ширину */
+    box-sizing: border-box; /* Учитываем отступы и границы в ширине */
+}
+
+.friend-requests {
+    margin-top: 20px; /* Добавляем отступ сверху */
+    padding: 15px;
+    background-color: var(--text-container-background);
+    border-radius: 8px;
+    box-shadow: var(--text-container-shadow);
+}
