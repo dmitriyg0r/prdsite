@@ -237,6 +237,49 @@ async function showFriendWall(username) {
     }
 }
 
+// Добавьте новую функцию для отображения друзей в профиле
+async function displayFriendsPreview() {
+    try {
+        const response = await apiRequest('/friends/list');
+
+        if (response.success) {
+            const friendsGrid = document.getElementById('friends-grid');
+            if (friendsGrid) {
+                friendsGrid.innerHTML = response.data.map(friend => `
+                    <div class="friend-preview-item" onclick="showFriendWall('${friend.username}')">
+                        <img src="${friend.avatarUrl ? `${API_BASE_URL}${friend.avatarUrl}` : `${API_BASE_URL}/uploads/avatars/default-avatar.png`}" 
+                             alt="${friend.username}" 
+                             class="friend-avatar">
+                        <span>${friend.username}</span>
+                    </div>
+                `).join('');
+            }
+        }
+    } catch (error) {
+        console.error('Error loading friends preview:', error);
+        showError('Ошибка при загрузке списка друзей');
+    }
+}
+
+// Функция для переключения отображения списка друзей
+function toggleFriendsList() {
+    const friendsPreview = document.getElementById('friends-preview');
+    if (friendsPreview) {
+        if (friendsPreview.style.display === 'none') {
+            friendsPreview.style.display = 'block';
+            displayFriendsPreview(); // Загружаем друзей при открытии
+            friendsPreview.classList.add('expanded');
+            friendsPreview.classList.remove('collapsed');
+        } else {
+            friendsPreview.classList.remove('expanded');
+            friendsPreview.classList.add('collapsed');
+            setTimeout(() => {
+                friendsPreview.style.display = 'none';
+            }, 300);
+        }
+    }
+}
+
 // Экспорт функций
 export {
     loadFriendsList,
@@ -246,7 +289,9 @@ export {
     rejectFriendRequest,
     removeFriend,
     searchUsers,
-    showFriendWall
+    showFriendWall,
+    displayFriendsPreview,
+    toggleFriendsList
 };
 
 // В функции, которая создает список друзей, упростим обработчик клика на чат

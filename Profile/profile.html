@@ -137,11 +137,21 @@
                             </div>
                         </div>
                         <div class="user-info">
-                            <p class="username">Имя: <span id="profile-username"></span></p>
+                            <img src="../assets/default-avatar.png" alt="User Avatar" id="user-avatar">
+                            <p class="username">Имя пользователя: <span id="profile-username"></span></p>
                             <p class="role">Роль: <span id="profile-role"></span></p>
-                            <button class="btn danger-btn" onclick="handleLogout()">
-                                <i class="fas fa-sign-out-alt"></i> Выйти
+                            
+                            <!-- Добавляем кнопку для отображения друзей -->
+                            <button class="btn primary-btn friends-toggle-btn" onclick="toggleFriendsList()">
+                                <i class="fas fa-users"></i> Список друзей
                             </button>
+                            
+                            <!-- Контейнер для списка друзей -->
+                            <div id="friends-preview" class="friends-preview" style="display: none;">
+                                <div class="friends-grid" id="friends-grid">
+                                    <!-- Друзья будут добавлены динамически -->
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="user-details">

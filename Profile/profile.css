@@ -1524,3 +1524,73 @@
 .post-action .fa-heart.liked {
     animation: likeAnimation 0.3s ease;
 }
+
+/* Стили для списка друзей в профиле */
+.friends-preview {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 8px;
+    background: var(--surface);
+    transition: all 0.3s ease;
+}
+
+.friends-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.friend-preview-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.friend-preview-item:hover {
+    transform: translateY(-3px);
+}
+
+.friend-preview-item img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 5px;
+}
+
+.friend-preview-item span {
+    font-size: 12px;
+    color: var(--text-color);
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.friends-toggle-btn {
+    margin-top: 15px;
+    width: 100%;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+/* Анимация для контейнера друзей */
+.friends-preview.expanded {
+    max-height: 1000px;
+    opacity: 1;
+}
+
+.friends-preview.collapsed {
+    max-height: 0;
+    opacity: 0;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+}

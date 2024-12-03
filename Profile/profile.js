@@ -25,7 +25,8 @@ import {
     rejectFriendRequest,
     removeFriend,
     searchUsers,
-    showFriendWall
+    showFriendWall,
+    toggleFriendsList
 } from './modules/friends.js';
 
 import {
