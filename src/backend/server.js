@@ -1110,46 +1110,6 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
         clearInterval(checkMessagesInterval);
     }
 
-    // Функция для отображения пользователей в таблице
-    function displayUsers(users) {
-        const tableBody = document.getElementById('users-table-body');
-        if (!tableBody) {
-            console.error('Table body element not found!');
-            return;
-        }
-
-        console.log('Displaying users:', users); // Отладочный вывод
-        
-        try {
-            tableBody.innerHTML = users.map(user => `
-                <tr>
-                    <td>
-                        <div class="user-row">
-                            <i class="fas fa-user"></i>
-                            <span>${user.username}</span>
-                        </div>
-                    </td>
-                    <td>
-                        ${user.role}
-                        <button 
-                            class="btn change-role-btn" 
-                            onclick="changeRole('${user.username}', '${user.role === 'Admin' ? 'User' : 'Admin'}')"
-                        >
-                            Изменить роль
-                        </button>
-                    </td>
-                    <td>${new Date(user.createdAt).toLocaleString()}</td>
-                    <td>
-                        <button class="btn delete-btn" onclick="deleteUser('${user.username}')">
-                            Удалить
-                        </button>
-                    </td>
-                </tr>
-            `).join('');
-        } catch (error) {
-            console.error('Error displaying users:', error);
-        }
-    }
     // Функция для смены роли
     async function changeRole(username, newRole) {
         try {
