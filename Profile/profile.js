@@ -1,3 +1,6 @@
+// Добавить в начало файла
+const API_BASE_URL = 'https://adminflow.ru';
+
 // Константы для путей API
 const API_PATHS = {
     UPLOAD_AVATAR: '/api/users/upload-avatar.php',
@@ -45,9 +48,14 @@ const showSuccess = (message) => {
 };
 
 const apiRequest = async (endpoint, options = {}) => {
-    const url = endpoint.startsWith('http') 
-        ? endpoint 
-        : `${API_BASE_URL}${endpoint.startsWith('/') ? endpoint : '/' + endpoint}`;
+    // Если endpoint начинается с '/', убираем его, так как он уже есть в API_PATHS
+    const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
+    
+    // Проверяем, есть ли путь в API_PATHS
+    const apiPath = Object.values(API_PATHS).find(path => cleanEndpoint.includes(path));
+    const url = apiPath 
+        ? `${API_BASE_URL}${apiPath}`
+        : `${API_BASE_URL}/api/${cleanEndpoint}`;
     
     try {
         console.log('Sending request to:', url);
@@ -423,7 +431,7 @@ window.deletePost = deletePost;
 window.changeRole = changeRole;
 window.deleteUser = deleteUser;
 
-// Пример функции для загрузки аватара
+// Пример функции для загр��зки аватара
 async function uploadAvatar(file) {
     const formData = new FormData();
     formData.append('avatar', file);
@@ -465,7 +473,7 @@ async function getFriends() {
     }
 }
 
-// Функция для получения запросов в друзья
+// Функция для получения за��росов в друзья
 async function getFriendRequests() {
     try {
         const response = await apiRequest('/users/friend-requests');
@@ -497,3 +505,11 @@ function getToken() {
     const user = JSON.parse(localStorage.getItem('user'));
     return user ? user.token : null;
 }
+
+// Добавить функцию showChatButton
+const showChatButton = () => {
+    const chatLink = document.getElementById('chat-link');
+    if (chatLink) {
+        chatLink.style.display = 'block';
+    }
+};
