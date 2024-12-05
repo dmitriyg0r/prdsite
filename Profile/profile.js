@@ -107,7 +107,13 @@ const handleLogin = async (event) => {
     try {
         const response = await apiRequest(API_PATHS.AUTH, {
             method: 'POST',
-            body: JSON.stringify({ username, password })
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                username: username.trim(),
+                password: password.trim()
+            })
         });
 
         if (response.success) {
@@ -118,10 +124,10 @@ const handleLogin = async (event) => {
             showError(response.error || 'Ошибка при входе');
         }
     } catch (error) {
+        console.error('Ошибка входа:', error);
         showError('Ошибка при входе');
     }
 };
-
 const handleRegister = async (event) => {
     event.preventDefault();
     const username = document.getElementById('reg-username').value;
@@ -540,3 +546,4 @@ const showChatButton = () => {
         chatLink.style.display = 'block';
     }
 };
+
