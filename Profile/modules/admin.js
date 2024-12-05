@@ -2,7 +2,7 @@ import { apiRequest, showError, showSuccess } from './utils.js';
 
 export const loadUsers = async () => {
     try {
-        const response = await apiRequest('/users');
+        const response = await apiRequest('/users/list');
         if (response.success) {
             const usersTableBody = document.getElementById('users-table-body');
             usersTableBody.innerHTML = '';
@@ -27,7 +27,7 @@ export const loadUsers = async () => {
 
 export const changeRole = async (username) => {
     try {
-        const response = await apiRequest(`/users/${username}/change-role`, {
+        const response = await apiRequest(`/users/${username}/role`, {
             method: 'POST'
         });
         if (response.success) {
@@ -64,7 +64,7 @@ export const checkUserRole = async () => {
             user.role = response.data.role;
             localStorage.setItem('user', JSON.stringify(user));
             
-            // Обновляем интерфейс в соответствии с новой ролью
+            // Обновляем интерфейс в соответс��вии с новой ролью
             updateInterfaceBasedOnRole(response.data.role);
         }
     } catch (error) {

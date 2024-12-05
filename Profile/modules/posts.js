@@ -24,7 +24,7 @@ export const createPost = async () => {
 
 export const loadPosts = async () => {
     try {
-        const response = await apiRequest('/api/posts');
+        const response = await apiRequest('/posts');
         if (response.success) {
             const postsContainer = document.getElementById('posts-container');
             postsContainer.innerHTML = '';
@@ -33,7 +33,7 @@ export const loadPosts = async () => {
                 postElement.className = 'post';
                 postElement.innerHTML = `
                     <div class="post-header">
-                        <img src="${post.authorAvatar || `${API_BASE_URL}/uploads/default-avatar.png`}" alt="Аватар" class="post-avatar">
+                        <img src="${post.authorAvatar || '/uploads/default-avatar.png'}" alt="Аватар" class="post-avatar">
                         <div class="post-info">
                             <span class="post-author">${post.author}</span>
                             <span class="post-date">${new Date(post.createdAt).toLocaleString()}</span>

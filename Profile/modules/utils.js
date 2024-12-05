@@ -1,4 +1,4 @@
-export const API_BASE_URL = 'https://adminflow.ru';
+export const API_BASE_URL = 'https://adminflow.ru/api';
 
 export const showError = (message) => {
     const errorDiv = document.getElementById('error-message');
@@ -39,7 +39,9 @@ export const togglePassword = (type) => {
 };
 
 export const apiRequest = async (endpoint, options = {}) => {
-    const url = endpoint.startsWith('/api') ? `${API_BASE_URL}${endpoint}` : `${API_BASE_URL}/api${endpoint}`;
+    const url = endpoint.startsWith('http') 
+        ? endpoint 
+        : `${API_BASE_URL}${endpoint.startsWith('/') ? endpoint : '/' + endpoint}`;
     
     try {
         console.log('Sending request to:', url);
@@ -47,7 +49,7 @@ export const apiRequest = async (endpoint, options = {}) => {
             ...options,
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user'))?.username || ''}`,
+                'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user'))?.data?.username || ''}`,
                 ...options.headers
             }
         });
@@ -100,7 +102,7 @@ export const validateForm = (formData, rules) => {
                 errors[field] = `Минимальная длина ${rules[field].minLength} символов`;
             }
             if (rules[field].pattern && !rules[field].pattern.test(value)) {
-                errors[field] = rules[field].message || 'Невер��ый формат';
+                errors[field] = rules[field].message || 'Неверый формат';
             }
         }
     }

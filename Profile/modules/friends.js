@@ -2,7 +2,7 @@ import { apiRequest, showError, showSuccess } from './utils.js';
 
 export const loadFriendsList = async () => {
     try {
-        const response = await apiRequest('/api/friends/list');
+        const response = await apiRequest('/friends/list');
         if (response.success) {
             const friendsList = document.getElementById('friends-list');
             if (!friendsList) return;
@@ -26,7 +26,7 @@ export const loadFriendsList = async () => {
 
 export const loadFriendRequests = async () => {
     try {
-        const response = await apiRequest('/api/friends/requests');
+        const response = await apiRequest('/friends/requests');
         if (response.success) {
             const requestsList = document.getElementById('friend-requests-list');
             if (!requestsList) return;
@@ -91,7 +91,7 @@ export const rejectFriendRequest = async (requestId) => {
             loadFriendRequests();
         }
     } catch (error) {
-        showError('Ошибка при отклонении запроса в друзья');
+        showError('Ошибка п��и отклонении запроса в друзья');
     }
 };
 

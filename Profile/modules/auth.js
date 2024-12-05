@@ -1,6 +1,6 @@
 import { API_BASE_URL, showError, showSuccess, apiRequest } from './utils.js';
 
-const DEFAULT_AVATAR_PATH = `${API_BASE_URL}/uploads/default-avatar.png`;
+const DEFAULT_AVATAR_PATH = '/uploads/default-avatar.png';
 
 export const handleLogin = async (event) => {
     event.preventDefault();
@@ -112,11 +112,8 @@ export const initializeAvatarUpload = () => {
             formData.append('username', JSON.parse(localStorage.getItem('user')).username);
 
             try {
-                const response = await fetch(`${API_BASE_URL}/upload-avatar`, {
+                const response = await apiRequest('/users/upload-avatar', {
                     method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).username}`
-                    },
                     body: formData
                 });
 
@@ -130,7 +127,7 @@ export const initializeAvatarUpload = () => {
                 }
             } catch (error) {
                 console.error('Error uploading avatar:', error);
-                showError('Оши��ка при загрузке аватара');
+                showError('Ошибка при загрузке аватара');
             }
         });
     }
