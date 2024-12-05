@@ -24,7 +24,7 @@ export const createPost = async () => {
 
 export const loadPosts = async () => {
     try {
-        const response = await apiRequest('/posts');
+        const response = await apiRequest('/api/posts');
         if (response.success) {
             const postsContainer = document.getElementById('posts-container');
             postsContainer.innerHTML = '';

@@ -57,6 +57,13 @@ app.use('/api/chat', chatRoutes);
 app.use('/api/posts', postsRoutes);
 app.use('/api/friends', friendsRoutes);
 
+// Добавьте логирование для отладки
+app.use((req, res, next) => {
+    console.log('Request path:', req.path);
+    console.log('Request method:', req.method);
+    next();
+});
+
 // Статические файлы (перемещаем после маршрутов API)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/uploads', express.static(path.join(__dirname, 'uploads')));

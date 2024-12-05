@@ -1,4 +1,4 @@
-export const API_BASE_URL = 'https://adminflow.ru/api';
+export const API_BASE_URL = 'https://adminflow.ru';
 
 export const showError = (message) => {
     const errorDiv = document.getElementById('error-message');
@@ -39,8 +39,11 @@ export const togglePassword = (type) => {
 };
 
 export const apiRequest = async (endpoint, options = {}) => {
+    const url = endpoint.startsWith('/api') ? `${API_BASE_URL}${endpoint}` : `${API_BASE_URL}/api${endpoint}`;
+    
     try {
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        console.log('Sending request to:', url);
+        const response = await fetch(url, {
             ...options,
             headers: {
                 'Content-Type': 'application/json',
@@ -50,14 +53,14 @@ export const apiRequest = async (endpoint, options = {}) => {
         });
 
         if (!response.ok) {
-            console.error(`API Error (${endpoint}):`, response.status, response.statusText);
+            console.error(`API Error (${url}):`, response.status, response.statusText);
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const data = await response.json();
         return data;
     } catch (error) {
-        console.error(`API Request failed (${endpoint}):`, error);
+        console.error(`API Request failed (${url}):`, error);
         throw error;
     }
 };
@@ -97,7 +100,7 @@ export const validateForm = (formData, rules) => {
                 errors[field] = `Минимальная длина ${rules[field].minLength} символов`;
             }
             if (rules[field].pattern && !rules[field].pattern.test(value)) {
-                errors[field] = rules[field].message || 'Неверный формат';
+                errors[field] = rules[field].message || 'Невер��ый формат';
             }
         }
     }

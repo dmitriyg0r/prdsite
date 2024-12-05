@@ -4,11 +4,13 @@ export const loadFriendsList = async () => {
     try {
         const response = await apiRequest('/api/friends/list');
         if (response.success) {
-            const friendsList = document.getElementById('friend-requests-list');
+            const friendsList = document.getElementById('friends-list');
+            if (!friendsList) return;
+            
             friendsList.innerHTML = '';
             response.data.forEach(friend => {
                 const friendItem = document.createElement('div');
-                friendItem.className = 'friend-request-item';
+                friendItem.className = 'friend-item';
                 friendItem.innerHTML = `
                     <img src="${friend.avatarUrl || `${API_BASE_URL}/uploads/default-avatar.png`}" alt="Аватар" class="friend-avatar">
                     <span>${friend.username}</span>
@@ -17,6 +19,7 @@ export const loadFriendsList = async () => {
             });
         }
     } catch (error) {
+        console.error('Error loading friends:', error);
         showError('Ошибка при загрузке списка друзей');
     }
 };
@@ -26,6 +29,8 @@ export const loadFriendRequests = async () => {
         const response = await apiRequest('/api/friends/requests');
         if (response.success) {
             const requestsList = document.getElementById('friend-requests-list');
+            if (!requestsList) return;
+            
             requestsList.innerHTML = '';
             response.data.forEach(request => {
                 const requestItem = document.createElement('div');
@@ -42,6 +47,7 @@ export const loadFriendRequests = async () => {
             });
         }
     } catch (error) {
+        console.error('Error loading friend requests:', error);
         showError('Ошибка при загрузке запросов в друзья');
     }
 };
