@@ -1,5 +1,7 @@
 import { API_BASE_URL, showError, showSuccess, apiRequest } from './utils.js';
 
+const DEFAULT_AVATAR_PATH = '/assets/default-avatar.png';
+
 export const handleLogin = async (event) => {
     event.preventDefault();
     const username = document.getElementById('login-username').value;
@@ -87,12 +89,12 @@ async function loadUserAvatar(username) {
         console.error('Error loading avatar:', error);
         const userAvatar = document.getElementById('user-avatar');
         if (userAvatar) {
-            userAvatar.src = '/assets/default-avatar.png';
+            userAvatar.src = DEFAULT_AVATAR_PATH;
         }
     }
 }
 
-function initializeAvatarUpload() {
+export const initializeAvatarUpload = () => {
     const avatarInput = document.getElementById('avatar-input');
     if (avatarInput) {
         avatarInput.addEventListener('change', async (event) => {
@@ -101,13 +103,13 @@ function initializeAvatarUpload() {
 
             const formData = new FormData();
             formData.append('avatar', file);
-            formData.append('username', JSON.parse(localStorage.getItem('user')).data.username);
+            formData.append('username', JSON.parse(localStorage.getItem('user')).username);
 
             try {
                 const response = await fetch(`${API_BASE_URL}/upload-avatar`, {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
+                        'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).username}`
                     },
                     body: formData
                 });
@@ -116,7 +118,7 @@ function initializeAvatarUpload() {
 
                 if (data.success) {
                     showSuccess('Аватар успешно обновлен');
-                    loadUserAvatar(JSON.parse(localStorage.getItem('user')).data.username);
+                    loadUserAvatar(JSON.parse(localStorage.getItem('user')).username);
                 } else {
                     throw new Error(data.message);
                 }
@@ -126,9 +128,9 @@ function initializeAvatarUpload() {
             }
         });
     }
-}
+};
 
-// Единственный экспорт всех функций в конце файла
+// Экспортируем все функции одним блоком
 export {
     handleLogin,
     handleRegister,
