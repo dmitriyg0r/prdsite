@@ -13,6 +13,7 @@ import {
     handleLogout,
     handleAnonymousLogin,
     showProfile,
+    createUser,
     loadUserAvatar,
     initializeAvatarUpload
 } from './modules/auth.js';
