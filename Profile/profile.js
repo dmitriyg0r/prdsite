@@ -7,8 +7,8 @@ const API_PATHS = {
     POSTS: '/api/users/posts.php',
     FRIENDS: '/api/users/friends.php',
     FRIEND_REQUESTS: '/api/users/friend-requests.php',
-    PASSWORD: '/api/password.php',
-    AUTH: '/api/auth.php'
+    PASSWORD: '/api/auth/register.php',
+    AUTH: '/api/auth/login.php'
 };
 
 // Утилиты
@@ -22,6 +22,20 @@ const showError = (message) => {
         }, 3000);
     }
 };
+
+function showLoginForm() {
+    // Показываем форму входа
+    const loginContainer = document.getElementById('login-container');
+    if (loginContainer) {
+        loginContainer.style.display = 'block';
+    }
+
+    // Скрываем форму регистрации
+    const registerContainer = document.getElementById('register-container');
+    if (registerContainer) {
+        registerContainer.style.display = 'none';
+    }
+}
 
 function showRegisterForm() {
     // Скрываем форму входа
@@ -63,7 +77,7 @@ const apiRequest = async (endpoint, options = {}) => {
         const response = await fetch(url, {
             ...options,
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': options.body instanceof FormData ? undefined : 'application/json',
                 'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user'))?.username || ''}`,
                 ...options.headers
             }
@@ -73,7 +87,11 @@ const apiRequest = async (endpoint, options = {}) => {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        return await response.json();
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+            return await response.json();
+        }
+        return await response.text();
     } catch (error) {
         console.error(`API Request failed (${url}):`, error);
         throw error;
@@ -89,11 +107,7 @@ const handleLogin = async (event) => {
     try {
         const response = await apiRequest(API_PATHS.AUTH, {
             method: 'POST',
-            body: JSON.stringify({ 
-                action: 'login',
-                username, 
-                password 
-            })
+            body: JSON.stringify({ username, password })
         });
 
         if (response.success) {
@@ -114,13 +128,9 @@ const handleRegister = async (event) => {
     const password = document.getElementById('reg-password').value;
 
     try {
-        const response = await apiRequest(API_PATHS.AUTH, {
+        const response = await apiRequest(API_PATHS.PASSWORD, {
             method: 'POST',
-            body: JSON.stringify({ 
-                action: 'register',
-                username, 
-                password 
-            })
+            body: JSON.stringify({ username, password })
         });
 
         if (response.success) {
@@ -348,7 +358,7 @@ const loadUsers = async () => {
             });
         }
     } catch (error) {
-        showError('Оибка при загрузке пользователей');
+        showError('Ошибка при загрузке пользователей');
     }
 };
 
@@ -440,7 +450,7 @@ window.deletePost = deletePost;
 window.changeRole = changeRole;
 window.deleteUser = deleteUser;
 
-// Пример функции для загрзки аватара
+// Функция для загрузки аватара
 async function uploadAvatar(file) {
     const formData = new FormData();
     formData.append('avatar', file);
@@ -454,9 +464,11 @@ async function uploadAvatar(file) {
         if (response.success) {
             // Обновляем аватар на странице
             document.querySelector('.profile-avatar').src = response.data.avatarUrl;
+            showSuccess('Аватар успешно обновлен');
         }
     } catch (error) {
         console.error('Error uploading avatar:', error);
+        showError('Ошибка при загрузке аватара');
     }
 }
 
@@ -464,10 +476,10 @@ async function uploadAvatar(file) {
 async function getPosts() {
     try {
         const response = await apiRequest('/users/posts');
-        const data = await response.json();
-        // Обработка полученных данных
+        return response;
     } catch (error) {
         console.error('Error fetching posts:', error);
+        throw error;
     }
 }
 
@@ -475,21 +487,21 @@ async function getPosts() {
 async function getFriends() {
     try {
         const response = await apiRequest('/users/friends');
-        const data = await response.json();
-        // Обработка полученных данных
+        return response;
     } catch (error) {
         console.error('Error fetching friends:', error);
+        throw error;
     }
 }
 
-// Функция д��я получения заросов в друзья
+// Функция для получения запросов в друзья
 async function getFriendRequests() {
     try {
         const response = await apiRequest('/users/friend-requests');
-        const data = await response.json();
-        // Обработка полученных данных
+        return response;
     } catch (error) {
         console.error('Error fetching friend requests:', error);
+        throw error;
     }
 }
 
@@ -503,9 +515,15 @@ async function changePassword(oldPassword, newPassword) {
                 new_password: newPassword
             })
         });
-        // Обработка ответа
+        
+        if (response.success) {
+            showSuccess('Пароль успешно изменен');
+        } else {
+            showError(response.error || 'Ошибка при изменении пароля');
+        }
     } catch (error) {
         console.error('Error changing password:', error);
+        showError('Ошибка при изменении пароля');
     }
 }
 
@@ -515,7 +533,7 @@ function getToken() {
     return user ? user.token : null;
 }
 
-// Добавить функцию showChatButton
+// Функция показа кнопки чата
 const showChatButton = () => {
     const chatLink = document.getElementById('chat-link');
     if (chatLink) {
