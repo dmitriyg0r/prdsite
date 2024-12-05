@@ -42,7 +42,6 @@ import {
     loadUsers,
     changeRole,
     deleteUser,
-    createUser,
     checkUserRole,
     updateInterfaceBasedOnRole
 } from './modules/admin.js';
@@ -71,7 +70,6 @@ window.deletePost = deletePost;
 window.loadUsers = loadUsers;
 window.changeRole = changeRole;
 window.deleteUser = deleteUser;
-window.createUser = createUser;
 window.checkUserRole = checkUserRole;
 
 window.toggleFriendsList = toggleFriendsList;
@@ -195,7 +193,7 @@ window.addEventListener('unhandledrejection', (event) => {
 // Также добавляем скрытие кнопки при выходе
 window.handleLogout = async () => {
     try {
-        // ... существующий код логаута ...
+        // ... существующий кд логаута ...
         
         // Скрываем кнопку чата
         const chatLink = document.getElementById('chat-link');
