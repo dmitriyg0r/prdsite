@@ -84,3 +84,18 @@ export const updateInterfaceBasedOnRole = (role) => {
         element.style.display = ['admin', 'moderator'].includes(role) ? 'block' : 'none';
     });
 };
+
+export const createUser = async (userData) => {
+    try {
+        const response = await apiRequest('/users', {
+            method: 'POST',
+            body: JSON.stringify(userData)
+        });
+        if (response.success) {
+            showSuccess('Пользователь создан');
+            loadUsers();
+        }
+    } catch (error) {
+        showError('Ошибка при создании пользователя');
+    }
+};
