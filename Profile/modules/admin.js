@@ -52,3 +52,35 @@ export const deleteUser = async (username) => {
         showError('Ошибка при удалении пользователя');
     }
 };
+
+export const checkUserRole = async () => {
+    try {
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (!user.username) return;
+
+        const response = await apiRequest(`/users/${user.username}/role`);
+        if (response.success) {
+            // Обновляем роль пользователя в localStorage
+            user.role = response.data.role;
+            localStorage.setItem('user', JSON.stringify(user));
+            
+            // Обновляем интерфейс в соответствии с новой ролью
+            updateInterfaceBasedOnRole(response.data.role);
+        }
+    } catch (error) {
+        console.error('Ошибка при проверке роли:', error);
+    }
+};
+
+export const updateInterfaceBasedOnRole = (role) => {
+    const adminPanel = document.getElementById('admin-panel');
+    if (adminPanel) {
+        adminPanel.style.display = role === 'admin' ? 'block' : 'none';
+    }
+
+    // Дополнительные элементы интерфейса, зависящие от роли
+    const moderatorElements = document.querySelectorAll('.moderator-only');
+    moderatorElements.forEach(element => {
+        element.style.display = ['admin', 'moderator'].includes(role) ? 'block' : 'none';
+    });
+};
