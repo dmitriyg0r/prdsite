@@ -124,3 +124,23 @@ export const initializeAvatarUpload = () => {
         });
     }
 };
+
+export const handleLogout = async () => {
+    try {
+        localStorage.removeItem('user');
+        document.getElementById('login-container').style.display = 'block';
+        document.getElementById('profile-info').style.display = 'none';
+        document.getElementById('admin-section').style.display = 'none';
+        
+        // Скрываем кнопку чата
+        const chatLink = document.getElementById('chat-link');
+        if (chatLink) {
+            chatLink.style.display = 'none';
+        }
+        
+        showSuccess('Вы успешно вышли из системы');
+    } catch (error) {
+        console.error('Logout error:', error);
+        showError('Ошибка при выходе из системы');
+    }
+};

@@ -11,6 +11,7 @@ import {
     handleLogin,
     handleRegister,
     handleAnonymousLogin,
+    handleLogout,
     showProfile,
     initializeAvatarUpload
 } from './modules/auth.js';
@@ -41,54 +42,6 @@ import {
     checkUserRole,
     updateInterfaceBasedOnRole
 } from './modules/admin.js';
-
-// Определяем функцию handleLogout локально
-const handleLogout = async () => {
-    try {
-        localStorage.removeItem('user');
-        document.getElementById('login-container').style.display = 'block';
-        document.getElementById('profile-info').style.display = 'none';
-        document.getElementById('admin-section').style.display = 'none';
-        
-        // Скрываем кнопку чата
-        const chatLink = document.getElementById('chat-link');
-        if (chatLink) {
-            chatLink.style.display = 'none';
-        }
-        
-        showSuccess('Вы успешно вышли из системы');
-    } catch (error) {
-        console.error('Logout error:', error);
-        showError('Ошибка при выходе из системы');
-    }
-};
-
-// Делаем функции доступными глобально
-window.handleLogin = handleLogin;
-window.handleRegister = handleRegister;
-window.handleLogout = handleLogout;
-window.handleAnonymousLogin = handleAnonymousLogin;
-window.togglePassword = togglePassword;
-
-window.loadFriendsList = loadFriendsList;
-window.loadFriendRequests = loadFriendRequests;
-window.sendFriendRequest = sendFriendRequest;
-window.acceptFriendRequest = acceptFriendRequest;
-window.rejectFriendRequest = rejectFriendRequest;
-window.removeFriend = removeFriend;
-window.searchUsers = searchUsers;
-
-window.createPost = createPost;
-window.loadPosts = loadPosts;
-window.likePost = likePost;
-window.deletePost = deletePost;
-
-window.loadUsers = loadUsers;
-window.changeRole = changeRole;
-window.deleteUser = deleteUser;
-window.checkUserRole = checkUserRole;
-
-window.toggleFriendsList = toggleFriendsList;
 
 // Глобальная переменная для интервала проверки роли
 let roleCheckInterval;
