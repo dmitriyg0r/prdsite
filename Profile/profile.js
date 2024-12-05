@@ -7,7 +7,8 @@ const API_PATHS = {
     POSTS: '/api/users/posts.php',
     FRIENDS: '/api/users/friends.php',
     FRIEND_REQUESTS: '/api/users/friend-requests.php',
-    PASSWORD: '/api/password.php'
+    PASSWORD: '/api/password.php',
+    AUTH: '/api/auth.php'
 };
 
 // Утилиты
@@ -86,9 +87,13 @@ const handleLogin = async (event) => {
     const password = document.getElementById('login-password').value;
 
     try {
-        const response = await apiRequest('/auth/login', {
+        const response = await apiRequest(API_PATHS.AUTH, {
             method: 'POST',
-            body: JSON.stringify({ username, password })
+            body: JSON.stringify({ 
+                action: 'login',
+                username, 
+                password 
+            })
         });
 
         if (response.success) {
@@ -96,7 +101,7 @@ const handleLogin = async (event) => {
             showSuccess('Вход выполнен успешно');
             location.reload();
         } else {
-            showError(response.error);
+            showError(response.error || 'Ошибка при входе');
         }
     } catch (error) {
         showError('Ошибка при входе');
@@ -109,16 +114,20 @@ const handleRegister = async (event) => {
     const password = document.getElementById('reg-password').value;
 
     try {
-        const response = await apiRequest('/auth/register', {
+        const response = await apiRequest(API_PATHS.AUTH, {
             method: 'POST',
-            body: JSON.stringify({ username, password })
+            body: JSON.stringify({ 
+                action: 'register',
+                username, 
+                password 
+            })
         });
 
         if (response.success) {
             showSuccess('Регистрация успешна');
             showLoginForm();
         } else {
-            showError(response.error);
+            showError(response.error || 'Ошибка при регистрации');
         }
     } catch (error) {
         showError('Ошибка при регистрации');
@@ -431,7 +440,7 @@ window.deletePost = deletePost;
 window.changeRole = changeRole;
 window.deleteUser = deleteUser;
 
-// Пример функции для загр��зки аватара
+// Пример функции для загрзки аватара
 async function uploadAvatar(file) {
     const formData = new FormData();
     formData.append('avatar', file);
@@ -473,7 +482,7 @@ async function getFriends() {
     }
 }
 
-// Функция для получения за��росов в друзья
+// Функция д��я получения заросов в друзья
 async function getFriendRequests() {
     try {
         const response = await apiRequest('/users/friend-requests');
