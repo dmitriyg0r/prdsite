@@ -1,4 +1,4 @@
-export const API_BASE_URL = 'http://localhost:5003/api';
+export const API_BASE_URL = 'http://adminflow.ru:5003/api';
 
 export const showError = (message) => {
     const errorDiv = document.getElementById('error-message');
@@ -92,7 +92,7 @@ export const validateForm = (formData, rules) => {
     for (const [field, value] of Object.entries(formData)) {
         if (rules[field]) {
             if (rules[field].required && !value) {
-                errors[field] = 'Это поле обязательно для заполнения';
+                errors[field] = 'Это поле обязательно для з��полнения';
             }
             if (rules[field].minLength && value.length < rules[field].minLength) {
                 errors[field] = `Минимальная длина ${rules[field].minLength} символов`;
