@@ -134,7 +134,6 @@ export {
     handleRegister,
     handleLogout,
     handleAnonymousLogin,
-    showProfile,
     loadUserAvatar,
     initializeAvatarUpload
 };
