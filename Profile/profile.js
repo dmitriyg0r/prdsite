@@ -78,22 +78,17 @@ const handleLogin = async (event) => {
     const password = document.getElementById('login-password').value;
 
     try {
-        const response = await fetch('/api/auth/login.php', {
+        const response = await apiRequest('/auth/login', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
             body: JSON.stringify({ username, password })
         });
 
-        const data = await response.json();
-
-        if (data.success) {
-            localStorage.setItem('user', JSON.stringify(data.data));
+        if (response.success) {
+            localStorage.setItem('user', JSON.stringify(response.data));
             showSuccess('Вход выполнен успешно');
             location.reload();
         } else {
-            showError(data.error);
+            showError(response.error);
         }
     } catch (error) {
         showError('Ошибка при входе');
@@ -106,21 +101,16 @@ const handleRegister = async (event) => {
     const password = document.getElementById('reg-password').value;
 
     try {
-        const response = await fetch('/api/auth/register.php', {
+        const response = await apiRequest('/auth/register', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
             body: JSON.stringify({ username, password })
         });
 
-        const data = await response.json();
-
-        if (data.success) {
+        if (response.success) {
             showSuccess('Регистрация успешна');
             showLoginForm();
         } else {
-            showError(data.error);
+            showError(response.error);
         }
     } catch (error) {
         showError('Ошибка при регистрации');
@@ -163,7 +153,7 @@ const loadUserAvatar = async (username) => {
         console.error('Username is undefined');
         const userAvatar = document.getElementById('user-avatar');
         if (userAvatar) {
-            userAvatar.src = DEFAULT_AVATAR_PATH;
+            userAvatar.src = API_PATHS.UPLOAD_AVATAR;
         }
         return;
     }
@@ -183,7 +173,7 @@ const loadUserAvatar = async (username) => {
         console.error('Error loading avatar:', error);
         const userAvatar = document.getElementById('user-avatar');
         if (userAvatar) {
-            userAvatar.src = DEFAULT_AVATAR_PATH;
+            userAvatar.src = API_PATHS.UPLOAD_AVATAR;
         }
     }
 };
@@ -201,7 +191,7 @@ const loadFriendsList = async () => {
                 const friendItem = document.createElement('tr');
                 friendItem.innerHTML = `
                     <td>
-                        <img src="${friend.avatarUrl || '/uploads/default-avatar.png'}" alt="Аватар" class="friend-avatar">
+                        <img src="${friend.avatarUrl || API_PATHS.UPLOAD_AVATAR}" alt="Аватар" class="friend-avatar">
                     </td>
                     <td>${friend.username}</td>
                     <td>
@@ -238,7 +228,7 @@ const loadFriendRequests = async () => {
                 const requestItem = document.createElement('div');
                 requestItem.className = 'friend-request-item';
                 requestItem.innerHTML = `
-                    <img src="${request.avatarUrl || '/uploads/default-avatar.png'}" alt="Аватар" class="friend-avatar">
+                    <img src="${request.avatarUrl || API_PATHS.UPLOAD_AVATAR}" alt="Аватар" class="friend-avatar">
                     <span>${request.username}</span>
                     <div class="request-actions">
                         <button onclick="acceptFriendRequest('${request.id}')" class="btn primary-btn">Принять</button>
@@ -290,7 +280,7 @@ const loadPosts = async () => {
                 postElement.className = 'post';
                 postElement.innerHTML = `
                     <div class="post-header">
-                        <img src="${post.authorAvatar || '/uploads/default-avatar.png'}" alt="Аватар" class="post-avatar">
+                        <img src="${post.authorAvatar || API_PATHS.UPLOAD_AVATAR}" alt="Аватар" class="post-avatar">
                         <div class="post-info">
                             <span class="post-author">${post.author}</span>
                             <span class="post-date">${new Date(post.createdAt).toLocaleString()}</span>
@@ -439,17 +429,14 @@ async function uploadAvatar(file) {
     formData.append('avatar', file);
 
     try {
-        const response = await fetch(API_PATHS.UPLOAD_AVATAR, {
+        const response = await apiRequest('/users/upload-avatar', {
             method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${getToken()}`
-            },
             body: formData
         });
-        const data = await response.json();
-        if (data.success) {
+        
+        if (response.success) {
             // Обновляем аватар на странице
-            document.querySelector('.profile-avatar').src = data.data.avatarUrl;
+            document.querySelector('.profile-avatar').src = response.data.avatarUrl;
         }
     } catch (error) {
         console.error('Error uploading avatar:', error);
@@ -459,11 +446,7 @@ async function uploadAvatar(file) {
 // Функция для получения постов
 async function getPosts() {
     try {
-        const response = await fetch(API_PATHS.POSTS, {
-            headers: {
-                'Authorization': `Bearer ${getToken()}`
-            }
-        });
+        const response = await apiRequest('/users/posts');
         const data = await response.json();
         // Обработка полученных данных
     } catch (error) {
@@ -474,11 +457,7 @@ async function getPosts() {
 // Функция для получения списка друзей
 async function getFriends() {
     try {
-        const response = await fetch(API_PATHS.FRIENDS, {
-            headers: {
-                'Authorization': `Bearer ${getToken()}`
-            }
-        });
+        const response = await apiRequest('/users/friends');
         const data = await response.json();
         // Обработка полученных данных
     } catch (error) {
@@ -489,11 +468,7 @@ async function getFriends() {
 // Функция для получения запросов в друзья
 async function getFriendRequests() {
     try {
-        const response = await fetch(API_PATHS.FRIEND_REQUESTS, {
-            headers: {
-                'Authorization': `Bearer ${getToken()}`
-            }
-        });
+        const response = await apiRequest('/users/friend-requests');
         const data = await response.json();
         // Обработка полученных данных
     } catch (error) {
@@ -504,18 +479,13 @@ async function getFriendRequests() {
 // Функция для изменения пароля
 async function changePassword(oldPassword, newPassword) {
     try {
-        const response = await fetch(API_PATHS.PASSWORD, {
+        const response = await apiRequest('/users/password', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${getToken()}`
-            },
             body: JSON.stringify({
                 old_password: oldPassword,
                 new_password: newPassword
             })
         });
-        const data = await response.json();
         // Обработка ответа
     } catch (error) {
         console.error('Error changing password:', error);
@@ -527,4 +497,3 @@ function getToken() {
     const user = JSON.parse(localStorage.getItem('user'));
     return user ? user.token : null;
 }
-
