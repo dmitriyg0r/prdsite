@@ -2,7 +2,7 @@ import { apiRequest, showError, showSuccess } from './utils.js';
 
 export const loadFriendsList = async () => {
     try {
-        const response = await apiRequest('/friends/list');
+        const response = await apiRequest('/api/friends/list');
         if (response.success) {
             const friendsList = document.getElementById('friend-requests-list');
             friendsList.innerHTML = '';
@@ -23,7 +23,7 @@ export const loadFriendsList = async () => {
 
 export const loadFriendRequests = async () => {
     try {
-        const response = await apiRequest('/friends/requests');
+        const response = await apiRequest('/api/friends/requests');
         if (response.success) {
             const requestsList = document.getElementById('friend-requests-list');
             requestsList.innerHTML = '';
@@ -107,7 +107,7 @@ export const searchUsers = async (query) => {
     try {
         const response = await apiRequest(`/users/search?query=${query}`);
         if (response.success) {
-            // О��работка езультатов поиска
+            // Оработка езультатов поиска
         }
     } catch (error) {
         showError('Ошибка при поиске пользователей');

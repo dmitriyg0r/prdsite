@@ -40,7 +40,7 @@ export const togglePassword = (type) => {
 
 export const apiRequest = async (endpoint, options = {}) => {
     try {
-        const response = await fetch(`${API_BASE_URL}/api${endpoint}`, {
+        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
             ...options,
             headers: {
                 'Content-Type': 'application/json',
