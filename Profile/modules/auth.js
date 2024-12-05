@@ -1,169 +1,77 @@
 import { API_BASE_URL, showError, showSuccess, apiRequest } from './utils.js';
 
-// Функции без export в их определении
-async function handleLogin(event) {
+export const handleLogin = async (event) => {
     event.preventDefault();
-    console.log('Login attempt started');
-
     const username = document.getElementById('login-username').value;
     const password = document.getElementById('login-password').value;
 
     try {
         const response = await apiRequest('/auth/login', {
             method: 'POST',
-            body: JSON.stringify({ username, password }),
-            credentials: 'include'
+            body: JSON.stringify({ username, password })
         });
 
         if (response.success) {
-            localStorage.setItem('user', JSON.stringify(response));
-            showSuccess('Успешный вход');
-            
-            // Скрываем контейнер входа
-            const loginContainer = document.getElementById('login-container');
-            if (loginContainer) {
-                loginContainer.style.display = 'none';
-            }
-            
-            // Показываем профиль
-            showProfile(response);
-            startRoleChecking(); // Запускаем проверку роли после успешного входа
+            localStorage.setItem('user', JSON.stringify(response.data));
+            showSuccess('Вход выполнен успешно');
+            await showProfile(response.data);
         }
     } catch (error) {
-        console.error('Login error:', error);
-        showError(error.message || 'Произошла ошибка при попытке входа');
-        
-        // Очищаем поле пароля при ошибке
-        const passwordInput = document.getElementById('login-password');
-        if (passwordInput) {
-            passwordInput.value = '';
-        }
+        showError('Ошибка входа');
     }
-}
+};
 
-async function handleRegister(event) {
+export const handleRegister = async (event) => {
     event.preventDefault();
-
     const username = document.getElementById('reg-username').value;
     const password = document.getElementById('reg-password').value;
-    const confirmPassword = document.getElementById('reg-confirm-password').value;
-
-    // Валидация паролей
-    if (password !== confirmPassword) {
-        showError('Пароли не совпадают');
-        return;
-    }
 
     try {
-        const response = await apiRequest('/register', {
+        const response = await apiRequest('/auth/register', {
             method: 'POST',
             body: JSON.stringify({ username, password })
         });
 
         if (response.success) {
-            showSuccess('Регистрация успешна! Теперь вы можете войти');
-            
-            // Очищаем форму регистрации
-            document.getElementById('register-form').reset();
-            
-            // Переключаемся на форму входа
-            const loginContainer = document.getElementById('login-container');
-            const registerContainer = document.getElementById('register-container');
-            
-            if (loginContainer && registerContainer) {
-                registerContainer.style.display = 'none';
-                loginContainer.style.display = 'block';
-            }
+            showSuccess('Регистрация успешна');
+            showLoginForm();
         }
     } catch (error) {
-        console.error('Registration error:', error);
-        showError(error.message || 'Ошибка при регистрации');
+        showError('Ошибка регистрации');
     }
-}
+};
 
-async function handleAnonymousLogin() {
+export const handleLogout = async () => {
+    localStorage.removeItem('user');
+    location.reload();
+};
+
+export const handleAnonymousLogin = async () => {
     try {
         const response = await apiRequest('/auth/anonymous-login', {
             method: 'POST'
         });
 
         if (response.success) {
-            localStorage.setItem('user', JSON.stringify(response));
-            showSuccess('Анонимный вход выполнен успешно');
-            showProfile(response);
+            localStorage.setItem('user', JSON.stringify(response.data));
+            showSuccess('Анонимный вход выполнен');
+            await showProfile(response.data);
         }
     } catch (error) {
-        console.error('Anonymous login error:', error);
-        showError(error.message || 'Ошибка при попытке анонимного входа');
+        showError('Ошибка анонимного входа');
     }
-}
+};
 
-function handleLogout() {
-    console.log('Logging out...');
-    try {
-        // Очищаем данные пользователя
-        localStorage.removeItem('user');
-        
-        // Скрываем профиль и показываем форму входа
-        const loginContainer = document.getElementById('login-container');
-        const profileInfo = document.getElementById('profile-info');
-        const adminSection = document.getElementById('admin-section');
+export const showProfile = async (userData) => {
+    document.getElementById('login-container').style.display = 'none';
+    document.getElementById('register-container').style.display = 'none';
+    document.getElementById('profile-info').style.display = 'block';
 
-        if (loginContainer) loginContainer.style.display = 'block';
-        if (profileInfo) profileInfo.style.display = 'none';
-        if (adminSection) adminSection.style.display = 'none';
+    document.getElementById('profile-username').textContent = userData.username;
+    document.getElementById('profile-role').textContent = userData.role;
 
-        // Очищаем форму входа
-        const loginForm = document.getElementById('login-form');
-        if (loginForm) loginForm.reset();
-
-        showSuccess('Вы успешно вышли из системы');
-        stopRoleChecking(); // Останавливаем проверку роли при выходе
-        
-        console.log('Logout successful');
-    } catch (error) {
-        console.error('Error during logout:', error);
-        showError('Ошибка при выходе из системы');
-    }
-}
-
-function showProfile(userData) {
-    // Скрываем все контейнеры авторизации
-    const authContainers = document.querySelectorAll('#login-container, #register-container');
-    authContainers.forEach(container => {
-        if (container) container.style.display = 'none';
-    });
-    
-    // Показываем информацию профиля
-    const profileInfo = document.getElementById('profile-info');
-    if (profileInfo) {
-        profileInfo.style.display = 'block';
-    }
-    
-    // Обновляем информацию профиля
-    const profileUsername = document.getElementById('profile-username');
-    const profileRole = document.getElementById('profile-role');
-    const userAvatar = document.getElementById('user-avatar');
-    
-    if (profileUsername) profileUsername.textContent = userData.data.username;
-    if (profileRole) profileRole.textContent = userData.data.role;
-    
-    // Загружаем аватар пользователя
-    loadUserAvatar(userData.data.username);
-
-    // Инициализируем загрузку аватара
-    initializeAvatarUpload();
-    
-    // Показываем админ-панель для администраторов
-    const adminSection = document.getElementById('admin-section');
-    if (adminSection && userData.data.role === 'Admin') {
-        adminSection.style.display = 'block';
-        loadUsers();
-    }
-
-    // Загружаем посты
-    loadPosts();
-}
+    await loadUserAvatar(userData.username);
+};
 
 async function loadUserAvatar(username) {
     try {

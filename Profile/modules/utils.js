@@ -1,78 +1,66 @@
-export const API_BASE_URL = 'https://adminflow.ru/api';
+export const API_BASE_URL = 'http://localhost:5003/api';
 
 export const showError = (message) => {
-    const errorMessage = document.getElementById('error-message');
-    if (errorMessage) {
-        errorMessage.textContent = message;
-        errorMessage.style.display = 'block';
-        errorMessage.style.backgroundColor = '#ff4444';
-        
+    const errorDiv = document.getElementById('error-message');
+    if (errorDiv) {
+        errorDiv.textContent = message;
+        errorDiv.style.display = 'block';
         setTimeout(() => {
-            errorMessage.style.display = 'none';
-        }, 5000);
-    }
-};
-
-export const showSuccess = (message) => {
-    const errorMessage = document.getElementById('error-message');
-    if (errorMessage) {
-        errorMessage.textContent = message;
-        errorMessage.style.display = 'block';
-        errorMessage.style.backgroundColor = '#4CAF50';
-        
-        setTimeout(() => {
-            errorMessage.style.display = 'none';
+            errorDiv.style.display = 'none';
         }, 3000);
     }
 };
 
-export const togglePassword = (formType) => {
-    const passwordInput = formType === 'login' 
-        ? document.getElementById('login-password')
-        : document.getElementById('reg-password');
-    const eyeIcon = passwordInput.nextElementSibling;
+export const showSuccess = (message) => {
+    const successDiv = document.getElementById('success-message');
+    if (successDiv) {
+        successDiv.textContent = message;
+        successDiv.style.display = 'block';
+        setTimeout(() => {
+            successDiv.style.display = 'none';
+        }, 3000);
+    }
+};
+
+export const togglePassword = (type) => {
+    const inputId = type === 'login' ? 'login-password' : 'reg-password';
+    const input = document.getElementById(inputId);
+    const icon = input.nextElementSibling;
     
-    if (passwordInput.type === 'password') {
-        passwordInput.type = 'text';
-        eyeIcon.classList.add('show');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
     } else {
-        passwordInput.type = 'password';
-        eyeIcon.classList.remove('show');
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
     }
 };
 
 export const apiRequest = async (endpoint, options = {}) => {
-    try {
-        const userData = JSON.parse(localStorage.getItem('user'));
-        const headers = {
-            'Accept': 'application/json',
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const defaultOptions = {
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${user.username}`
+        }
+    };
+
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        ...defaultOptions,
+        ...options,
+        headers: {
+            ...defaultOptions.headers,
             ...options.headers
-        };
-
-        if (userData?.data?.username) {
-            headers['Authorization'] = `Bearer ${userData.data.username}`;
         }
+    });
 
-        if (options.body && !(options.body instanceof FormData)) {
-            headers['Content-Type'] = 'application/json';
-        }
-
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-            ...options,
-            headers
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.message || 'Произошла ошибка при выполнении запроса');
-        }
-
-        return data;
-    } catch (error) {
-        console.error('API Request Error:', error);
-        throw error;
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
     }
+
+    return response.json();
 };
 
 export const formatDate = (date) => {

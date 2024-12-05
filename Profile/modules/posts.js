@@ -1,179 +1,95 @@
-import { API_BASE_URL, showError, showSuccess, apiRequest } from './utils.js';
+import { apiRequest, showError, showSuccess } from './utils.js';
 
-// Функция создания нового поста
-async function createPost() {
+export const createPost = async () => {
     const content = document.getElementById('post-content').value;
-    const imageInput = document.getElementById('post-image');
-    const file = imageInput.files[0];
-
-    if (!content && !file) {
-        showError('Добавьте текст или изображение для публикации');
+    if (!content.trim()) {
+        showError('Пост не может быть пустым');
         return;
     }
 
     try {
-        const formData = new FormData();
-        formData.append('content', content);
-        if (file) {
-            formData.append('image', file);
-        }
-
-        const response = await apiRequest('/posts/create', {
+        const response = await apiRequest('/posts', {
             method: 'POST',
-            body: formData
+            body: JSON.stringify({ content })
         });
 
         if (response.success) {
-            document.getElementById('post-content').value = '';
-            imageInput.value = '';
-            await loadPosts();
-            showSuccess('Пост опубликован');
+            showSuccess('Пост создан');
+            loadPosts();
         }
     } catch (error) {
-        console.error('Error creating post:', error);
-        showError(error.message || 'Ошибка при создании поста');
+        showError('Ошибка при создании поста');
     }
-}
+};
 
-// Функция загрузки постов
-async function loadPosts() {
+export const loadPosts = async () => {
     try {
-        const userData = JSON.parse(localStorage.getItem('user'));
-        const response = await apiRequest(`/posts/${userData.data.username}`);
-
+        const response = await apiRequest('/posts');
         if (response.success) {
             const postsContainer = document.getElementById('posts-container');
-            postsContainer.innerHTML = response.data.map(post => `
-                <div class="post">
+            postsContainer.innerHTML = '';
+            response.data.forEach(post => {
+                const postElement = document.createElement('div');
+                postElement.className = 'post';
+                postElement.innerHTML = `
                     <div class="post-header">
-                        <img src="${post.authorAvatar ? `${API_BASE_URL}${post.authorAvatar}` : `${API_BASE_URL}/uploads/avatars/default-avatar.png`}" 
-                             alt="Avatar" class="post-avatar">
+                        <img src="${post.authorAvatar || '/default-avatar.png'}" alt="Аватар" class="post-avatar">
                         <div class="post-info">
-                            <div class="post-author">${post.author}</div>
-                            <div class="post-date">${new Date(post.createdAt).toLocaleString()}</div>
+                            <span class="post-author">${post.author}</span>
+                            <span class="post-date">${new Date(post.createdAt).toLocaleString()}</span>
                         </div>
                     </div>
                     <div class="post-content">${post.content}</div>
-                    ${post.image ? `<img src="${API_BASE_URL}${post.image}" alt="Post image" class="post-image">` : ''}
                     <div class="post-actions">
-                        <div class="post-action" onclick="likePost('${post.id}')">
-                            <i class="fas fa-heart ${post.likedBy.includes(userData.data.username) ? 'liked' : ''}"></i>
-                            <span>${post.likes || 0}</span>
-                        </div>
-                        ${post.author === userData.data.username ? `
-                            <div class="post-action" onclick="deletePost('${post.id}')">
-                                <i class="fas fa-trash"></i>
-                            </div>
-                        ` : ''}
+                        <span class="post-action" onclick="likePost('${post.id}')">
+                            <i class="fas fa-heart ${post.likedBy.includes(localStorage.getItem('user')) ? 'liked' : ''}"></i> ${post.likes}
+                        </span>
+                        <span class="post-action" onclick="deletePost('${post.id}')">
+                            <i class="fas fa-trash"></i> Удалить
+                        </span>
                     </div>
-                </div>
-            `).join('');
+                `;
+                postsContainer.appendChild(postElement);
+            });
         }
     } catch (error) {
-        console.error('Error loading posts:', error);
         showError('Ошибка при загрузке постов');
     }
-}
+};
 
-// Функция для лайка поста
-async function likePost(postId) {
+export const likePost = async (postId) => {
     try {
         const response = await apiRequest(`/posts/${postId}/like`, {
             method: 'POST'
         });
-
         if (response.success) {
-            await loadPosts();
+            loadPosts();
         }
     } catch (error) {
-        console.error('Error liking post:', error);
-        showError('Ошибка при попытке поставить лайк');
+        showError('Ошибка при лайке поста');
     }
-}
+};
 
-// Функция удаления поста
-async function deletePost(postId) {
-    if (!confirm('Вы уверены, что хотите удалить этот пост?')) {
-        return;
-    }
-
+export const deletePost = async (postId) => {
     try {
         const response = await apiRequest(`/posts/${postId}`, {
             method: 'DELETE'
         });
-
         if (response.success) {
-            await loadPosts();
-            showSuccess('Пост удален');
+            showSuccess('Пост удалён');
+            loadPosts();
         }
     } catch (error) {
-        console.error('Error deleting post:', error);
         showError('Ошибка при удалении поста');
     }
-}
+};
 
-// Функция для предпросмотра изображения
-function previewPostImage(input) {
-    const preview = document.getElementById('post-image-preview');
-    const previewContainer = document.getElementById('image-preview-container');
-    
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        
-        reader.onload = function(e) {
-            preview.src = e.target.result;
-            previewContainer.style.display = 'block';
-        };
-        
-        reader.readAsDataURL(input.files[0]);
-    } else {
-        preview.src = '';
-        previewContainer.style.display = 'none';
-    }
-}
-
-// Функция для удаления предпросмотра изображения
-function removeImagePreview() {
-    const input = document.getElementById('post-image');
-    const preview = document.getElementById('post-image-preview');
-    const previewContainer = document.getElementById('image-preview-container');
-    
-    input.value = '';
-    preview.src = '';
-    previewContainer.style.display = 'none';
-}
-
-// Инициализация обработчиков событий для постов
-function initializePostHandlers() {
-    const imageInput = document.getElementById('post-image');
-    if (imageInput) {
-        imageInput.addEventListener('change', function() {
-            previewPostImage(this);
-        });
-    }
-
-    const removePreviewButton = document.getElementById('remove-preview');
-    if (removePreviewButton) {
-        removePreviewButton.addEventListener('click', removeImagePreview);
-    }
-
-    // Обработчик формы создания поста
-    const postForm = document.getElementById('post-form');
+export const initializePostHandlers = () => {
+    const postForm = document.querySelector('.post-form');
     if (postForm) {
-        postForm.addEventListener('submit', function(e) {
-            e.preventDefault();
+        postForm.addEventListener('submit', (event) => {
+            event.preventDefault();
             createPost();
         });
     }
-}
-
-// Единственный экспорт всех функций в конце файла
-export {
-    createPost,
-    loadPosts,
-    likePost,
-    deletePost,
-    previewPostImage,
-    removeImagePreview,
-    initializePostHandlers
 };

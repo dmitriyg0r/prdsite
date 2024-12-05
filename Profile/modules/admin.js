@@ -1,185 +1,54 @@
-import { API_BASE_URL, showError, showSuccess } from './utils.js';
+import { apiRequest, showError, showSuccess } from './utils.js';
 
-// Функция для отображения пользователей в таблице
-function displayUsers(users) {
-    const tableBody = document.getElementById('users-table-body');
-    if (!tableBody) {
-        console.error('Table body element not found!');
-        return;
-    }
-    
+export const loadUsers = async () => {
     try {
-        tableBody.innerHTML = users.map(user => `
-            <tr>
-                <td>
-                    <div class="user-row">
-                        <img src="${user.avatarUrl ? `${API_BASE_URL}${user.avatarUrl}` : '../assets/default-avatar.png'}" 
-                             alt="Avatar" 
-                             class="user-table-avatar">
-                        <span>${user.username}</span>
-                    </div>
-                </td>
-                <td>
-                    ${user.role}
-                    <button 
-                        class="btn change-role-btn" 
-                        onclick="changeRole('${user.username}', '${user.role === 'Admin' ? 'User' : 'Admin'}')"
-                    >
-                        Изменить роль
-                    </button>
-                </td>
-                <td>${new Date(user.createdAt).toLocaleString()}</td>
-                <td>
-                    <button class="btn delete-btn" onclick="deleteUser('${user.username}')">
-                        Удалить
-                    </button>
-                </td>
-            </tr>
-        `).join('');
-    } catch (error) {
-        console.error('Error displaying users:', error);
-        showError('Ошибка при отображении пользователей');
-    }
-}
-
-// Функция для загрузки списка пользователей
-async function loadUsers() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/users`, {
-            headers: {
-                'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
-            }
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-            displayUsers(data.data);
-        } else {
-            throw new Error(data.message);
+        const response = await apiRequest('/users');
+        if (response.success) {
+            const usersTableBody = document.getElementById('users-table-body');
+            usersTableBody.innerHTML = '';
+            response.data.forEach(user => {
+                const userRow = document.createElement('tr');
+                userRow.innerHTML = `
+                    <td>${user.username}</td>
+                    <td>${user.role}</td>
+                    <td>${new Date(user.createdAt).toLocaleDateString()}</td>
+                    <td>
+                        <button class="btn change-role-btn" onclick="changeRole('${user.username}')">Сменить роль</button>
+                        <button class="btn delete-btn" onclick="deleteUser('${user.username}')">Удалить</button>
+                    </td>
+                `;
+                usersTableBody.appendChild(userRow);
+            });
         }
     } catch (error) {
-        console.error('Error loading users:', error);
         showError('Ошибка при загрузке пользователей');
     }
-}
+};
 
-// Функция для изменения роли пользователя
-async function changeRole(username, newRole) {
+export const changeRole = async (username) => {
     try {
-        const response = await fetch(`${API_BASE_URL}/users/change-role`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
-            },
-            body: JSON.stringify({ username, newRole })
+        const response = await apiRequest(`/users/${username}/change-role`, {
+            method: 'POST'
         });
-
-        const data = await response.json();
-
-        if (data.success) {
-            showSuccess('Роль успешно изменена');
-            await loadUsers();
-        } else {
-            throw new Error(data.message);
+        if (response.success) {
+            showSuccess('Роль пользователя изменена');
+            loadUsers();
         }
     } catch (error) {
-        console.error('Error changing role:', error);
-        showError('Ошибка при изменении роли');
+        showError('Ошибка при изменении роли пользователя');
     }
-}
+};
 
-// Функция для удаления пользователя
-async function deleteUser(username) {
-    if (!confirm(`Вы уверены, что хотите удалить пользователя ${username}?`)) {
-        return;
-    }
-
+export const deleteUser = async (username) => {
     try {
-        const response = await fetch(`${API_BASE_URL}/users/${username}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
-            }
+        const response = await apiRequest(`/users/${username}`, {
+            method: 'DELETE'
         });
-
-        const data = await response.json();
-
-        if (data.success) {
-            showSuccess('Пользователь успешно удален');
-            await loadUsers();
-        } else {
-            throw new Error(data.message);
+        if (response.success) {
+            showSuccess('Пользователь удалён');
+            loadUsers();
         }
     } catch (error) {
-        console.error('Error deleting user:', error);
         showError('Ошибка при удалении пользователя');
     }
-}
-
-// Функция для создания нового пользователя
-async function createUser(userData) {
-    try {
-        const response = await fetch(`${API_BASE_URL}/users/create`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
-            },
-            body: JSON.stringify(userData)
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-            showSuccess('Пользователь успешно создан');
-            await loadUsers();
-        } else {
-            throw new Error(data.message);
-        }
-    } catch (error) {
-        console.error('Error creating user:', error);
-        showError('Ошибка при создании пользователя');
-    }
-}
-
-// Функция проверки роли пользователя
-async function checkUserRole() {
-    try {
-        const currentUser = JSON.parse(localStorage.getItem('user'));
-        if (!currentUser?.data?.username) return;
-
-        // Временно используем данные из localStorage
-        const currentRole = currentUser.data.role;
-        updateInterfaceBasedOnRole(currentRole);
-        
-        // Логируем информацию для отладки
-        console.log('Текущая роль пользователя:', currentRole);
-        
-    } catch (error) {
-        console.warn('Ошибка при проверке роли пользователя:', error);
-    }
-}
-
-// Функция обновления интерфейса на основе роли
-function updateInterfaceBasedOnRole(role) {
-    const adminSection = document.getElementById('admin-section');
-    if (adminSection) {
-        adminSection.style.display = role === 'Admin' ? 'block' : 'none';
-    }
-    
-    // Добавляем логирование для отладки
-    console.log('Обновление интерфейса для роли:', role);
-}
-
-// Единственный экспорт всех функций в конце файла
-export {
-    loadUsers,
-    changeRole,
-    deleteUser,
-    createUser,
-    checkUserRole,
-    updateInterfaceBasedOnRole,
-    displayUsers
 };
