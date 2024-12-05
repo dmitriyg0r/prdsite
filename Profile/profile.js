@@ -31,11 +31,12 @@ const apiRequest = async (endpoint, options = {}) => {
         : `${API_BASE_URL}${endpoint.startsWith('/') ? endpoint : '/' + endpoint}`;
     
     try {
+        console.log('Sending request to:', url);
         const response = await fetch(url, {
             ...options,
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user'))?.data?.username || ''}`,
+                'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user'))?.username || ''}`,
                 ...options.headers
             }
         });
@@ -156,22 +157,35 @@ const loadUserAvatar = async (username) => {
     }
 };
 
-// Функции друзей
+// Функции друзе��
 const loadFriendsList = async () => {
     try {
-        const response = await apiRequest('/friends/list');
+        const response = await apiRequest('/users/friends');
         if (response.success) {
             const friendsList = document.getElementById('friends-list');
             if (!friendsList) return;
             
             friendsList.innerHTML = '';
             response.data.forEach(friend => {
-                const friendItem = document.createElement('div');
-                friendItem.className = 'friend-item';
+                const friendItem = document.createElement('tr');
                 friendItem.innerHTML = `
-                    <img src="${friend.avatarUrl || `${API_BASE_URL}/uploads/default-avatar.png`}" alt="Аватар" class="friend-avatar">
-                    <span>${friend.username}</span>
-                    <button class="chat-btn" onclick="openChat('${friend.username}')">Чат</button>
+                    <td>
+                        <img src="${friend.avatarUrl || '/uploads/default-avatar.png'}" alt="Аватар" class="friend-avatar">
+                    </td>
+                    <td>${friend.username}</td>
+                    <td>
+                        <span class="status-indicator ${friend.online ? 'online' : 'offline'}">
+                            ${friend.online ? 'Онлайн' : 'Оффлайн'}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn primary-btn" onclick="openChat('${friend.username}')">
+                            <i class="fas fa-comment"></i>
+                        </button>
+                        <button class="btn danger-btn" onclick="removeFriend('${friend.username}')">
+                            <i class="fas fa-user-minus"></i>
+                        </button>
+                    </td>
                 `;
                 friendsList.appendChild(friendItem);
             });
@@ -183,7 +197,7 @@ const loadFriendsList = async () => {
 
 const loadFriendRequests = async () => {
     try {
-        const response = await apiRequest('/friends/requests');
+        const response = await apiRequest('/users/friend-requests');
         if (response.success) {
             const requestsList = document.getElementById('friend-requests-list');
             if (!requestsList) return;
@@ -193,11 +207,11 @@ const loadFriendRequests = async () => {
                 const requestItem = document.createElement('div');
                 requestItem.className = 'friend-request-item';
                 requestItem.innerHTML = `
-                    <img src="${request.avatarUrl || `${API_BASE_URL}/uploads/default-avatar.png`}" alt="Аватар" class="friend-avatar">
+                    <img src="${request.avatarUrl || '/uploads/default-avatar.png'}" alt="Аватар" class="friend-avatar">
                     <span>${request.username}</span>
                     <div class="request-actions">
-                        <button onclick="acceptFriendRequest('${request.id}')" class="accept-btn">Принять</button>
-                        <button onclick="rejectFriendRequest('${request.id}')" class="reject-btn">Отклонить</button>
+                        <button onclick="acceptFriendRequest('${request.id}')" class="btn primary-btn">Принять</button>
+                        <button onclick="rejectFriendRequest('${request.id}')" class="btn danger-btn">Отклонить</button>
                     </div>
                 `;
                 requestsList.appendChild(requestItem);
@@ -234,7 +248,7 @@ const createPost = async () => {
 
 const loadPosts = async () => {
     try {
-        const response = await apiRequest('/posts');
+        const response = await apiRequest('/users/posts');
         if (response.success) {
             const postsContainer = document.getElementById('posts-container');
             if (!postsContainer) return;
@@ -245,13 +259,14 @@ const loadPosts = async () => {
                 postElement.className = 'post';
                 postElement.innerHTML = `
                     <div class="post-header">
-                        <img src="${post.authorAvatar || `${API_BASE_URL}/uploads/default-avatar.png`}" alt="Аватар" class="post-avatar">
+                        <img src="${post.authorAvatar || '/uploads/default-avatar.png'}" alt="Аватар" class="post-avatar">
                         <div class="post-info">
                             <span class="post-author">${post.author}</span>
                             <span class="post-date">${new Date(post.createdAt).toLocaleString()}</span>
                         </div>
                     </div>
                     <div class="post-content">${post.content}</div>
+                    ${post.image ? `<img src="${post.image}" alt="Post image" class="post-image">` : ''}
                     <div class="post-actions">
                         <button onclick="likePost('${post.id}')" class="like-btn ${post.liked ? 'liked' : ''}">
                             <i class="fas fa-heart"></i> ${post.likes}
