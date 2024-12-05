@@ -43,11 +43,6 @@ export const handleRegister = async (event) => {
     }
 };
 
-export const handleLogout = async () => {
-    localStorage.removeItem('user');
-    location.reload();
-};
-
 export const handleAnonymousLogin = async () => {
     try {
         const response = await apiRequest('/auth/anonymous-login', {
