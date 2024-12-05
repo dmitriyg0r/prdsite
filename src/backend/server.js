@@ -13,7 +13,7 @@ const app = express();
 
 // Middleware
 app.use(cors({
-    origin: ['http://localhost:3000', 'https://adminflow.ru'],
+    origin: ['https://adminflow.ru'],
     credentials: true
 }));
 app.use(bodyParser.json());

@@ -10,7 +10,7 @@ export const loadFriendsList = async () => {
                 const friendItem = document.createElement('div');
                 friendItem.className = 'friend-request-item';
                 friendItem.innerHTML = `
-                    <img src="${friend.avatarUrl || '/default-avatar.png'}" alt="Аватар" class="friend-avatar">
+                    <img src="${friend.avatarUrl || `${API_BASE_URL}/uploads/default-avatar.png`}" alt="Аватар" class="friend-avatar">
                     <span>${friend.username}</span>
                 `;
                 friendsList.appendChild(friendItem);
@@ -31,7 +31,7 @@ export const loadFriendRequests = async () => {
                 const requestItem = document.createElement('div');
                 requestItem.className = 'friend-request-item';
                 requestItem.innerHTML = `
-                    <img src="${request.avatarUrl || '/default-avatar.png'}" alt="Аватар" class="friend-avatar">
+                    <img src="${request.avatarUrl || `${API_BASE_URL}/uploads/default-avatar.png`}" alt="Аватар" class="friend-avatar">
                     <span>${request.username}</span>
                     <div class="request-actions">
                         <button class="btn primary-btn" onclick="acceptFriendRequest('${request.id}')">Принять</button>
@@ -107,7 +107,7 @@ export const searchUsers = async (query) => {
     try {
         const response = await apiRequest(`/users/search?query=${query}`);
         if (response.success) {
-            // Обработка результатов поиска
+            // О��работка езультатов поиска
         }
     } catch (error) {
         showError('Ошибка при поиске пользователей');

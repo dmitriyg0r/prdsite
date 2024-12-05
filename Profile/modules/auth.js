@@ -1,6 +1,6 @@
 import { API_BASE_URL, showError, showSuccess, apiRequest } from './utils.js';
 
-const DEFAULT_AVATAR_PATH = '/assets/default-avatar.png';
+const DEFAULT_AVATAR_PATH = `${API_BASE_URL}/uploads/default-avatar.png`;
 
 export const handleLogin = async (event) => {
     event.preventDefault();

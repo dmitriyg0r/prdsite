@@ -33,7 +33,7 @@ export const loadPosts = async () => {
                 postElement.className = 'post';
                 postElement.innerHTML = `
                     <div class="post-header">
-                        <img src="${post.authorAvatar || '/default-avatar.png'}" alt="Аватар" class="post-avatar">
+                        <img src="${post.authorAvatar || `${API_BASE_URL}/uploads/default-avatar.png`}" alt="Аватар" class="post-avatar">
                         <div class="post-info">
                             <span class="post-author">${post.author}</span>
                             <span class="post-date">${new Date(post.createdAt).toLocaleString()}</span>
