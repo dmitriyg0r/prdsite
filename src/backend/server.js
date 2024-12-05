@@ -50,15 +50,25 @@ app.use((req, res, next) => {
     next();
 });
 
-// Статические файлы (размещаем до маршрутов API)
-app.use('/api/uploads', express.static(path.join(__dirname, 'uploads')));
-
 // Маршруты API
 app.use('/api/auth', authRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/posts', postsRoutes);
 app.use('/api/friends', friendsRoutes);
+
+// Статические файлы (перемещаем после маршрутов API)
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/api/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Обработка ошибок 404
+app.use((req, res) => {
+    console.log('404 для пути:', req.path);
+    res.status(404).json({
+        success: false,
+        message: 'Путь не найден'
+    });
+});
 
 // Запуск сервера
 const PORT = process.env.PORT || 5003;

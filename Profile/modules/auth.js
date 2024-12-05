@@ -71,13 +71,24 @@ export const showProfile = async (userData) => {
 };
 
 async function loadUserAvatar(username) {
+    if (!username) {
+        console.error('Username is undefined');
+        const userAvatar = document.getElementById('user-avatar');
+        if (userAvatar) {
+            userAvatar.src = DEFAULT_AVATAR_PATH;
+        }
+        return;
+    }
+
     try {
         const response = await apiRequest(`/users/${username}/avatar`);
         
         if (response.success && response.data.avatarUrl) {
             const userAvatar = document.getElementById('user-avatar');
             if (userAvatar) {
-                userAvatar.src = `${API_BASE_URL}${response.data.avatarUrl}`;
+                userAvatar.src = response.data.avatarUrl.startsWith('http') 
+                    ? response.data.avatarUrl 
+                    : `${API_BASE_URL}${response.data.avatarUrl}`;
             }
         }
     } catch (error) {
@@ -119,7 +130,7 @@ export const initializeAvatarUpload = () => {
                 }
             } catch (error) {
                 console.error('Error uploading avatar:', error);
-                showError('Ошибка при загрузке аватара');
+                showError('Оши��ка при загрузке аватара');
             }
         });
     }

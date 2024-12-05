@@ -39,28 +39,27 @@ export const togglePassword = (type) => {
 };
 
 export const apiRequest = async (endpoint, options = {}) => {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    const defaultOptions = {
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${user.username}`
-        }
-    };
+    try {
+        const response = await fetch(`${API_BASE_URL}/api${endpoint}`, {
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user'))?.username || ''}`,
+                ...options.headers
+            }
+        });
 
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-        ...defaultOptions,
-        ...options,
-        headers: {
-            ...defaultOptions.headers,
-            ...options.headers
+        if (!response.ok) {
+            console.error(`API Error (${endpoint}):`, response.status, response.statusText);
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
-    });
 
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error(`API Request failed (${endpoint}):`, error);
+        throw error;
     }
-
-    return response.json();
 };
 
 export const formatDate = (date) => {
