@@ -920,53 +920,6 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
         }
     }
 
-    // Загрузка списка друзей
-    async function loadFriendsList() {
-        try {
-            const response = await fetch(`${API_BASE_URL}/friends/list`, {
-                headers: {
-                    'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
-                }
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-                const friendsList = document.getElementById('friends-list');
-                friendsList.innerHTML = data.data
-                    .map(friend => `
-                        <tr>
-                            <td>
-                                <img src="${friend.avatarUrl ? `${API_BASE_URL}${friend.avatarUrl}` : '../assets/default-avatar.png'}" 
-                                    alt="Avatar" 
-                                    class="friend-avatar">
-                            </td>
-                            <td>${friend.username}</td>
-                            <td>
-                                <span class="friend-status ${friend.online ? 'status-online' : 'status-offline'}">
-                                    ${friend.online ? 'Онлайн' : 'Оффлайн'}
-                                </span>
-                            </td>
-                            <td>
-                                <div class="friend-actions">
-                                    <button class="btn chat-btn" onclick="openChat('${friend.username}')">
-                                        <i class="fas fa-comment"></i> Чат
-                                    </button>
-                                    <button class="btn danger-btn" onclick="removeFriend('${friend.username}')">
-                                        <i class="fas fa-user-minus"></i> Удалить
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    `)
-                    .join('');
-            }
-        } catch (error) {
-            console.error('Error loading friends list:', error);
-            showError('Ошибка при загрузке списка друзей');
-        }
-    }
-
     // Удаление друга
     async function removeFriend(friendUsername) {
         if (!confirm(`Вы уверены, что хотите удалить ${friendUsername} из друзей?`)) {
