@@ -1,7 +1,3 @@
-const { JSDOM } = require('jsdom');
-const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>');
-global.document = dom.window.document;
-global.window = dom.window;
 
 // Определяем базовый URL API
 const API_BASE_URL = 'https://adminflow.ru/api';
