@@ -10,11 +10,8 @@ import {
 import {
     handleLogin,
     handleRegister,
-    handleLogout,
     handleAnonymousLogin,
     showProfile,
-    createUser,
-    loadUserAvatar,
     initializeAvatarUpload
 } from './modules/auth.js';
 
@@ -26,7 +23,6 @@ import {
     rejectFriendRequest,
     removeFriend,
     searchUsers,
-    showFriendWall,
     toggleFriendsList
 } from './modules/friends.js';
 
@@ -46,6 +42,27 @@ import {
     updateInterfaceBasedOnRole
 } from './modules/admin.js';
 
+// Определяем функцию handleLogout локально
+const handleLogout = async () => {
+    try {
+        localStorage.removeItem('user');
+        document.getElementById('login-container').style.display = 'block';
+        document.getElementById('profile-info').style.display = 'none';
+        document.getElementById('admin-section').style.display = 'none';
+        
+        // Скрываем кнопку чата
+        const chatLink = document.getElementById('chat-link');
+        if (chatLink) {
+            chatLink.style.display = 'none';
+        }
+        
+        showSuccess('Вы успешно вышли из системы');
+    } catch (error) {
+        console.error('Logout error:', error);
+        showError('Ошибка при выходе из системы');
+    }
+};
+
 // Делаем функции доступными глобально
 window.handleLogin = handleLogin;
 window.handleRegister = handleRegister;
@@ -60,7 +77,6 @@ window.acceptFriendRequest = acceptFriendRequest;
 window.rejectFriendRequest = rejectFriendRequest;
 window.removeFriend = removeFriend;
 window.searchUsers = searchUsers;
-window.showFriendWall = showFriendWall;
 
 window.createPost = createPost;
 window.loadPosts = loadPosts;
@@ -189,22 +205,4 @@ window.addEventListener('unhandledrejection', (event) => {
     console.error('Unhandled promise rejection:', event.reason);
     showError('Произошла ошибка при выполнении асинхронной операции');
 });
-
-// Также добавляем скрытие кнопки при выходе
-window.handleLogout = async () => {
-    try {
-        // ... существующий кд логаута ...
-        
-        // Скрываем кнопку чата
-        const chatLink = document.getElementById('chat-link');
-        if (chatLink) {
-            chatLink.style.display = 'none';
-        }
-        
-        // ... остальной существующий код логаута ...
-    } catch (error) {
-        console.error('Logout error:', error);
-        showError('Ошибка при выходе из системы');
-    }
-};
 
