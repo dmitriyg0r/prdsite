@@ -59,20 +59,25 @@ const handleLogin = async (event) => {
     const password = document.getElementById('login-password').value;
 
     try {
-        const response = await apiRequest('/auth/login', {
+        const response = await fetch('/api/auth/login.php', {
             method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify({ username, password })
         });
 
-        if (response.success) {
-            localStorage.setItem('user', JSON.stringify(response.data));
+        const data = await response.json();
+
+        if (data.success) {
+            localStorage.setItem('user', JSON.stringify(data.data));
             showSuccess('Вход выполнен успешно');
-            await showProfile(response.data);
-            showChatButton();
-            startRoleChecking();
+            location.reload();
+        } else {
+            showError(data.error);
         }
     } catch (error) {
-        showError('Ошибка входа');
+        showError('Ошибка при входе');
     }
 };
 
@@ -82,17 +87,24 @@ const handleRegister = async (event) => {
     const password = document.getElementById('reg-password').value;
 
     try {
-        const response = await apiRequest('/auth/register', {
+        const response = await fetch('/api/auth/register.php', {
             method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify({ username, password })
         });
 
-        if (response.success) {
+        const data = await response.json();
+
+        if (data.success) {
             showSuccess('Регистрация успешна');
             showLoginForm();
+        } else {
+            showError(data.error);
         }
     } catch (error) {
-        showError('Ошибка регистрации');
+        showError('Ошибка при регистрации');
     }
 };
 
@@ -157,7 +169,7 @@ const loadUserAvatar = async (username) => {
     }
 };
 
-// Функции друзе��
+// Функции друзей
 const loadFriendsList = async () => {
     try {
         const response = await apiRequest('/users/friends');
@@ -310,7 +322,7 @@ const loadUsers = async () => {
             });
         }
     } catch (error) {
-        showError('Ошибка при загрузке пользователей');
+        showError('О��ибка при загрузке пользователей');
     }
 };
 
