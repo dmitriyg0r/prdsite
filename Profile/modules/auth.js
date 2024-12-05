@@ -129,11 +129,3 @@ export const initializeAvatarUpload = () => {
         });
     }
 };
-
-// Экспортируем все функции одним блоком
-export {
-    handleLogin,
-    handleRegister,
-    handleLogout,
-    loadUserAvatar
-};
