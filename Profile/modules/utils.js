@@ -1,4 +1,4 @@
-export const API_BASE_URL = 'https://adminflow.ru:5003/api';
+export const API_BASE_URL = 'https://adminflow.ru/api';
 
 export const showError = (message) => {
     const errorDiv = document.getElementById('error-message');
