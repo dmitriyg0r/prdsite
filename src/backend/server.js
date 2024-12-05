@@ -1,687 +1,1418 @@
 // Определяем базовый URL API
 const API_BASE_URL = 'https://adminflow.ru/api';
 
-// Убедитесь, что этот код выполняется только в браузере
-if (typeof window !== 'undefined' && typeof document !== 'undefined') {
-    const showError = (message) => {
-        const errorMessage = document.getElementById('error-message');
-        if (errorMessage) {
-            errorMessage.textContent = message;
-            errorMessage.style.display = 'block';
-            errorMessage.style.backgroundColor = '#ff4444';
-            
-            setTimeout(() => {
-                errorMessage.style.display = 'none';
-            }, 5000);
-        }
-    };
-
-    const showSuccess = (message) => {
-        const errorMessage = document.getElementById('error-message');
-        if (errorMessage) {
-            errorMessage.textContent = message;
-            errorMessage.style.display = 'block';
-            errorMessage.style.backgroundColor = '#4CAF50';
-            
-            setTimeout(() => {
-                errorMessage.style.display = 'none';
-            }, 3000);
-        }
-    };
-
-    const togglePassword = (formType) => {
-        const passwordInput = formType === 'login' 
-            ? document.getElementById('login-password')
-            : document.getElementById('reg-password');
-        const eyeIcon = passwordInput.nextElementSibling;
+// Вспомогательные функции
+const showError = (message) => {
+    const errorMessage = document.getElementById('error-message');
+    if (errorMessage) {
+        errorMessage.textContent = message;
+        errorMessage.style.display = 'block';
+        errorMessage.style.backgroundColor = '#ff4444';
         
-        if (passwordInput.type === 'password') {
-            passwordInput.type = 'text';
-            eyeIcon.classList.add('show');
-        } else {
-            passwordInput.type = 'password';
-            eyeIcon.classList.remove('show');
-        }
-    };
+        setTimeout(() => {
+            errorMessage.style.display = 'none';
+        }, 5000);
+    }
+};
 
-    // Глобальная переменная для интервала проверки роли
-    let roleCheckInterval;
-    // Функция для отображения стены друга
-    async function showFriendWall(username) {
-        try {
-            // Скрываем форму создания поста при просмотре чужой стены
-            const postForm = document.querySelector('.post-form');
-            const wallTitle = document.querySelector('.wall-section h3');
-            const currentUser = JSON.parse(localStorage.getItem('user'));
-            
-            if (!currentUser || !currentUser.data) {
-                throw new Error('Необходима авторизация');
+const showSuccess = (message) => {
+    const errorMessage = document.getElementById('error-message');
+    if (errorMessage) {
+        errorMessage.textContent = message;
+        errorMessage.style.display = 'block';
+        errorMessage.style.backgroundColor = '#4CAF50';
+        
+        setTimeout(() => {
+            errorMessage.style.display = 'none';
+        }, 3000);
+    }
+};
+
+const togglePassword = (formType) => {
+    const passwordInput = formType === 'login' 
+        ? document.getElementById('login-password')
+        : document.getElementById('reg-password');
+    const eyeIcon = passwordInput.nextElementSibling;
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        eyeIcon.classList.add('show');
+    } else {
+        passwordInput.type = 'password';
+        eyeIcon.classList.remove('show');
+    }
+};
+
+// Глобальная переменная для интервала проверки роли
+let roleCheckInterval;
+// Функция для отображения стены друга
+async function showFriendWall(username) {
+    // Скрываем форму создания поста при просмотре чужой стены
+    const postForm = document.querySelector('.post-form');
+    const wallTitle = document.querySelector('.wall-section h3');
+    
+    if (username === JSON.parse(localStorage.getItem('user')).data.username) {
+        postForm.style.display = 'block';
+        wallTitle.textContent = 'Моя стена';
+    } else {
+        postForm.style.display = 'none';
+        wallTitle.textContent = `Стена пользователя ${username}`;
+    }
+
+    // Загружаем посты друга
+    try {
+        const userData = JSON.parse(localStorage.getItem('user'));
+        const response = await fetch(`${API_BASE_URL}/posts/${username}`, {
+            headers: {
+                'Authorization': `Bearer ${userData.data.username}`
             }
-            
-            if (username === currentUser.data.username) {
-                if (postForm) postForm.style.display = 'block';
-                if (wallTitle) wallTitle.textContent = 'Моя стена';
-            } else {
-                if (postForm) postForm.style.display = 'none';
-                if (wallTitle) wallTitle.textContent = `Стена пользователя ${username}`;
-            }
+        });
 
-            // Загружаем посты друга
-            const response = await fetch(`${API_BASE_URL}/posts/${username}`, {
-                headers: {
-                    'Authorization': `Bearer ${currentUser.data.username}`
-                }
-            });
+        const data = await response.json();
 
-            if (!response.ok) {
-                throw new Error('Ошибка при загрузке постов');
-            }
-
-            const data = await response.json();
-
-            if (data.success) {
-                const postsContainer = document.getElementById('posts-container');
-                if (!postsContainer) {
-                    throw new Error('Контейнер постов не найден');
-                }
-
-                postsContainer.innerHTML = data.data.map(post => `
-                    <div class="post">
-                        <div class="post-header">
-                            <img src="${post.authorAvatar || '/api/uploads/avatars/default-avatar.png'}" 
-                                 alt="Avatar" class="post-avatar">
-                            <div class="post-info">
-                                <div class="post-author">${post.author}</div>
-                                <div class="post-date">${new Date(post.createdAt).toLocaleString()}</div>
-                            </div>
-                        </div>
-                        <div class="post-content">${post.content}</div>
-                        ${post.image ? `<img src="${post.image}" alt="Post image" class="post-image">` : ''}
-                        <div class="post-actions">
-                            <div class="post-action" onclick="likePost('${post.id}')">
-                                <i class="fas fa-heart ${post.likedBy.includes(currentUser.data.username) ? 'liked' : ''}"></i>
-                                <span>${post.likes || 0}</span>
-                            </div>
-                            ${post.author === currentUser.data.username ? `
-                                <div class="post-action" onclick="deletePost('${post.id}')">
-                                    <i class="fas fa-trash"></i>
-                                </div>
-                            ` : ''}
+        if (data.success) {
+            const postsContainer = document.getElementById('posts-container');
+            postsContainer.innerHTML = data.data.map(post => `
+                <div class="post">
+                    <div class="post-header">
+                        <img src="${post.authorAvatar || '/api/uploads/avatars/default-avatar.png'}" 
+                             alt="Avatar" class="post-avatar">
+                        <div class="post-info">
+                            <div class="post-author">${post.author}</div>
+                            <div class="post-date">${new Date(post.createdAt).toLocaleString()}</div>
                         </div>
                     </div>
-                `).join('');
-            } else {
-                throw new Error(data.message || 'Ошибка при загрузке постов');
-            }
-        } catch (error) {
-            console.error('Error showing friend wall:', error);
-            showError(error.message || 'Ошибка при отображении стены');
+                    <div class="post-content">${post.content}</div>
+                    ${post.image ? `<img src="${post.image}" alt="Post image" class="post-image">` : ''}
+                    <div class="post-actions">
+                        <div class="post-action" onclick="likePost('${post.id}')">
+                            <i class="fas fa-heart ${post.likedBy.includes(userData.data.username) ? 'liked' : ''}"></i>
+                            <span>${post.likes || 0}</span>
+                        </div>
+                        ${post.author === userData.data.username ? `
+                            <div class="post-action" onclick="deletePost('${post.id}')">
+                                <i class="fas fa-trash"></i>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
         }
+    } catch (error) {
+        console.error('Error loading friend posts:', error);
+        showError('Ошибка при загрузке постов');
     }
+}
 
-    // Функция проверки роли пользователя
-    async function checkUserRole() {
-        try {
-            const currentUser = JSON.parse(localStorage.getItem('user'));
-            if (!currentUser?.data?.username) return;
-
-            const response = await fetch(`${API_BASE_URL}/users/check-role`, {
-                headers: {
-                    'Authorization': `Bearer ${currentUser.data.username}`
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error('Ошибка при проверке роли');
+// Обновляем функцию загрузки списка друзей, добавляя обработчик клика
+async function loadFriendsList() {
+    try {
+        const userData = JSON.parse(localStorage.getItem('user'));
+        const response = await fetch(`${API_BASE_URL}/friends`, {
+            headers: {
+                'Authorization': `Bearer ${userData.data.username}`
             }
+        });
 
-            const data = await response.json();
+        const data = await response.json();
 
-            if (data.success && data.data.role !== currentUser.data.role) {
-                // Обновляем роль в localStorage
-                currentUser.data.role = data.data.role;
-                localStorage.setItem('user', JSON.stringify(currentUser));
-
-                // Обновляем отображение роли в профиле
-                const profileRole = document.getElementById('profile-role');
-                if (profileRole) {
-                    profileRole.textContent = data.data.role;
-                }
-
-                // Обновляем интерфейс в зависимости от роли
-                updateInterfaceBasedOnRole(data.data.role);
-            }
-        } catch (error) {
-            console.error('Error checking user role:', error);
-            // Не показываем ошибку пользователю, так как это фоновая проверка
+        if (data.success) {
+            const friendsList = document.getElementById('friends-list');
+            friendsList.innerHTML = data.data.map(friend => `
+                <tr>
+                    <td>
+                        <img src="${friend.avatar || '/api/uploads/avatars/default-avatar.png'}" 
+                             alt="Avatar" class="friend-avatar">
+                    </td>
+                    <td>
+                        <span class="friend-username" onclick="showFriendWall('${friend.username}')" style="cursor: pointer;">
+                            ${friend.username}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="friend-status ${friend.online ? 'online' : 'offline'}">
+                            ${friend.online ? 'Онлайн' : 'Оффлайн'}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="friend-actions">
+                            <button class="btn primary-btn" onclick="openChat('${friend.username}')">
+                                <i class="fas fa-comment"></i> Чат
+                            </button>
+                            <button class="btn danger-btn" onclick="removeFriend('${friend.username}')">
+                                <i class="fas fa-user-minus"></i> Удалить
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
         }
+    } catch (error) {
+        console.error('Error loading friends list:', error);
+        showError('Ошибка при загрузке списка друзей');
     }
+}
+// Функция проверки роли пользователя
+async function checkUserRole() {
+    try {
+        const currentUser = JSON.parse(localStorage.getItem('user'));
+        if (!currentUser?.data?.username) return;
 
-    // Функция обновления интерфейса на основе роли
-    function updateInterfaceBasedOnRole(role) {
-        const adminSection = document.getElementById('admin-section');
-        if (adminSection) {
-            adminSection.style.display = role === 'Admin' ? 'block' : 'none';
-            if (role === 'Admin') {
-                loadUsers();
+        const response = await fetch(`${API_BASE_URL}/users/check-role`, {
+            headers: {
+                'Authorization': `Bearer ${currentUser.data.username}`
             }
-        }
-    }
+        });
 
-    // Функция запуска проверки роли
-    function startRoleChecking() {
-        // Проверяем роль сразу при запуске
+        const data = await response.json();
+
+        if (data.success && data.data.role !== currentUser.data.role) {
+            // Обновляем роль в localStorage
+            currentUser.data.role = data.data.role;
+            localStorage.setItem('user', JSON.stringify(currentUser));
+
+            // Обновляем отображение роли в профиле
+            const profileRole = document.getElementById('profile-role');
+            if (profileRole) {
+                profileRole.textContent = data.data.role;
+            }
+
+            // Обновляем интерфейс в зависимости от роли
+            updateInterfaceBasedOnRole(data.data.role);
+        }
+    } catch (error) {
+        console.error('Error checking user role:', error);
+    }
+}
+
+// Функция обновления интерфейса на основе роли
+function updateInterfaceBasedOnRole(role) {
+    const adminSection = document.getElementById('admin-section');
+    if (adminSection) {
+        adminSection.style.display = role === 'Admin' ? 'block' : 'none';
+    }
+    
+    // Здесь можно добавить другие элементы интерфейса, которые зависят от роли
+}
+
+// Функция запуска проверки роли
+function startRoleChecking() {
+    // Проверяем роль сразу при запуске
+    checkUserRole();
+    
+    // Устанавливаем интервал проверки (каждые 30 секунд)
+    roleCheckInterval = setInterval(checkUserRole, 30000);
+}
+
+// Функция остановки проверки роли
+function stopRoleChecking() {
+    clearInterval(roleCheckInterval);
+}
+
+// Добавляем проверку роли при определенных событиях
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
         checkUserRole();
-        
-        // Устанавливаем интервал проверки (каждые 30 секунд)
-        if (!roleCheckInterval) {
-            roleCheckInterval = setInterval(checkUserRole, 30000);
-        }
     }
+});
 
-    // Функция остановки проверки роли
-    function stopRoleChecking() {
-        if (roleCheckInterval) {
-            clearInterval(roleCheckInterval);
-            roleCheckInterval = null;
-        }
-    }
+// Функция для входа
+async function handleLogin(event) {
+    event.preventDefault();
+    console.log('Login attempt started');
 
-    // Добавляем проверку роли при определенных событиях
-    document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') {
-            checkUserRole();
-        }
-    });
+    const username = document.getElementById('login-username').value;
+    const password = document.getElementById('login-password').value;
 
-    // Функция для входа
-    async function handleLogin(event) {
-        event.preventDefault();
-        console.log('Login attempt started');
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ username, password }),
+            credentials: 'include'
+        });
 
-        try {
-            const username = document.getElementById('login-username')?.value;
-            const password = document.getElementById('login-password')?.value;
+        console.log('Login response status:', response.status);
 
-            if (!username || !password) {
-                throw new Error('Введите имя пользователя и пароль');
+        // Проверяем статус ответа
+        if (!response.ok) {
+            if (response.status === 502) {
+                throw new Error('Сервер временно недоступен. Пожалуйста, попробуйте позже.');
             }
-
-            const response = await fetch(`${API_BASE_URL}/auth/login`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({ username, password }),
-                credentials: 'include'
-            });
-
-            console.log('Login response status:', response.status);
-
-            // Проверяем статус ответа
-            if (!response.ok) {
-                if (response.status === 502) {
-                    throw new Error('Сервер временно недоступен. Пожалуйста, попробуйте позже.');
-                }
-                
-                // Пытаемся получить текст ошибки из ответа
+            
+            // Пытаемся получить текст ошибки из ответа
+            let errorMessage;
+            try {
                 const errorData = await response.json();
-                throw new Error(errorData.message || 'Ошибка при попытке входа');
+                errorMessage = errorData.message;
+            } catch (e) {
+                errorMessage = 'Ошибка при попытке входа';
             }
+            throw new Error(errorMessage);
+        }
 
-            const data = await response.json();
+        // Пытаемся распарсить JSON только если ответ успешный
+        let data;
+        try {
+            data = await response.json();
+        } catch (e) {
+            console.error('Error parsing response:', e);
+            throw new Error('Некорректный ответ от сервера');
+        }
 
-            if (data.success) {
-                localStorage.setItem('user', JSON.stringify(data));
-                showSuccess('Успешный вход');
-                
-                // Скрываем контейнер входа
-                const loginContainer = document.getElementById('login-container');
-                if (loginContainer) {
-                    loginContainer.style.display = 'none';
-                }
-                
-                // Показываем профиль
-                showProfile(data);
-                startRoleChecking(); // Запускаем проверку роли после успешного входа
-            } else {
-                throw new Error(data.message || 'Ошибка входа');
-            }
-        } catch (error) {
-            console.error('Login error:', error);
-            showError(error.message || 'Произошла ошибка при попытке входа');
+        if (data.success) {
+            localStorage.setItem('user', JSON.stringify(data));
+            showSuccess('Успешный вход');
             
-            // Очищаем поле пароля при ошибке
-            const passwordInput = document.getElementById('login-password');
-            if (passwordInput) {
-                passwordInput.value = '';
+            // Скрываем контейнер входа
+            const loginContainer = document.getElementById('login-container');
+            if (loginContainer) {
+                loginContainer.style.display = 'none';
             }
+            
+            // Показываем профиль
+            showProfile(data);
+            startRoleChecking(); // Запускаем проверку роли после успешного входа
+        } else {
+            throw new Error(data.message || 'Ошибка входа');
+        }
+    } catch (error) {
+        console.error('Login error:', error);
+        showError(error.message || 'Произошла ошибка при попытке входа');
+        
+        // Очищаем поле пароля при ошибке
+        const passwordInput = document.getElementById('login-password');
+        if (passwordInput) {
+            passwordInput.value = '';
         }
     }
+}
 
-    // Функция для анонимного входа
-    async function handleAnonymousLogin() {
-        try {
-            const response = await fetch(`${API_BASE_URL}/auth/anonymous-login`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error('Ошибка при анонимном входе');
+// Функция для анонимного входа
+async function handleAnonymousLogin() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/anonymous-login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
             }
+        });
 
-            const data = await response.json();
+        const data = await response.json();
 
-            if (data.success) {
-                localStorage.setItem('user', JSON.stringify(data));
-                showSuccess('Анонимный вход выполнен успешно');
-                showProfile(data);
-            } else {
-                throw new Error(data.message || 'Ошибка при анонимном входе');
-            }
-        } catch (error) {
-            console.error('Anonymous login error:', error);
-            showError(error.message || 'Ошибка при попытке анонимного входа');
+        if (response.ok && data.success) {
+            localStorage.setItem('user', JSON.stringify(data));
+            showSuccess('Анонимный вход выполнен успешно');
+            showProfile(data);
+        } else {
+            throw new Error(data.message || 'Ошибка при анонимном входе');
         }
+    } catch (error) {
+        console.error('Anonymous login error:', error);
+        showError(error.message || 'Ошибка при попытке анонимного входа');
+    }
+}
+
+// Функция отображеня профиля
+function showProfile(userData) {
+    // Скрываем все контейнеры авторизации
+    const authContainers = document.querySelectorAll('#login-container, #register-container');
+    authContainers.forEach(container => {
+        if (container) container.style.display = 'none';
+    });
+    
+    // Показываем информацию профиля
+    const profileInfo = document.getElementById('profile-info');
+    if (profileInfo) {
+        profileInfo.style.display = 'block';
+    }
+    
+    // Обновляем информацию профиля
+    const profileUsername = document.getElementById('profile-username');
+    const profileRole = document.getElementById('profile-role');
+    const userAvatar = document.getElementById('user-avatar');
+    
+    if (profileUsername) profileUsername.textContent = userData.data.username;
+    if (profileRole) profileRole.textContent = userData.data.role;
+    
+    // Загружаем аватар пользователя
+    loadUserAvatar(userData.data.username);
+
+    // Инициализируем загрузку аватара
+    initializeAvatarUpload();
+    
+    // Показываем админ-панель для администраторов
+    const adminSection = document.getElementById('admin-section');
+    if (adminSection && userData.data.role === 'Admin') {
+        adminSection.style.display = 'block';
+        loadUsers();
     }
 
-    // Функция отображения профиля
-    function showProfile(userData) {
-        try {
-            if (!userData?.data) {
-                throw new Error('Некорректные данные пользователя');
-            }
+    // Загружаем посты
+    loadPosts();
+}
 
-            // Скрываем все контейнеры авторизации
-            const authContainers = document.querySelectorAll('#login-container, #register-container');
-            authContainers.forEach(container => {
-                if (container) container.style.display = 'none';
-            });
-            
-            // Показываем информацию профиля
-            const profileInfo = document.getElementById('profile-info');
+// Функция загрузки списка ользователей
+async function loadUsers() {
+    try {
+        const user = JSON.parse(localStorage.getItem('user'));
+        const response = await fetch(`${API_BASE_URL}/users`, {
+            headers: {
+                'Authorization': `Bearer ${user.data.username}`
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            const usersTableBody = document.getElementById('users-table-body');
+            if (usersTableBody) {
+                usersTableBody.innerHTML = data.data.map(user => `
+                    <tr>
+                        <td>
+                            <div class="user-row">
+                                <img src="${user.avatarUrl ? `${API_BASE_URL}${user.avatarUrl}` : '../assets/default-avatar.png'}" 
+                                     alt="Avatar" 
+                                     class="user-table-avatar">
+                                <span>${user.username}</span>
+                            </div>
+                        </td>
+                        <td>${user.role}</td>
+                        <td>${new Date(user.createdAt).toLocaleString()}</td>
+                        <td>
+                            <button class="action-btn delete-btn" onclick="deleteUser('${user.username}')">
+                                <i class="fas fa-trash"></i> Удалить
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+        }
+    } catch (error) {
+        console.error('Error loading users:', error);
+        showError('Ошибка при загрузке списка пользователей');
+    }
+}
+
+// Функция выхода из системы
+function handleLogout() {
+    console.log('Logging out...');
+    try {
+        // Оищаем данные пользователя
+        localStorage.removeItem('user');
+        
+        // Скрываем профиль и показываем форму входа
+        const loginContainer = document.getElementById('login-container');
+        const profileInfo = document.getElementById('profile-info');
+        const adminSection = document.getElementById('admin-section');
+
+        if (loginContainer) loginContainer.style.display = 'block';
+        if (profileInfo) profileInfo.style.display = 'none';
+        if (adminSection) adminSection.style.display = 'none';
+
+        // Очищаем поля формы
+        const loginForm = document.getElementById('login-form');
+        if (loginForm) loginForm.reset();
+
+        showSuccess('Вы успешно выли из системы');
+        console.log('Logout successful');
+    } catch (error) {
+        console.error('Error during logout:', error);
+        showError('Ошибка при выходе из системы');
+    }
+    stopRoleChecking(); // Останавливаем проверку роли при выходе
+}
+
+// Инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('Page loaded, initializing...');
+
+    const loginContainer = document.getElementById('login-container');
+    const profileInfo = document.getElementById('profile-info');
+    const registerForm = document.getElementById('register-form');
+    const loginForm = document.getElementById('login-form');
+    const anonymousLoginBtn = document.getElementById('anonymous-login-btn');
+    const logoutBtn = document.querySelector('.danger-btn');
+
+    // Проверяем сохраненную сессию
+    const userData = localStorage.getItem('user');
+    if (userData) {
+        console.log('Found saved session');
+        try {
+            const parsedUserData = JSON.parse(userData);
+            // Скрываем контейнер входа и показываем профиль
+            if (loginContainer) {
+                loginContainer.style.display = 'none';
+            }
             if (profileInfo) {
                 profileInfo.style.display = 'block';
             }
-            
-            // Обновляем информацию профиля
-            const profileUsername = document.getElementById('profile-username');
-            const profileRole = document.getElementById('profile-role');
-            const userAvatar = document.getElementById('user-avatar');
-            
-            if (profileUsername) profileUsername.textContent = userData.data.username;
-            if (profileRole) profileRole.textContent = userData.data.role;
-            
-            // Загружаем аватар пользователя
-            loadUserAvatar(userData.data.username);
-
-            // Инициализируем загрузку аватара
-            initializeAvatarUpload();
-            
-            // Показываем админ-панель для администраторов
-            const adminSection = document.getElementById('admin-section');
-            if (adminSection && userData.data.role === 'Admin') {
-                adminSection.style.display = 'block';
-                loadUsers();
-            }
-
-            // Загружаем посты
-            loadPosts();
+            showProfile(parsedUserData);
             
             // Загружаем списки друзей и запросов
             loadFriendRequests();
             loadFriendsList();
-        } catch (error) {
-            console.error('Error showing profile:', error);
-            showError('Ошибка при отображении профиля');
-        }
-    }
-
-    // Функция выхода из системы
-    function handleLogout() {
-        console.log('Logging out...');
-        try {
-            // Очищаем данные пользователя
+        } catch (e) {
+            console.error('Error parsing saved session:', e);
             localStorage.removeItem('user');
-            
-            // Скрываем профиль и показываем форму входа
-            const loginContainer = document.getElementById('login-container');
-            const profileInfo = document.getElementById('profile-info');
-            const adminSection = document.getElementById('admin-section');
-
-            if (loginContainer) loginContainer.style.display = 'block';
-            if (profileInfo) profileInfo.style.display = 'none';
-            if (adminSection) adminSection.style.display = 'none';
-
-            // Очищаем поля формы
-            const loginForm = document.getElementById('login-form');
-            if (loginForm) loginForm.reset();
-
-            showSuccess('Вы успешно вышли из системы');
-            console.log('Logout successful');
-            
-            // Останавливаем все интервалы и проверки
-            stopRoleChecking();
-            stopCheckingMessages();
-        } catch (error) {
-            console.error('Error during logout:', error);
-            showError('Ошибка при выходе из системы');
+            // В случае ошибки показываем форму входа
+            if (loginContainer) {
+                loginContainer.style.display = 'block';
+            }
+            if (profileInfo) {
+                profileInfo.style.display = 'none';
+            }
+        }
+    } else {
+        // Если нет сохраненной сессии, показываем форму входа
+        if (loginContainer) {
+            loginContainer.style.display = 'block';
+        }
+        if (profileInfo) {
+            profileInfo.style.display = 'none';
         }
     }
 
-    // Инициализация при загрузке страницы
-    document.addEventListener('DOMContentLoaded', () => {
-        console.log('Page loaded, initializing...');
+    // Привязываем обработчики событий
+    if (registerForm) {
+        registerForm.addEventListener('submit', handleRegister);
+        console.log('Register form handler attached');
+    }
+    
+    if (loginForm) {
+        loginForm.addEventListener('submit', handleLogin);
+        console.log('Login form handler attached');
+    }
 
-        try {
-            const loginContainer = document.getElementById('login-container');
-            const profileInfo = document.getElementById('profile-info');
-            const registerForm = document.getElementById('register-form');
-            const loginForm = document.getElementById('login-form');
-            const anonymousLoginBtn = document.getElementById('anonymous-login-btn');
-            const logoutBtn = document.querySelector('.danger-btn');
+    if (anonymousLoginBtn) {
+        anonymousLoginBtn.addEventListener('click', handleAnonymousLogin);
+        console.log('Anonymous login handler attached');
+    }
 
-            // Проверяем сохраненную сессию
-            const userData = localStorage.getItem('user');
-            if (userData) {
-                console.log('Found saved session');
-                try {
-                    const parsedUserData = JSON.parse(userData);
-                    // Скрываем контейнер входа и показываем профиль
-                    if (loginContainer) {
-                        loginContainer.style.display = 'none';
-                    }
-                    if (profileInfo) {
-                        profileInfo.style.display = 'block';
-                    }
-                    showProfile(parsedUserData);
-                    
-                    // Загружаем списки друзей и запросов
-                    loadFriendRequests();
-                    loadFriendsList();
-                } catch (e) {
-                    console.error('Error parsing saved session:', e);
-                    localStorage.removeItem('user');
-                    // В случае ошибки показываем форму входа
-                    if (loginContainer) {
-                        loginContainer.style.display = 'block';
-                    }
-                    if (profileInfo) {
-                        profileInfo.style.display = 'none';
-                    }
-                }
-            } else {
-                // Если нет сохраненной сессии, показываем форму входа
-                if (loginContainer) {
-                    loginContainer.style.display = 'block';
-                }
-                if (profileInfo) {
-                    profileInfo.style.display = 'none';
-                }
-            }
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', handleLogout);
+        console.log('Logout handler attached');
+    }
 
-            // Привязываем обработчики событий
-            if (registerForm) {
-                registerForm.addEventListener('submit', handleRegister);
-                console.log('Register form handler attached');
-            }
-            
-            if (loginForm) {
-                loginForm.addEventListener('submit', handleLogin);
-                console.log('Login form handler attached');
-            }
+    // Инициализация поиска друзей
+    const friendSearch = document.getElementById('friend-search');
+    if (friendSearch) {
+        friendSearch.addEventListener('input', (e) => {
+            searchUsers(e.target.value);
+        });
+    }
+});
 
-            if (anonymousLoginBtn) {
-                anonymousLoginBtn.addEventListener('click', handleAnonymousLogin);
-                console.log('Anonymous login handler attached');
-            }
+// Функция для удаления пользователя
+async function deleteUser(username) {
+    if (!confirm(`Вы уверены, что хотите удалить пользователя ${username}?`)) {
+        return;
+    }
 
-            if (logoutBtn) {
-                logoutBtn.addEventListener('click', handleLogout);
-                console.log('Logout handler attached');
-            }
+    try {
+        const userData = JSON.parse(localStorage.getItem('user'));
+        const response = await fetch(`${API_BASE_URL}/users/${username}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${userData.data.username}`
+            },
+            credentials: 'include'
+        });
 
-            // Инициализация поиска друзей
-            const friendSearch = document.getElementById('friend-search');
-            if (friendSearch) {
-                friendSearch.addEventListener('input', (e) => {
-                    searchUsers(e.target.value);
-                });
-            }
-        } catch (error) {
-            console.error('Error during initialization:', error);
-            showError('Ошибка при инициализации приложения');
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            showSuccess('Пользователь успешно удален');
+            // Перезагружаем список пользователей
+            loadUsers();
+        } else {
+            throw new Error(data.message || 'Ошибка при удалении пользователя');
         }
-    });
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        showError(error.message || 'Произошла ошибка при удалении пользователя');
+    }
+}
 
-    // Функция для удаления пользователя
-    async function deleteUser(username) {
-        if (!confirm(`Вы уверены, что хотите удалить пользователя ${username}?`)) {
+// ункция для реактирования пользователя
+async function editUser(userId) {
+    try {
+        const userData = JSON.parse(localStorage.getItem('user'));
+        if (!userData?.data?.token) {
+            throw new Error('Треуеся авторизация');
+        }
+
+        const newUsername = prompt('Введите новое имя пользователя:');
+        const newRole = prompt('Введите новую роль (Admin/User):');
+
+        if (!newUsername || !newRole) return;
+
+        const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${userData.data.token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                username: newUsername,
+                role: newRole
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            showSuccess('Пользователь успешно обновлен');
+            loadUsers(); // Перезагружаем список пользователей
+        } else {
+            throw new Error(data.message || 'Failed to update user');
+        }
+    } catch (error) {
+        console.error('Error updating user:', error);
+        showError('Ошиб при обновлении пользователя');
+    }
+}
+
+// Функция для показа модального окна создания пользователя
+async function showCreateUserModal() {
+    try {
+        const username = prompt('Введите имя пользователя:');
+        if (!username) return;
+
+        const password = prompt('Введите пароль:');
+        if (!password) return;
+
+        const role = prompt('Введите роль (Admin/User):');
+        if (!role || !['Admin', 'User'].includes(role)) {
+            showError('Некорректная роль. Допустимые значения: Admin, User');
             return;
         }
 
-        try {
-            const userData = JSON.parse(localStorage.getItem('user'));
-            if (!userData?.data?.username) {
-                throw new Error('Необходима авторизация');
-            }
-
-            const response = await fetch(`${API_BASE_URL}/users/${username}`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'Authorization': `Bearer ${userData.data.username}`
-                },
-                credentials: 'include'
-            });
-
-            if (!response.ok) {
-                throw new Error('Ошибка при удалении пользователя');
-            }
-
-            const data = await response.json();
-
-            if (data.success) {
-                showSuccess('Пользователь успешно удален');
-                // Перезагружаем список пользователей
-                loadUsers();
-            } else {
-                throw new Error(data.message || 'Ошибка при удалении пользователя');
-            }
-        } catch (error) {
-            console.error('Error deleting user:', error);
-            showError(error.message || 'Произошла ошибка при удалении пользователя');
+        const userData = JSON.parse(localStorage.getItem('user'));
+        if (!userData?.data?.token) {
+            throw new Error('Требуется авторизация');
         }
-    }
 
-    // Функция для редактирования пользователя
-    async function editUser(userId) {
-        try {
-            const userData = JSON.parse(localStorage.getItem('user'));
-            if (!userData?.data?.token) {
-                throw new Error('Требуется авторизация');
-            }
+        const response = await fetch(`${API_BASE_URL}/users`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${userData.data.token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                username,
+                password,
+                role
+            })
+        });
 
-            const newUsername = prompt('Введите новое имя пользователя:');
-            const newRole = prompt('Введите новую роль (Admin/User):');
-
-            if (!newUsername || !newRole) return;
-
-            if (!['Admin', 'User'].includes(newRole)) {
-                throw new Error('Некорректная роль. Допустимые значения: Admin, User');
-            }
-
-            const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${userData.data.token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    username: newUsername,
-                    role: newRole
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error('Ошибка при обновлении пользователя');
-            }
-
-            const data = await response.json();
-
-            if (data.success) {
-                showSuccess('Пользователь успешно обновлен');
-                loadUsers(); // Перезагружаем список пользователей
-            } else {
-                throw new Error(data.message || 'Ошибка при обновлении пользователя');
-            }
-        } catch (error) {
-            console.error('Error updating user:', error);
-            showError(error.message || 'Ошибка при обновлении пользователя');
-        }
-    }
-
-    // Функция для показа модального окна создания пользователя
-    async function showCreateUserModal() {
-        try {
-            const username = prompt('Введите имя пользователя:');
-            if (!username) return;
-
-            const password = prompt('Введите пароль:');
-            if (!password) return;
-
-            const role = prompt('Введите роль (Admin/User):');
-            if (!role || !['Admin', 'User'].includes(role)) {
-                showError('Некорректная роль. Допустимые значения: Admin, User');
-                return;
-            }
-
-            const userData = JSON.parse(localStorage.getItem('user'));
-            if (!userData?.data?.token) {
-                throw new Error('Требуется авторизация');
-            }
-
-            const response = await fetch(`${API_BASE_URL}/users`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${userData.data.token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    username,
-                    password,
-                    role
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error('Ошибка при создании пользователя');
-            }
-
-            const data = await response.json();
-            
-            if (data.success) {
-                showSuccess('Пользователь успешно создан');
-                await loadUsers(); // Перезагружаем список пользователей
-            } else {
-                throw new Error(data.message || 'Ошибка при создании пользователя');
-            }
-        } catch (error) {
-            console.error('Error creating user:', error);
-            showError(error.message);
-        }
-    }
-
-    // Обработчик регистрации
-    async function handleRegister(event) {
-        event.preventDefault();
+        const data = await response.json();
         
-        try {
-            const username = document.getElementById('reg-username')?.value;
-            const password = document.getElementById('reg-password')?.value;
-            
-            if (!username || !password) {
-                throw new Error('Введите имя пользователя и пароль');
-            }
-            
-            console.log('Отправка запроса регистрации:', { username });
-            
-            const response = await fetch('https://adminflow.ru/api/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({ username, password })
-            });
-            
-            if (!response.ok) {
-                throw new Error('Ошибка при регистрации');
-            }
-            
-            console.log('Статус ответа:', response.status);
-            
-            const data = await response.json();
-            console.log('Ответ сервера:', data);
-            
-            if (data.success) {
-                showSuccess('Регистрация успешна! Теперь вы можете войти.');
-                showLoginForm();
-                document.getElementById('register-form')?.reset();
-            } else {
-                throw new Error(data.message || 'Ошибка при регистрации');
-            }
-        } catch (error) {
-            console.error('Ошибка регистрации:', error);
-            showError(error.message || 'Произошла ошибка при регистрации. Попробуйте позже.');
+        if (response.ok && data.success) {
+            showSuccess('Пользователь успешно создан');
+            await loadUsers(); // Перезагржаем список поьзователей
+        } else {
+            throw new Error(data.message || 'Ошибка при создании ползоватея');
         }
-    }
-
-    // Обновляем функцию initializeAvatarUpload
-    function initializeAvatarUpload() {
-        try {
-            const avatarContainer = document.querySelector('.avatar-container');
-            const avatarUpload = document.getElementById('avatar-upload');
-            const userAvatar = document.getElementById('user-avatar');
-
-            if (!avatarContainer || !avatarUpload || !userAvatar) {
-                throw new Error('Не найдены необходимые элементы для загрузки аватара');
-            }
-
-            // Добавляем обработчик клика на контейнер аватарки
-            avatarContainer.addEventListener('click', () => {
-                avatarUpload.click();
-            });
-
-            avatarUpload.addEventListener('change', async (event) => {
-                const file = event.target.files?.[0];
-                if (!file) return;
-
-                if (!file.type.startsWith('image/')) {
-                    showError('Пожалуйста, выберите изображение');
-                    return;
-                }
-
-                // Показываем превью перед загрузкой
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    if (e.target?.result) {
-                        userAvatar.src = e.target.result.toString();
-                    }
-                };
-                reader.readAsDataURL(file);
-
-                // Загружаем файл на сервер
-                await uploadAvatar(file);
-            });
-        } catch (error) {
-            console.error('Error initializing avatar upload:', error);
-            showError('Ошибка при инициализации загрузки аватара');
-        }
+    } catch (error) {
+        console.error('Error creating user:', error);
+        showError(error.message);
     }
 }
+
+// Обработчик регистрации
+async function handleRegister(event) {
+    event.preventDefault();
+    
+    try {
+        const username = document.getElementById('reg-username').value;
+        const password = document.getElementById('reg-password').value;
+        
+        console.log('Отправка запроса регистрации:', { username });
+        
+        const response = await fetch('https://adminflow.ru/api/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ username, password })
+        });
+        
+        console.log('Статус ответа:', response.status);
+        
+        const data = await response.json();
+        console.log('Ответ сервера:', data);
+        
+        if (data.success) {
+            showSuccess('Регистрация успешна! Теперь вы можете войти.');
+            showLoginForm();
+            document.getElementById('register-form').reset();
+        } else {
+            throw new Error(data.message || 'Ошибка при регистрации');
+        }
+    } catch (error) {
+        console.error('Ошибка регистрации:', error);
+        showError(error.message || 'Произошла ошибка при регистрации. Попробуйте позже.');
+    }
+}
+
+// Обновляем функцию initializeAvatarUpload
+function initializeAvatarUpload() {
+    const avatarContainer = document.querySelector('.avatar-container');
+    const avatarUpload = document.getElementById('avatar-upload');
+    const userAvatar = document.getElementById('user-avatar');
+
+    // Добавляем обработчик клика на контейнер аватарки
+    avatarContainer.addEventListener('click', () => {
+        avatarUpload.click();
+    });
+
+    avatarUpload.addEventListener('change', async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+            showError('Пожалуйста, выберите изображение');
+            return;
+        }
+
+        // Показываем превью перед загрузкой
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            userAvatar.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+
+        // Загружаем файл на ервер
+        await uploadAvatar(file);
+    });
+}
+
+async function uploadAvatar(file) {
+    try {
+        const userData = JSON.parse(localStorage.getItem('user'));
+        if (!userData?.data?.username) {
+            throw new Error('Требуется авторизация');
+        }
+
+        const formData = new FormData();
+        formData.append('avatar', file);
+        formData.append('username', userData.data.username);
+
+        const response = await fetch(`${API_BASE_URL}/upload-avatar`, {
+            method: 'POST',
+            body: formData,
+            credentials: 'include'
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            // Обновляем аватар на странице
+            const userAvatar = document.getElementById('user-avatar');
+            if (userAvatar) {
+                userAvatar.src = `${API_BASE_URL}${data.data.avatarUrl}`;
+            }
+            showSuccess('Аватар успешно обновлен');
+        } else {
+            throw new Error(data.message || 'Ошибка при загрузке аватара');
+        }
+    } catch (error) {
+        console.error('Error uploading avatar:', error);
+        showError(error.message || 'Произошла ошибка при загрузке аватара');
+    }
+}
+
+// Добавляем новую функцию для загрузки аватара
+async function loadUserAvatar(username) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/users/${username}/avatar`);
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+            const userAvatar = document.getElementById('user-avatar');
+            if (userAvatar && data.data.avatarUrl) {
+                userAvatar.src = `${API_BASE_URL}${data.data.avatarUrl}`;
+            }
+        }
+    } catch (error) {
+        console.error('Error loading avatar:', error);
+        // Если произошла ошибка, оставляем аватар по умолчанию
+    }
+}
+
+// Добавляем новые функции для работы с друзьями
+
+// Поазать модальное окно добавления дуга
+function showAddFriendModal() {
+    const modal = document.getElementById('add-friend-modal');
+    modal.style.display = 'block';
+
+    // Закрытие по клику вне модального окна
+    window.onclick = (event) => {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    };
+
+    // Закрытие по клику на крестик
+    const closeBtn = modal.querySelector('.close');
+    closeBtn.onclick = () => {
+        modal.style.display = 'none';
+    };
+}
+
+// Поиск пол  зователе  
+let searchTimeout;
+async function searchUsers(searchTerm) {
+    const searchResults = document.getElementById('search-results');
+    
+    // Очищаем предыдущий таймаут
+    clearTimeout(searchTimeout);
+    
+    if (!searchTerm) {
+        searchResults.style.display = 'none';
+        return;
+    }
+
+    // Устанавливаем новый таймаут
+    searchTimeout = setTimeout(async () => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/users/search?query=${searchTerm}`, {
+                headers: {
+                    'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
+                }
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                searchResults.innerHTML = data.data
+                    .map(user => `
+                        <div class="search-result-item" onclick="sendFriendRequest('${user.username}')">
+                            <img src="${user.avatarUrl || '../assets/default-avatar.png'}" alt="Avatar">
+                            <span>${user.username}</span>
+                        </div>
+                    `)
+                    .join('');
+                searchResults.style.display = 'block';
+            }
+        } catch (error) {
+            console.error('Error searching users:', error);
+            showError('Ошибка при поиске пользователей');
+        }
+    }, 300); // Задержка для предотвращения частых запросов
+}
+
+// Отправка запроса  друзья
+async function sendFriendRequest(targetUsername) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/friends/request`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
+            },
+            body: JSON.stringify({ targetUsername })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            showSuccess('Запрос в друзья отправлен');
+            document.getElementById('add-friend-modal').style.display = 'none';
+        } else {
+            throw new Error(data.message);
+        }
+    } catch (error) {
+        console.error('Error sending friend request:', error);
+        showError(error.message || 'Ошибка при отправке запроса в друзья');
+    }
+}
+
+// Загрузка запросов в друзья
+async function loadFriendRequests() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/friends/requests`, {
+            headers: {
+                'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            const requestsList = document.getElementById('friend-requests-list');
+            requestsList.innerHTML = data.data
+                .map(request => `
+                    <div class="friend-request-item">
+                        <div class="user-info">
+                            <img src="${request.avatarUrl || '../assets/default-avatar.png'}" alt="Avatar" class="friend-avatar">
+                            <span>${request.username}</span>
+                        </div>
+                        <div class="request-actions">
+                            <button class="btn primary-btn" onclick="acceptFriendRequest('${request.id}')">
+                                Принять
+                            </button>
+                            <button class="btn danger-btn" onclick="rejectFriendRequest('${request.id}')">
+                                Отклоить
+                            </button>
+                        </div>
+                    </div>
+                `)
+                .join('');
+        }
+    } catch (error) {
+        console.error('Error loading friend requests:', error);
+        showError('Ошибка при загрузке запросов в друзья');
+    }
+}
+
+// Принятие запроса в друзья
+async function acceptFriendRequest(requestId) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/friends/accept/${requestId}`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            showSuccess('Запрос в друзья принят');
+            loadFriendRequests();
+            loadFriendsList();
+        }
+    } catch (error) {
+        console.error('Error accepting friend request:', error);
+        showError('Ошибка при принятии запроса в друзья');
+    }
+}
+
+// Отклонение запроса в друзья
+async function rejectFriendRequest(requestId) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/friends/reject/${requestId}`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            showSuccess('Запрос в друзья отклонен');
+            loadFriendRequests();
+        }
+    } catch (error) {
+        console.error('Error rejecting friend request:', error);
+        showError('Ошибка при отклонении запроса в друзья');
+    }
+}
+
+// Загрузка списка друзей
+async function loadFriendsList() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/friends/list`, {
+            headers: {
+                'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            const friendsList = document.getElementById('friends-list');
+            friendsList.innerHTML = data.data
+                .map(friend => `
+                    <tr>
+                        <td>
+                            <img src="${friend.avatarUrl ? `${API_BASE_URL}${friend.avatarUrl}` : '../assets/default-avatar.png'}" 
+                                alt="Avatar" 
+                                class="friend-avatar">
+                        </td>
+                        <td>${friend.username}</td>
+                        <td>
+                            <span class="friend-status ${friend.online ? 'status-online' : 'status-offline'}">
+                                ${friend.online ? 'Онлайн' : 'Оффлайн'}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="friend-actions">
+                                <button class="btn chat-btn" onclick="openChat('${friend.username}')">
+                                    <i class="fas fa-comment"></i> Чат
+                                </button>
+                                <button class="btn danger-btn" onclick="removeFriend('${friend.username}')">
+                                    <i class="fas fa-user-minus"></i> Удалить
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `)
+                .join('');
+        }
+    } catch (error) {
+        console.error('Error loading friends list:', error);
+        showError('Ошибка при загрузке списка друзей');
+    }
+}
+
+// Удаление друга
+async function removeFriend(friendUsername) {
+    if (!confirm(`Вы уверены, что хотите удалить ${friendUsername} из друзей?`)) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/friends/remove/${friendUsername}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            showSuccess('Друг успешно удален');
+            loadFriendsList();
+        }
+    } catch (error) {
+        console.error('Error removing friend:', error);
+        showError('Ошибка при удалении друга');
+    }
+}
+
+// Глобальная переменная для хранения текущего собеседника
+let currentChatPartner = null;
+
+// Функция открытия чата
+function openChat(username) {
+    currentChatPartner = username;
+    const modal = document.getElementById('chat-modal');
+    const chatUsername = document.getElementById('chat-username');
+    
+    chatUsername.textContent = username;
+    modal.style.display = 'block';
+    
+    // Загружаем историю сообщений
+    loadChatHistory(username);
+    
+    // Очищаем поле ввода
+    document.getElementById('chat-input').value = '';
+    
+    // Устанавливаем фокус на поле ввода
+    setTimeout(() => {
+        document.getElementById('chat-input').focus();
+    }, 100);
+
+    // Закрытие по клику вне модального окна
+    window.onclick = (event) => {
+        if (event.target === modal) {
+            closeChat();
+        }
+    };
+
+    // Закрытие по клику на крестик
+    const closeBtn = modal.querySelector('.close');
+    closeBtn.onclick = closeChat;
+
+    // Обработка нажатия Enter в поле ввода
+    document.getElementById('chat-input').onkeypress = (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    };
+
+    startCheckingMessages();
+}
+
+// Функция закытия чата
+function closeChat() {
+    stopCheckingMessages();
+    currentChatPartner = null;
+    document.getElementById('chat-modal').style.display = 'none';
+}
+
+// Функция загрузки истории сообщений
+async function loadChatHistory(username) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/chat/history/${username}`, {
+            headers: {
+                'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            const chatMessages = document.getElementById('chat-messages');
+            const scrolledToBottom = chatMessages.scrollHeight - chatMessages.clientHeight <= chatMessages.scrollTop + 1;
+            const previousHeight = chatMessages.scrollHeight;
+
+            // Создаём временный div для сравнения содержимого
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = data.data.map(message => createMessageElement(message)).join('');
+
+            // Проверяем, есть ли изменения в сообщениях
+            if (chatMessages.innerHTML !== tempDiv.innerHTML) {
+                chatMessages.innerHTML = tempDiv.innerHTML;
+                
+                // Если был прокручен вниз, сохраняем прокрутку
+                if (scrolledToBottom) {
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                } else {
+                    // Сохраняем текущую позицию прокрутки
+                    chatMessages.scrollTop = chatMessages.scrollTop;
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error loading chat history:', error);
+        showError('Ошибка при загрузке истории сообщений');
+    }
+}
+
+// Функция отправки сообщения
+async function sendMessage() {
+    const input = document.getElementById('chat-input');
+    const message = input.value.trim();
+    
+    if (!message || !currentChatPartner) return;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/chat/send`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
+            },
+            body: JSON.stringify({
+                to: currentChatPartner,
+                message: message
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            const chatMessages = document.getElementById('chat-messages');
+            const newMessage = createMessageElement({
+                from: JSON.parse(localStorage.getItem('user')).data.username,
+                message: message,
+                timestamp: new Date()
+            });
+            
+            chatMessages.insertAdjacentHTML('beforeend', newMessage);
+            input.value = '';
+            
+            // Плавная прокрутка к новому сообщению
+            chatMessages.scrollTo({
+                top: chatMessages.scrollHeight,
+                behavior: 'smooth'
+            });
+        }
+    } catch (error) {
+        console.error('Error sending message:', error);
+        showError('Ошибка при отправке сообщения');
+    }
+}
+// Функция создания элемента сообщения
+function createMessageElement(message) {
+    const currentUser = JSON.parse(localStorage.getItem('user')).data.username;
+    const isSent = message.from === currentUser;
+    const time = new Date(message.timestamp).toLocaleTimeString();
+    
+    return `
+        <div class="message ${isSent ? 'message-sent' : 'message-received'}">
+            ${message.message}
+            <div class="message-time">${time}</div>
+        </div>
+    `;
+}
+
+// Функция для периодической проверки новых сообщений
+let checkMessagesInterval;
+
+function startCheckingMessages() {
+    if (currentChatPartner) {
+        checkMessagesInterval = setInterval(() => {
+            loadChatHistory(currentChatPartner);
+        }, 5000); // Проверяем каждые 5 секунд
+    }
+}
+
+function stopCheckingMessages() {
+    clearInterval(checkMessagesInterval);
+}
+
+// Функция для отображения пользователей в таблице
+function displayUsers(users) {
+    const tableBody = document.getElementById('users-table-body');
+    if (!tableBody) {
+        console.error('Table body element not found!');
+        return;
+    }
+
+    console.log('Displaying users:', users); // Отладочный вывод
+    
+    try {
+        tableBody.innerHTML = users.map(user => `
+            <tr>
+                <td>
+                    <div class="user-row">
+                        <i class="fas fa-user"></i>
+                        <span>${user.username}</span>
+                    </div>
+                </td>
+                <td>
+                    ${user.role}
+                    <button 
+                        class="btn change-role-btn" 
+                        onclick="changeRole('${user.username}', '${user.role === 'Admin' ? 'User' : 'Admin'}')"
+                    >
+                        Изменить роль
+                    </button>
+                </td>
+                <td>${new Date(user.createdAt).toLocaleString()}</td>
+                <td>
+                    <button class="btn delete-btn" onclick="deleteUser('${user.username}')">
+                        Удалить
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    } catch (error) {
+        console.error('Error displaying users:', error);
+    }
+}
+
+// Функция для загрузки пользователей
+async function loadUsers() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/users`, {
+            headers: {
+                'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
+            }
+        });
+
+        const data = await response.json();
+        console.log('Loaded users data:', data); // Отладочный вывод
+
+        if (data.success) {
+            displayUsers(data.data);
+        } else {
+            throw new Error(data.message || 'Failed to load users');
+        }
+    } catch (error) {
+        console.error('Error loading users:', error);
+        showError('Ошибка при загрузке списка пользователей');
+    }
+}
+
+// Функция для смены роли
+async function changeRole(username, newRole) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/users/${username}/role`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
+            },
+            body: JSON.stringify({ newRole })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            showSuccess('Роль пользователя успешно обновлена');
+            await loadUsers();
+            await checkUserRole(); // Проверяем роль после изменения
+        } else {
+            showError(data.message || 'Ошибка при обновлении роли');
+        }
+    } catch (error) {
+        console.error('Error changing role:', error);
+        showError('Ошибка при изменении роли пользователя');
+    }
+}
+
+// Функция для инициализации профиля пользователя
+function initializeUserProfile() {
+    const currentUser = JSON.parse(localStorage.getItem('user'));
+    if (!currentUser?.data) return;
+
+    // Обновляем отображение имени пользователя и роли
+    const profileUsername = document.getElementById('profile-username');
+    const profileRole = document.getElementById('profile-role');
+    const chatLink = document.getElementById('chat-link');
+
+    if (profileUsername) {
+        profileUsername.textContent = currentUser.data.username;
+    }
+    if (profileRole) {
+        profileRole.textContent = currentUser.data.role;
+    }
+    // Показываем ссылку на чат, если пользователь авторизован
+    if (chatLink) {
+        chatLink.style.display = 'block';
+    }
+
+    // Обновляем интерфейс в зависимости от роли
+    updateInterfaceBasedOnRole(currentUser.data.role);
+}
+
+// Вызываем инициализацию профиля при загрузке страницы
+document.addEventListener('DOMContentLoaded', () => {
+    initializeUserProfile();
+    startRoleChecking(); // Запускаем проверку роли
+});
+
+// Функция создания нового поста
+async function createPost() {
+    const content = document.getElementById('post-content').value;
+    const imageInput = document.getElementById('post-image');
+    const file = imageInput.files[0];
+
+    if (!content && !file) {
+        showError('Добавьте текст или изображение для публикации');
+        return;
+    }
+
+    try {
+        const formData = new FormData();
+        formData.append('content', content);
+        if (file) {
+            formData.append('image', file);
+        }
+
+        const userData = JSON.parse(localStorage.getItem('user'));
+        const response = await fetch(`${API_BASE_URL}/posts/create`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${userData.data.username}`
+            },
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            document.getElementById('post-content').value = '';
+            imageInput.value = '';
+            loadPosts();
+            showSuccess('Пост опубликован');
+        } else {
+            throw new Error(data.message);
+        }
+    } catch (error) {
+        console.error('Error creating post:', error);
+        showError(error.message || 'Ошибка при создании поста');
+    }
+}
+
+// Функция загрузки постов
+async function loadPosts() {
+    try {
+        const userData = JSON.parse(localStorage.getItem('user'));
+        const response = await fetch(`${API_BASE_URL}/posts/${userData.data.username}`, {
+            headers: {
+                'Authorization': `Bearer ${userData.data.username}`
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            const postsContainer = document.getElementById('posts-container');
+            postsContainer.innerHTML = data.data.map(post => `
+                <div class="post">
+                    <div class="post-header">
+                        <img src="${post.authorAvatar || '/api/uploads/avatars/default-avatar.png'}" 
+                             alt="Avatar" class="post-avatar">
+                        <div class="post-info">
+                            <div class="post-author">${post.author}</div>
+                            <div class="post-date">${new Date(post.createdAt).toLocaleString()}</div>
+                        </div>
+                    </div>
+                    <div class="post-content">${post.content}</div>
+                    ${post.image ? `<img src="${post.image}" alt="Post image" class="post-image">` : ''}
+                    <div class="post-actions">
+                        <div class="post-action" onclick="likePost('${post.id}')">
+                            <i class="fas fa-heart"></i>
+                            <span>${post.likes || 0}</span>
+                        </div>
+                        ${post.author === userData.data.username ? `
+                            <div class="post-action" onclick="deletePost('${post.id}')">
+                                <i class="fas fa-trash"></i>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+    } catch (error) {
+        console.error('Error loading posts:', error);
+        showError('Ошибка при загрузке постов');
+    }
+}
+
+// Функция для лайка поста
+async function likePost(postId) {
+    try {
+        const userData = JSON.parse(localStorage.getItem('user'));
+        const response = await fetch(`${API_BASE_URL}/posts/${postId}/like`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${userData.data.username}`
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            loadPosts();
+        }
+    } catch (error) {
+        console.error('Error liking post:', error);
+        showError('Ошибка при попытке поставить лайк');
+    }
+}
+
+// Функция удаления поста
+async function deletePost(postId) {
+    if (!confirm('Вы уверены, что хотите удалить этот пост?')) {
+        return;
+    }
+
+    try {
+        const userData = JSON.parse(localStorage.getItem('user'));
+        const response = await fetch(`${API_BASE_URL}/posts/${postId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${userData.data.username}`
+            }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            loadPosts();
+            showSuccess('Пост удален');
+        }
+    } catch (error) {
+        console.error('Error deleting post:', error);
+        showError('Ошибка при удалении поста');
+    }
+}
+
