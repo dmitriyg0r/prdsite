@@ -3,11 +3,11 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
 
-const authRoutes = require('./routes/auth');
-const usersRoutes = require('./routes/users');
-const chatRoutes = require('./routes/chat');
-const postsRoutes = require('./routes/posts');
-const friendsRoutes = require('./routes/friends');
+const authRoutes = require('./routes/authserv');
+const usersRoutes = require('./routes/usersserv');
+const chatRoutes = require('./routes/chatserv');
+const postsRoutes = require('./routes/postsserv');
+const friendsRoutes = require('./routes/friendsserv');
 
 const app = express();
 

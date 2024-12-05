@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const fs = require('fs');
 const path = require('path');
-const { loadPosts, savePosts, loadUsers } = require('../utils');
+const { loadPosts, savePosts, loadUsers } = require('../utilsserv');
 
 let posts = loadPosts();
 let users = loadUsers();

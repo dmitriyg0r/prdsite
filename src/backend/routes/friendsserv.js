@@ -6,7 +6,7 @@ const {
     loadFriendRequests, 
     saveFriendRequests,
     loadUsers 
-} = require('../utils');
+} = require('../utilsserv');
 
 let friendships = loadFriendships();
 let friendRequests = loadFriendRequests();
