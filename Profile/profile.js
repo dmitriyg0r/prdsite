@@ -14,6 +14,20 @@ const showError = (message) => {
     }
 };
 
+function showRegisterForm() {
+    // Скрываем форму входа
+    const loginContainer = document.getElementById('login-container');
+    if (loginContainer) {
+        loginContainer.style.display = 'none';
+    }
+
+    // Показываем форму регистрации
+    const registerContainer = document.getElementById('register-container');
+    if (registerContainer) {
+        registerContainer.style.display = 'block';
+    }
+}
+
 const showSuccess = (message) => {
     const successDiv = document.getElementById('success-message');
     if (successDiv) {
