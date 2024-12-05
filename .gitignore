@@ -5,11 +5,4 @@
 /home/uploads/
 /chat/messages.json
 /base.env
-/src/backend/friends.json
-/src/backend/messages.json
-/src/backend/posts.json
-/src/backend/users.json
-/src/backend/friends_requests.json
-/src/backend/package.json
-/src/backend/score.json
-/api
+/src
