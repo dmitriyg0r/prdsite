@@ -1,6 +1,11 @@
-// Константы
-const API_BASE_URL = 'https://adminflow.ru/api';
-const DEFAULT_AVATAR_PATH = '/uploads/default-avatar.png';
+// Константы для путей API
+const API_PATHS = {
+    UPLOAD_AVATAR: '/api/users/upload-avatar.php',
+    POSTS: '/api/users/posts.php',
+    FRIENDS: '/api/users/friends.php',
+    FRIEND_REQUESTS: '/api/users/friend-requests.php',
+    PASSWORD: '/api/password.php'
+};
 
 // Утилиты
 const showError = (message) => {
@@ -336,7 +341,7 @@ const loadUsers = async () => {
             });
         }
     } catch (error) {
-        showError('О��ибка при загрузке пользователей');
+        showError('Оибка при загрузке пользователей');
     }
 };
 
@@ -427,4 +432,99 @@ window.likePost = likePost;
 window.deletePost = deletePost;
 window.changeRole = changeRole;
 window.deleteUser = deleteUser;
+
+// Пример функции для загрузки аватара
+async function uploadAvatar(file) {
+    const formData = new FormData();
+    formData.append('avatar', file);
+
+    try {
+        const response = await fetch(API_PATHS.UPLOAD_AVATAR, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${getToken()}`
+            },
+            body: formData
+        });
+        const data = await response.json();
+        if (data.success) {
+            // Обновляем аватар на странице
+            document.querySelector('.profile-avatar').src = data.data.avatarUrl;
+        }
+    } catch (error) {
+        console.error('Error uploading avatar:', error);
+    }
+}
+
+// Функция для получения постов
+async function getPosts() {
+    try {
+        const response = await fetch(API_PATHS.POSTS, {
+            headers: {
+                'Authorization': `Bearer ${getToken()}`
+            }
+        });
+        const data = await response.json();
+        // Обработка полученных данных
+    } catch (error) {
+        console.error('Error fetching posts:', error);
+    }
+}
+
+// Функция для получения списка друзей
+async function getFriends() {
+    try {
+        const response = await fetch(API_PATHS.FRIENDS, {
+            headers: {
+                'Authorization': `Bearer ${getToken()}`
+            }
+        });
+        const data = await response.json();
+        // Обработка полученных данных
+    } catch (error) {
+        console.error('Error fetching friends:', error);
+    }
+}
+
+// Функция для получения запросов в друзья
+async function getFriendRequests() {
+    try {
+        const response = await fetch(API_PATHS.FRIEND_REQUESTS, {
+            headers: {
+                'Authorization': `Bearer ${getToken()}`
+            }
+        });
+        const data = await response.json();
+        // Обработка полученных данных
+    } catch (error) {
+        console.error('Error fetching friend requests:', error);
+    }
+}
+
+// Функция для изменения пароля
+async function changePassword(oldPassword, newPassword) {
+    try {
+        const response = await fetch(API_PATHS.PASSWORD, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getToken()}`
+            },
+            body: JSON.stringify({
+                old_password: oldPassword,
+                new_password: newPassword
+            })
+        });
+        const data = await response.json();
+        // Обработка ответа
+    } catch (error) {
+        console.error('Error changing password:', error);
+    }
+}
+
+// Вспомогательная функция для получения токена
+function getToken() {
+    const user = JSON.parse(localStorage.getItem('user'));
+    return user ? user.token : null;
+}
 
