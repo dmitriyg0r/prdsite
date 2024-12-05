@@ -1,3 +1,8 @@
+const { JSDOM } = require('jsdom');
+const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>');
+global.document = dom.window.document;
+global.window = dom.window;
+
 // Определяем базовый URL API
 const API_BASE_URL = 'https://adminflow.ru/api';
 
@@ -312,7 +317,7 @@ async function handleAnonymousLogin() {
         }
     } catch (error) {
         console.error('Anonymous login error:', error);
-        showError(error.message || 'Ошибка при попытке анонимного входа');
+        showError(error.message || 'Ошибка п��и попытке анонимного входа');
     }
 }
 
@@ -344,7 +349,7 @@ function showProfile(userData) {
     // Инициализируем загрузку аватара
     initializeAvatarUpload();
     
-    // Показываем админ-панель для администраторов
+    // Показываем админ-панель для адм��нистраторов
     const adminSection = document.getElementById('admin-section');
     if (adminSection && userData.data.role === 'Admin') {
         adminSection.style.display = 'block';
@@ -548,7 +553,7 @@ async function editUser(userId) {
         }
 
         const newUsername = prompt('Введите новое имя пользователя:');
-        const newRole = prompt('Введите новую роль (Admin/User):');
+        const newRole = prompt('Введи��е новую роль (Admin/User):');
 
         if (!newUsername || !newRole) return;
 
@@ -1321,7 +1326,7 @@ async function createPost() {
     }
 }
 
-// Функция загрузки постов
+// ��ункция загрузки постов
 async function loadPosts() {
     try {
         const userData = JSON.parse(localStorage.getItem('user'));
