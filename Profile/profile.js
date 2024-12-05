@@ -3,12 +3,12 @@ const API_BASE_URL = 'https://adminflow.ru';
 
 // Константы для путей API
 const API_PATHS = {
-    UPLOAD_AVATAR: '/api/users/upload-avatar.php',
-    POSTS: '/api/users/posts.php',
-    FRIENDS: '/api/users/friends.php',
-    FRIEND_REQUESTS: '/api/users/friend-requests.php',
-    PASSWORD: '/api/auth/register.php',
-    AUTH: '/api/auth/login.php'
+    UPLOAD_AVATAR: '/users/upload-avatar.php',
+    POSTS: '/users/posts.php',
+    FRIENDS: '/users/friends.php',
+    FRIEND_REQUESTS: '/users/friend-requests.php',
+    PASSWORD: '/auth/register.php',
+    AUTH: '/auth/login.php'
 };
 
 // Утилиты
