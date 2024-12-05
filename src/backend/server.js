@@ -355,49 +355,6 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
         // Загружаем посты
         loadPosts();
     }
-
-    // Функция загрузки списка ользователей
-    async function loadUsers() {
-        try {
-            const user = JSON.parse(localStorage.getItem('user'));
-            const response = await fetch(`${API_BASE_URL}/users`, {
-                headers: {
-                    'Authorization': `Bearer ${user.data.username}`
-                }
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                const usersTableBody = document.getElementById('users-table-body');
-                if (usersTableBody) {
-                    usersTableBody.innerHTML = data.data.map(user => `
-                        <tr>
-                            <td>
-                                <div class="user-row">
-                                    <img src="${user.avatarUrl ? `${API_BASE_URL}${user.avatarUrl}` : '../assets/default-avatar.png'}" 
-                                         alt="Avatar" 
-                                         class="user-table-avatar">
-                                    <span>${user.username}</span>
-                                </div>
-                            </td>
-                            <td>${user.role}</td>
-                            <td>${new Date(user.createdAt).toLocaleString()}</td>
-                            <td>
-                                <button class="action-btn delete-btn" onclick="deleteUser('${user.username}')">
-                                    <i class="fas fa-trash"></i> Удалить
-                                </button>
-                            </td>
-                        </tr>
-                    `).join('');
-                }
-            }
-        } catch (error) {
-            console.error('Error loading users:', error);
-            showError('Ошибка при загрузке списка пользователей');
-        }
-    }
-
     // Функция выхода из системы
     function handleLogout() {
         console.log('Logging out...');
