@@ -1150,30 +1150,6 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
             console.error('Error displaying users:', error);
         }
     }
-
-    // Функция для загрузки пользователей
-    async function loadUsers() {
-        try {
-            const response = await fetch(`${API_BASE_URL}/users`, {
-                headers: {
-                    'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user')).data.username}`
-                }
-            });
-
-            const data = await response.json();
-            console.log('Loaded users data:', data); // Отладочный вывод
-
-            if (data.success) {
-                displayUsers(data.data);
-            } else {
-                throw new Error(data.message || 'Failed to load users');
-            }
-        } catch (error) {
-            console.error('Error loading users:', error);
-            showError('Ошибка при загрузке списка пользователей');
-        }
-    }
-
     // Функция для смены роли
     async function changeRole(username, newRole) {
         try {
