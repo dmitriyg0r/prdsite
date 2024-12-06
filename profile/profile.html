@@ -50,7 +50,6 @@
     <!-- Переключатель темы после навигации -->
     <div class="theme-switch-wrapper">
         <div class="theme-toggle-container">
-            <!-- Добавляем иконку для закрытого меню -->
             <i class="fas fa-sun theme-icon"></i>
             <input type="checkbox" id="theme-toggle" class="theme-checkbox">
             <label for="theme-toggle" class="theme-label">
@@ -65,39 +64,51 @@
 
 <body>
     <div class="profile-page">
-        <div class="profile-header">
-            <div class="profile-header-inner">
-                <h1>Профиль пользователя</h1>
-            </div>
-        </div>
-        
         <div class="profile-content">
             <div class="profile-left-column">
-                <div class="profile-avatar-container">
-                    <img id="profile-avatar" src="/uploads/avatars/default.png" alt="Аватар пользователя">
-                    <div class="avatar-overlay">
-                        <label for="avatar-upload" class="avatar-upload-label">
-                            <i class="fas fa-camera"></i>
-                            <span>Обновить фото</span>
-                        </label>
-                        <input type="file" id="avatar-upload" accept="image/*" style="display: none;">
+                <div class="profile-avatar-block">
+                    <div class="profile-avatar-container">
+                        <img id="profile-avatar" src="/uploads/avatars/default.png" alt="Аватар пользователя">
+                        <div class="avatar-overlay">
+                            <label for="avatar-upload" class="avatar-upload-label">
+                                <i class="fas fa-camera"></i>
+                                <span>Обновить фото</span>
+                            </label>
+                            <input type="file" id="avatar-upload" accept="image/*" style="display: none;">
+                        </div>
                     </div>
                 </div>
-                
-                <div class="profile-actions">
-                    <button id="edit-profile-btn" class="action-btn">
-                        <i class="fas fa-edit"></i> Редактировать
-                    </button>
-                    <button id="logout-btn" class="action-btn danger">
-                        <i class="fas fa-sign-out-alt"></i> Выйти
-                    </button>
+
+                <div class="friends-block">
+                    <div class="friends-header">
+                        <h3>Друзья</h3>
+                        <a href="#" class="friends-count">0</a>
+                    </div>
+                    <div class="friends-grid">
+                        <div class="friend-placeholder">
+                            <div class="friend-avatar">
+                                <img src="/uploads/avatars/default.png" alt="Friend">
+                            </div>
+                            <span class="friend-name">Пока нет друзей</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <div class="profile-right-column">
                 <div class="profile-info-header">
-                    <h2 id="username"></h2>
-                    <span class="online-status">online</span>
+                    <div class="profile-name-status">
+                        <h2 id="username"></h2>
+                        <span class="online-status">online</span>
+                    </div>
+                    <div class="profile-actions">
+                        <button id="edit-profile-btn" class="action-btn">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button id="logout-btn" class="action-btn danger">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <div class="profile-info-content">
