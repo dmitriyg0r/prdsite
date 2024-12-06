@@ -13,6 +13,9 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('last_login').textContent = user.last_login ? 
         new Date(user.last_login).toLocaleString() : 'Нет данных';
 
+    // Устанавливаем аватар пользователя
+    document.getElementById('profile-avatar').src = user.avatar_url || '/uploads/avatars/default.png';
+
     // Загрузка аватара
     const avatarUpload = document.getElementById('avatar-upload');
     avatarUpload.addEventListener('change', async (e) => {
@@ -33,7 +36,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             
             if (response.ok) {
-                document.getElementById('profile-avatar').src = data.avatarUrl + '?t=' + new Date().getTime();
+                const newAvatarUrl = data.avatarUrl + '?t=' + new Date().getTime();
+                document.getElementById('profile-avatar').src = newAvatarUrl;
+                
+                // Обновляем URL аватарки в localStorage
+                user.avatar_url = data.avatarUrl;
+                localStorage.setItem('user', JSON.stringify(user));
             } else {
                 alert(data.error || 'Ошибка при загрузке аватара');
             }

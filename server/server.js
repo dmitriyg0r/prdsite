@@ -76,17 +76,17 @@ app.post('/api/login', async (req, res) => {
             );
         } catch (updateErr) {
             console.error('Error updating last_login:', updateErr);
-            // Продолжаем выполнение даже если обновление last_login не удалось
         }
 
-        // Отправляем успешный ответ
+        // Отправляем успешный ответ с добавленным avatar_url
         res.json({
             success: true,
             user: {
                 id: user.id,
                 username: user.username,
                 role: user.role,
-                created_at: user.created_at
+                created_at: user.created_at,
+                avatar_url: user.avatar_url || '/uploads/avatars/default.png' // Добавляем URL аватарки
             }
         });
 
