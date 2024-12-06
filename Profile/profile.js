@@ -520,20 +520,7 @@ window.deletePost = deletePost;
 window.changeRole = changeRole;
 window.deleteUser = deleteUser;
 
-// Перенесем объявления функций в начало файла
-const hideAddFriendModal = () => {
-    const modal = document.getElementById('add-friend-modal');
-    if (modal) {
-        modal.style.display = 'none';
-    }
-};
 
-const showAddFriendModal = () => {
-    const modal = document.getElementById('add-friend-modal');
-    if (modal) {
-        modal.style.display = 'block';
-    }
-};
 
 const acceptFriendRequest = async (requestId) => {
     try {
@@ -792,35 +779,6 @@ function getToken() {
     }
 }
 
-
-const hideAddFriendModal = () => {
-    const modal = document.getElementById('add-friend-modal');
-    if (modal) {
-        modal.style.display = 'none';
-    }
-};
-
-const acceptFriendRequest = async (requestId) => {
-    try {
-        const response = await apiRequest(API_PATHS.FRIEND_REQUESTS, {
-            method: 'POST',
-            body: JSON.stringify({
-                action: 'accept',
-                requestId: requestId
-            })
-        });
-        
-        if (response.success) {
-            showSuccess('Заявка в друзья принята');
-            await Promise.all([
-                loadFriendsList(),
-                loadFriendRequests()
-            ]);
-        }
-    } catch (error) {
-        showError('Ошибка при принятии заявки в друзья');
-    }
-};
 
 const rejectFriendRequest = async (requestId) => {
     try {
