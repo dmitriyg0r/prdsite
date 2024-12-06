@@ -1,3 +1,52 @@
+/* Импортируем основные переменные */
+:root {
+    /* Основные цвета - модернизированная синяя тема */
+    --primary-color: #2196f3;
+    --text-color: #2c3e50;
+    --background-color: #f8f9fa;
+    --sidebar-background: #1976d2;
+    --sidebar-hover: #1565c0;
+    
+    /* Дополнительные цвета */
+    --button-text: #ffffff;
+    --button-background: #2196f3;
+    --button-hover: #1976d2;
+    --button-secondary: #e3f2fd;
+    --button-background-rgb: 33, 150, 243;
+    --button-hover-rgb: 25, 118, 210;
+    
+    /* Контейнеры */
+    --text-container-background: #ffffff;
+    --text-container-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+    --table-background: #ffffff;
+    --input-background: #ffffff;
+    --border-color: #e0e0e0;
+}
+
+/* Темная тема */
+[data-theme="dark"] {
+    /* Основные цвета - более тёмные */
+    --primary-color: #8B44C4;
+    --text-color: #E0E2E5;
+    --background-color: #121214;
+    --sidebar-background: #8B44C4;
+    --sidebar-hover: #9D4EDA;
+    
+    /* Контейнеры */
+    --text-container-background: #1A1B1E;
+    --text-container-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+    --table-background: #1E1F22;
+    --input-background: #1E1F22;
+    --border-color: #2A2B2F;
+    
+    /* Кнопки */
+    --button-text: #FFFFFF;
+    --button-background: #8B44C4;
+    --button-hover: #9D4EDA;
+    --button-secondary: #1E1F22;
+    --button-background-rgb: 139, 68, 196;
+    --button-hover-rgb: 157, 78, 218;
+}
 
 /* Основные стили страницы */
 body {
@@ -6,6 +55,7 @@ body {
     font-family: 'Roboto', sans-serif;
     background-color: var(--background-color);
     color: var(--text-color);
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Стили для контейнера профиля */
@@ -32,9 +82,15 @@ h1 {
 p {
     font-size: 1.1em;
     margin: 15px 0;
-    padding: 10px;
+    padding: 15px;
     border-radius: 8px;
     background: rgba(var(--button-background-rgb), 0.05);
+    transition: all 0.3s ease;
+}
+
+p:hover {
+    transform: translateX(5px);
+    background: rgba(var(--button-background-rgb), 0.1);
 }
 
 /* Стили для кнопки выхода */
@@ -113,4 +169,32 @@ span {
 
 ::-webkit-scrollbar-thumb:hover {
     background: var(--button-hover);
+}
+
+/* Для Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary-color) var(--background-color);
+}
+
+/* Дополнительные стили для темной темы */
+[data-theme="dark"] .profile-container {
+    background: var(--text-container-background);
+    box-shadow: var(--text-container-shadow);
+}
+
+[data-theme="dark"] p {
+    background: rgba(var(--button-background-rgb), 0.08);
+}
+
+[data-theme="dark"] p:hover {
+    background: rgba(var(--button-background-rgb), 0.12);
+}
+
+[data-theme="dark"] #logout-btn {
+    background: linear-gradient(45deg, var(--primary-color), var(--button-hover));
+}
+
+[data-theme="dark"] #logout-btn:hover {
+    background: linear-gradient(45deg, var(--button-hover), var(--primary-color));
 } 
