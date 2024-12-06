@@ -86,7 +86,7 @@ input:focus {
 
 .primary-btn {
     background: linear-gradient(45deg, var(--primary-color), var(--primary-light));
-    color: white;
+    color: var(--button-background);
 }
 
 .auth-switch {
