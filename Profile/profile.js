@@ -209,30 +209,35 @@ const showProfile = async (userData) => {
 const loadUserAvatar = async (username) => {
     if (!username) {
         console.error('Username is undefined');
-        const userAvatar = document.getElementById('user-avatar');
-        if (userAvatar) {
-            userAvatar.src = `${API_BASE_URL}${API_PATHS.UPLOAD_AVATAR}`;
-        }
         return;
     }
 
     try {
-        const response = await apiRequest(`/users/${username}/avatar`);
+        // Измените эндпоинт на корректный
+        const response = await apiRequest(`/users/avatar`, {
+            method: 'GET',
+            headers: {
+                'X-Username': username  // Передайте username в заголовке
+            }
+        });
+        
         const userAvatar = document.getElementById('user-avatar');
         if (!userAvatar) return;
 
         if (response.success && response.data.avatarUrl) {
+            // Полный URL или с базовым доменом
             userAvatar.src = response.data.avatarUrl.startsWith('http') 
                 ? response.data.avatarUrl 
                 : `${API_BASE_URL}${response.data.avatarUrl}`;
         } else {
-            userAvatar.src = `${API_BASE_URL}${API_PATHS.UPLOAD_AVATAR}`;
+            // Установка дефолтного аватара с полным путем
+            userAvatar.src = `${API_BASE_URL}/uploads/avatars/default-avatar.png`;
         }
     } catch (error) {
         console.error('Error loading avatar:', error);
         const userAvatar = document.getElementById('user-avatar');
         if (userAvatar) {
-            userAvatar.src = `${API_BASE_URL}${API_PATHS.UPLOAD_AVATAR}`;
+            userAvatar.src = `${API_BASE_URL}/uploads/avatars/default-avatar.png`;
         }
     }
 };
