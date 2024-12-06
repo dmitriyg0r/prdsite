@@ -5,7 +5,7 @@ const pool = new Pool({
     host: 'localhost',
     database: 'adminflow',
     password: 'sGLTccA_Na#9zC',
-    port: 5432
+    port: 5003
 });
 
 pool.connect((err, client, release) => {
