@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админ-панель</title>
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <div class="admin-container">
+        <header class="admin-header">
+            <h1>Панель администратора</h1>
+            <div class="admin-user-info">
+                <span id="adminUsername"></span>
+                <button id="logoutBtn">Выйти</button>
+            </div>
+        </header>
+
+        <div class="admin-sidebar">
+            <nav>
+                <ul>
+                    <li><button class="nav-btn active" data-section="users">Пользователи</button></li>
+                    <li><button class="nav-btn" data-section="posts">Публикации</button></li>
+                    <li><button class="nav-btn" data-section="reports">Жалобы</button></li>
+                    <li><button class="nav-btn" data-section="stats">Статистика</button></li>
+                </ul>
+            </nav>
+        </div>
+
+        <main class="admin-content">
+            <!-- Секция управления пользователями -->
+            <section id="users" class="content-section active">
+                <h2>Управление пользователями</h2>
+                <div class="search-bar">
+                    <input type="text" id="userSearch" placeholder="Поиск пользователей...">
+                </div>
+                <table class="users-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Имя пользователя</th>
+                            <th>Роль</th>
+                            <th>Статус</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <!-- Данные будут добавлены через JavaScript -->
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Секция управления публикациями -->
+            <section id="posts" class="content-section">
+                <h2>Управление публикациями</h2>
+                <div class="posts-filters">
+                    <input type="text" id="postSearch" placeholder="Поиск по публикациям...">
+                    <select id="postStatus">
+                        <option value="all">Все публикации</option>
+                        <option value="reported">С жалобами</option>
+                        <option value="hidden">Скрытые</option>
+                    </select>
+                </div>
+                <div id="postsContainer" class="posts-container">
+                    <!-- Данные будут добавлены через JavaScript -->
+                </div>
+            </section>
+
+            <!-- Секция жалоб -->
+            <section id="reports" class="content-section">
+                <h2>Жалобы</h2>
+                <div id="reportsContainer" class="reports-container">
+                    <!-- Данные будут добавлены через JavaScript -->
+                </div>
+            </section>
+
+            <!-- Секция статистики -->
+            <section id="stats" class="content-section">
+                <h2>Статистика сайта</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Пользователи</h3>
+                        <p id="totalUsers">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Публикации</h3>
+                        <p id="totalPosts">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Активные пользователи</h3>
+                        <p id="activeUsers">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Жалобы</h3>
+                        <p id="totalReports">0</p>
+                    </div>
+                </div>
+                <div class="stats-charts">
+                    <canvas id="usersChart"></canvas>
+                    <canvas id="postsChart"></canvas>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Модальное окно для действий с пользователем -->
+    <div id="userModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Управление пользователем</h2>
+            <form id="userForm">
+                <div class="form-group">
+                    <label for="userRole">Роль:</label>
+                    <select id="userRole">
+                        <option value="user">Пользователь</option>
+                        <option value="moderator">Модератор</option>
+                        <option value="admin">Администратор</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="userStatus">Статус:</label>
+                    <select id="userStatus">
+                        <option value="active">Активный</option>
+                        <option value="banned">Заблокирован</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="submit">Сохранить</button>
+                    <button type="button" class="cancel">Отмена</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+</html>
