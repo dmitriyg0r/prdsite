@@ -94,6 +94,47 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
+// Endpoint для регистрации
+app.post('/api/register', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+
+        // Проверяем, существует ли пользователь
+        const userExists = await pool.query(
+            'SELECT * FROM users WHERE username = $1',
+            [username]
+        );
+
+        if (userExists.rows.length > 0) {
+            return res.status(400).json({ error: 'Пользователь уже существует' });
+        }
+
+        // Хешируем пароль
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        // Создаем нового пользователя
+        const newUser = await pool.query(
+            'INSERT INTO users (username, password_hash, role, created_at) VALUES ($1, $2, $3, CURRENT_TIMESTAMP) RETURNING *',
+            [username, hashedPassword, 'user']
+        );
+
+        res.json({
+            success: true,
+            user: {
+                id: newUser.rows[0].id,
+                username: newUser.rows[0].username,
+                role: newUser.rows[0].role,
+                created_at: newUser.rows[0].created_at
+            }
+        });
+
+    } catch (err) {
+        console.error('Registration error:', err);
+        res.status(500).json({ error: 'Ошибка при регистрации' });
+    }
+});
+
 // SSL configuration
 const sslOptions = {
     key: fs.readFileSync('/etc/letsencrypt/live/adminflow.ru/privkey.pem'),
