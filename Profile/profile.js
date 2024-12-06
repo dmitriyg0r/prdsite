@@ -384,7 +384,7 @@ const checkUserRole = async () => {
     }
 };
 
-// И��ициализация
+// Иициализация
 document.addEventListener('DOMContentLoaded', async () => {
     try {
         const userData = localStorage.getItem('user');
@@ -459,27 +459,65 @@ async function uploadAvatar(file) {
         return;
     }
 
+    // Проверяем размер файла (например, максимум 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+        showError('Размер файла не должен превышать 5MB');
+        return;
+    }
+
+    // Проверяем тип файла
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
+        showError('Поддерживаются только изображения в форматах JPG, PNG и GIF');
+        return;
+    }
+
     const formData = new FormData();
     formData.append('avatar', file);
 
     try {
+        console.log('Uploading avatar...'); // Отладочный вывод
         const response = await apiRequest(API_PATHS.UPLOAD_AVATAR, {
             method: 'POST',
-            body: formData
+            body: formData,
+            headers: {
+                // Важно: не устанавливаем Content-Type, 
+                // браузер сам установит правильный заголовок с boundary
+                'Accept': 'application/json',
+            }
         });
+        
+        console.log('Upload response:', response); // Отладочный вывод
         
         if (response.success) {
             const userAvatar = document.getElementById('user-avatar');
             if (userAvatar) {
-                userAvatar.src = getAvatarUrl(response.data.avatarUrl);
+                const avatarUrl = getAvatarUrl(response.data.avatarUrl);
+                console.log('Setting new avatar URL:', avatarUrl); // Отладочный вывод
+                userAvatar.src = avatarUrl;
             }
             showSuccess('Аватар успешно обновлен');
+        } else {
+            throw new Error(response.error || 'Ошибка при загрузке аватара');
         }
     } catch (error) {
         console.error('Error uploading avatar:', error);
-        showError('Ошибка при загрузке аватара');
+        showError(error.message || 'Ошибка при загрузке аватара');
     }
 }
+
+// Добавляем обработчик события для input type="file"
+document.addEventListener('DOMContentLoaded', () => {
+    const avatarInput = document.getElementById('avatar-input');
+    if (avatarInput) {
+        avatarInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                uploadAvatar(file);
+            }
+        });
+    }
+});
 
 // Функция для получения постов
 async function getPosts() {
@@ -646,3 +684,4 @@ const debounce = (func, wait) => {
         timeout = setTimeout(later, wait);
     };
 };
+
