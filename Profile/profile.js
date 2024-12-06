@@ -1,6 +1,6 @@
 // Добавить в начало файла
 const API_BASE_URL = 'https://adminflow.ru';
-const AVATARS_PATH = '/var/www/adminflow.ru/api/uploads/avatars/';
+const AVATARS_PATH = '/var/www/html/api/uploads/avatars/';
 
 // Константы для путей API
 const API_PATHS = {
@@ -59,6 +59,10 @@ const showSuccess = (message) => {
 
 // Обновляем функцию apiRequest для обработки ошибок авторизации
 const apiRequest = async (endpoint, options = {}) => {
+    if (!endpoint) {
+        throw new Error('API endpoint is required');
+    }
+
     const url = endpoint.startsWith('http') 
         ? endpoint 
         : `${API_BASE_URL}${endpoint.startsWith('/') ? endpoint : '/' + endpoint}`;
@@ -69,6 +73,8 @@ const apiRequest = async (endpoint, options = {}) => {
             window.location.href = '../authreg/authreg.html';
             return;
         }
+        
+        console.log('Making request to:', url); // Добавляем логирование
         
         const response = await fetch(url, {
             ...options,
@@ -232,7 +238,7 @@ const loadFriendRequests = async () => {
                     <img src="${request.avatarUrl || `${API_BASE_URL}${AVATARS_PATH}/default-avatar.png`}" alt="Аватар" class="friend-avatar">
                     <span>${request.username}</span>
                     <div class="request-actions">
-                        <button onclick="acceptFriendRequest('${request.id}')" class="btn primary-btn">Пр��нять</button>
+                        <button onclick="acceptFriendRequest('${request.id}')" class="btn primary-btn">Прнять</button>
                         <button onclick="rejectFriendRequest('${request.id}')" class="btn danger-btn">Отклонить</button>
                     </div>
                 `;
@@ -325,7 +331,7 @@ const loadUsers = async () => {
                     <td>${new Date(user.createdAt).toLocaleDateString()}</td>
                     <td>
                         <button onclick="changeRole('${user.username}')" class="role-btn">Изменить роль</button>
-                        <button onclick="deleteUser('${user.username}')" class="delete-btn">��далит</button>
+                        <button onclick="deleteUser('${user.username}')" class="delete-btn">далит</button>
                     </td>
                 `;
                 usersTableBody.appendChild(userRow);
@@ -355,6 +361,12 @@ const checkUserRole = async () => {
     try {
         const user = JSON.parse(localStorage.getItem('user'));
         if (!user) return;
+
+        // Проверяем наличие пути
+        if (!API_PATHS.ROLE) {
+            console.error('Role API path is not defined');
+            return;
+        }
 
         const response = await apiRequest(API_PATHS.ROLE, {
             method: 'GET',
