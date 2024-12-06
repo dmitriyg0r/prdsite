@@ -452,56 +452,57 @@ window.deletePost = deletePost;
 window.changeRole = changeRole;
 window.deleteUser = deleteUser;
 
-// Обновляем функцию uploadAvatar
+// Обновляем функцию uploadAvatar с подробным логированием
 async function uploadAvatar(file) {
     if (!file) {
+        console.error('No file selected');
         showError('Файл не выбран');
         return;
     }
 
-    // Проверяем размер файла (например, максимум 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-        showError('Размер файла не должен превышать 5MB');
-        return;
-    }
-
-    // Проверяем тип файла
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
-    if (!allowedTypes.includes(file.type)) {
-        showError('Поддерживаются только изображения в форматах JPG, PNG и GIF');
-        return;
-    }
+    console.log('File details:', {
+        name: file.name,
+        type: file.type,
+        size: file.size
+    });
 
     const formData = new FormData();
     formData.append('avatar', file);
 
     try {
-        console.log('Uploading avatar...'); // Отладочный вывод
+        console.log('Starting avatar upload...');
+        console.log('Upload URL:', API_PATHS.UPLOAD_AVATAR);
+        
+        const token = getToken();
+        console.log('Token present:', !!token);
+
         const response = await apiRequest(API_PATHS.UPLOAD_AVATAR, {
             method: 'POST',
             body: formData,
             headers: {
-                // Важно: не устанавливаем Content-Type, 
-                // браузер сам установит правильный заголовок с boundary
-                'Accept': 'application/json',
+                // Не добавляем Content-Type, он будет установлен автоматически
+                'Accept': 'application/json'
             }
         });
         
-        console.log('Upload response:', response); // Отладочный вывод
+        console.log('Upload response:', response);
         
         if (response.success) {
             const userAvatar = document.getElementById('user-avatar');
             if (userAvatar) {
                 const avatarUrl = getAvatarUrl(response.data.avatarUrl);
-                console.log('Setting new avatar URL:', avatarUrl); // Отладочный вывод
+                console.log('New avatar URL:', avatarUrl);
                 userAvatar.src = avatarUrl;
+                
+                // Добавляем случайный параметр для обхода кэширования
+                userAvatar.src = `${avatarUrl}?t=${new Date().getTime()}`;
             }
             showSuccess('Аватар успешно обновлен');
         } else {
             throw new Error(response.error || 'Ошибка при загрузке аватара');
         }
     } catch (error) {
-        console.error('Error uploading avatar:', error);
+        console.error('Avatar upload error:', error);
         showError(error.message || 'Ошибка при загрузке аватара');
     }
 }
