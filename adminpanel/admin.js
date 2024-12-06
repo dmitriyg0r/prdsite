@@ -1,56 +1,65 @@
-// Проверка авторизации и роли администратора
+// Проверка авторизации админа
 async function checkAdminAuth() {
-    const token = localStorage.getItem('token');
-    if (!token) {
-        console.log('Нет токена');
-        window.location.href = '../authreg/authreg.html';
+    const adminToken = localStorage.getItem('admin_token');
+    if (!adminToken) {
+        showLoginForm();
         return false;
     }
+    return true;
+}
+
+// Показать форму входа
+function showLoginForm() {
+    document.body.innerHTML = `
+        <div class="admin-login-container">
+            <div class="admin-login-form">
+                <h2>Вход в панель администратора</h2>
+                <form id="adminLoginForm">
+                    <div class="form-group">
+                        <label for="username">Логин:</label>
+                        <input type="text" id="username" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Пароль:</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    <button type="submit">Войти</button>
+                </form>
+            </div>
+        </div>
+    `;
+
+    // Добавляем обработчик формы
+    document.getElementById('adminLoginForm').addEventListener('submit', handleAdminLogin);
+}
+
+// Обработка входа админа
+async function handleAdminLogin(e) {
+    e.preventDefault();
+    
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
 
     try {
-        console.log('Токен:', token); // Проверим токен
-        const response = await fetch('https://adminflow.ru/api/users/role.php', {
-            method: 'GET',
+        const response = await fetch('https://adminflow.ru/api/admin/auth.php', {
+            method: 'POST',
             headers: {
-                'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             },
-            credentials: 'include' // Добавляем для работы с сессией
+            body: JSON.stringify({ username, password })
         });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
+
         const data = await response.json();
-        console.log('Ответ сервера:', data);
 
-        // Подробная проверка роли
-        if (!data.success) {
-            console.log('Ошибка в ответе сервера');
-            window.location.href = '../authreg/authreg.html';
-            return false;
+        if (data.success) {
+            localStorage.setItem('admin_token', data.data.token);
+            window.location.reload(); // Перезагружаем страницу для показа админ-панели
+        } else {
+            alert(data.error || 'Ошибка авторизации');
         }
-
-        if (!data.data || !data.data.role) {
-            console.log('Роль не определена в ответе');
-            window.location.href = '../authreg/authreg.html';
-            return false;
-        }
-
-        if (data.data.role !== 'admin') {
-            console.log('Роль не админ:', data.data.role);
-            window.location.href = '../authreg/authreg.html';
-            return false;
-        }
-
-        console.log('Проверка пройдена успешно, роль админ подтверждена');
-        return true;
-
     } catch (error) {
-        console.error('Ошибка при проверке роли:', error);
-        window.location.href = '../authreg/authreg.html';
-        return false;
+        console.error('Login error:', error);
+        alert('Ошибка при попытке входа');
     }
 }
 
@@ -122,15 +131,9 @@ document.querySelectorAll('.nav-btn').forEach(button => {
 
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log('Начало инициализации страницы');
     const isAdmin = await checkAdminAuth();
-    console.log('Результат проверки админа:', isAdmin);
-    
     if (isAdmin) {
-        console.log('Загружаем админ-панель');
         loadUsers();
-    } else {
-        console.log('Нет прав администратора, перенаправление...');
     }
 });
 
