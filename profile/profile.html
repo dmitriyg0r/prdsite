@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Профиль - AdminFlow</title>
     <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="profile.css">
 </head>
 <body>
     <div class="profile-container">
@@ -23,7 +24,7 @@
             document.getElementById('role').textContent = user.role;
             document.getElementById('created_at').textContent = new Date(user.created_at).toLocaleString();
         } else {
-            // Если данных нет, перенаправляем на страницу автори��ации
+            // Если данных нет, перенаправляем на страницу авториации
             window.location.href = '/authreg/authreg.html';
         }
 

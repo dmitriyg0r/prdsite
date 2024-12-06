@@ -1,0 +1,139 @@
+/* Импортируем основные переменные из style.css */
+:root {
+    --primary-color: #2196f3;
+    --text-color: #2c3e50;
+    --background-color: #f8f9fa;
+    --text-container-background: #ffffff;
+    --text-container-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+    --border-color: #e0e0e0;
+    --button-text: #ffffff;
+    --button-background: #2196f3;
+    --button-hover: #1976d2;
+}
+
+/* Темная тема */
+[data-theme="dark"] {
+    --primary-color: #8B44C4;
+    --text-color: #E0E2E5;
+    --background-color: #121214;
+    --text-container-background: #1A1B1E;
+    --text-container-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+    --border-color: #2A2B2F;
+    --button-hover: #9D4EDA;
+}
+
+/* Основные стили страницы */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Roboto', sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+/* Стили для контейнера профиля */
+.profile-container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 30px;
+    background: var(--text-container-background);
+    border-radius: 15px;
+    box-shadow: var(--text-container-shadow);
+    animation: fadeIn 0.6s ease-out;
+}
+
+/* Стили для заголовка */
+h1 {
+    color: var(--text-color);
+    margin-bottom: 30px;
+    font-size: 2em;
+    font-weight: 700;
+    text-align: center;
+}
+
+/* Стили для информации пользователя */
+p {
+    font-size: 1.1em;
+    margin: 15px 0;
+    padding: 10px;
+    border-radius: 8px;
+    background: rgba(var(--button-background-rgb), 0.05);
+}
+
+/* Стили для кнопки выхода */
+#logout-btn {
+    display: block;
+    width: 200px;
+    margin: 30px auto 0;
+    padding: 12px 24px;
+    background: var(--button-background);
+    color: var(--button-text);
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#logout-btn:hover {
+    background: var(--button-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Анимация появления */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Стили для спанов с информацией */
+span {
+    font-weight: 500;
+    color: var(--primary-color);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .profile-container {
+        margin: 20px;
+        padding: 20px;
+    }
+
+    h1 {
+        font-size: 1.5em;
+    }
+
+    p {
+        font-size: 1em;
+    }
+
+    #logout-btn {
+        width: 100%;
+    }
+}
+
+/* Стилизация скроллбара */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--background-color);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--button-hover);
+} 
