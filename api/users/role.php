@@ -4,7 +4,7 @@ ini_set('display_errors', 1);
 header('Content-Type: application/json');
 
 try {
-    require_once '/var/www/adminflow.ru/api/config/db.php';
+    require_once '/../config/db.php';
     
     // Проверяем авторизацию
     $headers = getallheaders();
