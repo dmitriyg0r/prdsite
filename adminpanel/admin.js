@@ -9,7 +9,7 @@ async function checkAdminAuth() {
 
     try {
         console.log('Отправка запроса на проверку роли...');
-        const response = await fetch('/api/users/role.php', {
+        const response = await fetch('https://adminflow.ru/api/users/role.php', {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -23,7 +23,6 @@ async function checkAdminAuth() {
 
         if (data.success && data.data.role === 'admin') {
             console.log('Пользователь является администратором');
-            // Пользователь админ - остаёмся на странице
             return true;
         } else {
             console.log('Пользователь не является администратором');
@@ -40,7 +39,7 @@ async function checkAdminAuth() {
 // Загрузка списка пользователей
 async function loadUsers() {
     try {
-        const response = await fetch('/api/admin/users.php', {
+        const response = await fetch('https://adminflow.ru/api/admin/users.php', {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
@@ -105,7 +104,7 @@ document.querySelectorAll('.nav-btn').forEach(button => {
 
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log('Страница загружена, проверяем права администратора...');
+    console.log('Страница загружена, проверяем права а��министратора...');
     const isAdmin = await checkAdminAuth();
     if (isAdmin) {
         console.log('Загружаем данные для админ-панели...');
