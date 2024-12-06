@@ -70,7 +70,7 @@ try {
     $filename = $user['username'] . '_' . uniqid() . '.' . $extension;
     
     // Путь для сохранения файла
-    $uploadDir = __DIR__ . '/../../uploads/avatars';
+    $uploadDir = __DIR__ . '/../api/uploads/avatars';
     $uploadPath = $uploadDir . '/' . $filename;
     
     error_log("Upload directory: " . $uploadDir);
