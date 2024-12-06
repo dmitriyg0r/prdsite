@@ -209,7 +209,7 @@ const getAvatarUrl = (serverPath) => {
     }
     
     // Если это просто имя файла, добавляем полный путь
-    return `${API_BASE_URL}${AVATARS_PATH.USER_AVATAR}${serverPath.split('/').pop()}`;
+    return `{AVATARS_PATH.USER_AVATAR}${serverPath.split('/').pop()}`;
 };
 
 
