@@ -212,16 +212,7 @@ const getAvatarUrl = (serverPath) => {
     return `${API_BASE_URL}${AVATARS_PATH.USER_AVATAR}${serverPath.split('/').pop()}`;
 };
 
-// Инициализация при загрузке страницы
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('Initializing profile page');
-    checkUserRole();
-});
 
-// Экспортируем функции в глобальную область видимости
-window.openChat = openChat;
-window.checkUserRole = checkUserRole;
-// Обновляем функцию loadUserAvatar
 const loadUserAvatar = async (username) => {
     if (!username) {
         console.error('Username is undefined');
