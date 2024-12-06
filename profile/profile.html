@@ -10,46 +10,59 @@
     <link rel="icon" type="image/x-icon" href="../flow.ico">
 </head>
 <body>
-    <div class="profile-container">
+    <div class="profile-page">
         <div class="profile-header">
-            <div class="profile-avatar-container">
-                <img id="profile-avatar" src="/uploads/avatars/default.png" alt="Аватар пользователя">
-                <div class="avatar-overlay">
-                    <label for="avatar-upload" class="avatar-upload-label">
-                        <i class="fas fa-camera"></i>
-                    </label>
-                    <input type="file" id="avatar-upload" accept="image/*" style="display: none;">
+            <div class="profile-header-inner">
+                <h1>Профиль пользователя</h1>
+            </div>
+        </div>
+        
+        <div class="profile-content">
+            <div class="profile-left-column">
+                <div class="profile-avatar-container">
+                    <img id="profile-avatar" src="/uploads/avatars/default.png" alt="Аватар пользователя">
+                    <div class="avatar-overlay">
+                        <label for="avatar-upload" class="avatar-upload-label">
+                            <i class="fas fa-camera"></i>
+                            <span>Обновить фото</span>
+                        </label>
+                        <input type="file" id="avatar-upload" accept="image/*" style="display: none;">
+                    </div>
+                </div>
+                
+                <div class="profile-actions">
+                    <button id="edit-profile-btn" class="action-btn">
+                        <i class="fas fa-edit"></i> Редактировать
+                    </button>
+                    <button id="logout-btn" class="action-btn danger">
+                        <i class="fas fa-sign-out-alt"></i> Выйти
+                    </button>
                 </div>
             </div>
-            <h1>Профиль пользователя</h1>
-        </div>
 
-        <div class="profile-info">
-            <div class="info-group">
-                <label><i class="fas fa-user"></i> Имя пользователя</label>
-                <p id="username"></p>
-            </div>
-            <div class="info-group">
-                <label><i class="fas fa-shield-alt"></i> Роль</label>
-                <p id="role"></p>
-            </div>
-            <div class="info-group">
-                <label><i class="fas fa-calendar-alt"></i> Дата регистрации</label>
-                <p id="created_at"></p>
-            </div>
-            <div class="info-group">
-                <label><i class="fas fa-clock"></i> Последний вход</label>
-                <p id="last_login"></p>
-            </div>
-        </div>
+            <div class="profile-right-column">
+                <div class="profile-info-header">
+                    <h2 id="username"></h2>
+                    <span class="online-status">online</span>
+                </div>
 
-        <div class="profile-actions">
-            <button id="edit-profile-btn" class="btn secondary-btn">
-                <i class="fas fa-edit"></i> Редактировать профиль
-            </button>
-            <button id="logout-btn" class="btn danger-btn">
-                <i class="fas fa-sign-out-alt"></i> Выйти
-            </button>
+                <div class="profile-info-content">
+                    <div class="info-block">
+                        <div class="info-row">
+                            <span class="info-label">Статус:</span>
+                            <span class="info-value" id="role"></span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Дата регистрации:</span>
+                            <span class="info-value" id="created_at"></span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Последний вход:</span>
+                            <span class="info-value" id="last_login"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
