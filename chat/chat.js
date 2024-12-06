@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Инициализация чата
     await initializeChat();
     setupEventListeners();
+    setupAttachmentHandlers();
 });
 
 async function initializeChat() {
@@ -178,7 +179,7 @@ function displayMessages(messages) {
         if (message.reply_data) {
             const replyElement = document.createElement('div');
             replyElement.className = 'message-reply';
-            replyElement.textContent = `↳ ${message.reply_data.message}`;
+            replyElement.textContent = `��� ${message.reply_data.message}`;
             messageElement.appendChild(replyElement);
         }
 
@@ -480,4 +481,55 @@ function showImageModal(imageUrl) {
 // Закрытие модального окна
 document.querySelector('.close-modal').onclick = function() {
     document.querySelector('.image-modal').style.display = 'none';
-}; 
+};
+
+// Добавляем обработчики для прикрепления файлов
+function setupAttachmentHandlers() {
+    const attachButton = document.getElementById('attachButton');
+    const fileInput = document.getElementById('fileInput');
+
+    // Обработчик клика по кнопке прикрепления
+    attachButton.addEventListener('click', () => {
+        fileInput.click();
+    });
+
+    // Обработчик выбора файла
+    fileInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Проверяем размер файла (например, максимум 5MB)
+        const maxSize = 5 * 1024 * 1024; // 5MB в байтах
+        if (file.size > maxSize) {
+            alert('Файл слишком большой. Максимальный размер: 5MB');
+            return;
+        }
+
+        // Создаем FormData для отправки файла
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('senderId', currentUser.id);
+        formData.append('receiverId', currentChatPartner.id);
+        formData.append('message', ''); // Пустое сообщение или можно добавить подпись к файлу
+
+        try {
+            const response = await fetch('https://adminflow.ru:5003/api/messages/send-with-file', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                // Очищаем input после успешной отправки
+                fileInput.value = '';
+                // Обновляем сообщения
+                loadMessages(currentChatPartner.id);
+            } else {
+                alert('Ошибка при отправке файла');
+            }
+        } catch (err) {
+            console.error('Error sending file:', err);
+            alert('Ошибка при отправке файла');
+        }
+    });
+} 

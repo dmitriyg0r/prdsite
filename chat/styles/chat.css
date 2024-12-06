@@ -317,7 +317,22 @@ body {
 }
 
 .attach-button {
+    background: none;
+    border: none;
     color: var(--text-secondary);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.attach-button:hover {
+    background-color: rgba(var(--button-background-rgb), 0.1);
+    color: var(--primary-color);
+}
+
+.attach-button i {
+    font-size: 1.2em;
 }
 
 /* Предпросмотр ответа */
