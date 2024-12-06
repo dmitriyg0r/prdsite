@@ -6,14 +6,7 @@
     <title>Чат - AdminFlow</title>
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="styles/sidebar.css">
-    <link rel="stylesheet" href="styles/chat-main.css">
-    <link rel="stylesheet" href="styles/chat-partners.css">
-    <link rel="stylesheet" href="styles/messages.css">
-    <link rel="stylesheet" href="styles/attachments.css">
-    <link rel="stylesheet" href="styles/modals.css">
-    <link rel="stylesheet" href="styles/animations.css">
-    <link rel="stylesheet" href="styles/input-area.css">
+    <link rel="stylesheet" href="styles/chat.css">
 </head>
 <body>
     <!-- Боковое меню -->
@@ -24,87 +17,70 @@
         <div class="sidebar-nav">
             <a href="../index.html" class="sidebar-link">
                 <i class="fas fa-home"></i>
-                <span>Расписание</span>
-            </a>
-            <a href="../home/homework.html" class="sidebar-link">
-                <i class="fas fa-tasks"></i>
-                <span>Задания</span>
-            </a>
-            <a href="../downloads/downloads.html" class="sidebar-link">
-                <i class="fas fa-download"></i>
-                <span>Загрузки</span>
-            </a>
-            <a href="../memes/memes.html" class="sidebar-link">
-                <i class="fas fa-smile"></i>
-                <span>Мемы</span>
-            </a>
-            <a href="../about/about.html" class="sidebar-link">
-                <i class="fas fa-info-circle"></i>
-                <span>О нас</span>
+                <span>Главная</span>
             </a>
             <a href="../Profile/profile.html" class="sidebar-link">
                 <i class="fas fa-user"></i>
                 <span>Профиль</span>
             </a>
-            <a href="chat.html" class="sidebar-link active">
-                <i class="fas fa-comments"></i>
-                <span>Чат</span>
-            </a>
         </div>
-        <!-- Переключатель темы -->
         <div class="theme-switch-wrapper">
-            <div class="theme-toggle-container">
-                <i class="fas fa-sun theme-icon"></i>
-                <input type="checkbox" id="theme-toggle" class="theme-checkbox">
-                <label for="theme-toggle" class="theme-label">
-                    <div class="ball"></div>
-                </label>
-                <span>Тёмная тема</span>
-            </div>
+            <label class="theme-switch">
+                <input type="checkbox" id="theme-toggle">
+                <div class="slider round"></div>
+            </label>
+            <span>Тёмная тема</span>
         </div>
     </nav>
 
     <!-- Основной контент -->
     <main class="main-content">
-        <div class="chat-wrapper">
-            <div class="chat-partners-area">
+        <div class="chat-container">
+            <!-- Список чатов -->
+            <div class="chat-list">
                 <div class="chat-list-header">
                     <h2>Чаты</h2>
-                    <input type="text" class="search-input" placeholder="Поиск...">
-                </div>
-                <div id="friends-list">
-                    <!-- Пример элемента списка друзей -->
-                    <div class="chat-partner" onclick="openChat('Имя пользователя', 'путь/к/аватару.png')">
-                        <img src="путь/к/аватару.png" alt="Avatar" class="friend-avatar">
-                        <div class="friend-info">
-                            <div class="friend-name">Имя пользователя</div>
-                            <div class="last-message">Последнее сообщение...</div>
-                        </div>
+                    <div class="search-container">
+                        <input type="text" id="searchInput" placeholder="Поиск...">
+                        <i class="fas fa-search"></i>
                     </div>
+                </div>
+                <div id="friends-list" class="friends-list">
+                    <!-- Список друзей будет добавлен через JavaScript -->
                 </div>
             </div>
-            <div class="chat-main">
-                <div class="chat-header" id="chat-header" style="display: none;">
-                    <img src="../assets/default-avatar.png" alt="Avatar" class="friend-avatar" id="chat-header-avatar">
-                    <h3 class="friend-name" id="chat-header-name">Выберите чат</h3>
-                </div>
-                <div class="chat-placeholder" id="chat-placeholder">
-                    <h3>Выберите чат для начала общения</h3>
-                </div>
-                <div id="messages" class="messages-area">
-                    <div class="typing-indicator">
-                        <div class="typing-dot"></div>
-                        <div class="typing-dot"></div>
-                        <div class="typing-dot"></div>
+
+            <!-- Область чата -->
+            <div class="chat-area">
+                <!-- Заголовок чата -->
+                <div id="chat-header" class="chat-header" style="display: none;">
+                    <div class="chat-header-info">
+                        <img id="chat-header-avatar" src="../assets/default-avatar.png" alt="Avatar" class="chat-avatar">
+                        <h3 id="chat-header-name"></h3>
                     </div>
                 </div>
+
+                <!-- Заглушка при отсутствии выбранного чата -->
+                <div id="chat-placeholder" class="chat-placeholder">
+                    <i class="fas fa-comments"></i>
+                    <h3>Выберите чат для начала общения</h3>
+                </div>
+
+                <!-- Область сообщений -->
+                <div id="messages" class="messages-area">
+                    <!-- Сообщения будут добавлены через JavaScript -->
+                </div>
+
+                <!-- Область ввода -->
                 <div class="input-area">
                     <div class="attachment-wrapper">
-                        <input type="file" id="fileInput" class="file-input" accept="image/*,.pdf,.doc,.docx,.txt">
+                        <input type="file" id="fileInput" accept="image/*">
                         <button id="attachButton" class="attach-button">
                             <i class="fas fa-paperclip"></i>
                         </button>
-                        <div id="attachmentPreview" class="attachment-preview"></div>
+                    </div>
+                    <div id="replyPreview" class="reply-preview" style="display: none;">
+                        <!-- Предпросмотр ответа будет добавлен через JavaScript -->
                     </div>
                     <input type="text" id="messageInput" placeholder="Введите сообщение...">
                     <button id="sendMessage">
@@ -115,13 +91,13 @@
         </div>
     </main>
 
+    <!-- Модальное окно для просмотра изображений -->
+    <div class="image-modal">
+        <span class="close-modal">&times;</span>
+        <img id="modalImage" src="" alt="Preview">
+    </div>
+
     <script src="../main.js"></script>
     <script src="chat.js"></script>
-    <div class="image-modal">
-        <button class="close-button">
-            <i class="fas fa-times"></i>
-        </button>
-        <img src="" alt="Preview">
-    </div>
 </body>
 </html>

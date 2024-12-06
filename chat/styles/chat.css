@@ -1,0 +1,268 @@
+/* Основной контейнер чата */
+.chat-container {
+    display: flex;
+    height: 100vh;
+    background-color: var(--background-color);
+}
+
+/* Список чатов */
+.chat-list {
+    width: 300px;
+    border-right: 1px solid var(--border-color);
+    background-color: var(--text-container-background);
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-list-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.chat-list-header h2 {
+    margin: 0 0 15px 0;
+    color: var(--text-color);
+}
+
+.search-container {
+    position: relative;
+}
+
+.search-container input {
+    width: 100%;
+    padding: 8px 30px 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+.search-container i {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+}
+
+/* Список друзей */
+.friends-list {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.chat-partner {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.chat-partner:hover {
+    background-color: var(--hover-color);
+}
+
+.chat-partner.active {
+    background-color: var(--primary-color-light);
+}
+
+.chat-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 15px;
+    object-fit: cover;
+}
+
+.friend-info {
+    flex: 1;
+}
+
+.friend-name {
+    font-weight: 500;
+    color: var(--text-color);
+    margin-bottom: 4px;
+}
+
+.last-message {
+    font-size: 0.9em;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.unread-count {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    min-width: 20px;
+    text-align: center;
+}
+
+/* Область чата */
+.chat-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--background-color);
+}
+
+.chat-header {
+    padding: 15px;
+    background-color: var(--text-container-background);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.chat-header-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.chat-placeholder {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+}
+
+.chat-placeholder i {
+    font-size: 48px;
+    margin-bottom: 15px;
+}
+
+/* Область сообщений */
+.messages-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.message {
+    max-width: 70%;
+    padding: 10px 15px;
+    border-radius: 15px;
+    margin-bottom: 5px;
+}
+
+.message-sent {
+    align-self: flex-end;
+    background-color: var(--primary-color);
+    color: white;
+    border-bottom-right-radius: 5px;
+}
+
+.message-received {
+    align-self: flex-start;
+    background-color: var(--text-container-background);
+    color: var(--text-color);
+    border-bottom-left-radius: 5px;
+}
+
+.message-info {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.8em;
+    margin-top: 5px;
+}
+
+.message-time {
+    color: var(--text-secondary);
+}
+
+.message-status i {
+    font-size: 0.9em;
+    color: var(--text-secondary);
+}
+
+/* Область ввода */
+.input-area {
+    padding: 15px;
+    background-color: var(--text-container-background);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.input-area input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+.input-area button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 20px;
+    background-color: var(--primary-color);
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.input-area button:hover {
+    background-color: var(--primary-color-hover);
+}
+
+/* Модальное окно */
+.image-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.image-modal img {
+    max-width: 90%;
+    max-height: 90vh;
+}
+
+.close-modal {
+    position: absolute;
+    top: 15px;
+    right: 25px;
+    color: white;
+    font-size: 35px;
+    cursor: pointer;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .chat-list {
+        position: fixed;
+        left: -300px;
+        top: 0;
+        bottom: 0;
+        z-index: 100;
+        transition: left 0.3s;
+    }
+
+    .chat-list.active {
+        left: 0;
+    }
+
+    .chat-area {
+        width: 100%;
+    }
+} 
