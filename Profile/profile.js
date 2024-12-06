@@ -251,7 +251,7 @@ const loadFriendRequests = async () => {
                     </div>
                 `;
                 requestsList.appendChild(requestItem);
-            });
+            }); 
         }
     } catch (error) {
         showError('Ошибка при загрузке заросов в друзья');
@@ -451,7 +451,6 @@ window.addEventListener('unhandledrejection', (event) => {
 
 // Экспорт глобальных функций
 window.openChat = openChat;
-window.acceptFriendRequest = acceptFriendRequest;
 window.rejectFriendRequest = rejectFriendRequest;
 window.likePost = likePost;
 window.deletePost = deletePost;
@@ -613,28 +612,6 @@ const hideAddFriendModal = () => {
     }
 };
 
-const acceptFriendRequest = async (requestId) => {
-    try {
-        const response = await apiRequest(API_PATHS.FRIEND_REQUESTS, {
-            method: 'POST',
-            body: JSON.stringify({
-                action: 'accept',
-                requestId: requestId
-            })
-        });
-        
-        if (response.success) {
-            showSuccess('Заявка в друзья принята');
-            await Promise.all([
-                loadFriendsList(),
-                loadFriendRequests()
-            ]);
-        }
-    } catch (error) {
-        showError('Ошибка при принятии заявки в друзья');
-    }
-};
-
 const rejectFriendRequest = async (requestId) => {
     try {
         const response = await apiRequest(API_PATHS.FRIEND_REQUESTS, {
@@ -675,7 +652,6 @@ const sendFriendRequest = async (username) => {
 
 // Добавляем функции в глобальную область видимости
 window.hideAddFriendModal = hideAddFriendModal;
-window.acceptFriendRequest = acceptFriendRequest;
 window.rejectFriendRequest = rejectFriendRequest;
 window.sendFriendRequest = sendFriendRequest;
 
