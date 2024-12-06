@@ -4,31 +4,49 @@ async function checkAdminAuth() {
     if (!token) {
         console.log('Нет токена');
         window.location.href = '../authreg/authreg.html';
-        return;
+        return false;
     }
 
     try {
-        console.log('Отправка запроса на проверку роли...');
+        console.log('Токен:', token); // Проверим токен
         const response = await fetch('https://adminflow.ru/api/users/role.php', {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
-            }
+            },
+            credentials: 'include' // Добавляем для работы с сессией
         });
         
-        console.log('Получен ответ:', response);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const data = await response.json();
-        console.log('Данные ответа:', data);
+        console.log('Ответ сервера:', data);
 
-        if (data.success && data.data.role === 'admin') {
-            console.log('Пользователь является администратором');
-            return true;
-        } else {
-            console.log('Пользователь не является администратором');
+        // Подробная проверка роли
+        if (!data.success) {
+            console.log('Ошибка в ответе сервера');
             window.location.href = '../authreg/authreg.html';
             return false;
         }
+
+        if (!data.data || !data.data.role) {
+            console.log('Роль не определена в ответе');
+            window.location.href = '../authreg/authreg.html';
+            return false;
+        }
+
+        if (data.data.role !== 'admin') {
+            console.log('Роль не админ:', data.data.role);
+            window.location.href = '../authreg/authreg.html';
+            return false;
+        }
+
+        console.log('Проверка пройдена успешно, роль админ подтверждена');
+        return true;
+
     } catch (error) {
         console.error('Ошибка при проверке роли:', error);
         window.location.href = '../authreg/authreg.html';
@@ -104,11 +122,15 @@ document.querySelectorAll('.nav-btn').forEach(button => {
 
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log('Страница загружена, проверяем права а��министратора...');
+    console.log('Начало инициализации страницы');
     const isAdmin = await checkAdminAuth();
+    console.log('Результат проверки админа:', isAdmin);
+    
     if (isAdmin) {
-        console.log('Загружаем данные для админ-панели...');
-        loadUsers(); // Загружаем пользователей по умолчанию
+        console.log('Загружаем админ-панель');
+        loadUsers();
+    } else {
+        console.log('Нет прав администратора, перенаправление...');
     }
 });
 
