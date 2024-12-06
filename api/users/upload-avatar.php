@@ -10,7 +10,7 @@ error_log("POST: " . print_r($_POST, true));
 error_log("Headers: " . print_r(getallheaders(), true));
 
 try {
-    require_once '/../config/db.php';
+    require_once __DIR__ . '/../config/db.php';
     
     $headers = getallheaders();
     $token = str_replace('Bearer ', '', $headers['Authorization'] ?? '');
