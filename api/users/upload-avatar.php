@@ -11,7 +11,7 @@ error_log("POST: " . print_r($_POST, true));
 error_log("Headers: " . print_r(getallheaders(), true));
 
 try {
-    require_once '/var/www/adminflow.ru/api/config/db.php';
+    require_once '/../config/db.php';
     
     // Проверяем авторизацию
     $headers = getallheaders();
@@ -70,7 +70,7 @@ try {
     $filename = $user['username'] . '_' . uniqid() . '.' . $extension;
     
     // Путь для сохранения файла
-    $uploadDir = '/var/www/html/api/uploads/avatars';
+    $uploadDir = __DIR__ . '/../uploads/avatars';
     $uploadPath = $uploadDir . '/' . $filename;
     
     error_log("Upload directory: " . $uploadDir);
