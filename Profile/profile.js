@@ -4,7 +4,7 @@ const AVATARS_PATH = '/api/uploads/avatars';
 
 // Константы для путей API
 const API_PATHS = {
-    UPLOAD_AVATAR: '/api/users/avatar.php',
+    UPLOAD_AVATAR: '/api/users/upload-avatar.php',
     AVATAR: '/api/users/avatar.php',
    // ROLE: '/api/users/role.php',
     POSTS: '/api/users/posts.php',
