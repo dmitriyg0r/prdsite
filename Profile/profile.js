@@ -118,7 +118,7 @@ const apiRequest = async (endpoint, options = {}) => {
     }
 };
 
-// Функции аутентификации
+// Функци�� аутентификации
 const handleLogout = async () => {
     try {
         localStorage.removeItem('user');
@@ -195,7 +195,7 @@ const loadUserAvatar = async (username) => {
     }
 };
 
-// Функции друзей
+// Ф��нкции друзей
 const loadFriendsList = async () => {
     try {
         const response = await apiRequest(API_PATHS.FRIENDS);
@@ -263,7 +263,7 @@ const loadFriendRequests = async () => {
 const createPost = async () => {
     const content = document.getElementById('post-content')?.value;
     if (!content?.trim()) {
-        showError('Пост не может ��ыть пустым');
+        showError('Пост не может ыть пустым');
         return;
     }
 
@@ -448,7 +448,7 @@ window.addEventListener('error', (event) => {
 
 window.addEventListener('unhandledrejection', (event) => {
     console.error('Unhandled promise rejection:', event.reason);
-    showError('Произошла ошибка при выполнении асинхронной операции');
+    showError('Произошла ошибк�� при выполнении асинхронной операции');
 });
 
 // Экспорт глобальных функций
@@ -505,7 +505,11 @@ const uploadAvatar = async (file) => {
         return;
     }
 
-    console.log('Starting avatar upload...', file);
+    console.log('Starting avatar upload...', {
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: file.type
+    });
     
     try {
         // Проверки файла
@@ -517,34 +521,69 @@ const uploadAvatar = async (file) => {
             throw new Error('Можно загружать только изображения');
         }
 
-        // Создаем FormData
+        // Создаем FormData и добавляем файл
         const formData = new FormData();
-        formData.append('avatar', file);
+        formData.append('avatar', file, file.name);
 
-        console.log('Sending request to:', API_PATHS.UPLOAD_AVATAR);
-        console.log('FormData contents:', Array.from(formData.entries()));
+        // Получаем токен
+        const token = getToken();
+        if (!token) {
+            throw new Error('Не найден токен авторизации');
+        }
 
-        const response = await apiRequest(API_PATHS.UPLOAD_AVATAR, {
+        console.log('Preparing upload request:', {
+            url: API_PATHS.UPLOAD_AVATAR,
+            token: token ? 'Present' : 'Missing',
+            formDataEntries: Array.from(formData.entries()).map(entry => ({
+                fieldName: entry[0],
+                fileName: entry[1] instanceof File ? entry[1].name : 'not a file'
+            }))
+        });
+
+        // Выполняем запрос напрямую через fetch для большего контроля
+        const response = await fetch(`${API_BASE_URL}${API_PATHS.UPLOAD_AVATAR}`, {
             method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
             body: formData
         });
+
+        console.log('Upload response status:', response.status);
         
-        console.log('Upload response:', response);
-        
-        if (response.success) {
+        // Пытаемся получить ответ как JSON
+        const responseData = await response.json();
+        console.log('Upload response data:', responseData);
+
+        if (!response.ok) {
+            throw new Error(responseData.error || `HTTP error! status: ${response.status}`);
+        }
+
+        if (responseData.success) {
             const userAvatar = document.getElementById('user-avatar');
             if (userAvatar) {
-                const avatarUrl = getAvatarUrl(response.data.avatarUrl);
+                const avatarUrl = getAvatarUrl(responseData.data.avatarUrl);
                 console.log('New avatar URL:', avatarUrl);
                 
-                // Обновляем изображение с предотвращением кэширования
+                // Добавляем обработчики событий для изображения
+                userAvatar.onload = () => {
+                    console.log('Avatar image loaded successfully');
+                    showSuccess('Аватар успешно обновлен');
+                };
+                
+                userAvatar.onerror = (e) => {
+                    console.error('Error loading avatar image:', e);
+                    showError('Ошибка при загрузке изображения');
+                };
+                
+                // Обновляем src с timestamp для предотвращения кэширования
                 const timestamp = new Date().getTime();
                 userAvatar.src = `${avatarUrl}?t=${timestamp}`;
-                
-                showSuccess('Аватар успешно обновлен');
+            } else {
+                console.error('User avatar element not found');
             }
         } else {
-            throw new Error(response.error || 'Ошибка при загрузке аватара');
+            throw new Error(responseData.error || 'Неизвестная ошибка при загрузке аватара');
         }
     } catch (error) {
         console.error('Avatar upload error:', error);
@@ -558,35 +597,42 @@ const initializeAvatarUpload = () => {
     const avatarContainer = document.querySelector('.avatar-container');
     
     if (avatarUpload) {
-        console.log('Avatar upload input found');
+        console.log('Avatar upload input initialized');
         
         avatarUpload.addEventListener('change', (event) => {
-            console.log('File input change event triggered');
+            console.log('Avatar file input change detected');
             const file = event.target.files[0];
             if (file) {
-                console.log('Selected file:', file);
+                console.log('File selected:', {
+                    name: file.name,
+                    type: file.type,
+                    size: file.size
+                });
                 uploadAvatar(file);
             }
         });
-    } else {
-        console.error('Avatar upload input not found');
-    }
 
-    if (avatarContainer) {
-        avatarContainer.addEventListener('click', () => {
-            console.log('Avatar container clicked');
-            avatarUpload?.click();
-        });
+        // Добавляем обработчик клика на контейнер
+        if (avatarContainer) {
+            avatarContainer.addEventListener('click', (event) => {
+                // Предотвращаем всплытие события
+                event.stopPropagation();
+                console.log('Avatar container clicked');
+                avatarUpload.click();
+            });
+        }
+    } else {
+        console.error('Avatar upload input element not found');
     }
 };
 
-// Обновляем инициализацию
+// Обновляем инициализацию при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('Initializing avatar upload functionality');
     initializeAvatarUpload();
-    // ... остальной код инициализации ...
 });
 
-// Добавляем функцию в глобальную область видимости
+// Экспортируем функцию в глобальную область видимости
 window.uploadAvatar = uploadAvatar;
 
 // Функция для получения постов
@@ -675,7 +721,7 @@ const rejectFriendRequest = async (requestId) => {
             await loadFriendRequests();
         }
     } catch (error) {
-        showError('Ош��бка при отклонении заявки в друзья');
+        showError('Ошбка при отклонении заявки в друзья');
     }
 };
 
