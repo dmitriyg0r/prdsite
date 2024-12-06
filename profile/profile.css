@@ -697,4 +697,155 @@ body {
     .friends-list, .requests-list {
         grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     }
+}
+
+/* Добавляем стили для кнопок принятия/отклонения заявок */
+.friend-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 5px;
+}
+
+.accept-friend-btn,
+.reject-friend-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.3s ease;
+}
+
+.accept-friend-btn {
+    background: var(--primary-color);
+    color: white;
+}
+
+.accept-friend-btn:hover {
+    background: var(--primary-color-hover);
+}
+
+.reject-friend-btn {
+    background: var(--text-container-background);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+}
+
+.reject-friend-btn:hover {
+    background: rgba(var(--button-background-rgb), 0.1);
+}
+
+/* Стили для статусов заявок */
+.pending-request {
+    color: var(--text-secondary);
+    font-size: 0.9em;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.friend-status {
+    color: var(--primary-color);
+    font-size: 0.9em;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* Обновляем стили для счетчиков */
+.friend-count,
+.request-count {
+    background: var(--primary-color);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 0.8em;
+    min-width: 20px;
+    text-align: center;
+}
+
+/* Если счетчик равен нулю, скрываем е��о */
+.friend-count:empty,
+.request-count:empty {
+    display: none;
+}
+
+/* Анимация для кнопок */
+.accept-friend-btn,
+.reject-friend-btn {
+    transform: translateY(0);
+}
+
+.accept-friend-btn:hover,
+.reject-friend-btn:hover {
+    transform: translateY(-2px);
+}
+
+/* Стили для карточки друга в модальном окне */
+.friend-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.friend-card .friend-actions {
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+}
+
+.friend-card:hover .friend-actions {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Добавляем стили для кнопки удаления из друзей */
+.remove-friend-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.3s ease;
+    background: var(--text-container-background);
+    color: #ff4444;
+    border: 1px solid #ff4444;
+}
+
+.remove-friend-btn:hover {
+    background: #ff4444;
+    color: white;
+}
+
+/* Обновляем стили для карточки друга */
+.friend-card {
+    position: relative;
+    overflow: hidden;
+    padding: 15px;
+}
+
+.friend-card .friend-actions {
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+    margin-top: 10px;
+}
+
+.friend-card:hover .friend-actions {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Анимация для всех кнопок в карточке друга */
+.friend-card button {
+    transform: translateY(0);
+}
+
+.friend-card button:hover {
+    transform: translateY(-2px);
 } 

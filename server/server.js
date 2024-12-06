@@ -306,7 +306,7 @@ app.get('/api/friends', async (req, res) => {
         res.json({ friends: result.rows });
     } catch (err) {
         console.error('Get friends error:', err);
-        res.status(500).json({ error: 'Ошибка при получении списка друзей' });
+        res.status(500).json({ error: 'Ошибка при получении ��писка друзей' });
     }
 });
 
@@ -326,5 +326,23 @@ app.get('/api/friend-requests', async (req, res) => {
     } catch (err) {
         console.error('Get friend requests error:', err);
         res.status(500).json({ error: 'Ошибка при получении заявок в друзья' });
+    }
+});
+
+// Добавьте новый endpoint для удаления из друзей
+app.post('/api/friend/remove', async (req, res) => {
+    try {
+        const { userId, friendId } = req.body;
+
+        await pool.query(
+            'DELETE FROM friendships WHERE ' +
+            '(user_id = $1 AND friend_id = $2) OR (user_id = $2 AND friend_id = $1)',
+            [userId, friendId]
+        );
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Remove friend error:', err);
+        res.status(500).json({ error: 'Ошибка при удалении из друзей' });
     }
 }); 

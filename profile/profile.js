@@ -16,6 +16,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Устанавливаем аватар пользователя
     document.getElementById('profile-avatar').src = user.avatar_url || '/uploads/avatars/default.png';
 
+    // Загружаем список друзей сразу при загрузке страницы
+    loadFriends();
+    loadFriendRequests();
+
     // Загрузка аватара
     const avatarUpload = document.getElementById('avatar-upload');
     avatarUpload.addEventListener('change', async (e) => {
@@ -189,9 +193,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="friend-info">
                     <div class="friend-name">${friend.username}</div>
                     <div class="friend-status">В сети</div>
+                    <div class="friend-actions">
+                        <button class="remove-friend-btn" data-user-id="${friend.id}">
+                            <i class="fas fa-user-minus"></i> Удалить из друзей
+                        </button>
+                    </div>
                 </div>
             </div>
         `).join('');
+
+        // Добавляем обработчики для кнопок удаления
+        document.querySelectorAll('.remove-friend-btn').forEach(btn => {
+            btn.addEventListener('click', () => removeFriend(btn.dataset.userId));
+        });
 
         // Обновляем мини-список друзей
         const friendsGrid = document.querySelector('.friends-grid');
@@ -324,7 +338,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (response.ok) {
-                // Обновляем результаты поиска
+                // Обновляем реультаты поиска
                 searchUsers(document.querySelector('.search-input').value.trim());
             }
         } catch (err) {
@@ -333,9 +347,57 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Загружаем друзей и заявки при открытии модального окна
+    // Обновляем обработчик открытия модального окна
     document.querySelector('.friends-header-btn').addEventListener('click', () => {
+        // Обновляем списки при открытии модального окна
         loadFriends();
         loadFriendRequests();
     });
+
+    // Обновляем функцию для отображения количества заявок
+    function updateRequestsCount(count) {
+        const requestCount = document.querySelector('.request-count');
+        if (requestCount) {
+            requestCount.textContent = count;
+        }
+    }
+
+    // Обновляем функцию для отображения количества друзей
+    function updateFriendsCount(count) {
+        const friendsCount = document.querySelector('.friends-count');
+        if (friendsCount) {
+            friendsCount.textContent = count;
+        }
+    }
+
+    // Добавляем функцию удаления из друзей
+    async function removeFriend(friendId) {
+        if (!confirm('Вы уверены, что хотите удалить пользователя из друзей?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch('https://adminflow.ru:5003/api/friend/remove', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    userId: user.id,
+                    friendId
+                })
+            });
+
+            if (response.ok) {
+                // Перезагружаем список друзей
+                loadFriends();
+            } else {
+                const data = await response.json();
+                alert(data.error || 'Ошибка при удалении из друзей');
+            }
+        } catch (err) {
+            console.error('Error removing friend:', err);
+            alert('Ошибка при удалении из друзей');
+        }
+    }
 }); 
