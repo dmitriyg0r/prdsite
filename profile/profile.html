@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профиль - AdminFlow</title>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="profile-container">
+        <h1>Добро пожаловать, <span id="username"></span>!</h1>
+        <p>Роль: <span id="role"></span></p>
+        <p>Дата создания аккаунта: <span id="created_at"></span></p>
+        <button id="logout-btn">Выйти</button>
+    </div>
+
+    <script>
+        // Получаем данные пользователя из localStorage
+        const user = JSON.parse(localStorage.getItem('user'));
+
+        if (user) {
+            document.getElementById('username').textContent = user.username;
+            document.getElementById('role').textContent = user.role;
+            document.getElementById('created_at').textContent = new Date(user.created_at).toLocaleString();
+        } else {
+            // Если данных нет, перенаправляем на страницу автори��ации
+            window.location.href = '/authreg/authreg.html';
+        }
+
+        // Обработчик выхода
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            localStorage.removeItem('user');
+            window.location.href = '/authreg/authreg.html';
+        });
+    </script>
+</body>
+</html> 

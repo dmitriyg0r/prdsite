@@ -8,7 +8,7 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
         const username = document.getElementById('login-username').value;
         const password = document.getElementById('login-password').value;
 
-        console.log('Attempting login for:', username); // Для отладки
+        console.log('Attempting login for:', username);
 
         const response = await fetch(`${API_URL}/api/login`, {
             method: 'POST',
@@ -19,10 +19,10 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
             credentials: 'include'
         });
 
-        console.log('Server response status:', response.status); // Для отладки
+        console.log('Server response status:', response.status);
 
         const data = await response.json();
-        console.log('Server response:', data); // Для отладки
+        console.log('Server response:', data);
 
         if (response.ok) {
             // Сохраняем данные пользователя
@@ -31,9 +31,9 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
             // Показываем сообщение об успехе
             showSuccessMessage('Успешная авторизация');
             
-            // Перенаправляем на profile.html
+            // Перенаправляем на profile.html с правильным путём
             setTimeout(() => {
-                window.location.href = '/profile.html';
+                window.location.href = '/profile/profile.html';
             }, 1000);
         } else {
             showErrorMessage(data.error || 'Ошибка авторизации');
