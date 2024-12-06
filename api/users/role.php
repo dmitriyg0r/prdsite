@@ -43,12 +43,10 @@ try {
         SELECT 
             u.id,
             u.role, 
-            u.username,
-            s.expires_at
+            u.username
         FROM users u 
         JOIN sessions s ON u.id = s.user_id 
         WHERE s.token = ? 
-        AND s.expires_at > NOW()
     ");
     
     $stmt->execute([$token]);
@@ -76,8 +74,7 @@ try {
         'data' => [
             'id' => $result['id'],
             'role' => $result['role'],
-            'username' => $result['username'],
-            'expires_at' => $result['expires_at']
+            'username' => $result['username']
         ]
     ]);
     
