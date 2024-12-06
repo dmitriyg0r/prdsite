@@ -335,23 +335,35 @@ body {
 }
 
 .friends-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     margin-bottom: 15px;
     padding-bottom: 10px;
     border-bottom: 1px solid var(--border-color);
 }
 
-.friends-header h3 {
-    margin: 0;
+.friends-header-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
     color: var(--text-color);
+    transition: opacity 0.3s ease;
+}
+
+.friends-header-btn:hover {
+    opacity: 0.8;
+}
+
+.friends-header-btn h3 {
+    margin: 0;
     font-size: 1.1em;
 }
 
 .friends-count {
     color: var(--text-secondary);
-    text-decoration: none;
 }
 
 .friends-grid {

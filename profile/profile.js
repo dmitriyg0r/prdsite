@@ -64,8 +64,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const tabButtons = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
 
-    // Открытие модального окна при клике на количество друзей
-    friendsCount.addEventListener('click', (e) => {
+    // Обновляем селектор для кнопки открытия модального окна
+    const friendsHeaderBtn = document.querySelector('.friends-header-btn');
+    
+    // Открытие модального окна при клике на заголовок "Друзья"
+    friendsHeaderBtn.addEventListener('click', (e) => {
         e.preventDefault();
         friendsModal.classList.add('active');
         document.body.style.overflow = 'hidden';
