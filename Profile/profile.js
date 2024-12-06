@@ -245,7 +245,7 @@ const loadUserAvatar = async (username) => {
         if (response.success && response.data.avatarUrl) {
             userAvatar.src = response.data.avatarUrl.startsWith('http') 
                 ? response.data.avatarUrl 
-                : `${API_BASE_URL}${AVATARS_PATH}/${response.data.avatarUrl}`;
+                : `${API_BASE_URL}${AVATARS_PATH}/${response.data.avatarUrl.split('/').pop()}`;
         } else {
             userAvatar.src = `${API_BASE_URL}${AVATARS_PATH}/default-avatar.png`;
         }
