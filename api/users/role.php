@@ -38,10 +38,10 @@ try {
         throw new Exception('Valid token required');
     }
     
-    // Проверяем токен в базе данных
+    // Проверяем токен в базе данных с получением ID пользователя
     $stmt = $pdo->prepare("
-        SELECT
-            u.id, 
+        SELECT 
+            u.id,
             u.role, 
             u.username,
             s.expires_at
@@ -61,10 +61,16 @@ try {
         throw new Exception('Invalid or expired token');
     }
     
-    // Логируем успешную проверку роли
-    error_log("Successful role check for user: " . $result['username'] . " with role: " . $result['role']);
+    // Проверяем наличие всех необходимых данных
+    if (!isset($result['id']) || !isset($result['username']) || !isset($result['role'])) {
+        error_log("Missing required user data in result: " . print_r($result, true));
+        throw new Exception('Incomplete user data');
+    }
     
-    // Отправляем успешный ответ
+    // Логируем успешную проверку роли
+    error_log("Successful role check for user: " . $result['username'] . " with role: " . $result['role'] . " and ID: " . $result['id']);
+    
+    // Отправляем успешный ответ со всеми данными
     echo json_encode([
         'success' => true,
         'data' => [
@@ -76,7 +82,6 @@ try {
     ]);
     
 } catch (PDOException $e) {
-    // Логируем ошибки базы данных
     error_log("Database error: " . $e->getMessage());
     error_log("Stack trace: " . $e->getTraceAsString());
     
@@ -86,7 +91,6 @@ try {
         'error' => 'Database error occurred'
     ]);
 } catch (Exception $e) {
-    // Логируем остальные ошибки
     error_log("Role check error: " . $e->getMessage());
     error_log("Stack trace: " . $e->getTraceAsString());
     
