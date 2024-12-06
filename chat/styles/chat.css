@@ -344,6 +344,7 @@ body {
 
 .attach-button i, #sendMessage i {
     font-size: 1.1em;
+    color: white;
 }
 
 #messageInput {
