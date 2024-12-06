@@ -6,9 +6,9 @@ const API_PATHS = {
     UPLOAD_AVATAR: '/api/users/avatar',
     AVATAR: '/api/users/avatar',
     ROLE: '/api/users/role',
-    POSTS: '/users/posts.php',
-    FRIENDS: '/users/friends.php',
-    FRIEND_REQUESTS: '/users/friend-requests.php',
+    POSTS: '/api/users/posts',
+    FRIENDS: '/api/users/friends',
+    FRIEND_REQUESTS: '/api/users/friend-requests',
     PASSWORD: '/auth/register.php',
     AUTH: '/auth/login.php'
 };
@@ -263,7 +263,7 @@ const loadUserAvatar = async (username) => {
 // Функции друзей
 const loadFriendsList = async () => {
     try {
-        const response = await apiRequest('/users/friends');
+        const response = await apiRequest(API_PATHS.FRIENDS);
         if (response.success) {
             const friendsList = document.getElementById('friends-list');
             if (!friendsList) return;
@@ -300,7 +300,7 @@ const loadFriendsList = async () => {
 
 const loadFriendRequests = async () => {
     try {
-        const response = await apiRequest('/users/friend-requests');
+        const response = await apiRequest(API_PATHS.FRIEND_REQUESTS);
         if (response.success) {
             const requestsList = document.getElementById('friend-requests-list');
             if (!requestsList) return;
@@ -351,7 +351,7 @@ const createPost = async () => {
 
 const loadPosts = async () => {
     try {
-        const response = await apiRequest('/users/posts');
+        const response = await apiRequest(API_PATHS.POSTS);
         if (response.success) {
             const postsContainer = document.getElementById('posts-container');
             if (!postsContainer) return;
