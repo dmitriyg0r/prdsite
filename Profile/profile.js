@@ -1,6 +1,6 @@
 // Добавить в начало файла
 const API_BASE_URL = 'https://adminflow.ru';
-const AVATARS_PATH = './var/www/adminflow.ru/api/uploads/avatars';
+const AVATARS_PATH = '/var/www/adminflow.ru/api/uploads/avatars/';
 
 // Константы для путей API
 const API_PATHS = {
