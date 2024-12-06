@@ -96,18 +96,9 @@ const apiRequest = async (endpoint, options = {}) => {
 const handleLogout = async () => {
     try {
         localStorage.removeItem('user');
-        const loginContainer = document.getElementById('login-container');
-        const profileInfo = document.getElementById('profile-info');
-        const adminSection = document.getElementById('admin-section');
-        const chatLink = document.getElementById('chat-link');
-
-        if (loginContainer) loginContainer.style.display = 'block';
-        if (profileInfo) profileInfo.style.display = 'none';
-        if (adminSection) adminSection.style.display = 'none';
-        if (chatLink) chatLink.style.display = 'none';
-        
         showSuccess('Вы успешно вышли из системы');
         stopRoleChecking();
+        window.location.href = '../authreg/authreg.html';
     } catch (error) {
         showError('Ошибка при выходе из системы');
     }
