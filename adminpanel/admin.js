@@ -2,31 +2,62 @@
 async function checkAdminAuth() {
     const token = localStorage.getItem('token');
     if (!token) {
+        console.log('Нет токена');
         window.location.href = '../authreg/authreg.html';
-        return;
+        return false;
     }
 
     try {
-        const response = await fetch('/api/users/role.php', {
+        console.log('Токен:', token); // Проверим токен
+        const response = await fetch('https://adminflow.ru/api/users/role.php', {
+            method: 'GET',
             headers: {
-                'Authorization': `Bearer ${token}`
-            }
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include' // Добавляем для работы с сессией
         });
-        const data = await response.json();
-
-        if (!data.success || data.data.role !== 'admin') {
-            window.location.href = '../authreg/authreg.html';
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
+        
+        const data = await response.json();
+        console.log('Ответ сервера:', data);
+
+        // Подробная проверка роли
+        if (!data.success) {
+            console.log('Ошибка в ответе сервера');
+            window.location.href = '../authreg/authreg.html';
+            return false;
+        }
+
+        if (!data.data || !data.data.role) {
+            console.log('Роль не определена в ответе');
+            window.location.href = '../authreg/authreg.html';
+            return false;
+        }
+
+        if (data.data.role !== 'admin') {
+            console.log('Роль не админ:', data.data.role);
+            window.location.href = '../authreg/authreg.html';
+            return false;
+        }
+
+        console.log('Проверка пройдена успешно, роль админ подтверждена');
+        return true;
+
     } catch (error) {
-        console.error('Auth check failed:', error);
+        console.error('Ошибка при проверке роли:', error);
         window.location.href = '../authreg/authreg.html';
+        return false;
     }
 }
 
 // Загрузка списка пользователей
 async function loadUsers() {
     try {
-        const response = await fetch('/api/admin/users.php', {
+        const response = await fetch('https://adminflow.ru/api/admin/users.php', {
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
@@ -90,13 +121,21 @@ document.querySelectorAll('.nav-btn').forEach(button => {
 });
 
 // Инициализация при загрузке страницы
-document.addEventListener('DOMContentLoaded', () => {
-    checkAdminAuth();
-    loadUsers(); // Загружаем пользователей по умолчанию
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log('Начало инициализации страницы');
+    const isAdmin = await checkAdminAuth();
+    console.log('Результат проверки админа:', isAdmin);
+    
+    if (isAdmin) {
+        console.log('Загружаем админ-панель');
+        loadUsers();
+    } else {
+        console.log('Нет прав администратора, перенаправление...');
+    }
 });
 
 // Обработка выхода
 document.getElementById('logoutBtn').addEventListener('click', () => {
     localStorage.removeItem('token');
-    window.location.href = '/authreg.html';
+    window.location.href = '../authreg/authreg.html';
 });
