@@ -68,7 +68,7 @@ async function loadUsers() {
     try {
         const response = await fetch('https://adminflow.ru/api/admin/users.php', {
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
             }
         });
         const data = await response.json();
@@ -83,10 +83,10 @@ async function loadUsers() {
                     <td>${user.id}</td>
                     <td>${user.username}</td>
                     <td>${user.role}</td>
-                    <td>${user.is_online ? 'Онлайн' : 'Оффлайн'}</td>
+                    <td>${user.status}</td>
                     <td>
-                        <button onclick="editUser(${user.id})">Редактировать</button>
-                        <button onclick="toggleUserStatus(${user.id})" class="danger">
+                        <button onclick="editUser(${user.id})" class="btn-edit">Редактировать</button>
+                        <button onclick="toggleUserStatus(${user.id})" class="btn-toggle">
                             ${user.status === 'active' ? 'Заблокировать' : 'Разблокировать'}
                         </button>
                     </td>
@@ -96,6 +96,71 @@ async function loadUsers() {
         }
     } catch (error) {
         console.error('Failed to load users:', error);
+    }
+}
+
+// Загрузка жалоб
+async function loadReports() {
+    try {
+        const response = await fetch('https://adminflow.ru/api/admin/reports.php', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+            }
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            const container = document.getElementById('reportsContainer');
+            container.innerHTML = '';
+
+            data.data.forEach(report => {
+                const reportElement = document.createElement('div');
+                reportElement.className = 'report-item';
+                reportElement.innerHTML = `
+                    <div class="report-header">
+                        <span class="report-type">${report.type}</span>
+                        <span class="report-date">${new Date(report.created_at).toLocaleString()}</span>
+                    </div>
+                    <div class="report-content">
+                        <p><strong>От:</strong> ${report.reporter}</p>
+                        <p><strong>На:</strong> ${report.reported}</p>
+                        <p><strong>Причина:</strong> ${report.reason}</p>
+                    </div>
+                    <div class="report-actions">
+                        <button onclick="resolveReport(${report.id})" class="btn-resolve">Разрешить</button>
+                        <button onclick="dismissReport(${report.id})" class="btn-dismiss">Отклонить</button>
+                    </div>
+                `;
+                container.appendChild(reportElement);
+            });
+        }
+    } catch (error) {
+        console.error('Failed to load reports:', error);
+    }
+}
+
+// Загрузка статистики
+async function loadStats() {
+    try {
+        const response = await fetch('https://adminflow.ru/api/admin/stats.php', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+            }
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            // Обновляем статистику
+            document.getElementById('totalUsers').textContent = data.data.users.total;
+            document.getElementById('totalPosts').textContent = data.data.posts.total;
+            document.getElementById('activeUsers').textContent = data.data.users.active;
+            document.getElementById('totalReports').textContent = data.data.reports.total;
+
+            // Обновляем графики
+            updateCharts(data.data.charts);
+        }
+    } catch (error) {
+        console.error('Failed to load stats:', error);
     }
 }
 
