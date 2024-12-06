@@ -306,7 +306,7 @@ app.get('/api/friends', async (req, res) => {
         res.json({ friends: result.rows });
     } catch (err) {
         console.error('Get friends error:', err);
-        res.status(500).json({ error: 'Ошибка при получении ��ска друзей' });
+        res.status(500).json({ error: 'Ошибка при получении ��ка друзей' });
     }
 });
 
@@ -347,12 +347,10 @@ app.post('/api/friend/remove', async (req, res) => {
     }
 });
 
-// Настройка хранилища для файлов сообщений
+// Насройка хранилища для файлов сообщений
 const messageStorage = multer.diskStorage({
     destination: function (req, file, cb) {
-        // Используем относительный путь
         const uploadDir = path.join(__dirname, '../public/uploads/messages');
-        // Создаем директорию, если она не существует
         if (!fs.existsSync(uploadDir)){
             fs.mkdirSync(uploadDir, { recursive: true });
         }
@@ -360,7 +358,9 @@ const messageStorage = multer.diskStorage({
     },
     filename: function (req, file, cb) {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, 'message-' + uniqueSuffix + path.extname(file.originalname));
+        const filename = 'message-' + uniqueSuffix + path.extname(file.originalname);
+        file.fileUrl = `/uploads/messages/${filename}`;
+        cb(null, filename);
     }
 });
 
@@ -389,7 +389,7 @@ app.post('/api/messages/send-with-file', messageUpload.single('file'), async (re
         let attachmentUrl = null;
 
         if (req.file) {
-            attachmentUrl = `/uploads/messages/${req.file.filename}`;
+            attachmentUrl = req.file.fileUrl;
         }
 
         const result = await pool.query(
@@ -498,7 +498,7 @@ app.get('/api/messages/unread/:userId', async (req, res) => {
         res.json({ success: true, unreadCounts: result.rows });
     } catch (err) {
         console.error('Error getting unread counts:', err);
-        res.status(500).json({ error: 'Ошибка при по��учении количества непрочитанных сообщений' });
+        res.status(500).json({ error: 'Ошибка при поучении количества непрочитанных сообщений' });
     }
 });
 
@@ -590,5 +590,51 @@ app.get('/api/chat/friends', async (req, res) => {
     } catch (err) {
         console.error('Get chat friends error:', err);
         res.status(500).json({ error: 'Ошибка при получении списка друзей' });
+    }
+});
+
+// Добавляем статическую раздачу файлов
+app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
+
+// Обновляем конфигурацию хранилища для файлов сообщений
+messageStorage.destination = function (req, file, cb) {
+    const uploadDir = path.join(__dirname, '../public/uploads/messages');
+    if (!fs.existsSync(uploadDir)){
+        fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+};
+
+messageStorage.filename = function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const filename = 'message-' + uniqueSuffix + path.extname(file.originalname);
+    // Сохраняем полный URL для доступа к файлу
+    file.fileUrl = `/uploads/messages/${filename}`;
+    cb(null, filename);
+};
+
+// Обновляем эндпоинт отправки сообщения с файлом
+app.post('/api/messages/send-with-file', messageUpload.single('file'), async (req, res) => {
+    try {
+        const { senderId, receiverId, message, replyTo } = req.body;
+        let attachmentUrl = null;
+
+        if (req.file) {
+            // Используем сохраненный URL файла
+            attachmentUrl = req.file.fileUrl;
+        }
+
+        const result = await pool.query(
+            'INSERT INTO messages (sender_id, receiver_id, message, attachment_url, reply_to) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+            [senderId, receiverId, message, attachmentUrl, replyTo]
+        );
+
+        res.json({ 
+            success: true, 
+            message: result.rows[0] 
+        });
+    } catch (err) {
+        console.error('Error sending message with file:', err);
+        res.status(500).json({ error: 'Ошибка при отправке сообщения с файлом' });
     }
 }); 

@@ -365,17 +365,23 @@ function displayMessages(messages) {
             if (message.attachment_url.match(/\.(jpg|jpeg|png|gif)$/i)) {
                 // Если это изображение
                 const img = document.createElement('img');
-                img.src = message.attachment_url;
+                // Добавляем базовый URL сервера к пути файла
+                img.src = `https://adminflow.ru:5003${message.attachment_url}`;
                 img.alt = 'Attachment';
-                img.onclick = () => showImageModal(message.attachment_url);
+                img.onclick = () => showImageModal(img.src);
                 attachmentElement.appendChild(img);
             } else {
                 // Если это другой файл
                 const fileInfo = document.createElement('div');
                 fileInfo.className = 'file-info';
+                const fileName = message.attachment_url.split('/').pop();
                 fileInfo.innerHTML = `
                     <i class="fas fa-file file-icon"></i>
-                    <span class="file-name">${message.attachment_url.split('/').pop()}</span>
+                    <a href="https://adminflow.ru:5003${message.attachment_url}" 
+                       target="_blank" 
+                       class="file-name">
+                        ${fileName}
+                    </a>
                 `;
                 attachmentElement.appendChild(fileInfo);
             }
