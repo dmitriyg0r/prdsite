@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Авторизация - AdminFlow</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="authreg.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="../flow.ico">
+</head>
+<body>
+    <div id="error-message" style="display: none;"></div>
+    <div id="success-message" style="display: none;"></div>
+
+    <div class="auth-container">
+        <div class="auth-box">
+            <div class="auth-header">
+                <img src="../flow.ico" alt="Flow Logo" class="auth-logo">
+                <h1>AdminFlow</h1>
+            </div>
+
+            <!-- Форма входа -->
+            <div id="login-form-container">
+                <h2>Вход в систему</h2>
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="login-username">Имя пользователя</label>
+                        <input type="text" id="login-username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">Пароль</label>
+                        <div class="password-input">
+                            <input type="password" id="login-password" required>
+                            <i class="fas fa-eye toggle-password"></i>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn primary-btn">Войти</button>
+                </form>
+                <p class="auth-switch">
+                    Нет аккаунта? <a href="#" onclick="toggleForms()">Зарегистрироваться</a>
+                </p>
+            </div>
+
+            <!-- Форма регистрации -->
+            <div id="register-form-container" style="display: none;">
+                <h2>Регистрация</h2>
+                <form id="register-form">
+                    <div class="form-group">
+                        <label for="reg-username">Имя пользователя</label>
+                        <input type="text" id="reg-username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-password">Пароль</label>
+                        <div class="password-input">
+                            <input type="password" id="reg-password" required>
+                            <i class="fas fa-eye toggle-password"></i>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn primary-btn">Зарегистрироваться</button>
+                </form>
+                <p class="auth-switch">
+                    Уже есть аккаунт? <a href="#" onclick="toggleForms()">Войти</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="authreg.js"></script>
+</body>
+</html> 
