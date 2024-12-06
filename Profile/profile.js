@@ -6,7 +6,7 @@ const AVATARS_PATH = '/api/uploads/avatars';
 const API_PATHS = {
     UPLOAD_AVATAR: '/api/users/avatar.php',
     AVATAR: '/api/users/avatar.php',
-    ROLE: '/api/users/role.php',
+   // ROLE: '/api/users/role.php',
     POSTS: '/api/users/posts.php',
     FRIENDS: '/api/users/friends.php',
     FRIEND_REQUESTS: '/api/users/friend-requests.php',
@@ -44,34 +44,6 @@ const showError = (message) => {
         }, 3000);
     }
 };
-
-function showLoginForm() {
-    // Показываем форму входа
-    const loginContainer = document.getElementById('login-container');
-    if (loginContainer) {
-        loginContainer.style.display = 'block';
-    }
-
-    // Скрываем форму регистрации
-    const registerContainer = document.getElementById('register-container');
-    if (registerContainer) {
-        registerContainer.style.display = 'none';
-    }
-}
-
-function showRegisterForm() {
-    // Скрываем форму входа
-    const loginContainer = document.getElementById('login-container');
-    if (loginContainer) {
-        loginContainer.style.display = 'none';
-    }
-
-    // Показываем форму регистации
-    const registerContainer = document.getElementById('register-container');
-    if (registerContainer) {
-        registerContainer.style.display = 'block';
-    }
-}
 
 const showSuccess = (message) => {
     const successDiv = document.getElementById('success-message');
@@ -121,68 +93,6 @@ const apiRequest = async (endpoint, options = {}) => {
 };
 
 // Функции аутентификации
-const handleLogin = async (event) => {
-    event.preventDefault();
-    const username = document.getElementById('login-username')?.value;
-    const password = document.getElementById('login-password')?.value;
-
-    if (!username || !password) {
-        showError('Пожалуйста, заполните все поля');
-        return;
-    }
-
-    try {
-        const response = await apiRequest(API_PATHS.AUTH, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                username: username.trim(),
-                password: password.trim()
-            })
-        });
-
-        if (response.success) {
-            localStorage.setItem('user', JSON.stringify(response.data));
-            showSuccess('Вход выполнен успешно');
-            location.reload();
-        } else {
-            showError(response.error || 'Ошибка при входе');
-        }
-    } catch (error) {
-        console.error('Ошибка входа:', error);
-        showError('Ошибка при входе');
-    }
-};
-
-const handleRegister = async (event) => {
-    event.preventDefault();
-    const username = document.getElementById('reg-username')?.value;
-    const password = document.getElementById('reg-password')?.value;
-
-    if (!username || !password) {
-        showError('Пожалуйста, заполните все поля');
-        return;
-    }
-
-    try {
-        const response = await apiRequest(API_PATHS.PASSWORD, {
-            method: 'POST',
-            body: JSON.stringify({ username, password })
-        });
-
-        if (response.success) {
-            showSuccess('Регистрация успешна');
-            showLoginForm();
-        } else {
-            showError(response.error || 'Ошибка при регистрации');
-        }
-    } catch (error) {
-        showError('ошибка при регистрации');
-    }
-};
-
 const handleLogout = async () => {
     try {
         localStorage.removeItem('user');
@@ -454,12 +364,15 @@ const checkUserRole = async () => {
 document.addEventListener('DOMContentLoaded', async () => {
     try {
         const userData = localStorage.getItem('user');
-        if (userData) {
-            const user = JSON.parse(userData);
-            await showProfile(user);
-            startRoleChecking();
-            showChatButton();
+        if (!userData) {
+            window.location.href = '../authreg/authreg.html';
+            return;
         }
+
+        const user = JSON.parse(userData);
+        await showProfile(user);
+        startRoleChecking();
+        showChatButton();
 
         // Загрузка начальных данных
         await Promise.all([
@@ -467,18 +380,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             loadFriendRequests(),
             loadPosts()
         ]);
-
-        // Обработчики форм
-        const loginForm = document.getElementById('login-form');
-        const registerForm = document.getElementById('register-form');
-        const postForm = document.getElementById('post-form');
-
-        if (loginForm) loginForm.addEventListener('submit', handleLogin);
-        if (registerForm) registerForm.addEventListener('submit', handleRegister);
-        if (postForm) postForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            createPost();
-        });
 
     } catch (error) {
         console.error('Initialization error:', error);
@@ -610,38 +511,3 @@ function getToken() {
         return null;
     }
 }
-document.addEventListener('DOMContentLoaded', async () => {
-    const userData = localStorage.getItem('user');
-    if (!userData) {
-        window.location.href = '../authreg/authreg.html';
-        return;
-    }
-
-    // Получаем данные пользователя
-    const user = JSON.parse(userData);
-    
-    // Отображаем имя пользователя
-    const usernameElement = document.getElementById('username');
-    if (usernameElement) {
-        usernameElement.textContent = user.username;
-    }
-
-    // Добавляем обработчики событий для форм
-    const changePasswordForm = document.getElementById('change-password-form');
-    if (changePasswordForm) {
-        changePasswordForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const oldPassword = document.getElementById('old-password').value;
-            const newPassword = document.getElementById('new-password').value;
-            await changePassword(oldPassword, newPassword);
-        });
-    }
-
-    // Получаем и отображаем запросы в друзья
-    try {
-        const friendRequests = await getFriendRequests();
-        // Здесь можно добавить логику отображения запросов в друзья
-    } catch (error) {
-        console.error('Error loading friend requests:', error);
-    }
-});

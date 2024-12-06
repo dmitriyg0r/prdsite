@@ -69,50 +69,6 @@
     <!-- Основной контент -->
     <main class="main-content">
         <div id="profile-container">
-            <!-- Контейнер входа -->
-            <div id="login-container">
-                <h2>Вход в систему</h2>
-                <form id="login-form">
-                    <div class="form-group">
-                        <label for="login-username">Имя пользователя:</label>
-                        <input type="text" id="login-username" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="login-password">Пароль:</label>
-                        <div class="password-group">
-                            <input type="password" id="login-password" required>
-                            <i class="fas fa-eye eye-icon" onclick="togglePassword('login')"></i>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn primary-btn">Войти</button>
-                    <button type="button" class="btn secondary-btn" onclick="showRegisterForm()">
-                        Регистрация
-                    </button>
-                </form>
-            </div>
-
-            <!-- Контейнер регистрации -->
-            <div id="register-container" style="display: none;">
-                <h2>Регистрация</h2>
-                <form id="register-form">
-                    <div class="form-group">
-                        <label for="reg-username">Имя пользователя:</label>
-                        <input type="text" id="reg-username" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="reg-password">Пароль:</label>
-                        <div class="password-group">
-                            <input type="password" id="reg-password" required>
-                            <i class="fas fa-eye eye-icon" onclick="togglePassword('register')"></i>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn primary-btn">Зарегистрироваться</button>
-                    <button type="button" class="btn secondary-btn" onclick="showLoginForm()">
-                        Уже есть аккаунт
-                    </button>
-                </form>
-            </div>
-
             <!-- Информация профиля -->
             <div id="profile-info" style="display: none;">
                 <div class="profile-header">
@@ -184,7 +140,7 @@
                         </div>
                     </div>
                     <div id="posts-container">
-                        <!-- Посты будут добавлены динамически -->
+                        <!-- Посты будут доб��влены динамически -->
                     </div>
                 </div>
             </div>
