@@ -613,4 +613,38 @@ function getToken() {
         return null;
     }
 }
+document.addEventListener('DOMContentLoaded', async () => {
+    const userData = localStorage.getItem('user');
+    if (!userData) {
+        window.location.href = '../authreg/authreg.html';
+        return;
+    }
 
+    // Получаем данные пользователя
+    const user = JSON.parse(userData);
+    
+    // Отображаем имя пользователя
+    const usernameElement = document.getElementById('username');
+    if (usernameElement) {
+        usernameElement.textContent = user.username;
+    }
+
+    // Добавляем обработчики событий для форм
+    const changePasswordForm = document.getElementById('change-password-form');
+    if (changePasswordForm) {
+        changePasswordForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const oldPassword = document.getElementById('old-password').value;
+            const newPassword = document.getElementById('new-password').value;
+            await changePassword(oldPassword, newPassword);
+        });
+    }
+
+    // Получаем и отображаем запросы в друзья
+    try {
+        const friendRequests = await getFriendRequests();
+        // Здесь можно добавить логику отображения запросов в друзья
+    } catch (error) {
+        console.error('Error loading friend requests:', error);
+    }
+});
