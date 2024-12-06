@@ -28,9 +28,19 @@ try {
         throw new Exception('Invalid token');
     }
 
-    // Проверяем загруженный файл
-    if (!isset($_FILES['avatar'])) {
-        throw new Exception('No file uploaded');
+    // Добавляем отладочную информацию в начало файла
+    error_log("Upload avatar request received");
+    error_log("FILES: " . print_r($_FILES, true));
+    error_log("POST: " . print_r($_POST, true));
+    error_log("Headers: " . print_r(getallheaders(), true));
+
+    // Обновляем проверку загруженного файла
+    if (!isset($_FILES['avatar']) || $_FILES['avatar']['error'] !== UPLOAD_ERR_OK) {
+        $errorMessage = isset($_FILES['avatar']) 
+            ? 'Upload error: ' . $_FILES['avatar']['error']
+            : 'No file uploaded';
+        error_log($errorMessage);
+        throw new Exception($errorMessage);
     }
 
     $file = $_FILES['avatar'];
@@ -38,14 +48,14 @@ try {
         throw new Exception('File upload failed with error code: ' . $file['error']);
     }
 
-    // Проверяем тип файла
+    // Добавляем проверку MIME-типа
     $allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
     $fileInfo = finfo_open(FILEINFO_MIME_TYPE);
     $mimeType = finfo_file($fileInfo, $file['tmp_name']);
     finfo_close($fileInfo);
 
     if (!in_array($mimeType, $allowedTypes)) {
-        throw new Exception('Invalid file type. Only JPG, PNG and GIF are allowed. Uploaded type: ' . $mimeType);
+        throw new Exception('Invalid file type. Only JPG, PNG and GIF are allowed.');
     }
 
     // Генерируем имя файла
