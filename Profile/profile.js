@@ -1,7 +1,6 @@
 // Обновляем константы в начале файла
 const API_BASE_URL = 'https://adminflow.ru';
-const AVATARS_PATH = '/var/www/html/api/uploads/avatars/';  // Путь для хранения аватарок
-const PHP_PATH = '/var/www/adminflow.ru/api';  // Путь к PHP файлам
+const AVATARS_PATH = '/uploads/avatars/';  // Убираем лишние части пути
 
 // Обновляем API_PATHS с учетом расположения PHP файлов
 const API_PATHS = {
@@ -139,19 +138,18 @@ const showProfile = async (userData) => {
     await loadUserAvatar(userData.username);
 };
 
-// Функция для преобразования серверного пути в URL
+// Обновляем функцию getAvatarUrl
 const getAvatarUrl = (serverPath) => {
-    if (!serverPath) return `${API_BASE_URL}/api/uploads/avatars/default-avatar.png`;
+    if (!serverPath) return `${API_BASE_URL}/uploads/avatars/default-avatar.png`;
     if (serverPath.startsWith('http')) return serverPath;
     
-    // Извлекаем часть пути после /api/
-    const matches = serverPath.match(/\/api\/(.+)$/);
-    if (matches && matches[1]) {
-        return `${API_BASE_URL}/api/${matches[1]}`;
+    // Если путь начинается с /uploads, просто добавляем базовый URL
+    if (serverPath.startsWith('/uploads/')) {
+        return `${API_BASE_URL}${serverPath}`;
     }
     
-    // Если это просто имя файла, добавляем базовый путь
-    return `${API_BASE_URL}/api/uploads/avatars/${serverPath.split('/').pop()}`;
+    // Если это просто имя файла, добавляем полный путь
+    return `${API_BASE_URL}/uploads/avatars/${serverPath.split('/').pop()}`;
 };
 
 // Обновляем функцию loadUserAvatar
@@ -343,7 +341,7 @@ const loadUsers = async () => {
     }
 };
 
-// Глобальные переменные и интервалы
+// Глобальные переменные и интер��алы
 let roleCheckInterval;
 
 // Функции проверки роли
@@ -452,7 +450,7 @@ window.deletePost = deletePost;
 window.changeRole = changeRole;
 window.deleteUser = deleteUser;
 
-// Обновляем функцию uploadAvatar с подробным логированием
+// Обновляем функцию uploadAvatar
 async function uploadAvatar(file) {
     if (!file) {
         console.error('No file selected');
@@ -460,29 +458,15 @@ async function uploadAvatar(file) {
         return;
     }
 
-    console.log('File details:', {
-        name: file.name,
-        type: file.type,
-        size: file.size
-    });
-
+    console.log('Starting avatar upload...');
+    
     const formData = new FormData();
     formData.append('avatar', file);
 
     try {
-        console.log('Starting avatar upload...');
-        console.log('Upload URL:', API_PATHS.UPLOAD_AVATAR);
-        
-        const token = getToken();
-        console.log('Token present:', !!token);
-
         const response = await apiRequest(API_PATHS.UPLOAD_AVATAR, {
             method: 'POST',
-            body: formData,
-            headers: {
-                // Не добавляем Content-Type, он будет установлен автоматически
-                'Accept': 'application/json'
-            }
+            body: formData
         });
         
         console.log('Upload response:', response);
@@ -492,10 +476,9 @@ async function uploadAvatar(file) {
             if (userAvatar) {
                 const avatarUrl = getAvatarUrl(response.data.avatarUrl);
                 console.log('New avatar URL:', avatarUrl);
-                userAvatar.src = avatarUrl;
                 
-                // Добавляем случайный параметр для обхода кэширования
-                userAvatar.src = `${avatarUrl}?t=${new Date().getTime()}`;
+                // Добавляем timestamp для предотвращения кэширования
+                userAvatar.src = `${avatarUrl}?t=${Date.now()}`;
             }
             showSuccess('Аватар успешно обновлен');
         } else {
@@ -507,11 +490,11 @@ async function uploadAvatar(file) {
     }
 }
 
-// Добавляем обработчик события для input type="file"
+// Обновляем обработчик события для загрузки аватара
 document.addEventListener('DOMContentLoaded', () => {
-    const avatarInput = document.getElementById('avatar-input');
-    if (avatarInput) {
-        avatarInput.addEventListener('change', (event) => {
+    const avatarUpload = document.getElementById('avatar-upload');
+    if (avatarUpload) {
+        avatarUpload.addEventListener('change', (event) => {
             const file = event.target.files[0];
             if (file) {
                 uploadAvatar(file);
