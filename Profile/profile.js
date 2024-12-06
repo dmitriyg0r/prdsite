@@ -57,7 +57,7 @@ const showSuccess = (message) => {
     }
 };
 
-// Обновляем функцию apiRequest для обработки ошибок авторизации
+// Обновляем функцию apiRequest для правильной обработки FormData
 const apiRequest = async (endpoint, options = {}) => {
     if (!endpoint) {
         throw new Error('API endpoint is required');
@@ -75,21 +75,23 @@ const apiRequest = async (endpoint, options = {}) => {
         }
         
         console.log('Making request to:', url);
-        console.log('Request options:', {
-            ...options,
-            headers: {
-                ...options.headers,
-                'Authorization': `Bearer ${token}`
-            }
-        });
+        
+        // Не добавляем Content-Type для FormData
+        const headers = {
+            'Authorization': `Bearer ${token}`,
+            ...options.headers
+        };
+
+        // Если тело запроса не FormData, добавляем Content-Type: application/json
+        if (options.body && !(options.body instanceof FormData)) {
+            headers['Content-Type'] = 'application/json';
+        }
+
+        console.log('Request headers:', headers);
         
         const response = await fetch(url, {
             ...options,
-            headers: {
-                ...(!(options.body instanceof FormData) && {'Content-Type': 'application/json'}),
-                'Authorization': `Bearer ${token}`,
-                ...options.headers
-            }
+            headers: headers
         });
 
         console.log('Response status:', response.status);
@@ -261,7 +263,7 @@ const loadFriendRequests = async () => {
 const createPost = async () => {
     const content = document.getElementById('post-content')?.value;
     if (!content?.trim()) {
-        showError('Пост не может быть пустым');
+        showError('Пост не может ��ыть пустым');
         return;
     }
 
@@ -370,7 +372,7 @@ const checkUserRole = async () => {
         const user = JSON.parse(localStorage.getItem('user'));
         if (!user) return;
 
-        // Проверя��м наличие пути
+        // Проверям наличие пути
         if (!API_PATHS.ROLE) {
             console.error('Role API path is not defined');
             return;
@@ -495,8 +497,8 @@ const acceptFriendRequest = async (requestId) => {
     }
 };
 
-// Обновим функцию uploadAvatar
-async function uploadAvatar(file) {
+// Обновляем функцию uploadAvatar
+const uploadAvatar = async (file) => {
     if (!file) {
         console.error('No file selected');
         showError('Файл не выбран');
@@ -505,21 +507,22 @@ async function uploadAvatar(file) {
 
     console.log('Starting avatar upload...', file);
     
-    const formData = new FormData();
-    formData.append('avatar', file);
-
     try {
-        console.log('Sending request to:', API_PATHS.UPLOAD_AVATAR);
-        
-        // Добавляем проверку размера файла
-        if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        // Проверки файла
+        if (file.size > 5 * 1024 * 1024) {
             throw new Error('Файл слишком большой. Максимальный размер 5MB');
         }
 
-        // Проверяем тип файла
         if (!file.type.startsWith('image/')) {
             throw new Error('Можно загружать только изображения');
         }
+
+        // Создаем FormData
+        const formData = new FormData();
+        formData.append('avatar', file);
+
+        console.log('Sending request to:', API_PATHS.UPLOAD_AVATAR);
+        console.log('FormData contents:', Array.from(formData.entries()));
 
         const response = await apiRequest(API_PATHS.UPLOAD_AVATAR, {
             method: 'POST',
@@ -534,16 +537,11 @@ async function uploadAvatar(file) {
                 const avatarUrl = getAvatarUrl(response.data.avatarUrl);
                 console.log('New avatar URL:', avatarUrl);
                 
-                // Добавляем обработчик загрузки изображения
-                userAvatar.onload = () => {
-                    showSuccess('Аватар успешно обновлен');
-                };
-                userAvatar.onerror = () => {
-                    showError('Ошибка при загрузке изображения');
-                };
+                // Обновляем изображение с предотвращением кэширования
+                const timestamp = new Date().getTime();
+                userAvatar.src = `${avatarUrl}?t=${timestamp}`;
                 
-                // Добавляем timestamp для предотвращения кэширования
-                userAvatar.src = `${avatarUrl}?t=${Date.now()}`;
+                showSuccess('Аватар успешно обновлен');
             }
         } else {
             throw new Error(response.error || 'Ошибка при загрузке аватара');
@@ -552,10 +550,10 @@ async function uploadAvatar(file) {
         console.error('Avatar upload error:', error);
         showError(error.message || 'Ошибка при загрузке аватара');
     }
-}
+};
 
-// Обновляем обработчик события для загрузки аватара
-document.addEventListener('DOMContentLoaded', () => {
+// Обновляем обработчики событий
+const initializeAvatarUpload = () => {
     const avatarUpload = document.getElementById('avatar-upload');
     const avatarContainer = document.querySelector('.avatar-container');
     
@@ -567,10 +565,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const file = event.target.files[0];
             if (file) {
                 console.log('Selected file:', file);
-                uploadAvatar(file).catch(error => {
-                    console.error('Avatar upload failed:', error);
-                    showError('Ошибка при загрузке аватара');
-                });
+                uploadAvatar(file);
             }
         });
     } else {
@@ -583,7 +578,16 @@ document.addEventListener('DOMContentLoaded', () => {
             avatarUpload?.click();
         });
     }
+};
+
+// Обновляем инициализацию
+document.addEventListener('DOMContentLoaded', () => {
+    initializeAvatarUpload();
+    // ... остальной код инициализации ...
 });
+
+// Добавляем функцию в глобальную область видимости
+window.uploadAvatar = uploadAvatar;
 
 // Функция для получения постов
 async function getPosts() {
@@ -671,7 +675,7 @@ const rejectFriendRequest = async (requestId) => {
             await loadFriendRequests();
         }
     } catch (error) {
-        showError('Ошибка при отклонении заявки в друзья');
+        showError('Ош��бка при отклонении заявки в друзья');
     }
 };
 
