@@ -1,5 +1,5 @@
 // Обновляем константы в начале файла
-const API_BASE_URL = 'https://adminflow.ru';
+const API_BASE_URL = 'https://adminflow.ru/api';
 const AVATARS_PATH = '/api/uploads/avatars/';  // Добавляем /api/ в путь
 
 // Обновляем API_PATHS с учетом расположения PHP файлов
