@@ -1,8 +1,9 @@
-// Добавить в начало файла
+// Обновляем константы в начале файла
 const API_BASE_URL = 'https://adminflow.ru';
-const AVATARS_PATH = '/var/www/html/api/uploads/avatars/';
+const AVATARS_PATH = '/var/www/html/api/uploads/avatars/';  // Путь для хранения аватарок
+const PHP_PATH = '/var/www/adminflow.ru/api';  // Путь к PHP файлам
 
-// Константы для путей API
+// Обновляем API_PATHS с учетом расположения PHP файлов
 const API_PATHS = {
     UPLOAD_AVATAR: '/api/users/upload-avatar.php',
     AVATAR: '/api/users/avatar.php',
@@ -383,7 +384,7 @@ const checkUserRole = async () => {
     }
 };
 
-// Инициализация
+// И��ициализация
 document.addEventListener('DOMContentLoaded', async () => {
     try {
         const userData = localStorage.getItem('user');
