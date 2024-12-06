@@ -1,7 +1,6 @@
 // Обновляем константы в начале файла
 const API_BASE_URL = 'https://adminflow.ru';
-const AVATARS_PATH = '/var/www/html/api/uploads/avatars/';  // Путь для хранения аватарок
-const PHP_PATH = '/var/www/adminflow.ru/api';  // Путь к PHP файлам
+const AVATARS_PATH = '/api/uploads/avatars/';  // Добавляем /api/ в путь
 
 // Обновляем API_PATHS с учетом расположения PHP файлов
 const API_PATHS = {
@@ -75,17 +74,26 @@ const apiRequest = async (endpoint, options = {}) => {
             return;
         }
         
-        console.log('Making request to:', url); // Добавляем логирование
+        console.log('Making request to:', url);
+        console.log('Request options:', {
+            ...options,
+            headers: {
+                ...options.headers,
+                'Authorization': `Bearer ${token}`
+            }
+        });
         
         const response = await fetch(url, {
             ...options,
             headers: {
-                'Content-Type': options.body instanceof FormData ? undefined : 'application/json',
+                ...(!(options.body instanceof FormData) && {'Content-Type': 'application/json'}),
                 'Authorization': `Bearer ${token}`,
                 ...options.headers
             }
         });
 
+        console.log('Response status:', response.status);
+        
         if (response.status === 401) {
             localStorage.removeItem('user');
             window.location.href = '../authreg/authreg.html';
@@ -139,18 +147,17 @@ const showProfile = async (userData) => {
     await loadUserAvatar(userData.username);
 };
 
-// Функция для преобразования серверного пути в URL
+// Обновляем функцию getAvatarUrl
 const getAvatarUrl = (serverPath) => {
     if (!serverPath) return `${API_BASE_URL}/api/uploads/avatars/default-avatar.png`;
     if (serverPath.startsWith('http')) return serverPath;
     
-    // Извлекаем часть пути после /api/
-    const matches = serverPath.match(/\/api\/(.+)$/);
-    if (matches && matches[1]) {
-        return `${API_BASE_URL}/api/${matches[1]}`;
+    // Если путь начинается с /uploads, добавляем /api
+    if (serverPath.startsWith('/uploads/')) {
+        return `${API_BASE_URL}/api${serverPath}`;
     }
     
-    // Если это просто имя файла, добавляем базовый путь
+    // Если это просто имя файла, добавляем полный путь
     return `${API_BASE_URL}/api/uploads/avatars/${serverPath.split('/').pop()}`;
 };
 
@@ -220,7 +227,7 @@ const loadFriendsList = async () => {
             });
         }
     } catch (error) {
-        showError('Ошибка при загрузке списка друзей');
+        showError('Ошбка при загрузке списка друзей');
     }
 };
 
@@ -247,7 +254,7 @@ const loadFriendRequests = async () => {
             });
         }
     } catch (error) {
-        showError('Ошибка при загрузке запросов в друзья');
+        showError('Ошибка при загрузке заросов в друзья');
     }
 };
 // Функции постов
@@ -452,7 +459,7 @@ window.deletePost = deletePost;
 window.changeRole = changeRole;
 window.deleteUser = deleteUser;
 
-// Обновляем функцию uploadAvatar с подробным логированием
+// Обновляем функцию uploadAvatar
 async function uploadAvatar(file) {
     if (!file) {
         console.error('No file selected');
@@ -460,28 +467,21 @@ async function uploadAvatar(file) {
         return;
     }
 
-    console.log('File details:', {
-        name: file.name,
-        type: file.type,
-        size: file.size
-    });
-
+    console.log('Starting avatar upload...', file);
+    
     const formData = new FormData();
     formData.append('avatar', file);
 
     try {
-        console.log('Starting avatar upload...');
-        console.log('Upload URL:', API_PATHS.UPLOAD_AVATAR);
+        console.log('Sending request to:', API_PATHS.UPLOAD_AVATAR);
+        console.log('FormData contents:', Array.from(formData.entries()));
         
-        const token = getToken();
-        console.log('Token present:', !!token);
-
         const response = await apiRequest(API_PATHS.UPLOAD_AVATAR, {
             method: 'POST',
             body: formData,
             headers: {
-                // Не добавляем Content-Type, он будет установлен автоматически
-                'Accept': 'application/json'
+                // Убираем Content-Type, чтобы браузер сам установил правильный с boundary
+                'Content-Type': undefined
             }
         });
         
@@ -492,12 +492,11 @@ async function uploadAvatar(file) {
             if (userAvatar) {
                 const avatarUrl = getAvatarUrl(response.data.avatarUrl);
                 console.log('New avatar URL:', avatarUrl);
-                userAvatar.src = avatarUrl;
                 
-                // Добавляем случайный параметр для обхода кэширования
-                userAvatar.src = `${avatarUrl}?t=${new Date().getTime()}`;
+                // Добавляем timestamp для предотвращения кэширования
+                userAvatar.src = `${avatarUrl}?t=${Date.now()}`;
+                showSuccess('Аватар успешно обновлен');
             }
-            showSuccess('Аватар успешно обновлен');
         } else {
             throw new Error(response.error || 'Ошибка при загрузке аватара');
         }
@@ -507,15 +506,31 @@ async function uploadAvatar(file) {
     }
 }
 
-// Добавляем обработчик события для input type="file"
+// Обновляем обработчик события для загрузки аватара
 document.addEventListener('DOMContentLoaded', () => {
-    const avatarInput = document.getElementById('avatar-input');
-    if (avatarInput) {
-        avatarInput.addEventListener('change', (event) => {
+    const avatarUpload = document.getElementById('avatar-upload');
+    const avatarContainer = document.querySelector('.avatar-container');
+    
+    if (avatarUpload) {
+        console.log('Avatar upload input found');
+        
+        avatarUpload.addEventListener('change', (event) => {
+            console.log('File input change event triggered');
             const file = event.target.files[0];
             if (file) {
+                console.log('Selected file:', file);
                 uploadAvatar(file);
             }
+        });
+    } else {
+        console.error('Avatar upload input not found');
+    }
+
+    // Добавляем обработчик клика на контейнер аватара
+    if (avatarContainer) {
+        avatarContainer.addEventListener('click', () => {
+            console.log('Avatar container clicked');
+            avatarUpload?.click();
         });
     }
 });
@@ -658,7 +673,7 @@ const sendFriendRequest = async (username) => {
         });
         
         if (response.success) {
-            showSuccess('Заявка в друзья отправлена');
+            showSuccess('Заявка в друзья отпрвлена');
             hideAddFriendModal();
         }
     } catch (error) {
