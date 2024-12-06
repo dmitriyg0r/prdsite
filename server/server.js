@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcrypt');
-const pool = require('./db');
+const { pool, testConnection } = require('./db');
 const https = require('https');
 const fs = require('fs');
 
@@ -15,10 +15,12 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Logging middleware
-app.use((req, res, next) => {
-    console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
-    next();
+// Test database connection on startup
+testConnection().then(connected => {
+    if (!connected) {
+        console.error('Unable to connect to the database');
+        process.exit(1);
+    }
 });
 
 // Test route
@@ -34,7 +36,8 @@ app.get('/api/test', async (req, res) => {
         console.error('Database connection error:', err);
         res.status(500).json({ 
             success: false, 
-            error: 'Database connection failed'
+            error: 'Database connection failed',
+            details: err.message
         });
     }
 });
