@@ -159,35 +159,79 @@ async function loadChatHistory() {
 }
 
 function displayMessages(messages) {
-    const messagesArea = document.getElementById('messages');
-    if (!messagesArea) return;
+    const messagesContainer = document.getElementById('messages');
+    messagesContainer.innerHTML = '';
 
-    messagesArea.innerHTML = messages.map(message => {
-        const isOwnMessage = message.sender_id === currentUser.id;
-        const messageTime = new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        
-        return `
-            <div class="message ${isOwnMessage ? 'message-sent' : 'message-received'}">
-                ${message.reply_data ? `
-                    <div class="reply-to">
-                        <div class="reply-line"></div>
-                        <div class="reply-content">${message.reply_data.message}</div>
-                    </div>
-                ` : ''}
-                <div class="message-content">${message.message}</div>
-                <div class="message-info">
-                    <span class="message-time">${messageTime}</span>
-                    ${isOwnMessage ? `
-                        <span class="message-status">
-                            <i class="fas ${message.is_read ? 'fa-check-double' : 'fa-check'}"></i>
-                        </span>
-                    ` : ''}
-                </div>
-            </div>
-        `;
-    }).join('');
+    messages.forEach(message => {
+        const messageElement = document.createElement('div');
+        messageElement.className = `message ${message.sender_id === currentUser.id ? 'message-sent' : 'message-received'}`;
 
-    messagesArea.scrollTop = messagesArea.scrollHeight;
+        // Добавляем информацию об отправителе для входящих сообщений
+        if (message.sender_id !== currentUser.id) {
+            const senderInfo = document.createElement('div');
+            senderInfo.className = 'message-sender';
+            senderInfo.textContent = message.sender_username;
+            messageElement.appendChild(senderInfo);
+        }
+
+        // Если есть reply_data, показываем его
+        if (message.reply_data) {
+            const replyElement = document.createElement('div');
+            replyElement.className = 'message-reply';
+            replyElement.textContent = `↳ ${message.reply_data.message}`;
+            messageElement.appendChild(replyElement);
+        }
+
+        // Основной текст сообщения
+        const messageText = document.createElement('div');
+        messageText.className = 'message-text';
+        messageText.textContent = message.message;
+        messageElement.appendChild(messageText);
+
+        // Если есть вложение, показываем его
+        if (message.attachment_url) {
+            const attachmentElement = document.createElement('div');
+            attachmentElement.className = 'message-attachment';
+            
+            // Формируем полный URL с правильным доменом и портом
+            const fullUrl = `https://adminflow.ru:5003${message.attachment_url}`;
+
+            if (message.attachment_url.match(/\.(jpg|jpeg|png|gif)$/i)) {
+                // Если это изображение
+                const img = document.createElement('img');
+                img.src = fullUrl;
+                img.alt = 'Attachment';
+                img.onclick = () => showImageModal(fullUrl);
+                attachmentElement.appendChild(img);
+            } else {
+                // Если это другой файл
+                const fileInfo = document.createElement('div');
+                fileInfo.className = 'file-info';
+                const fileName = message.attachment_url.split('/').pop();
+                fileInfo.innerHTML = `
+                    <i class="fas fa-file file-icon"></i>
+                    <a href="${fullUrl}" 
+                       target="_blank" 
+                       class="file-name">
+                        ${fileName}
+                    </a>
+                `;
+                attachmentElement.appendChild(fileInfo);
+            }
+
+            messageElement.appendChild(attachmentElement);
+        }
+
+        // Время сообщения
+        const timeElement = document.createElement('div');
+        timeElement.className = 'message-time';
+        timeElement.textContent = new Date(message.created_at).toLocaleTimeString();
+        messageElement.appendChild(timeElement);
+
+        messagesContainer.appendChild(messageElement);
+    });
+
+    scrollToBottom();
 }
 
 async function sendMessage() {
@@ -429,7 +473,7 @@ async function markMessagesAsRead(friendId) {
 function showImageModal(imageUrl) {
     const modal = document.querySelector('.image-modal');
     const modalImage = document.getElementById('modalImage');
-    modalImage.src = imageUrl;
+    modalImage.src = imageUrl; // Используем полный URL
     modal.style.display = 'flex';
 }
 
