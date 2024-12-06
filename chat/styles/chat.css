@@ -323,9 +323,9 @@ body {
 }
 
 .attach-button, #sendMessage {
-    background-color: var(--primary-color);
+    background-color: var(--primary-color) !important;
     border: none;
-    color: white;
+    color: white !important;
     cursor: pointer;
     padding: 8px;
     border-radius: 50%;
@@ -338,13 +338,13 @@ body {
 }
 
 .attach-button:hover, #sendMessage:hover {
-    background-color: var(--primary-color-hover);
+    background-color: var(--primary-color-hover) !important;
     transform: scale(1.05);
 }
 
 .attach-button i, #sendMessage i {
     font-size: 1.1em;
-    color: white;
+    color: white !important;
 }
 
 #messageInput {
