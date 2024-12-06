@@ -200,7 +200,7 @@ const showProfile = async (userData) => {
 
 // Обновляем функцию getAvatarUrl
 const getAvatarUrl = (serverPath) => {
-    if (!serverPath) return `${API_BASE_URL}${AVATARS_PATH.DEFAULT_AVATAR}`;
+    if (!serverPath) return AVATARS_PATH.DEFAULT_AVATAR;
     if (serverPath.startsWith('http')) return serverPath;
     
     // Если путь начинается с /uploads, добавляем базовый URL API
