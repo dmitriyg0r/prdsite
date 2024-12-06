@@ -1,8 +1,8 @@
-// Обновляем константы в начале файла
+// Обновляем базовый URL и пути
 const API_BASE_URL = 'https://adminflow.ru/api';
-const AVATARS_PATH = '/uploads/avatars/';  // Добавляем /api/ в путь
+const AVATARS_PATH = '/uploads/avatars/';
 
-// Обновляем API_PATHS с учетом расположения PHP файлов
+// Обновляем API_PATHS с учетом нового расположения
 const API_PATHS = {
     UPLOAD_AVATAR: '/users/upload-avatar.php',
     AVATAR: '/users/avatar.php',
@@ -217,7 +217,7 @@ const loadUserAvatar = async (username) => {
     }
 
     try {
-        const response = await apiRequest(API_PATHS.AVATAR, {
+        const response = await apiRequest(API_BASE_URL + API_PATHS.AVATAR, {
             method: 'GET',
             headers: {
                 'X-Username': username
@@ -230,13 +230,13 @@ const loadUserAvatar = async (username) => {
         if (response.success && response.data.avatarUrl) {
             userAvatar.src = getAvatarUrl(response.data.avatarUrl);
         } else {
-            userAvatar.src = getAvatarUrl(AVATARS_PATH + 'default-avatar.png');
+            userAvatar.src = getAvatarUrl(API_BASE_URL + AVATARS_PATH + 'default-avatar.png');
         }
     } catch (error) {
         console.error('Error loading avatar:', error);
         const userAvatar = document.getElementById('user-avatar');
         if (userAvatar) {
-            userAvatar.src = getAvatarUrl(AVATARS_PATH + 'default-avatar.png');
+            userAvatar.src = getAvatarUrl(API_BASE_URL + AVATARS_PATH + 'default-avatar.png');
         }
     }
 };
@@ -326,7 +326,7 @@ const createPost = async () => {
             loadPosts();
         }
     } catch (error) {
-        showError('Ошибка при созд��нии поста');
+        showError('Ошибка при созднии поста');
     }
 };
 
