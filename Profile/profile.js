@@ -160,7 +160,7 @@ const handleRegister = async (event) => {
             showError(response.error || 'Ошибка при регистрации');
         }
     } catch (error) {
-        showError('��шибка при регистрации');
+        showError('ошибка при регистрации');
     }
 };
 
@@ -289,7 +289,7 @@ const loadFriendRequests = async () => {
                 const requestItem = document.createElement('div');
                 requestItem.className = 'friend-request-item';
                 requestItem.innerHTML = `
-                    <img src="${request.avatarUrl || `${API_BASE_URL}${API_PATHS.UPLOAD_AVATAR}`}" alt="Аватар" class="friend-avatar">
+                    <img src="${request.avatarUrl || `${API_BASE_URL}/uploads/avatars/default-avatar.png`}" alt="Аватар" class="friend-avatar">
                     <span>${request.username}</span>
                     <div class="request-actions">
                         <button onclick="acceptFriendRequest('${request.id}')" class="btn primary-btn">Принять</button>
@@ -303,7 +303,6 @@ const loadFriendRequests = async () => {
         showError('Ошибка при загрузке запросов в друзья');
     }
 };
-
 // Функции постов
 const createPost = async () => {
     const content = document.getElementById('post-content')?.value;
@@ -592,3 +591,4 @@ const showChatButton = () => {
         chatLink.style.display = 'block';
     }
 };
+
