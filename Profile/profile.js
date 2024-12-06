@@ -74,17 +74,26 @@ const apiRequest = async (endpoint, options = {}) => {
             return;
         }
         
-        console.log('Making request to:', url); // Добавляем логирование
+        console.log('Making request to:', url);
+        console.log('Request options:', {
+            ...options,
+            headers: {
+                ...options.headers,
+                'Authorization': `Bearer ${token}`
+            }
+        });
         
         const response = await fetch(url, {
             ...options,
             headers: {
-                'Content-Type': options.body instanceof FormData ? undefined : 'application/json',
+                ...(!(options.body instanceof FormData) && {'Content-Type': 'application/json'}),
                 'Authorization': `Bearer ${token}`,
                 ...options.headers
             }
         });
 
+        console.log('Response status:', response.status);
+        
         if (response.status === 401) {
             localStorage.removeItem('user');
             window.location.href = '../authreg/authreg.html';
@@ -218,7 +227,7 @@ const loadFriendsList = async () => {
             });
         }
     } catch (error) {
-        showError('Ош��бка при загрузке списка друзей');
+        showError('Ошбка при загрузке списка друзей');
     }
 };
 
@@ -245,7 +254,7 @@ const loadFriendRequests = async () => {
             });
         }
     } catch (error) {
-        showError('Ошибка при загрузке за��росов в друзья');
+        showError('Ошибка при загрузке заросов в друзья');
     }
 };
 // Функции постов
@@ -458,15 +467,22 @@ async function uploadAvatar(file) {
         return;
     }
 
-    console.log('Starting avatar upload...');
+    console.log('Starting avatar upload...', file);
     
     const formData = new FormData();
     formData.append('avatar', file);
 
     try {
+        console.log('Sending request to:', API_PATHS.UPLOAD_AVATAR);
+        console.log('FormData contents:', Array.from(formData.entries()));
+        
         const response = await apiRequest(API_PATHS.UPLOAD_AVATAR, {
             method: 'POST',
-            body: formData
+            body: formData,
+            headers: {
+                // Убираем Content-Type, чтобы браузер сам установил правильный с boundary
+                'Content-Type': undefined
+            }
         });
         
         console.log('Upload response:', response);
@@ -479,8 +495,8 @@ async function uploadAvatar(file) {
                 
                 // Добавляем timestamp для предотвращения кэширования
                 userAvatar.src = `${avatarUrl}?t=${Date.now()}`;
+                showSuccess('Аватар успешно обновлен');
             }
-            showSuccess('Аватар успешно обновлен');
         } else {
             throw new Error(response.error || 'Ошибка при загрузке аватара');
         }
@@ -493,12 +509,28 @@ async function uploadAvatar(file) {
 // Обновляем обработчик события для загрузки аватара
 document.addEventListener('DOMContentLoaded', () => {
     const avatarUpload = document.getElementById('avatar-upload');
+    const avatarContainer = document.querySelector('.avatar-container');
+    
     if (avatarUpload) {
+        console.log('Avatar upload input found');
+        
         avatarUpload.addEventListener('change', (event) => {
+            console.log('File input change event triggered');
             const file = event.target.files[0];
             if (file) {
+                console.log('Selected file:', file);
                 uploadAvatar(file);
             }
+        });
+    } else {
+        console.error('Avatar upload input not found');
+    }
+
+    // Добавляем обработчик клика на контейнер аватара
+    if (avatarContainer) {
+        avatarContainer.addEventListener('click', () => {
+            console.log('Avatar container clicked');
+            avatarUpload?.click();
         });
     }
 });
@@ -641,7 +673,7 @@ const sendFriendRequest = async (username) => {
         });
         
         if (response.success) {
-            showSuccess('Заявка в друзья отпр��влена');
+            showSuccess('Заявка в друзья отпрвлена');
             hideAddFriendModal();
         }
     } catch (error) {
