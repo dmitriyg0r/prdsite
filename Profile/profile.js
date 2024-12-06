@@ -56,25 +56,33 @@ const showSuccess = (message) => {
     }
 };
 
-// Обновляем функцию apiRequest для корректной обработки путей
+// Обновляем функцию apiRequest для обработки ошибок авторизации
 const apiRequest = async (endpoint, options = {}) => {
-    // Используем полный путь из API_PATHS или строим его из endpoint
     const url = endpoint.startsWith('http') 
         ? endpoint 
         : `${API_BASE_URL}${endpoint.startsWith('/') ? endpoint : '/' + endpoint}`;
     
     try {
         const token = getToken();
+        if (!token) {
+            window.location.href = '../authreg/authreg.html';
+            return;
+        }
         
-        console.log('Sending request to:', url);
         const response = await fetch(url, {
             ...options,
             headers: {
                 'Content-Type': options.body instanceof FormData ? undefined : 'application/json',
-                'Authorization': token ? `Bearer ${token}` : '',
+                'Authorization': `Bearer ${token}`,
                 ...options.headers
             }
         });
+
+        if (response.status === 401) {
+            localStorage.removeItem('user');
+            window.location.href = '../authreg/authreg.html';
+            return;
+        }
 
         if (!response.ok) {
             const errorData = await response.json();
@@ -104,21 +112,18 @@ const handleLogout = async () => {
     }
 };
 
-// Функции профиля
+// Обновляем функцию showProfile
 const showProfile = async (userData) => {
     if (!userData) {
         console.error('User data is missing');
+        window.location.href = '../authreg/authreg.html';
         return;
     }
 
-    const loginContainer = document.getElementById('login-container');
-    const registerContainer = document.getElementById('register-container');
     const profileInfo = document.getElementById('profile-info');
     const profileUsername = document.getElementById('profile-username');
     const profileRole = document.getElementById('profile-role');
 
-    if (loginContainer) loginContainer.style.display = 'none';
-    if (registerContainer) registerContainer.style.display = 'none';
     if (profileInfo) profileInfo.style.display = 'block';
     if (profileUsername) profileUsername.textContent = userData.username;
     if (profileRole) profileRole.textContent = userData.role;
@@ -492,11 +497,11 @@ async function changePassword(oldPassword, newPassword) {
     }
 }
 
-// Вспомогательная функция для получения токена
+// Обновляем функцию getToken
 function getToken() {
     try {
         const user = JSON.parse(localStorage.getItem('user'));
-        return user ? user.token : null;
+        return user?.token;
     } catch (error) {
         console.error('Error getting token:', error);
         return null;
