@@ -1,7 +1,7 @@
 /* Основной контейнер чата */
 .chat-container {
     display: flex;
-    height: calc(100vh - 40px); /* Учитываем отступы */
+    height: calc(100vh - 40px);
     background-color: var(--background-color);
     margin: 20px;
     border-radius: 25px;
@@ -40,7 +40,7 @@
     padding: 12px 35px 12px 15px;
     border: 1px solid var(--border-color);
     border-radius: 20px;
-    background-color: var(--background-color);
+    background-color: var(--input-background);
     color: var(--text-color);
     transition: all 0.3s ease;
 }
@@ -63,45 +63,38 @@
 .friends-list {
     flex: 1;
     overflow-y: auto;
+    padding: 10px;
 }
 
 .chat-partner {
     display: flex;
     align-items: center;
     padding: 15px;
+    border-radius: 15px;
+    margin-bottom: 5px;
     cursor: pointer;
     transition: all 0.3s ease;
-    border-bottom: 1px solid var(--border-color);
-    background-color: var(--text-container-background);
 }
 
 .chat-partner:hover {
-    background-color: var(--hover-background);
-    transform: translateX(5px);
+    background-color: var(--table-hover);
 }
 
 .chat-partner.active {
-    background-color: var(--primary-color);
-}
-
-.chat-partner.active .friend-name,
-.chat-partner.active .last-message,
-.chat-partner.active .message-time {
-    color: white;
+    background-color: rgba(var(--button-background-rgb), 0.15);
 }
 
 .chat-avatar {
-    width: 45px;
-    height: 45px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
     margin-right: 15px;
     object-fit: cover;
-    border: 2px solid var(--border-color);
 }
 
 .friend-info {
     flex: 1;
-    min-width: 0; /* Для корректного переноса текста */
+    overflow: hidden;
 }
 
 .friend-name {
@@ -118,9 +111,13 @@
     text-overflow: ellipsis;
 }
 
-.message-time {
-    color: var(--text-secondary);
+.unread-count {
+    background-color: var(--primary-color);
+    color: var(--button-text);
+    padding: 2px 8px;
+    border-radius: 12px;
     font-size: 0.8em;
+    display: none;
 }
 
 /* Область чата */
@@ -128,14 +125,16 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    background-color: var(--background-color);
+    background-color: var(--text-container-background);
 }
 
 /* Заголовок чата */
 .chat-header {
-    padding: 15px 20px;
-    background-color: var(--text-container-background);
+    padding: 20px;
     border-bottom: 1px solid var(--border-color);
+    background-color: var(--text-container-background);
+    display: flex;
+    align-items: center;
 }
 
 .chat-header-info {
@@ -145,8 +144,7 @@
 
 .chat-header-info h3 {
     color: var(--text-color);
-    margin: 0;
-    font-weight: 500;
+    margin: 0 0 0 15px;
 }
 
 /* Заглушка */
@@ -157,13 +155,11 @@
     align-items: center;
     justify-content: center;
     color: var(--text-secondary);
-    background-color: var(--background-color);
 }
 
 .chat-placeholder i {
     font-size: 48px;
-    margin-bottom: 15px;
-    color: var(--primary-color);
+    margin-bottom: 20px;
 }
 
 /* Область сообщений */
@@ -171,37 +167,54 @@
     flex: 1;
     overflow-y: auto;
     padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
     background-color: var(--background-color);
 }
 
+/* Сообщения */
 .message {
     max-width: 70%;
+    margin-bottom: 15px;
     padding: 12px 15px;
     border-radius: 15px;
     position: relative;
-    animation: fadeIn 0.3s ease-out;
 }
 
 .message-sent {
-    align-self: flex-end;
+    margin-left: auto;
     background-color: var(--primary-color);
-    color: white;
-    border-bottom-right-radius: 5px;
+    color: var(--button-text);
 }
 
 .message-received {
-    align-self: flex-start;
+    margin-right: auto;
     background-color: var(--text-container-background);
     color: var(--text-color);
-    border-bottom-left-radius: 5px;
+}
+
+.message-sender {
+    font-size: 0.8em;
+    margin-bottom: 5px;
+    color: var(--text-secondary);
+}
+
+.message-time {
+    font-size: 0.75em;
+    margin-top: 5px;
+    opacity: 0.8;
+}
+
+.message-reply {
+    font-size: 0.9em;
+    padding: 5px 10px;
+    margin-bottom: 5px;
+    border-left: 3px solid rgba(var(--button-background-rgb), 0.5);
+    background-color: rgba(var(--button-background-rgb), 0.1);
+    border-radius: 5px;
 }
 
 /* Область ввода */
 .input-area {
-    padding: 15px 20px;
+    padding: 20px;
     background-color: var(--text-container-background);
     border-top: 1px solid var(--border-color);
     display: flex;
@@ -214,7 +227,7 @@
     padding: 12px 15px;
     border: 1px solid var(--border-color);
     border-radius: 20px;
-    background-color: var(--background-color);
+    background-color: var(--input-background);
     color: var(--text-color);
     transition: all 0.3s ease;
 }
@@ -225,19 +238,86 @@
     outline: none;
 }
 
-.attach-button {
+.input-area button {
     background: none;
     border: none;
-    color: var(--text-secondary);
+    color: var(--primary-color);
     cursor: pointer;
     padding: 8px;
     border-radius: 50%;
     transition: all 0.3s ease;
 }
 
-.attach-button:hover {
-    color: var(--primary-color);
+.input-area button:hover {
     background-color: rgba(var(--button-background-rgb), 0.1);
+}
+
+/* Вложения */
+.message-attachment {
+    margin-top: 10px;
+}
+
+.message-attachment img {
+    max-width: 200px;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.file-info {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    background: rgba(var(--button-background-rgb), 0.1);
+    border-radius: 8px;
+    margin-top: 5px;
+}
+
+.file-info .file-icon {
+    margin-right: 8px;
+    color: var(--text-secondary);
+}
+
+.file-info .file-name {
+    color: var(--text-color);
+    text-decoration: none;
+}
+
+.file-info .file-name:hover {
+    color: var(--primary-color);
+}
+
+/* Модальное окно для изображений */
+.image-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.image-modal img {
+    max-width: 90%;
+    max-height: 90vh;
+    border-radius: 10px;
+}
+
+.close-modal {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    color: white;
+    font-size: 30px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.close-modal:hover {
+    color: var(--primary-color);
 }
 
 /* Адаптивность */
@@ -264,73 +344,4 @@
     .chat-area {
         width: 100%;
     }
-}
-
-/* Стили для файлов в сообщениях */
-.message-attachment {
-    margin-top: 5px;
-    max-width: 200px;
-}
-
-.message-attachment img {
-    max-width: 100%;
-    border-radius: 8px;
-}
-
-.message-attachment .file-info {
-    display: flex;
-    align-items: center;
-    padding: 8px;
-    background: rgba(var(--button-background-rgb), 0.1);
-    border-radius: 8px;
-    margin-top: 5px;
-}
-
-.message-attachment .file-icon {
-    margin-right: 8px;
-    color: var(--text-secondary);
-}
-
-.message-attachment .file-name {
-    color: var(--text-color);
-    font-size: 0.9em;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-/* Стили для предпросмотра файла перед отправкой */
-.file-preview {
-    display: flex;
-    align-items: center;
-    padding: 8px;
-    background: var(--background-color);
-    border-radius: 8px;
-    margin-right: 10px;
-}
-
-.file-preview img {
-    max-height: 40px;
-    border-radius: 4px;
-    margin-right: 8px;
-}
-
-.file-preview .file-name {
-    color: var(--text-color);
-    font-size: 0.9em;
-    margin-right: 8px;
-}
-
-.file-preview .remove-file {
-    background: none;
-    border: none;
-    color: var(--text-secondary);
-    cursor: pointer;
-    padding: 4px 8px;
-    border-radius: 50%;
-}
-
-.file-preview .remove-file:hover {
-    color: var(--primary-color);
-    background-color: rgba(var(--button-background-rgb), 0.1);
 } 
