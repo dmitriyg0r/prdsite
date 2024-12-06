@@ -1,6 +1,6 @@
 // Обновляем константы в начале файла
 const API_BASE_URL = 'https://adminflow.ru';
-const AVATARS_PATH = '/api/uploads/avatars/';  // Убираем лишние части пути
+const AVATARS_PATH = '/api/uploads/avatars/';  // Добавляем /api/ в путь
 
 // Обновляем API_PATHS с учетом расположения PHP файлов
 const API_PATHS = {
@@ -140,16 +140,16 @@ const showProfile = async (userData) => {
 
 // Обновляем функцию getAvatarUrl
 const getAvatarUrl = (serverPath) => {
-    if (!serverPath) return `${API_BASE_URL}/uploads/avatars/default-avatar.png`;
+    if (!serverPath) return `${API_BASE_URL}/api/uploads/avatars/default-avatar.png`;
     if (serverPath.startsWith('http')) return serverPath;
     
-    // Если путь начинается с /uploads, просто добавляем базовый URL
+    // Если путь начинается с /uploads, добавляем /api
     if (serverPath.startsWith('/uploads/')) {
-        return `${API_BASE_URL}${serverPath}`;
+        return `${API_BASE_URL}/api${serverPath}`;
     }
     
     // Если это просто имя файла, добавляем полный путь
-    return `${API_BASE_URL}/uploads/avatars/${serverPath.split('/').pop()}`;
+    return `${API_BASE_URL}/api/uploads/avatars/${serverPath.split('/').pop()}`;
 };
 
 // Обновляем функцию loadUserAvatar
@@ -218,7 +218,7 @@ const loadFriendsList = async () => {
             });
         }
     } catch (error) {
-        showError('Ошибка при загрузке списка друзей');
+        showError('Ош��бка при загрузке списка друзей');
     }
 };
 
@@ -245,7 +245,7 @@ const loadFriendRequests = async () => {
             });
         }
     } catch (error) {
-        showError('Ошибка при загрузке запросов в друзья');
+        showError('Ошибка при загрузке за��росов в друзья');
     }
 };
 // Функции постов
@@ -341,7 +341,7 @@ const loadUsers = async () => {
     }
 };
 
-// Глобальные переменные и интер��алы
+// Глобальные переменные и интервалы
 let roleCheckInterval;
 
 // Функции проверки роли
@@ -641,7 +641,7 @@ const sendFriendRequest = async (username) => {
         });
         
         if (response.success) {
-            showSuccess('Заявка в друзья отправлена');
+            showSuccess('Заявка в друзья отпр��влена');
             hideAddFriendModal();
         }
     } catch (error) {
