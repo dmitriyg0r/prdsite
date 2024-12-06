@@ -72,19 +72,22 @@
 
             <!-- Область ввода -->
             <div class="input-area">
-                <div class="attachment-wrapper">
-                    <input type="file" id="fileInput" accept="image/*">
-                    <button id="attachButton" class="attach-button">
-                        <i class="fas fa-paperclip"></i>
+                <div id="filePreview"></div>
+                <div class="input-controls">
+                    <div class="attachment-wrapper">
+                        <input type="file" id="fileInput">
+                        <button id="attachButton" class="attach-button">
+                            <i class="fas fa-paperclip"></i>
+                        </button>
+                    </div>
+                    <div id="replyPreview" class="reply-preview" style="display: none;">
+                        <!-- Предпросмотр ответа будет добавлен через JavaScript -->
+                    </div>
+                    <input type="text" id="messageInput" placeholder="Введите сообщение...">
+                    <button id="sendMessage">
+                        <i class="fas fa-paper-plane"></i>
                     </button>
                 </div>
-                <div id="replyPreview" class="reply-preview" style="display: none;">
-                    <!-- Предпросмотр ответа будет добавлен через JavaScript -->
-                </div>
-                <input type="text" id="messageInput" placeholder="Введите сообщение...">
-                <button id="sendMessage">
-                    <i class="fas fa-paper-plane"></i>
-                </button>
             </div>
         </div>
     </div>
