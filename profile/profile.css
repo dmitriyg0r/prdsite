@@ -357,20 +357,23 @@ body {
 .friends-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 15px;
-    margin-top: 15px;
+    gap: 10px;
+    padding: 5px;
 }
 
 .friend-placeholder {
     text-align: center;
+    width: 80px;
+    margin: 0 auto;
 }
 
 .friend-avatar {
-    width: 60px;
-    height: 60px;
+    width: 70px;
+    height: 70px;
     border-radius: 50%;
     overflow: hidden;
     margin: 0 auto 5px;
+    border: 2px solid var(--border-color);
 }
 
 .friend-avatar img {
@@ -386,6 +389,8 @@ body {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    max-width: 80px;
+    margin: 0 auto;
 }
 
 /* Обновленные стили для кнопок действий */
@@ -458,5 +463,24 @@ body {
 @media (max-width: 480px) {
     .friends-grid {
         grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Адаптивность для блока друзей */
+@media (max-width: 992px) {
+    .friend-placeholder {
+        width: 70px;
+    }
+    
+    .friend-avatar {
+        width: 60px;
+        height: 60px;
+    }
+}
+
+@media (max-width: 768px) {
+    .friends-grid {
+        grid-template-columns: repeat(3, 1fr);
+        justify-items: center;
     }
 } 
