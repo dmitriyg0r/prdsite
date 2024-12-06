@@ -1,6 +1,7 @@
 let currentChatPartner = null;
 let currentUser = null;
 let messageUpdateInterval = null;
+let selectedFile = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
     // Проверка авторизации
@@ -133,7 +134,7 @@ async function openChat(friend) {
     document.getElementById('chat-header-avatar').src = friend.avatar_url || '../uploads/avatars/default.png';
     document.getElementById('chat-header-name').textContent = friend.username;
 
-    // Загружаем историю сообщений
+    // Загружаем историю сообщен��й
     await loadChatHistory();
     
     // Отмечаем сообщения как прочитанные
@@ -179,7 +180,7 @@ function displayMessages(messages) {
         if (message.reply_data) {
             const replyElement = document.createElement('div');
             replyElement.className = 'message-reply';
-            replyElement.textContent = `��� ${message.reply_data.message}`;
+            replyElement.textContent = ` ${message.reply_data.message}`;
             messageElement.appendChild(replyElement);
         }
 
@@ -487,6 +488,8 @@ document.querySelector('.close-modal').onclick = function() {
 function setupAttachmentHandlers() {
     const attachButton = document.getElementById('attachButton');
     const fileInput = document.getElementById('fileInput');
+    const messageInput = document.getElementById('messageInput');
+    const sendButton = document.getElementById('sendMessage');
 
     // Обработчик клика по кнопке прикрепления
     attachButton.addEventListener('click', () => {
@@ -494,42 +497,110 @@ function setupAttachmentHandlers() {
     });
 
     // Обработчик выбора файла
-    fileInput.addEventListener('change', async (e) => {
+    fileInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
-        // Проверяем размер файла (например, максимум 5MB)
-        const maxSize = 5 * 1024 * 1024; // 5MB в байтах
+        // Проверяем размер файла (максимум 5MB)
+        const maxSize = 5 * 1024 * 1024;
         if (file.size > maxSize) {
             alert('Файл слишком большой. Максимальный размер: 5MB');
             return;
         }
 
-        // Создаем FormData для отправки файла
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('senderId', currentUser.id);
-        formData.append('receiverId', currentChatPartner.id);
-        formData.append('message', ''); // Пустое сообщение или можно добавить подпись к файлу
+        selectedFile = file;
+        showFilePreview(file);
+    });
 
-        try {
-            const response = await fetch('https://adminflow.ru:5003/api/messages/send-with-file', {
-                method: 'POST',
-                body: formData
-            });
+    // Обработчик отправки сообщения с файлом
+    sendButton.addEventListener('click', async () => {
+        const message = messageInput.value.trim();
+        
+        if (!message && !selectedFile) return;
 
-            const data = await response.json();
-            if (data.success) {
-                // Очищаем input после успешной отправки
-                fileInput.value = '';
-                // Обновляем сообщения
-                loadMessages(currentChatPartner.id);
-            } else {
-                alert('Ошибка при отправке файла');
-            }
-        } catch (err) {
-            console.error('Error sending file:', err);
+        if (selectedFile) {
+            await sendMessageWithFile(message);
+        } else {
+            await sendMessage(message);
+        }
+
+        messageInput.value = '';
+        removeFilePreview();
+        selectedFile = null;
+    });
+}
+
+// Функция отображения превью файла
+function showFilePreview(file) {
+    const previewContainer = document.createElement('div');
+    previewContainer.id = 'filePreview';
+    previewContainer.className = 'file-preview';
+
+    const isImage = file.type.startsWith('image/');
+    
+    if (isImage) {
+        const img = document.createElement('img');
+        img.className = 'file-preview-image';
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+        previewContainer.appendChild(img);
+    }
+
+    const fileInfo = document.createElement('div');
+    fileInfo.className = 'file-preview-info';
+    fileInfo.innerHTML = `
+        <i class="fas ${isImage ? 'fa-image' : 'fa-file'}"></i>
+        <span class="file-name">${file.name}</span>
+        <button class="remove-file" onclick="removeFilePreview()">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    previewContainer.appendChild(fileInfo);
+
+    // Удаляем старый превью если есть
+    removeFilePreview();
+    
+    // Добавляем новый превью перед полем ввода
+    const inputArea = document.querySelector('.input-area');
+    inputArea.insertBefore(previewContainer, inputArea.firstChild);
+}
+
+// Функция удаления превью файла
+function removeFilePreview() {
+    const preview = document.getElementById('filePreview');
+    if (preview) {
+        preview.remove();
+    }
+    selectedFile = null;
+}
+
+// Функция отправки сообщения с файлом
+async function sendMessageWithFile(message) {
+    if (!selectedFile) return;
+
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+    formData.append('senderId', currentUser.id);
+    formData.append('receiverId', currentChatPartner.id);
+    formData.append('message', message);
+
+    try {
+        const response = await fetch('https://adminflow.ru:5003/api/messages/send-with-file', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            loadMessages(currentChatPartner.id);
+        } else {
             alert('Ошибка при отправке файла');
         }
-    });
+    } catch (err) {
+        console.error('Error sending file:', err);
+        alert('Ошибка при отправке файла');
+    }
 } 

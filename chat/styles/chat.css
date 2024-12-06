@@ -280,6 +280,11 @@ body {
     background-color: var(--text-container-background);
     border-top: 1px solid var(--border-color);
     display: flex;
+    flex-direction: column;
+}
+
+.input-controls {
+    display: flex;
     align-items: center;
     gap: 10px;
 }
@@ -411,5 +416,60 @@ body {
     .chat-area {
         width: 100%;
     }
+}
+
+/* Превью прикрепленного файла */
+.file-preview {
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    background-color: var(--background-color);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    max-width: 300px;
+}
+
+.file-preview-image {
+    max-width: 200px;
+    max-height: 150px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    object-fit: cover;
+}
+
+.file-preview-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px;
+}
+
+.file-preview-info i {
+    color: var(--text-secondary);
+    font-size: 1.2em;
+}
+
+.file-preview-info .file-name {
+    flex: 1;
+    color: var(--text-color);
+    font-size: 0.9em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.remove-file {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.remove-file:hover {
+    color: var(--error-color);
+    background-color: rgba(var(--error-color-rgb), 0.1);
 }
  
