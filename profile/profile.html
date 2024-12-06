@@ -6,90 +6,53 @@
     <title>Профиль - AdminFlow</title>
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="profile.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="../flow.ico">
 </head>
-
-<div class="overlay"></div>
-<!-- Боковое меню должно быть первым -->
-<nav class="sidebar">
-    <!-- Добавляем иконку -->
-    <div class="sidebar-logo">
-        <img src="../flow.ico" alt="Flow Logo" class="sidebar-icon">
-    </div>
-    <div class="sidebar-nav">
-        <a href="../index.html" class="sidebar-link">
-            <i class="fas fa-home"></i>
-            <span>Расписание</span>
-        </a>
-        <a href="../home/homework.html" class="sidebar-link">
-            <i class="fas fa-tasks"></i>
-            <span>Задания</span>
-        </a>
-        <a href="../downloads/downloads.html" class="sidebar-link">
-            <i class="fas fa-download"></i>
-            <span>Загрузки</span>
-        </a>
-        <a href="../memes/memes.html" class="sidebar-link">
-            <i class="fas fa-smile"></i>
-            <span>Мемы</span>
-        </a>
-        <a href="../about/about.html" class="sidebar-link">
-            <i class="fas fa-info-circle"></i>
-            <span>О нас</span>
-        </a>
-        <a href="../games/games.html" class="sidebar-link">
-            <i class="fas fa-gamepad"></i>
-            <span>Игры</span>
-        </a>
-        <a href="../profile/profile.html" class="sidebar-link active">
-            <i class="fas fa-user"></i>
-            <span>Профиль</span>
-        </a>
-    </div>
-    <!-- Переключатель темы после навигации -->
-    <div class="theme-switch-wrapper">
-        <div class="theme-toggle-container">
-            <!-- Добавляем иконку для закрытого меню -->
-            <i class="fas fa-sun theme-icon"></i>
-            <input type="checkbox" id="theme-toggle" class="theme-checkbox">
-            <label for="theme-toggle" class="theme-label">
-                <div class="ball"></div>
-            </label>
-            <span>Тёмная тема</span>
-        </div>
-    </div>
-</nav>
-
-<div class="overlay"></div>
-
 <body>
     <div class="profile-container">
-        <h1>Добро пожаловать, <span id="username"></span>!</h1>
-        <p>Роль: <span id="role"></span></p>
-        <p>Дата создания аккаунта: <span id="created_at"></span></p>
-        <button id="logout-btn">Выйти</button>
+        <div class="profile-header">
+            <div class="profile-avatar-container">
+                <img id="profile-avatar" src="/uploads/avatars/default.png" alt="Аватар пользователя">
+                <div class="avatar-overlay">
+                    <label for="avatar-upload" class="avatar-upload-label">
+                        <i class="fas fa-camera"></i>
+                    </label>
+                    <input type="file" id="avatar-upload" accept="image/*" style="display: none;">
+                </div>
+            </div>
+            <h1>Профиль пользователя</h1>
+        </div>
+
+        <div class="profile-info">
+            <div class="info-group">
+                <label><i class="fas fa-user"></i> Имя пользователя</label>
+                <p id="username"></p>
+            </div>
+            <div class="info-group">
+                <label><i class="fas fa-shield-alt"></i> Роль</label>
+                <p id="role"></p>
+            </div>
+            <div class="info-group">
+                <label><i class="fas fa-calendar-alt"></i> Дата регистрации</label>
+                <p id="created_at"></p>
+            </div>
+            <div class="info-group">
+                <label><i class="fas fa-clock"></i> Последний вход</label>
+                <p id="last_login"></p>
+            </div>
+        </div>
+
+        <div class="profile-actions">
+            <button id="edit-profile-btn" class="btn secondary-btn">
+                <i class="fas fa-edit"></i> Редактировать профиль
+            </button>
+            <button id="logout-btn" class="btn danger-btn">
+                <i class="fas fa-sign-out-alt"></i> Выйти
+            </button>
+        </div>
     </div>
 
-    <script>
-        // Получаем данные пользователя из localStorage
-        const user = JSON.parse(localStorage.getItem('user'));
-
-        if (user) {
-            document.getElementById('username').textContent = user.username;
-            document.getElementById('role').textContent = user.role;
-            document.getElementById('created_at').textContent = new Date(user.created_at).toLocaleString();
-        } else {
-            // Если данных нет, перенаправляем на страницу авториации
-            window.location.href = '/authreg/authreg.html';
-        }
-
-        // Обработчик выхода
-        document.getElementById('logout-btn').addEventListener('click', () => {
-            localStorage.removeItem('user');
-            window.location.href = '/authreg/authreg.html';
-        });
-    </script>
-    <script src="../main.js"></script>
+    <script src="profile.js"></script>
 </body>
 </html> 

@@ -4,6 +4,8 @@ const bcrypt = require('bcrypt');
 const { pool, testConnection } = require('./db');
 const https = require('https');
 const fs = require('fs');
+const multer = require('multer');
+const path = require('path');
 
 const app = express();
 const PORT = 5003;
@@ -132,6 +134,57 @@ app.post('/api/register', async (req, res) => {
     } catch (err) {
         console.error('Registration error:', err);
         res.status(500).json({ error: 'Ошибка при регистрации' });
+    }
+});
+
+// Настройка хранилища для загрузки файлов
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, '/var/www/html/uploads/avatars')
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+        cb(null, 'avatar-' + uniqueSuffix + path.extname(file.originalname))
+    }
+});
+
+const upload = multer({ 
+    storage: storage,
+    limits: {
+        fileSize: 5 * 1024 * 1024 // 5MB макс размер
+    },
+    fileFilter: (req, file, cb) => {
+        const filetypes = /jpeg|jpg|png|gif/;
+        const mimetype = filetypes.test(file.mimetype);
+        const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+
+        if (mimetype && extname) {
+            return cb(null, true);
+        }
+        cb(new Error('Разрешены только изображения!'));
+    }
+});
+
+// Endpoint для загрузки аватара
+app.post('/api/upload-avatar', upload.single('avatar'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'Файл не загружен' });
+        }
+
+        // Обновляем путь к аватару в базе данных
+        await pool.query(
+            'UPDATE users SET avatar_url = $1 WHERE id = $2',
+            [`/uploads/avatars/${req.file.filename}`, req.user.id]
+        );
+
+        res.json({ 
+            success: true,
+            avatarUrl: `/uploads/avatars/${req.file.filename}`
+        });
+    } catch (err) {
+        console.error('Avatar upload error:', err);
+        res.status(500).json({ error: 'Ошибка при загрузке аватара' });
     }
 });
 
