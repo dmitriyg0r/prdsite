@@ -34,26 +34,29 @@ const updateInterfaceBasedOnRole = (role, username, userId) => {
     if (adminSection) {
         const isAdmin = role === 'admin';
         adminSection.style.display = isAdmin ? 'block' : 'none';
-        console.log('Admin section visibility:', isAdmin ? 'visible' : 'hidden');
     }
     
     // Обновляем информацию о пользователе
     const roleIndicator = document.getElementById('user-role');
     if (roleIndicator) {
-        roleIndicator.textContent = `Роль: ${role}`;
+        roleIndicator.textContent = `Роль: ${role || 'не определена'}`;
     }
     
     const usernameIndicator = document.getElementById('username-display');
     if (usernameIndicator) {
-        usernameIndicator.textContent = `Пользователь: ${username}`;
+        usernameIndicator.textContent = `Пользователь: ${username || 'не определен'}`;
     }
     
     const userIdIndicator = document.getElementById('user-id');
     if (userIdIndicator) {
-        userIdIndicator.textContent = `ID: ${userId}`;
+        userIdIndicator.textContent = `ID: ${userId || 'не определен'}`;
     }
     
-    console.log('Interface updated with role, username and ID');
+    console.log('Interface updated with:', {
+        role: role || 'undefined',
+        username: username || 'undefined',
+        userId: userId || 'undefined'
+    });
 };
 
 // Утилиты
@@ -135,14 +138,20 @@ const apiRequest = async (endpoint, options = {}) => {
             
             // Добавляем подробное логирование для role.php
             if (url.includes('/role.php')) {
-                console.log('Role check full response:', responseData);
+                console.log('Raw response data:', responseData);
+                
+                // Проверяем структуру ответа
                 if (responseData.success && responseData.data) {
+                    const { role, username, id, expires_at } = responseData.data;
                     console.log('Role check details:', {
                         success: responseData.success,
-                        role: responseData.data.role,
-                        username: responseData.data.username,
-                        expires_at: responseData.data.expires_at
+                        role,
+                        username,
+                        id,
+                        expires_at
                     });
+                } else {
+                    console.warn('Unexpected response structure:', responseData);
                 }
             }
             
@@ -317,7 +326,7 @@ const createPost = async () => {
             loadPosts();
         }
     } catch (error) {
-        showError('Ошибка при создании поста');
+        showError('Ошибка при созд��нии поста');
     }
 };
 
@@ -423,20 +432,22 @@ const checkUserRole = async () => {
         });
         
         if (response.success && response.data) {
+            const { role, username, id } = response.data;
+            
             console.log('Role check successful:', {
-                id: response.data.id,
-                role: response.data.role,
-                username: response.data.username,
-                expires_at: response.data.expires_at
+                id,
+                role,
+                username
             });
             
-            updateInterfaceBasedOnRole(
-                response.data.role, 
-                response.data.username, 
-                response.data.id
-            );
+            // Проверяем наличие всех необходимых данных
+            if (!role || !username || !id) {
+                console.warn('Missing required data:', { role, username, id });
+            }
+            
+            updateInterfaceBasedOnRole(role, username, id);
         } else {
-            console.warn('Role check response missing data:', response);
+            console.warn('Invalid response structure:', response);
         }
     } catch (error) {
         console.error('Role check error:', error);
@@ -738,7 +749,7 @@ async function getFriendRequests() {
 // Функция для изменения пароля
 async function changePassword(oldPassword, newPassword) {
     if (!oldPassword || !newPassword) {
-        showError('По��алуйста, заполните все поля');
+        showError('Поалуйста, заполните все поля');
         return;
     }
 
