@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://adminflow.ru';
+const API_BASE_URL = 'https://adminflow.ru/api';
 
 // Утилиты для показа сообщений
 const showMessage = (message, type) => {
@@ -42,16 +42,19 @@ const handleLogin = async (event) => {
     }
 
     try {
-        const response = await fetch(`${API_BASE_URL}/api/auth/login.php`, {
+        const response = await fetch(`${API_BASE_URL}/auth/login.php`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
             },
+            credentials: 'include',
             body: JSON.stringify({ username, password })
         });
 
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error || `Ошибка сервера: ${response.status}`);
         }
 
         const data = await response.json();
@@ -65,7 +68,7 @@ const handleLogin = async (event) => {
         }
     } catch (error) {
         console.error('Login error:', error);
-        showError('Ошибка при подключении к серверу. Попробуйте позже.');
+        showError(error.message || 'Ошибка при подключении к серверу. Попробуйте позже.');
     }
 };
 
@@ -75,29 +78,26 @@ const handleRegister = async (event) => {
     
     const username = document.getElementById('reg-username').value.trim();
     const password = document.getElementById('reg-password').value;
-    const passwordConfirm = document.getElementById('reg-password-confirm').value;
 
-    if (!username || !password || !passwordConfirm) {
+    if (!username || !password) {
         showError('Пожалуйста, заполните все поля');
         return;
     }
 
-    if (password !== passwordConfirm) {
-        showError('Пароли не совпадают');
-        return;
-    }
-
     try {
-        const response = await fetch(`${API_BASE_URL}/api/auth/register.php`, {
+        const response = await fetch(`${API_BASE_URL}/auth/register.php`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
             },
+            credentials: 'include',
             body: JSON.stringify({ username, password })
         });
 
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error || `Ошибка сервера: ${response.status}`);
         }
 
         const data = await response.json();
@@ -110,7 +110,7 @@ const handleRegister = async (event) => {
         }
     } catch (error) {
         console.error('Registration error:', error);
-        showError('Ошибка при подключении к серверу. Попробуйте позже.');
+        showError(error.message || 'Ошибка при подключении к серверу. Попробуйте позже.');
     }
 };
 
