@@ -2,26 +2,38 @@
 async function checkAdminAuth() {
     const token = localStorage.getItem('token');
     if (!token) {
+        console.log('Нет токена');
         window.location.href = '../authreg/authreg.html';
         return;
     }
 
     try {
+        console.log('Отправка запроса на проверку роли...');
         const response = await fetch('/api/users/role.php', {
+            method: 'GET',
             headers: {
-                'Authorization': `Bearer ${token}`
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
             }
         });
+        
+        console.log('Получен ответ:', response);
         const data = await response.json();
+        console.log('Данные ответа:', data);
 
-        console.log('Role check response:', data);
-
-        if (!data.success || data.data.role !== 'admin') {
+        if (data.success && data.data.role === 'admin') {
+            console.log('Пользователь является администратором');
+            // Пользователь админ - остаёмся на странице
+            return true;
+        } else {
+            console.log('Пользователь не является администратором');
             window.location.href = '../authreg/authreg.html';
+            return false;
         }
     } catch (error) {
-        console.error('Auth check failed:', error);
+        console.error('Ошибка при проверке роли:', error);
         window.location.href = '../authreg/authreg.html';
+        return false;
     }
 }
 
@@ -92,9 +104,13 @@ document.querySelectorAll('.nav-btn').forEach(button => {
 });
 
 // Инициализация при загрузке страницы
-document.addEventListener('DOMContentLoaded', () => {
-    checkAdminAuth();
-    loadUsers(); // Загружаем пользователей по умолчанию
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log('Страница загружена, проверяем права администратора...');
+    const isAdmin = await checkAdminAuth();
+    if (isAdmin) {
+        console.log('Загружаем данные для админ-панели...');
+        loadUsers(); // Загружаем пользователей по умолчанию
+    }
 });
 
 // Обработка выхода
