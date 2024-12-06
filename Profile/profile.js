@@ -3,7 +3,7 @@ const API_BASE_URL = 'https://adminflow.ru';
 
 // Константы для путей API
 const API_PATHS = {
-    UPLOAD_AVATAR: '/users/upload-avatar.php',
+    UPLOAD_AVATAR: '/api/users/upload-avatar.php',
     POSTS: '/users/posts.php',
     FRIENDS: '/users/friends.php',
     FRIEND_REQUESTS: '/users/friend-requests.php',
@@ -44,7 +44,7 @@ function showRegisterForm() {
         loginContainer.style.display = 'none';
     }
 
-    // Показываем форму регистрации
+    // Показываем форму регист��ации
     const registerContainer = document.getElementById('register-container');
     if (registerContainer) {
         registerContainer.style.display = 'block';
@@ -160,7 +160,7 @@ const handleRegister = async (event) => {
             showError(response.error || 'Ошибка при регистрации');
         }
     } catch (error) {
-        showError('Ошибка при регистрации');
+        showError('��шибка при регистрации');
     }
 };
 
@@ -213,11 +213,10 @@ const loadUserAvatar = async (username) => {
     }
 
     try {
-        // Измените эндпоинт на корректный
         const response = await apiRequest(`/users/avatar`, {
             method: 'GET',
             headers: {
-                'X-Username': username  // Передайте username в заголовке
+                'X-Username': username
             }
         });
         
@@ -225,12 +224,10 @@ const loadUserAvatar = async (username) => {
         if (!userAvatar) return;
 
         if (response.success && response.data.avatarUrl) {
-            // Полный URL или с базовым доменом
             userAvatar.src = response.data.avatarUrl.startsWith('http') 
                 ? response.data.avatarUrl 
-                : `${API_BASE_URL}${response.data.avatarUrl}`;
+                : `${API_BASE_URL}/uploads/avatars/${response.data.avatarUrl}`;
         } else {
-            // Установка дефолтного аватара с полным путем
             userAvatar.src = `${API_BASE_URL}/uploads/avatars/default-avatar.png`;
         }
     } catch (error) {
@@ -255,7 +252,7 @@ const loadFriendsList = async () => {
                 const friendItem = document.createElement('tr');
                 friendItem.innerHTML = `
                     <td>
-                        <img src="${friend.avatarUrl || `${API_BASE_URL}${API_PATHS.UPLOAD_AVATAR}`}" alt="Аватар" class="friend-avatar">
+                        <img src="${friend.avatarUrl || `${API_BASE_URL}/uploads/avatars/default-avatar.png`}" alt="Аватар" class="friend-avatar">
                     </td>
                     <td>${friend.username}</td>
                     <td>
@@ -345,7 +342,7 @@ const loadPosts = async () => {
                 postElement.className = 'post';
                 postElement.innerHTML = `
                     <div class="post-header">
-                        <img src="${post.authorAvatar || `${API_BASE_URL}${API_PATHS.UPLOAD_AVATAR}`}" alt="Аватар" class="post-avatar">
+                        <img src="${post.authorAvatar || `${API_BASE_URL}/uploads/avatars/default-avatar.png`}" alt="Аватар" class="post-avatar">
                         <div class="post-info">
                             <span class="post-author">${post.author}</span>
                             <span class="post-date">${new Date(post.createdAt).toLocaleString()}</span>
