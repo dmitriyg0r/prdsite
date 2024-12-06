@@ -1,14 +1,36 @@
 // Добавить в начало файла
 const API_BASE_URL = 'https://adminflow.ru';
+const AVATARS_PATH = '/api/uploads/avatars';
 
 // Константы для путей API
 const API_PATHS = {
-    UPLOAD_AVATAR: '/users/upload-avatar.php',
-    POSTS: '/users/posts.php',
-    FRIENDS: '/users/friends.php',
-    FRIEND_REQUESTS: '/users/friend-requests.php',
+    UPLOAD_AVATAR: '/api/users/avatar',
+    AVATAR: '/api/users/avatar',
+    ROLE: '/api/users/role',
+    POSTS: '/api/users/posts',
+    FRIENDS: '/api/users/friends',
+    FRIEND_REQUESTS: '/api/users/friend-requests',
     PASSWORD: '/auth/register.php',
     AUTH: '/auth/login.php'
+};
+
+// Глобальные функции
+const openChat = (username) => {
+    window.location.href = `/chat?user=${username}`;
+};
+
+const showChatButton = () => {
+    const chatLink = document.getElementById('chat-link');
+    if (chatLink) {
+        chatLink.style.display = 'block';
+    }
+};
+
+const updateInterfaceBasedOnRole = (role) => {
+    const adminSection = document.getElementById('admin-section');
+    if (adminSection) {
+        adminSection.style.display = role === 'admin' ? 'block' : 'none';
+    }
 };
 
 // Утилиты
@@ -44,7 +66,7 @@ function showRegisterForm() {
         loginContainer.style.display = 'none';
     }
 
-    // Показываем форму регистрации
+    // Показываем форму регистации
     const registerContainer = document.getElementById('register-container');
     if (registerContainer) {
         registerContainer.style.display = 'block';
@@ -160,7 +182,7 @@ const handleRegister = async (event) => {
             showError(response.error || 'Ошибка при регистрации');
         }
     } catch (error) {
-        showError('Ошибка при регистрации');
+        showError('ошибка при регистрации');
     }
 };
 
@@ -213,11 +235,10 @@ const loadUserAvatar = async (username) => {
     }
 
     try {
-        // Измените эндпоинт на корректный
-        const response = await apiRequest(`/users/avatar`, {
+        const response = await apiRequest(API_PATHS.AVATAR, {
             method: 'GET',
             headers: {
-                'X-Username': username  // Передайте username в заголовке
+                'X-Username': username
             }
         });
         
@@ -225,19 +246,17 @@ const loadUserAvatar = async (username) => {
         if (!userAvatar) return;
 
         if (response.success && response.data.avatarUrl) {
-            // Полный URL или с базовым доменом
             userAvatar.src = response.data.avatarUrl.startsWith('http') 
                 ? response.data.avatarUrl 
-                : `${API_BASE_URL}${response.data.avatarUrl}`;
+                : `${API_BASE_URL}${AVATARS_PATH}/${response.data.avatarUrl}`;
         } else {
-            // Установка дефолтного аватара с полным путем
-            userAvatar.src = `${API_BASE_URL}/uploads/avatars/default-avatar.png`;
+            userAvatar.src = `${API_BASE_URL}${AVATARS_PATH}/default-avatar.png`;
         }
     } catch (error) {
         console.error('Error loading avatar:', error);
         const userAvatar = document.getElementById('user-avatar');
         if (userAvatar) {
-            userAvatar.src = `${API_BASE_URL}/uploads/avatars/default-avatar.png`;
+            userAvatar.src = `${API_BASE_URL}${AVATARS_PATH}/default-avatar.png`;
         }
     }
 };
@@ -245,7 +264,7 @@ const loadUserAvatar = async (username) => {
 // Функции друзей
 const loadFriendsList = async () => {
     try {
-        const response = await apiRequest('/users/friends');
+        const response = await apiRequest(API_PATHS.FRIENDS);
         if (response.success) {
             const friendsList = document.getElementById('friends-list');
             if (!friendsList) return;
@@ -255,7 +274,7 @@ const loadFriendsList = async () => {
                 const friendItem = document.createElement('tr');
                 friendItem.innerHTML = `
                     <td>
-                        <img src="${friend.avatarUrl || `${API_BASE_URL}${API_PATHS.UPLOAD_AVATAR}`}" alt="Аватар" class="friend-avatar">
+                        <img src="${friend.avatarUrl || `${API_BASE_URL}${AVATARS_PATH}/default-avatar.png`}" alt="Аватар" class="friend-avatar">
                     </td>
                     <td>${friend.username}</td>
                     <td>
@@ -282,7 +301,7 @@ const loadFriendsList = async () => {
 
 const loadFriendRequests = async () => {
     try {
-        const response = await apiRequest('/users/friend-requests');
+        const response = await apiRequest(API_PATHS.FRIEND_REQUESTS);
         if (response.success) {
             const requestsList = document.getElementById('friend-requests-list');
             if (!requestsList) return;
@@ -292,7 +311,7 @@ const loadFriendRequests = async () => {
                 const requestItem = document.createElement('div');
                 requestItem.className = 'friend-request-item';
                 requestItem.innerHTML = `
-                    <img src="${request.avatarUrl || `${API_BASE_URL}${API_PATHS.UPLOAD_AVATAR}`}" alt="Аватар" class="friend-avatar">
+                    <img src="${request.avatarUrl || `${API_BASE_URL}${AVATARS_PATH}/default-avatar.png`}" alt="Аватар" class="friend-avatar">
                     <span>${request.username}</span>
                     <div class="request-actions">
                         <button onclick="acceptFriendRequest('${request.id}')" class="btn primary-btn">Принять</button>
@@ -306,7 +325,6 @@ const loadFriendRequests = async () => {
         showError('Ошибка при загрузке запросов в друзья');
     }
 };
-
 // Функции постов
 const createPost = async () => {
     const content = document.getElementById('post-content')?.value;
@@ -334,7 +352,7 @@ const createPost = async () => {
 
 const loadPosts = async () => {
     try {
-        const response = await apiRequest('/users/posts');
+        const response = await apiRequest(API_PATHS.POSTS);
         if (response.success) {
             const postsContainer = document.getElementById('posts-container');
             if (!postsContainer) return;
@@ -345,7 +363,7 @@ const loadPosts = async () => {
                 postElement.className = 'post';
                 postElement.innerHTML = `
                     <div class="post-header">
-                        <img src="${post.authorAvatar || `${API_BASE_URL}${API_PATHS.UPLOAD_AVATAR}`}" alt="Аватар" class="post-avatar">
+                        <img src="${post.authorAvatar || `${API_BASE_URL}${AVATARS_PATH}/default-avatar.png`}" alt="Аватар" class="post-avatar">
                         <div class="post-info">
                             <span class="post-author">${post.author}</span>
                             <span class="post-date">${new Date(post.createdAt).toLocaleString()}</span>
@@ -396,7 +414,7 @@ const loadUsers = async () => {
             });
         }
     } catch (error) {
-        showError('Ошибка при загрузке пользователей');
+        showError('Ошибка при загрузке пользвателей');
     }
 };
 
@@ -420,7 +438,13 @@ const checkUserRole = async () => {
         const user = JSON.parse(localStorage.getItem('user'));
         if (!user) return;
 
-        const response = await apiRequest(`/users/${user.username}/role`);
+        const response = await apiRequest(API_PATHS.ROLE, {
+            method: 'GET',
+            headers: {
+                'X-Username': user.username
+            }
+        });
+        
         if (response.success) {
             updateInterfaceBasedOnRole(response.data.role);
         }
@@ -499,15 +523,17 @@ async function uploadAvatar(file) {
     formData.append('avatar', file);
 
     try {
-        const response = await apiRequest('/users/upload-avatar', {
+        const response = await apiRequest(API_PATHS.UPLOAD_AVATAR, {
             method: 'POST',
             body: formData
         });
         
         if (response.success) {
-            const profileAvatar = document.querySelector('.profile-avatar');
-            if (profileAvatar) {
-                profileAvatar.src = response.data.avatarUrl;
+            const userAvatar = document.getElementById('user-avatar');
+            if (userAvatar) {
+                userAvatar.src = response.data.avatarUrl.startsWith('http')
+                    ? response.data.avatarUrl
+                    : `${API_BASE_URL}${AVATARS_PATH}/${response.data.avatarUrl}`;
             }
             showSuccess('Аватар успешно обновлен');
         }
@@ -588,10 +614,3 @@ function getToken() {
     }
 }
 
-// Функция показа кнопки чата
-const showChatButton = () => {
-    const chatLink = document.getElementById('chat-link');
-    if (chatLink) {
-        chatLink.style.display = 'block';
-    }
-};
