@@ -4,7 +4,7 @@ const pool = new Pool({
     user: 'postgres',
     host: 'localhost',
     database: 'adminflow',
-    password: 'sGLTccA_Na#9zC',
+    password: 'Gg3985502',
     port: 5432,
     max: 20,
     idleTimeoutMillis: 30000,
