@@ -370,7 +370,7 @@ const checkUserRole = async () => {
         const user = JSON.parse(localStorage.getItem('user'));
         if (!user) return;
 
-        // Проверяем наличие пути
+        // Проверя��м наличие пути
         if (!API_PATHS.ROLE) {
             console.error('Role API path is not defined');
             return;
@@ -458,7 +458,44 @@ window.deletePost = deletePost;
 window.changeRole = changeRole;
 window.deleteUser = deleteUser;
 
-// Обновляем функцию uploadAvatar
+// Перенесем объявления функций в начало файла
+const hideAddFriendModal = () => {
+    const modal = document.getElementById('add-friend-modal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+};
+
+const showAddFriendModal = () => {
+    const modal = document.getElementById('add-friend-modal');
+    if (modal) {
+        modal.style.display = 'block';
+    }
+};
+
+const acceptFriendRequest = async (requestId) => {
+    try {
+        const response = await apiRequest(API_PATHS.FRIEND_REQUESTS, {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'accept',
+                requestId: requestId
+            })
+        });
+        
+        if (response.success) {
+            showSuccess('Заявка в друзья принята');
+            await Promise.all([
+                loadFriendsList(),
+                loadFriendRequests()
+            ]);
+        }
+    } catch (error) {
+        showError('Ошибка при принятии заявки в друзья');
+    }
+};
+
+// Обновим функцию uploadAvatar
 async function uploadAvatar(file) {
     if (!file) {
         console.error('No file selected');
@@ -473,15 +510,20 @@ async function uploadAvatar(file) {
 
     try {
         console.log('Sending request to:', API_PATHS.UPLOAD_AVATAR);
-        console.log('FormData contents:', Array.from(formData.entries()));
         
+        // Добавляем проверку размера файла
+        if (file.size > 5 * 1024 * 1024) { // 5MB limit
+            throw new Error('Файл слишком большой. Максимальный размер 5MB');
+        }
+
+        // Проверяем тип файла
+        if (!file.type.startsWith('image/')) {
+            throw new Error('Можно загружать только изображения');
+        }
+
         const response = await apiRequest(API_PATHS.UPLOAD_AVATAR, {
             method: 'POST',
-            body: formData,
-            headers: {
-                // Убираем Content-Type, чтобы браузер сам установил правильный с boundary
-                'Content-Type': undefined
-            }
+            body: formData
         });
         
         console.log('Upload response:', response);
@@ -492,9 +534,16 @@ async function uploadAvatar(file) {
                 const avatarUrl = getAvatarUrl(response.data.avatarUrl);
                 console.log('New avatar URL:', avatarUrl);
                 
+                // Добавляем обработчик загрузки изображения
+                userAvatar.onload = () => {
+                    showSuccess('Аватар успешно обновлен');
+                };
+                userAvatar.onerror = () => {
+                    showError('Ошибка при загрузке изображения');
+                };
+                
                 // Добавляем timestamp для предотвращения кэширования
                 userAvatar.src = `${avatarUrl}?t=${Date.now()}`;
-                showSuccess('Аватар успешно обновлен');
             }
         } else {
             throw new Error(response.error || 'Ошибка при загрузке аватара');
@@ -518,14 +567,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const file = event.target.files[0];
             if (file) {
                 console.log('Selected file:', file);
-                uploadAvatar(file);
+                uploadAvatar(file).catch(error => {
+                    console.error('Avatar upload failed:', error);
+                    showError('Ошибка при загрузке аватара');
+                });
             }
         });
     } else {
         console.error('Avatar upload input not found');
     }
 
-    // Добавляем обработчик клика на контейнер аватара
     if (avatarContainer) {
         avatarContainer.addEventListener('click', () => {
             console.log('Avatar container clicked');
@@ -604,36 +655,6 @@ function getToken() {
         return null;
     }
 }
-
-
-const hideAddFriendModal = () => {
-    const modal = document.getElementById('add-friend-modal');
-    if (modal) {
-        modal.style.display = 'none';
-    }
-};
-
-const acceptFriendRequest = async (requestId) => {
-    try {
-        const response = await apiRequest(API_PATHS.FRIEND_REQUESTS, {
-            method: 'POST',
-            body: JSON.stringify({
-                action: 'accept',
-                requestId: requestId
-            })
-        });
-        
-        if (response.success) {
-            showSuccess('Заявка в друзья принята');
-            await Promise.all([
-                loadFriendsList(),
-                loadFriendRequests()
-            ]);
-        }
-    } catch (error) {
-        showError('Ошибка при принятии заявки в друзья');
-    }
-};
 
 const rejectFriendRequest = async (requestId) => {
     try {
