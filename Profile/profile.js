@@ -451,7 +451,6 @@ window.addEventListener('unhandledrejection', (event) => {
 
 // Экспорт глобальных функций
 window.openChat = openChat;
-window.showAddFriendModal = showAddFriendModal;
 window.acceptFriendRequest = acceptFriendRequest;
 window.rejectFriendRequest = rejectFriendRequest;
 window.likePost = likePost;
@@ -606,13 +605,6 @@ function getToken() {
     }
 }
 
-// Функции для работы с друзьями
-const showAddFriendModal = () => {
-    const modal = document.getElementById('add-friend-modal');
-    if (modal) {
-        modal.style.display = 'block';
-    }
-};
 
 const hideAddFriendModal = () => {
     const modal = document.getElementById('add-friend-modal');
@@ -682,7 +674,6 @@ const sendFriendRequest = async (username) => {
 };
 
 // Добавляем функции в глобальную область видимости
-window.showAddFriendModal = showAddFriendModal;
 window.hideAddFriendModal = hideAddFriendModal;
 window.acceptFriendRequest = acceptFriendRequest;
 window.rejectFriendRequest = rejectFriendRequest;
