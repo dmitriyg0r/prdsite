@@ -3,62 +3,60 @@ let currentUser = null;
 let messageUpdateInterval = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // Инициализация пользователя
+    // Проверка авторизации
     currentUser = JSON.parse(localStorage.getItem('user'));
     if (!currentUser) {
         window.location.href = '../authreg/authreg.html';
         return;
     }
 
-    // Загрузка списка друзей для чата
-    await loadFriendsList();
-
-    // Настройка обработчиков событий
+    // Инициализация чата
+    await initializeChat();
     setupEventListeners();
-
-    // Проверяем, есть ли сохраненный партнер для чата
-    const savedPartner = localStorage.getItem('chatPartner');
-    if (savedPartner) {
-        openChat(JSON.parse(savedPartner));
-        localStorage.removeItem('chatPartner');
-    }
 });
 
-// Загрузка списка друзей
-async function loadFriendsList() {
+async function initializeChat() {
     try {
+        // Загружаем список друзей
         const response = await fetch(`https://adminflow.ru:5003/api/friends?userId=${currentUser.id}`);
         const data = await response.json();
 
         if (data.success) {
             displayFriendsList(data.friends);
-            // Загружаем количество непрочитанных сообщений
-            await updateUnreadCounts();
+            // Проверяем, есть ли сохраненный собеседник
+            const savedPartner = localStorage.getItem('chatPartner');
+            if (savedPartner) {
+                openChat(JSON.parse(savedPartner));
+                localStorage.removeItem('chatPartner');
+            }
         }
     } catch (err) {
-        console.error('Error loading friends list:', err);
+        console.error('Error initializing chat:', err);
     }
 }
 
-// Отображение списка друзей
 function displayFriendsList(friends) {
     const friendsList = document.getElementById('friends-list');
+    if (!friendsList) return;
+
     friendsList.innerHTML = friends.map(friend => `
-        <div class="chat-partner" data-user-id="${friend.id}" onclick="openChat(${JSON.stringify(friend)})">
-            <img src="${friend.avatar_url || '/uploads/avatars/default.png'}" alt="${friend.username}" class="friend-avatar">
+        <div class="chat-partner" data-friend-id="${friend.id}" onclick="openChat(${JSON.stringify(friend).replace(/"/g, '&quot;')})">
+            <img src="${friend.avatar_url || '/uploads/avatars/default.png'}" alt="${friend.username}" class="chat-avatar">
             <div class="friend-info">
                 <div class="friend-name">${friend.username}</div>
-                <div class="last-message" id="last-message-${friend.id}">Загрузка...</div>
+                <div class="last-message" id="last-message-${friend.id}">...</div>
             </div>
             <div class="unread-count" id="unread-${friend.id}"></div>
         </div>
     `).join('');
 
-    // Загружаем последние сообщения для каждого друга
-    friends.forEach(friend => loadLastMessage(friend.id));
+    // Загружаем последние сообщения и счетчики для каждого друга
+    friends.forEach(friend => {
+        loadLastMessage(friend.id);
+        updateUnreadCount(friend.id);
+    });
 }
 
-// Загрузка последнего сообщения
 async function loadLastMessage(friendId) {
     try {
         const response = await fetch(`https://adminflow.ru:5003/api/messages/last/${currentUser.id}/${friendId}`);
@@ -68,7 +66,10 @@ async function loadLastMessage(friendId) {
         if (lastMessageElement) {
             if (data.success && data.message) {
                 const isOwnMessage = data.message.sender_id === currentUser.id;
-                lastMessageElement.textContent = `${isOwnMessage ? 'Вы: ' : ''}${data.message.message}`;
+                const messageText = data.message.message.length > 25 
+                    ? data.message.message.substring(0, 25) + '...' 
+                    : data.message.message;
+                lastMessageElement.textContent = `${isOwnMessage ? 'Вы: ' : ''}${messageText}`;
             } else {
                 lastMessageElement.textContent = 'Нет сообщений';
             }
@@ -78,53 +79,52 @@ async function loadLastMessage(friendId) {
     }
 }
 
-// Обновление счетчиков непрочитанных сообщений
-async function updateUnreadCounts() {
+async function updateUnreadCount(friendId) {
     try {
         const response = await fetch(`https://adminflow.ru:5003/api/messages/unread/${currentUser.id}`);
         const data = await response.json();
 
-        if (data.success) {
-            data.unreadCounts.forEach(({ sender_id, count }) => {
-                const unreadElement = document.getElementById(`unread-${sender_id}`);
-                if (unreadElement) {
-                    unreadElement.textContent = count > 0 ? count : '';
-                }
-            });
+        const unreadElement = document.getElementById(`unread-${friendId}`);
+        if (unreadElement && data.success) {
+            const unreadCount = data.unreadCounts.find(count => count.sender_id === friendId);
+            unreadElement.textContent = unreadCount ? unreadCount.count : '';
+            unreadElement.style.display = unreadCount && unreadCount.count > 0 ? 'block' : 'none';
         }
     } catch (err) {
-        console.error('Error updating unread counts:', err);
+        console.error('Error updating unread count:', err);
     }
 }
 
-// Открытие чата с пользователем
 async function openChat(friend) {
     currentChatPartner = friend;
     
     // Обновляем UI
+    document.querySelectorAll('.chat-partner').forEach(el => 
+        el.classList.remove('active')
+    );
+    document.querySelector(`[data-friend-id="${friend.id}"]`)?.classList.add('active');
+
+    // Показываем заголовок чата
     const chatHeader = document.getElementById('chat-header');
     const chatPlaceholder = document.getElementById('chat-placeholder');
-    const messagesArea = document.getElementById('messages');
     
-    chatHeader.style.display = 'flex';
+    chatHeader.style.display = 'block';
     chatPlaceholder.style.display = 'none';
     
-    // Обновляем заголовок чата
     document.getElementById('chat-header-avatar').src = friend.avatar_url || '/uploads/avatars/default.png';
     document.getElementById('chat-header-name').textContent = friend.username;
 
     // Загружаем историю сообщений
     await loadChatHistory();
-
+    
     // Отмечаем сообщения как прочитанные
     await markMessagesAsRead();
 
-    // Устанавливаем интервал обновления сообщений
+    // Устанавливаем интервал обновления
     if (messageUpdateInterval) clearInterval(messageUpdateInterval);
     messageUpdateInterval = setInterval(loadChatHistory, 5000);
 }
 
-// Загрузка истории сообщений
 async function loadChatHistory() {
     if (!currentChatPartner) return;
 
@@ -140,29 +140,25 @@ async function loadChatHistory() {
     }
 }
 
-// Отображение сообщений
 function displayMessages(messages) {
     const messagesArea = document.getElementById('messages');
+    if (!messagesArea) return;
+
     messagesArea.innerHTML = messages.map(message => {
         const isOwnMessage = message.sender_id === currentUser.id;
+        const messageTime = new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        
         return `
-            <div class="message ${isOwnMessage ? 'message-sent' : 'message-received'}" data-message-id="${message.id}">
+            <div class="message ${isOwnMessage ? 'message-sent' : 'message-received'}">
                 ${message.reply_data ? `
                     <div class="reply-to">
                         <div class="reply-line"></div>
-                        <div class="reply-text">${message.reply_data.message}</div>
+                        <div class="reply-content">${message.reply_data.message}</div>
                     </div>
                 ` : ''}
-                <div class="message-content">
-                    ${message.message}
-                    ${message.attachment_url ? `
-                        <div class="message-attachment">
-                            <img src="${message.attachment_url}" alt="Вложение" onclick="showImageModal(this.src)">
-                        </div>
-                    ` : ''}
-                </div>
+                <div class="message-content">${message.message}</div>
                 <div class="message-info">
-                    <span class="message-time">${new Date(message.created_at).toLocaleTimeString()}</span>
+                    <span class="message-time">${messageTime}</span>
                     ${isOwnMessage ? `
                         <span class="message-status">
                             <i class="fas ${message.is_read ? 'fa-check-double' : 'fa-check'}"></i>
@@ -173,20 +169,14 @@ function displayMessages(messages) {
         `;
     }).join('');
 
-    // Прокручиваем к последнему сообщению
     messagesArea.scrollTop = messagesArea.scrollHeight;
 }
 
-// Отправка сообщения
 async function sendMessage() {
-    if (!currentChatPartner) return;
-
-    const input = document.getElementById('messageInput');
-    const message = input.value.trim();
-    const replyPreview = document.getElementById('replyPreview');
-    const replyToId = replyPreview?.dataset.replyToId;
-
-    if (!message) return;
+    const messageInput = document.getElementById('messageInput');
+    const message = messageInput.value.trim();
+    
+    if (!message || !currentChatPartner) return;
 
     try {
         const response = await fetch('https://adminflow.ru:5003/api/messages/send', {
@@ -197,26 +187,21 @@ async function sendMessage() {
             body: JSON.stringify({
                 senderId: currentUser.id,
                 receiverId: currentChatPartner.id,
-                message,
-                replyTo: replyToId || null
+                message: message
             })
         });
 
         const data = await response.json();
-
         if (data.success) {
-            input.value = '';
-            if (replyPreview) replyPreview.remove();
+            messageInput.value = '';
             await loadChatHistory();
-            await loadFriendsList(); // Обновляем список для отображения последнего сообщения
+            await loadLastMessage(currentChatPartner.id);
         }
     } catch (err) {
         console.error('Error sending message:', err);
-        alert('Ошибка при отправке сообщения');
     }
 }
 
-// Отметка сообщений как прочитанных
 async function markMessagesAsRead() {
     if (!currentChatPartner) return;
 
@@ -232,32 +217,24 @@ async function markMessagesAsRead() {
             })
         });
 
-        // Обновляем счетчики непрочитанных сообщений
-        await updateUnreadCounts();
+        // Обновляем счетчик непрочитанных сообщений
+        await updateUnreadCount(currentChatPartner.id);
     } catch (err) {
         console.error('Error marking messages as read:', err);
     }
 }
 
-// Настройка обработчиков событий
 function setupEventListeners() {
     // Отправка сообщения по кнопке
-    document.getElementById('sendMessage').addEventListener('click', sendMessage);
+    document.getElementById('sendMessage')?.addEventListener('click', sendMessage);
 
     // Отправка сообщения по Enter
-    document.getElementById('messageInput').addEventListener('keypress', (e) => {
+    document.getElementById('messageInput')?.addEventListener('keypress', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             sendMessage();
         }
     });
-
-    // Обработка прикрепления файлов
-    const fileInput = document.getElementById('fileInput');
-    const attachButton = document.getElementById('attachButton');
-
-    attachButton.addEventListener('click', () => fileInput.click());
-    fileInput.addEventListener('change', handleFileSelect);
 }
 
 // Очистка при уходе со страницы
