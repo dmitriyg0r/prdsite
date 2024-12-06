@@ -322,7 +322,7 @@ body {
     display: none;
 }
 
-.attach-button {
+.attach-button, #sendMessage {
     background-color: var(--primary-color);
     border: none;
     color: white;
@@ -337,12 +337,12 @@ body {
     transition: all 0.3s ease;
 }
 
-.attach-button:hover {
+.attach-button:hover, #sendMessage:hover {
     background-color: var(--primary-color-hover);
     transform: scale(1.05);
 }
 
-.attach-button i {
+.attach-button i, #sendMessage i {
     font-size: 1.1em;
 }
 
