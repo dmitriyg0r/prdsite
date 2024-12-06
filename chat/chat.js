@@ -306,4 +306,128 @@ window.addEventListener('beforeunload', () => {
     if (messageUpdateInterval) {
         clearInterval(messageUpdateInterval);
     }
-}); 
+});
+
+// Функция загрузки сообщений
+async function loadMessages(friendId) {
+    try {
+        const response = await fetch(`https://adminflow.ru:5003/api/messages/history/${currentUser.id}/${friendId}`);
+        const data = await response.json();
+
+        if (!data.success) {
+            console.error('Error loading messages:', data.error);
+            return;
+        }
+
+        displayMessages(data.messages);
+        markMessagesAsRead(friendId);
+    } catch (err) {
+        console.error('Error loading messages:', err);
+    }
+}
+
+// Функция отображения сообщений
+function displayMessages(messages) {
+    const messagesContainer = document.getElementById('messages');
+    messagesContainer.innerHTML = '';
+
+    messages.forEach(message => {
+        const messageElement = document.createElement('div');
+        messageElement.className = `message ${message.sender_id === currentUser.id ? 'message-sent' : 'message-received'}`;
+
+        // Добавляем информацию об отправителе для входящих сообщений
+        if (message.sender_id !== currentUser.id) {
+            const senderInfo = document.createElement('div');
+            senderInfo.className = 'message-sender';
+            senderInfo.textContent = message.sender_username;
+            messageElement.appendChild(senderInfo);
+        }
+
+        // Если есть reply_data, показываем его
+        if (message.reply_data) {
+            const replyElement = document.createElement('div');
+            replyElement.className = 'message-reply';
+            replyElement.textContent = `↳ ${message.reply_data.message}`;
+            messageElement.appendChild(replyElement);
+        }
+
+        // Основной текст сообщения
+        const messageText = document.createElement('div');
+        messageText.className = 'message-text';
+        messageText.textContent = message.message;
+        messageElement.appendChild(messageText);
+
+        // Если есть вложение, показываем его
+        if (message.attachment_url) {
+            const attachmentElement = document.createElement('div');
+            attachmentElement.className = 'message-attachment';
+
+            if (message.attachment_url.match(/\.(jpg|jpeg|png|gif)$/i)) {
+                // Если это изображение
+                const img = document.createElement('img');
+                img.src = message.attachment_url;
+                img.alt = 'Attachment';
+                img.onclick = () => showImageModal(message.attachment_url);
+                attachmentElement.appendChild(img);
+            } else {
+                // Если это другой файл
+                const fileInfo = document.createElement('div');
+                fileInfo.className = 'file-info';
+                fileInfo.innerHTML = `
+                    <i class="fas fa-file file-icon"></i>
+                    <span class="file-name">${message.attachment_url.split('/').pop()}</span>
+                `;
+                attachmentElement.appendChild(fileInfo);
+            }
+
+            messageElement.appendChild(attachmentElement);
+        }
+
+        // Время сообщения
+        const timeElement = document.createElement('div');
+        timeElement.className = 'message-time';
+        timeElement.textContent = new Date(message.created_at).toLocaleTimeString();
+        messageElement.appendChild(timeElement);
+
+        messagesContainer.appendChild(messageElement);
+    });
+
+    scrollToBottom();
+}
+
+// Функция прокрутки чата вниз
+function scrollToBottom() {
+    const messagesContainer = document.getElementById('messages');
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+// Функция отметки сообщений как прочитанных
+async function markMessagesAsRead(friendId) {
+    try {
+        await fetch('https://adminflow.ru:5003/api/messages/read', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                userId: currentUser.id,
+                friendId: friendId
+            })
+        });
+    } catch (err) {
+        console.error('Error marking messages as read:', err);
+    }
+}
+
+// Функция показа модального окна с изображением
+function showImageModal(imageUrl) {
+    const modal = document.querySelector('.image-modal');
+    const modalImage = document.getElementById('modalImage');
+    modalImage.src = imageUrl;
+    modal.style.display = 'flex';
+}
+
+// Закрытие модального окна
+document.querySelector('.close-modal').onclick = function() {
+    document.querySelector('.image-modal').style.display = 'none';
+}; 
