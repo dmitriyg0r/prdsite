@@ -62,6 +62,58 @@
 
 <div class="overlay"></div>
 
+<div id="friends-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <div class="modal-tabs">
+                <button class="tab-btn active" data-tab="all-friends">
+                    <i class="fas fa-users"></i> Все друзья
+                    <span class="friend-count">0</span>
+                </button>
+                <button class="tab-btn" data-tab="friend-requests">
+                    <i class="fas fa-user-plus"></i> Заявки
+                    <span class="request-count">0</span>
+                </button>
+                <button class="tab-btn" data-tab="search-friends">
+                    <i class="fas fa-search"></i> Поиск друзей
+                </button>
+            </div>
+            <button class="modal-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="modal-body">
+            <!-- Вкладка всех друзей -->
+            <div class="tab-content active" id="all-friends">
+                <div class="friends-list">
+                    <!-- Друзья будут добавляться динамически -->
+                </div>
+            </div>
+
+            <!-- Вкладка заявок в друзья -->
+            <div class="tab-content" id="friend-requests">
+                <div class="requests-list">
+                    <!-- Заявки будут добавляться динамически -->
+                </div>
+            </div>
+
+            <!-- Вкладка поиска друзей -->
+            <div class="tab-content" id="search-friends">
+                <div class="search-container">
+                    <input type="text" class="search-input" placeholder="Поиск пользователей...">
+                    <button class="search-btn">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+                <div class="search-results">
+                    <!-- Результаты поиска будут добавляться динамически -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <body>
     <div class="profile-page">
         <div class="profile-content">
