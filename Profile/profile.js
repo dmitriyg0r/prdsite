@@ -131,6 +131,22 @@ const showProfile = async (userData) => {
     await loadUserAvatar(userData.username);
 };
 
+// Функция для преобразования серверного пути в URL
+const getAvatarUrl = (serverPath) => {
+    if (!serverPath) return `${API_BASE_URL}/api/uploads/avatars/default-avatar.png`;
+    if (serverPath.startsWith('http')) return serverPath;
+    
+    // Извлекаем часть пути после /api/
+    const matches = serverPath.match(/\/api\/(.+)$/);
+    if (matches && matches[1]) {
+        return `${API_BASE_URL}/api/${matches[1]}`;
+    }
+    
+    // Если это просто имя файла, добавляем базовый путь
+    return `${API_BASE_URL}/api/uploads/avatars/${serverPath.split('/').pop()}`;
+};
+
+// Обновляем функцию loadUserAvatar
 const loadUserAvatar = async (username) => {
     if (!username) {
         console.error('Username is undefined');
@@ -149,17 +165,15 @@ const loadUserAvatar = async (username) => {
         if (!userAvatar) return;
 
         if (response.success && response.data.avatarUrl) {
-            userAvatar.src = response.data.avatarUrl.startsWith('http') 
-                ? response.data.avatarUrl 
-                : `${API_BASE_URL}${AVATARS_PATH}/${response.data.avatarUrl.split('/').pop()}`;
+            userAvatar.src = getAvatarUrl(response.data.avatarUrl);
         } else {
-            userAvatar.src = `${API_BASE_URL}${AVATARS_PATH}/default-avatar.png`;
+            userAvatar.src = getAvatarUrl(AVATARS_PATH + 'default-avatar.png');
         }
     } catch (error) {
         console.error('Error loading avatar:', error);
         const userAvatar = document.getElementById('user-avatar');
         if (userAvatar) {
-            userAvatar.src = `${API_BASE_URL}${AVATARS_PATH}/default-avatar.png`;
+            userAvatar.src = getAvatarUrl(AVATARS_PATH + 'default-avatar.png');
         }
     }
 };
@@ -310,7 +324,7 @@ const loadUsers = async () => {
                     <td>${new Date(user.createdAt).toLocaleDateString()}</td>
                     <td>
                         <button onclick="changeRole('${user.username}')" class="role-btn">Изменить роль</button>
-                        <button onclick="deleteUser('${user.username}')" class="delete-btn">Удалить</button>
+                        <button onclick="deleteUser('${user.username}')" class="delete-btn">Удалит��</button>
                     </td>
                 `;
                 usersTableBody.appendChild(userRow);
@@ -406,7 +420,7 @@ window.deletePost = deletePost;
 window.changeRole = changeRole;
 window.deleteUser = deleteUser;
 
-// Функция для загрузки аватара
+// Обновляем функцию uploadAvatar
 async function uploadAvatar(file) {
     if (!file) {
         showError('Файл не выбран');
@@ -425,9 +439,7 @@ async function uploadAvatar(file) {
         if (response.success) {
             const userAvatar = document.getElementById('user-avatar');
             if (userAvatar) {
-                userAvatar.src = response.data.avatarUrl.startsWith('http')
-                    ? response.data.avatarUrl
-                    : `${API_BASE_URL}${AVATARS_PATH}/${response.data.avatarUrl}`;
+                userAvatar.src = getAvatarUrl(response.data.avatarUrl);
             }
             showSuccess('Аватар успешно обновлен');
         }
