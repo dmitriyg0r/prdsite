@@ -277,16 +277,17 @@ body {
 /* Область ввода */
 .input-area {
     padding: 15px 20px;
-    background-color: var(--text-container-background);
+    background-color: var(--background-color);
     border-top: 1px solid var(--border-color);
-    display: flex;
-    flex-direction: column;
 }
 
 .input-controls {
     display: flex;
     align-items: center;
     gap: 10px;
+    background-color: var(--text-container-background);
+    padding: 8px;
+    border-radius: 25px;
 }
 
 .input-area input {
@@ -322,22 +323,64 @@ body {
 }
 
 .attach-button {
-    background: none;
+    background-color: var(--primary-color);
     border: none;
-    color: var(--text-secondary);
+    color: white;
     cursor: pointer;
     padding: 8px;
     border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transition: all 0.3s ease;
 }
 
 .attach-button:hover {
-    background-color: rgba(var(--button-background-rgb), 0.1);
-    color: var(--primary-color);
+    background-color: var(--primary-color-hover);
+    transform: scale(1.05);
 }
 
 .attach-button i {
-    font-size: 1.2em;
+    font-size: 1.1em;
+}
+
+#messageInput {
+    flex: 1;
+    padding: 8px 15px;
+    border: none;
+    background: none;
+    color: var(--text-color);
+    font-size: 1em;
+}
+
+#messageInput:focus {
+    outline: none;
+}
+
+#sendMessage {
+    background-color: var(--primary-color);
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+#sendMessage:hover {
+    background-color: var(--primary-color-hover);
+    transform: scale(1.05);
+}
+
+#sendMessage i {
+    font-size: 1.1em;
 }
 
 /* Предпросмотр ответа */
