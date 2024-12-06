@@ -33,63 +33,61 @@
         </div>
     </nav>
 
-    <!-- Основной контент -->
-    <main class="main-content">
-        <div class="chat-container">
-            <!-- Список чатов -->
-            <div class="chat-list">
-                <div class="chat-list-header">
-                    <h2>Чаты</h2>
-                    <div class="search-container">
-                        <input type="text" id="searchInput" placeholder="Поиск...">
-                        <i class="fas fa-search"></i>
-                    </div>
-                </div>
-                <div id="friends-list" class="friends-list">
-                    <!-- Список друзей будет добавлен через JavaScript -->
+    <!-- Чат -->
+    <div class="chat-container">
+        <!-- Список чатов -->
+        <div class="chat-list">
+            <div class="chat-list-header">
+                <h2>Чаты</h2>
+                <div class="search-container">
+                    <input type="text" id="searchInput" placeholder="Поиск...">
+                    <i class="fas fa-search"></i>
                 </div>
             </div>
-
-            <!-- Область чата -->
-            <div class="chat-area">
-                <!-- Заголовок чата -->
-                <div id="chat-header" class="chat-header" style="display: none;">
-                    <div class="chat-header-info">
-                        <img id="chat-header-avatar" src="../uploads/avatars/default.png" alt="Avatar" class="chat-avatar">
-                        <h3 id="chat-header-name"></h3>
-                    </div>
-                </div>
-
-                <!-- Заглушка при отсутствии выбранного чата -->
-                <div id="chat-placeholder" class="chat-placeholder">
-                    <i class="fas fa-comments"></i>
-                    <h3>Выберите чат для начала общения</h3>
-                </div>
-
-                <!-- Область сообщений -->
-                <div id="messages" class="messages-area">
-                    <!-- Сообщения будут добавлены через JavaScript -->
-                </div>
-
-                <!-- Область ввода -->
-                <div class="input-area">
-                    <div class="attachment-wrapper">
-                        <input type="file" id="fileInput" accept="image/*">
-                        <button id="attachButton" class="attach-button">
-                            <i class="fas fa-paperclip"></i>
-                        </button>
-                    </div>
-                    <div id="replyPreview" class="reply-preview" style="display: none;">
-                        <!-- Пр��дпросмотр ответа будет добавлен через JavaScript -->
-                    </div>
-                    <input type="text" id="messageInput" placeholder="Введите сообщение...">
-                    <button id="sendMessage">
-                        <i class="fas fa-paper-plane"></i>
-                    </button>
-                </div>
+            <div id="friends-list" class="friends-list">
+                <!-- Список друзей будет добавлен через JavaScript -->
             </div>
         </div>
-    </main>
+
+        <!-- Область чата -->
+        <div class="chat-area">
+            <!-- Заголовок чата -->
+            <div id="chat-header" class="chat-header" style="display: none;">
+                <div class="chat-header-info">
+                    <img id="chat-header-avatar" src="../uploads/avatars/default.png" alt="Avatar" class="chat-avatar">
+                    <h3 id="chat-header-name"></h3>
+                </div>
+            </div>
+
+            <!-- Заглушка при отсутствии выбранного чата -->
+            <div id="chat-placeholder" class="chat-placeholder">
+                <i class="fas fa-comments"></i>
+                <h3>Выберите чат для начала общения</h3>
+            </div>
+
+            <!-- Область сообщений -->
+            <div id="messages" class="messages-area">
+                <!-- Сообщения будут добавлены через JavaScript -->
+            </div>
+
+            <!-- Область ввода -->
+            <div class="input-area">
+                <div class="attachment-wrapper">
+                    <input type="file" id="fileInput" accept="image/*">
+                    <button id="attachButton" class="attach-button">
+                        <i class="fas fa-paperclip"></i>
+                    </button>
+                </div>
+                <div id="replyPreview" class="reply-preview" style="display: none;">
+                    <!-- Предпросмотр ответа будет добавлен через JavaScript -->
+                </div>
+                <input type="text" id="messageInput" placeholder="Введите сообщение...">
+                <button id="sendMessage">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- Модальное окно для просмотра изображений -->
     <div class="image-modal">
