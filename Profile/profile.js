@@ -1,6 +1,9 @@
 // Обновляем базовый URL и пути
 const API_BASE_URL = 'https://adminflow.ru/api';
-const AVATARS_PATH = '/uploads/avatars/';
+const AVATARS_PATH = {
+    DEFAULT_AVATAR: '/uploads/avatars/default-avatar.png',
+    USER_AVATAR: '/uploads/avatars/'
+}
 
 // Обновляем API_PATHS с учетом нового расположения
 const API_PATHS = {
@@ -197,18 +200,27 @@ const showProfile = async (userData) => {
 
 // Обновляем функцию getAvatarUrl
 const getAvatarUrl = (serverPath) => {
-    if (!serverPath) return `${API_BASE_URL}/uploads/avatars/default-avatar.png`;
+    if (!serverPath) return `${API_BASE_URL}${AVATARS_PATH.DEFAULT_AVATAR}`;
     if (serverPath.startsWith('http')) return serverPath;
     
-    // Если путь начинается с /uploads, добавляем /api
+    // Если путь начинается с /uploads, добавляем базовый URL API
     if (serverPath.startsWith('/uploads/')) {
         return `${API_BASE_URL}${serverPath}`;
     }
     
     // Если это просто имя файла, добавляем полный путь
-    return `${API_BASE_URL}/uploads/avatars/${serverPath.split('/').pop()}`;
+    return `${API_BASE_URL}${AVATARS_PATH.USER_AVATAR}${serverPath.split('/').pop()}`;
 };
 
+// Инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('Initializing profile page');
+    checkUserRole();
+});
+
+// Экспортируем функции в глобальную область видимости
+window.openChat = openChat;
+window.checkUserRole = checkUserRole;
 // Обновляем функцию loadUserAvatar
 const loadUserAvatar = async (username) => {
     if (!username) {
