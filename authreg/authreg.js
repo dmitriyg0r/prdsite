@@ -1,19 +1,28 @@
+// Константа с базовым URL API
+const API_URL = 'https://adminflow.ru:5003';
+
 document.getElementById('login-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    const username = document.getElementById('login-username').value;
-    const password = document.getElementById('login-password').value;
-
     try {
-        const response = await fetch('https://adminflow.ru:5003/api/login', {
+        const username = document.getElementById('login-username').value;
+        const password = document.getElementById('login-password').value;
+
+        console.log('Attempting login for:', username); // Для отладки
+
+        const response = await fetch(`${API_URL}/api/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ username, password })
+            body: JSON.stringify({ username, password }),
+            credentials: 'include'
         });
 
+        console.log('Server response status:', response.status); // Для отладки
+
         const data = await response.json();
+        console.log('Server response:', data); // Для отладки
 
         if (response.ok) {
             // Сохраняем данные пользователя
@@ -27,13 +36,15 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
                 window.location.href = '/profile.html';
             }, 1000);
         } else {
-            showErrorMessage(data.error);
+            showErrorMessage(data.error || 'Ошибка авторизации');
         }
     } catch (err) {
+        console.error('Error during login:', err);
         showErrorMessage('Ошибка подключения к серверу');
     }
 });
 
+// Функции для отображения сообщений
 function showErrorMessage(message) {
     const errorDiv = document.getElementById('error-message');
     errorDiv.textContent = message;
@@ -50,4 +61,16 @@ function showSuccessMessage(message) {
     setTimeout(() => {
         successDiv.style.display = 'none';
     }, 3000);
-} 
+}
+
+// Проверка соединения при загрузке страницы
+window.addEventListener('load', async () => {
+    try {
+        const response = await fetch(`${API_URL}/api/test`);
+        const data = await response.json();
+        console.log('Server connection test:', data);
+    } catch (err) {
+        console.error('Server connection error:', err);
+        showErrorMessage('Ошибка подключения к серверу');
+    }
+}); 
