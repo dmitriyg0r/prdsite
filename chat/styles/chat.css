@@ -35,6 +35,7 @@ body {
 .chat-list-header {
     padding: 20px;
     border-bottom: 1px solid var(--border-color);
+    background-color: var(--text-container-background);
 }
 
 .chat-list-header h2 {
@@ -45,6 +46,8 @@ body {
 /* Поиск */
 .search-container {
     position: relative;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .search-container input {
@@ -54,6 +57,7 @@ body {
     border-radius: 20px;
     background-color: var(--input-background);
     color: var(--text-color);
+    box-sizing: border-box;
 }
 
 .search-container i {
