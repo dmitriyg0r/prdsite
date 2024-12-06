@@ -306,7 +306,7 @@ app.get('/api/friends', async (req, res) => {
         res.json({ friends: result.rows });
     } catch (err) {
         console.error('Get friends error:', err);
-        res.status(500).json({ error: 'Ошибка при получении ��писка друзей' });
+        res.status(500).json({ error: 'Ошибка при получении писка друзей' });
     }
 });
 
@@ -344,5 +344,117 @@ app.post('/api/friend/remove', async (req, res) => {
     } catch (err) {
         console.error('Remove friend error:', err);
         res.status(500).json({ error: 'Ошибка при удалении из друзей' });
+    }
+});
+
+// Отправка личного сообщения
+app.post('/api/messages/send', async (req, res) => {
+    try {
+        const { senderId, receiverId, message, attachmentUrl, replyTo } = req.body;
+
+        const result = await pool.query(
+            'INSERT INTO messages (sender_id, receiver_id, message, attachment_url, reply_to) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+            [senderId, receiverId, message, attachmentUrl, replyTo]
+        );
+
+        res.json({ success: true, message: result.rows[0] });
+    } catch (err) {
+        console.error('Error sending message:', err);
+        res.status(500).json({ error: 'Ошибка при отправке сообщения' });
+    }
+});
+
+// Получение истории сообщений с пользователем
+app.get('/api/messages/history/:userId/:friendId', async (req, res) => {
+    try {
+        const { userId, friendId } = req.params;
+
+        const messages = await pool.query(`
+            SELECT m.*, 
+                   u_sender.username as sender_username,
+                   u_sender.avatar_url as sender_avatar,
+                   u_receiver.username as receiver_username,
+                   u_receiver.avatar_url as receiver_avatar,
+                   CASE WHEN m.reply_to IS NOT NULL THEN 
+                       (SELECT json_build_object(
+                           'id', id, 
+                           'message', message, 
+                           'sender_id', sender_id
+                       ) FROM messages WHERE id = m.reply_to)
+                   END as reply_data
+            FROM messages m
+            JOIN users u_sender ON m.sender_id = u_sender.id
+            JOIN users u_receiver ON m.receiver_id = u_receiver.id
+            WHERE (m.sender_id = $1 AND m.receiver_id = $2)
+               OR (m.sender_id = $2 AND m.receiver_id = $1)
+            ORDER BY m.created_at ASC
+        `, [userId, friendId]);
+
+        res.json({ success: true, messages: messages.rows });
+    } catch (err) {
+        console.error('Error getting message history:', err);
+        res.status(500).json({ error: 'Ошибка при получении истории сообщений' });
+    }
+});
+
+// Отметить сообщения как прочитанные
+app.post('/api/messages/read', async (req, res) => {
+    try {
+        const { userId, friendId } = req.body;
+
+        await pool.query(`
+            UPDATE messages 
+            SET is_read = true 
+            WHERE sender_id = $1 
+            AND receiver_id = $2 
+            AND is_read = false
+        `, [friendId, userId]);
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Error marking messages as read:', err);
+        res.status(500).json({ error: 'Ошибка при отметке сообщений как прочитанных' });
+    }
+});
+
+// Получение последнего сообщения с пользователем
+app.get('/api/messages/last/:userId/:friendId', async (req, res) => {
+    try {
+        const { userId, friendId } = req.params;
+
+        const result = await pool.query(`
+            SELECT m.*, 
+                   u_sender.username as sender_username
+            FROM messages m
+            JOIN users u_sender ON m.sender_id = u_sender.id
+            WHERE (m.sender_id = $1 AND m.receiver_id = $2)
+               OR (m.sender_id = $2 AND m.receiver_id = $1)
+            ORDER BY m.created_at DESC
+            LIMIT 1
+        `, [userId, friendId]);
+
+        res.json({ success: true, message: result.rows[0] });
+    } catch (err) {
+        console.error('Error getting last message:', err);
+        res.status(500).json({ error: 'Ошибка при получении последнего сообщения' });
+    }
+});
+
+// Получение количества непрочитанных сообщений
+app.get('/api/messages/unread/:userId', async (req, res) => {
+    try {
+        const { userId } = req.params;
+
+        const result = await pool.query(`
+            SELECT sender_id, COUNT(*) as count
+            FROM messages
+            WHERE receiver_id = $1 AND is_read = false
+            GROUP BY sender_id
+        `, [userId]);
+
+        res.json({ success: true, unreadCounts: result.rows });
+    } catch (err) {
+        console.error('Error getting unread counts:', err);
+        res.status(500).json({ error: 'Ошибка при получении количества непрочитанных сообщений' });
     }
 }); 
