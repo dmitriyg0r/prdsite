@@ -27,24 +27,28 @@ const showChatButton = () => {
     }
 };
 
-const updateInterfaceBasedOnRole = (role) => {
-    console.log('Updating interface for role:', role);
+const updateInterfaceBasedOnRole = (role, username) => {
+    console.log('Updating interface for:', { role, username });
     
     const adminSection = document.getElementById('admin-section');
     if (adminSection) {
         const isAdmin = role === 'admin';
         adminSection.style.display = isAdmin ? 'block' : 'none';
         console.log('Admin section visibility:', isAdmin ? 'visible' : 'hidden');
-    } else {
-        console.log('Admin section element not found');
     }
     
-    // Можно добавить дополнительные элементы интерфейса, зависящие от роли
+    // Обновляем информацию о пользователе
     const roleIndicator = document.getElementById('user-role');
     if (roleIndicator) {
         roleIndicator.textContent = `Роль: ${role}`;
-        console.log('Role indicator updated');
     }
+    
+    const usernameIndicator = document.getElementById('username-display');
+    if (usernameIndicator) {
+        usernameIndicator.textContent = `Пользователь: ${username}`;
+    }
+    
+    console.log('Interface updated with role and username');
 };
 
 // Утилиты
@@ -70,7 +74,7 @@ const showSuccess = (message) => {
     }
 };
 
-// Обновляем функцию apiRequest для логирования ответа
+// Обновляем функцию apiRequest для корректного логирования
 const apiRequest = async (endpoint, options = {}) => {
     if (!endpoint) {
         throw new Error('API endpoint is required');
@@ -124,13 +128,17 @@ const apiRequest = async (endpoint, options = {}) => {
         if (contentType && contentType.includes('application/json')) {
             responseData = await response.json();
             
-            // Добавляем логирование для role.php
+            // Добавляем подробное логирование для role.php
             if (url.includes('/role.php')) {
-                console.log('Role check response:', {
-                    success: responseData.success,
-                    role: responseData.data?.role,
-                    username: responseData.data?.username
-                });
+                console.log('Role check full response:', responseData);
+                if (responseData.success && responseData.data) {
+                    console.log('Role check details:', {
+                        success: responseData.success,
+                        role: responseData.data.role,
+                        username: responseData.data.username,
+                        expires_at: responseData.data.expires_at
+                    });
+                }
             }
             
             return responseData;
@@ -391,7 +399,7 @@ const stopRoleChecking = () => {
     }
 };
 
-// Обновляем функцию checkUserRole для более подробного логирования
+// Обновляем функцию checkUserRole
 const checkUserRole = async () => {
     try {
         const user = JSON.parse(localStorage.getItem('user'));
@@ -409,15 +417,16 @@ const checkUserRole = async () => {
             }
         });
         
-        console.log('Role check complete:', {
-            success: response.success,
-            role: response.data?.role,
-            username: response.data?.username
-        });
-        
-        if (response.success) {
-            updateInterfaceBasedOnRole(response.data.role);
-            console.log('Interface updated for role:', response.data.role);
+        if (response.success && response.data) {
+            console.log('Role check successful:', {
+                role: response.data.role,
+                username: response.data.username,
+                expires_at: response.data.expires_at
+            });
+            
+            updateInterfaceBasedOnRole(response.data.role, response.data.username);
+        } else {
+            console.warn('Role check response missing data:', response);
         }
     } catch (error) {
         console.error('Role check error:', error);
@@ -580,7 +589,7 @@ const uploadAvatar = async (file) => {
                 // Важно: не добавляем Content-Type для FormData
             },
             body: formData,
-            credentials: 'include' // Добавляем для передачи куки
+            credentials: 'include' // Добавляем для пере��ачи куки
         });
 
         console.log('Upload response status:', response.status);
