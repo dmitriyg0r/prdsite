@@ -2,7 +2,7 @@
 async function checkAdminAuth() {
     const token = localStorage.getItem('token');
     if (!token) {
-        window.location.href = '/authreg.html';
+        window.location.href = '../authreg/authreg.html';
         return;
     }
 
@@ -15,11 +15,11 @@ async function checkAdminAuth() {
         const data = await response.json();
 
         if (!data.success || data.data.role !== 'admin') {
-            window.location.href = '/authreg.html';
+            window.location.href = '../authreg/authreg.html';
         }
     } catch (error) {
         console.error('Auth check failed:', error);
-        window.location.href = '/authreg.html';
+        window.location.href = '../authreg/authreg.html';
     }
 }
 
