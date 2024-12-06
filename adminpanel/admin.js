@@ -14,6 +14,8 @@ async function checkAdminAuth() {
         });
         const data = await response.json();
 
+        console.log('Role check response:', data);
+
         if (!data.success || data.data.role !== 'admin') {
             window.location.href = '../authreg/authreg.html';
         }

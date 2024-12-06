@@ -4,7 +4,7 @@ ini_set('display_errors', 1);
 header('Content-Type: application/json');
 
 try {
-    require_once '/var/www/adminflow.ru/api/config/db.php';
+    require_once __DIR__ . '/../config/db.php';
     
     // Проверяем авторизацию
     $headers = getallheaders();
@@ -16,7 +16,7 @@ try {
     
     // Получаем пользователя по токену
     $stmt = $pdo->prepare('
-        SELECT u.role 
+        SELECT u.role, u.username 
         FROM users u 
         JOIN sessions s ON u.id = s.user_id 
         WHERE s.token = ? AND s.expires_at > NOW()
@@ -28,15 +28,20 @@ try {
         throw new Exception('Invalid token');
     }
     
+    // Добавим отладочную информацию
+    error_log("User role check - Username: " . $result['username'] . ", Role: " . $result['role']);
+    
     echo json_encode([
         'success' => true,
         'data' => [
-            'role' => $result['role']
+            'role' => $result['role'],
+            'username' => $result['username']
         ]
     ]);
     
 } catch (Exception $e) {
-    http_response_code(500);
+    error_log("Role check error: " . $e->getMessage());
+    http_response_code(401);
     echo json_encode([
         'success' => false,
         'error' => $e->getMessage()
