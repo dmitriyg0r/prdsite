@@ -118,7 +118,7 @@ const apiRequest = async (endpoint, options = {}) => {
     }
 };
 
-// Функци�� аутентификации
+// Функци аутентификации
 const handleLogout = async () => {
     try {
         localStorage.removeItem('user');
@@ -195,7 +195,7 @@ const loadUserAvatar = async (username) => {
     }
 };
 
-// Ф��нкции друзей
+// Фнкции друзей
 const loadFriendsList = async () => {
     try {
         const response = await apiRequest(API_PATHS.FRIENDS);
@@ -448,7 +448,7 @@ window.addEventListener('error', (event) => {
 
 window.addEventListener('unhandledrejection', (event) => {
     console.error('Unhandled promise rejection:', event.reason);
-    showError('Произошла ошибк�� при выполнении асинхронной операции');
+    showError('Произошла ошибк при выполнении асинхронной операции');
 });
 
 // Экспорт глобальных функций
@@ -521,36 +521,46 @@ const uploadAvatar = async (file) => {
             throw new Error('Можно загружать только изображения');
         }
 
+        // Получаем токен
+        const token = getToken();
+        if (!token) {
+            window.location.href = '../authreg/authreg.html';
+            return;
+        }
+
         // Создаем FormData и добавляем файл
         const formData = new FormData();
         formData.append('avatar', file, file.name);
 
-        // Получаем токен
-        const token = getToken();
-        if (!token) {
-            throw new Error('Не найден токен авторизации');
-        }
-
         console.log('Preparing upload request:', {
             url: API_PATHS.UPLOAD_AVATAR,
-            token: token ? 'Present' : 'Missing',
+            token: token ? `Bearer ${token.substring(0, 10)}...` : 'Missing',
             formDataEntries: Array.from(formData.entries()).map(entry => ({
                 fieldName: entry[0],
                 fileName: entry[1] instanceof File ? entry[1].name : 'not a file'
             }))
         });
 
-        // Выполняем запрос напрямую через fetch для большего контроля
+        // Выполняем запрос через fetch
         const response = await fetch(`${API_BASE_URL}${API_PATHS.UPLOAD_AVATAR}`, {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${token}`
+                'Authorization': `Bearer ${token}`,
+                // Важно: не добавляем Content-Type для FormData
             },
-            body: formData
+            body: formData,
+            credentials: 'include' // Добавляем для передачи куки
         });
 
         console.log('Upload response status:', response.status);
         
+        // Проверяем статус ответа
+        if (response.status === 401) {
+            localStorage.removeItem('user');
+            window.location.href = '../authreg/authreg.html';
+            return;
+        }
+
         // Пытаемся получить ответ как JSON
         const responseData = await response.json();
         console.log('Upload response data:', responseData);
@@ -588,6 +598,13 @@ const uploadAvatar = async (file) => {
     } catch (error) {
         console.error('Avatar upload error:', error);
         showError(error.message || 'Ошибка при загрузке аватара');
+        
+        // Если ошибка связана с авторизацией, перенаправляем на страницу входа
+        if (error.message.includes('Authorization required')) {
+            localStorage.removeItem('user');
+            window.location.href = '../authreg/authreg.html';
+            return;
+        }
     }
 };
 
@@ -626,7 +643,7 @@ const initializeAvatarUpload = () => {
     }
 };
 
-// Обновляем инициализацию при загрузке страницы
+// Обно��ляем инициализацию при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Initializing avatar upload functionality');
     initializeAvatarUpload();
@@ -695,11 +712,20 @@ async function changePassword(oldPassword, newPassword) {
     }
 }
 
-// Обновляем функцию getToken
+// Обновляем функцию getToken для более надежной проверки
 function getToken() {
     try {
-        const user = JSON.parse(localStorage.getItem('user'));
-        return user?.token;
+        const userData = localStorage.getItem('user');
+        if (!userData) {
+            return null;
+        }
+        
+        const user = JSON.parse(userData);
+        if (!user || !user.token) {
+            return null;
+        }
+        
+        return user.token;
     } catch (error) {
         console.error('Error getting token:', error);
         return null;

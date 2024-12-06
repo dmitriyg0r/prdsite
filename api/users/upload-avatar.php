@@ -13,12 +13,20 @@ try {
     require_once __DIR__ . '/../config/db.php';
     
     $headers = getallheaders();
-    $token = str_replace('Bearer ', '', $headers['Authorization'] ?? '');
-    
-    error_log("Token: " . substr($token, 0, 10) . "...");
+    $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
+    $token = str_replace('Bearer ', '', $authHeader);
+
+    error_log("Auth header: " . $authHeader);
+    error_log("Extracted token: " . $token);
 
     if (empty($token)) {
-        throw new Exception('Authorization required');
+        error_log("No token provided in request");
+        http_response_code(401);
+        echo json_encode([
+            'success' => false,
+            'error' => 'Authorization required'
+        ]);
+        exit;
     }
     
     $stmt = $pdo->prepare('
