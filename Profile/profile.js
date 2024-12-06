@@ -4,15 +4,15 @@ const AVATARS_PATH = '/uploads/avatars/';  // Добавляем /api/ в пут
 
 // Обновляем API_PATHS с учетом расположения PHP файлов
 const API_PATHS = {
-    UPLOAD_AVATAR: '/api/users/upload-avatar.php',
-    AVATAR: '/api/users/avatar.php',
-    ROLE: '/api/users/role.php',
-    POSTS: '/api/users/posts.php',
-    FRIENDS: '/api/users/friends.php',
-    FRIEND_REQUESTS: '/api/users/friend-requests.php',
-    PASSWORD: '/api/auth/register.php',
-    AUTH: '/api/auth/login.php',
-    SEARCH: '/api/users/search.php'
+    UPLOAD_AVATAR: '/users/upload-avatar.php',
+    AVATAR: '/users/avatar.php',
+    ROLE: '/users/role.php',
+    POSTS: '/users/posts.php',
+    FRIENDS: '/users/friends.php',
+    FRIEND_REQUESTS: '/users/friend-requests.php',
+    PASSWORD: '/auth/register.php',
+    AUTH: '/auth/login.php',
+    SEARCH: '/users/search.php'
 };
 
 // Глобальные функции
