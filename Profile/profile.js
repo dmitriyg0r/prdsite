@@ -3,12 +3,33 @@ const API_BASE_URL = 'https://adminflow.ru';
 
 // Константы для путей API
 const API_PATHS = {
-    UPLOAD_AVATAR: '/api/users/upload-avatar.php',
+    UPLOAD_AVATAR: '/api/users/avatar',
+    AVATAR: '/api/users/avatar',
+    ROLE: '/api/users/role',
     POSTS: '/users/posts.php',
     FRIENDS: '/users/friends.php',
     FRIEND_REQUESTS: '/users/friend-requests.php',
     PASSWORD: '/auth/register.php',
     AUTH: '/auth/login.php'
+};
+
+// Глобальные функции
+const openChat = (username) => {
+    window.location.href = `/chat?user=${username}`;
+};
+
+const showChatButton = () => {
+    const chatLink = document.getElementById('chat-link');
+    if (chatLink) {
+        chatLink.style.display = 'block';
+    }
+};
+
+const updateInterfaceBasedOnRole = (role) => {
+    const adminSection = document.getElementById('admin-section');
+    if (adminSection) {
+        adminSection.style.display = role === 'admin' ? 'block' : 'none';
+    }
 };
 
 // Утилиты
@@ -44,7 +65,7 @@ function showRegisterForm() {
         loginContainer.style.display = 'none';
     }
 
-    // Показываем форму регист��ации
+    // Показываем форму регистации
     const registerContainer = document.getElementById('register-container');
     if (registerContainer) {
         registerContainer.style.display = 'block';
@@ -213,7 +234,7 @@ const loadUserAvatar = async (username) => {
     }
 
     try {
-        const response = await apiRequest(`/users/avatar`, {
+        const response = await apiRequest(API_PATHS.AVATAR, {
             method: 'GET',
             headers: {
                 'X-Username': username
@@ -392,7 +413,7 @@ const loadUsers = async () => {
             });
         }
     } catch (error) {
-        showError('Ошибка при загрузке пользователей');
+        showError('Ошибка при загрузке пользвателей');
     }
 };
 
@@ -416,7 +437,13 @@ const checkUserRole = async () => {
         const user = JSON.parse(localStorage.getItem('user'));
         if (!user) return;
 
-        const response = await apiRequest(`/users/${user.username}/role`);
+        const response = await apiRequest(API_PATHS.ROLE, {
+            method: 'GET',
+            headers: {
+                'X-Username': user.username
+            }
+        });
+        
         if (response.success) {
             updateInterfaceBasedOnRole(response.data.role);
         }
@@ -495,15 +522,17 @@ async function uploadAvatar(file) {
     formData.append('avatar', file);
 
     try {
-        const response = await apiRequest('/users/upload-avatar', {
+        const response = await apiRequest(API_PATHS.UPLOAD_AVATAR, {
             method: 'POST',
             body: formData
         });
         
         if (response.success) {
-            const profileAvatar = document.querySelector('.profile-avatar');
-            if (profileAvatar) {
-                profileAvatar.src = response.data.avatarUrl;
+            const userAvatar = document.getElementById('user-avatar');
+            if (userAvatar) {
+                userAvatar.src = response.data.avatarUrl.startsWith('http')
+                    ? response.data.avatarUrl
+                    : `${API_BASE_URL}/uploads/avatars/${response.data.avatarUrl}`;
             }
             showSuccess('Аватар успешно обновлен');
         }
@@ -583,12 +612,4 @@ function getToken() {
         return null;
     }
 }
-
-// Функция показа кнопки чата
-const showChatButton = () => {
-    const chatLink = document.getElementById('chat-link');
-    if (chatLink) {
-        chatLink.style.display = 'block';
-    }
-};
 
