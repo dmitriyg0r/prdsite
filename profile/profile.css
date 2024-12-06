@@ -59,10 +59,15 @@ body {
 }
 
 .profile-page {
-    width: 100%;
-    max-width: 960px;
-    margin: 0 auto;
+    width: calc(100% - 80px);
+    margin-left: 80px;
     padding: 20px;
+    transition: all 0.3s ease;
+}
+
+.sidebar.expanded ~ .profile-page {
+    width: calc(100% - 250px);
+    margin-left: 250px;
 }
 
 /* Шапка профиля */
@@ -84,26 +89,22 @@ body {
 .profile-content {
     display: flex;
     gap: 20px;
-    margin-top: 1px;
+    max-width: 1400px;
+    margin: 0 auto;
 }
 
 /* Левая колонка */
 .profile-left-column {
-    flex: 0 0 230px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+    flex: 0 0 300px;
 }
 
 /* Контейнер аватара */
-.profile-avatar-container {
-    width: 230px;
-    height: 230px;
-    border-radius: 4px;
-    overflow: hidden;
-    position: relative;
+.profile-avatar-block {
     background: var(--text-container-background);
+    border-radius: 4px;
+    padding: 20px;
     box-shadow: var(--text-container-shadow);
+    margin-bottom: 20px;
 }
 
 #profile-avatar {
@@ -231,7 +232,35 @@ body {
 }
 
 /* Адаптивность */
+@media (max-width: 1200px) {
+    .profile-content {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 992px) {
+    .profile-left-column {
+        flex: 0 0 250px;
+    }
+    
+    .profile-avatar-container {
+        width: 210px;
+        height: 210px;
+    }
+}
+
 @media (max-width: 768px) {
+    .profile-page {
+        width: 100%;
+        margin-left: 0;
+        padding: 10px;
+    }
+
+    .sidebar.expanded ~ .profile-page {
+        width: 100%;
+        margin-left: 0;
+    }
+
     .profile-content {
         flex-direction: column;
     }
@@ -241,25 +270,33 @@ body {
         width: 100%;
     }
 
+    .profile-avatar-block {
+        padding: 15px;
+    }
+
     .profile-avatar-container {
-        width: 100%;
-        max-width: 230px;
+        width: 200px;
+        height: 200px;
         margin: 0 auto;
+    }
+
+    .friends-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .friends-grid {
+        grid-template-columns: repeat(3, 1fr);
     }
 
     .profile-info-header {
         flex-direction: column;
-        align-items: flex-start;
         gap: 10px;
     }
 
-    .info-row {
-        flex-direction: column;
-        gap: 5px;
-    }
-
-    .info-label {
-        flex: none;
+    .profile-actions {
+        align-self: flex-end;
     }
 }
 
@@ -280,27 +317,20 @@ body {
 }
 
 /* Обновленные стили для аватара */
-.profile-avatar-block {
-    background: var(--text-container-background);
-    border-radius: 4px;
-    padding: 15px;
-    box-shadow: var(--text-container-shadow);
-    margin-bottom: 15px;
-}
-
 .profile-avatar-container {
-    width: 200px;
-    height: 200px;
+    width: 260px;
+    height: 260px;
     border-radius: 4px;
     overflow: hidden;
     position: relative;
+    margin: 0 auto;
 }
 
 /* Блок друзей */
 .friends-block {
     background: var(--text-container-background);
     border-radius: 4px;
-    padding: 15px;
+    padding: 20px;
     box-shadow: var(--text-container-shadow);
 }
 
@@ -327,7 +357,8 @@ body {
 .friends-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
+    gap: 15px;
+    margin-top: 15px;
 }
 
 .friend-placeholder {
