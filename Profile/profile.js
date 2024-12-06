@@ -27,8 +27,8 @@ const showChatButton = () => {
     }
 };
 
-const updateInterfaceBasedOnRole = (role, username) => {
-    console.log('Updating interface for:', { role, username });
+const updateInterfaceBasedOnRole = (role, username, userId) => {
+    console.log('Updating interface for:', { role, username, userId });
     
     const adminSection = document.getElementById('admin-section');
     if (adminSection) {
@@ -48,7 +48,12 @@ const updateInterfaceBasedOnRole = (role, username) => {
         usernameIndicator.textContent = `Пользователь: ${username}`;
     }
     
-    console.log('Interface updated with role and username');
+    const userIdIndicator = document.getElementById('user-id');
+    if (userIdIndicator) {
+        userIdIndicator.textContent = `ID: ${userId}`;
+    }
+    
+    console.log('Interface updated with role, username and ID');
 };
 
 // Утилиты
@@ -419,12 +424,17 @@ const checkUserRole = async () => {
         
         if (response.success && response.data) {
             console.log('Role check successful:', {
+                id: response.data.id,
                 role: response.data.role,
                 username: response.data.username,
                 expires_at: response.data.expires_at
             });
             
-            updateInterfaceBasedOnRole(response.data.role, response.data.username);
+            updateInterfaceBasedOnRole(
+                response.data.role, 
+                response.data.username, 
+                response.data.id
+            );
         } else {
             console.warn('Role check response missing data:', response);
         }
@@ -589,7 +599,7 @@ const uploadAvatar = async (file) => {
                 // Важно: не добавляем Content-Type для FormData
             },
             body: formData,
-            credentials: 'include' // Добавляем для пере��ачи куки
+            credentials: 'include' // Добавляем для переачи куки
         });
 
         console.log('Upload response status:', response.status);
@@ -728,7 +738,7 @@ async function getFriendRequests() {
 // Функция для изменения пароля
 async function changePassword(oldPassword, newPassword) {
     if (!oldPassword || !newPassword) {
-        showError('Пожалуйста, заполните все поля');
+        showError('По��алуйста, заполните все поля');
         return;
     }
 

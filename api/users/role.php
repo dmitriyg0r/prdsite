@@ -40,7 +40,8 @@ try {
     
     // Проверяем токен в базе данных
     $stmt = $pdo->prepare("
-        SELECT 
+        SELECT
+            u.id, 
             u.role, 
             u.username,
             s.expires_at
@@ -67,6 +68,7 @@ try {
     echo json_encode([
         'success' => true,
         'data' => [
+            'id' => $result['id'],
             'role' => $result['role'],
             'username' => $result['username'],
             'expires_at' => $result['expires_at']
