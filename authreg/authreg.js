@@ -1,19 +1,24 @@
+document.addEventListener('DOMContentLoaded', () => {
+    // Обработчики для переключения форм
+    document.querySelectorAll('.toggle-form-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const loginContainer = document.getElementById('login-form-container');
+            const registerContainer = document.getElementById('register-form-container');
+            
+            if (loginContainer.style.display === 'none') {
+                loginContainer.style.display = 'block';
+                registerContainer.style.display = 'none';
+            } else {
+                loginContainer.style.display = 'none';
+                registerContainer.style.display = 'block';
+            }
+        });
+    });
+});
+
 // Константа с базовым URL API
 const API_URL = 'https://adminflow.ru:5003';
-
-// Функция переключения между формами
-function toggleForms() {
-    const loginContainer = document.getElementById('login-form-container');
-    const registerContainer = document.getElementById('register-form-container');
-    
-    if (loginContainer.style.display === 'none') {
-        loginContainer.style.display = 'block';
-        registerContainer.style.display = 'none';
-    } else {
-        loginContainer.style.display = 'none';
-        registerContainer.style.display = 'block';
-    }
-}
 
 // Обработчик входа
 document.getElementById('login-form').addEventListener('submit', async (e) => {
@@ -87,7 +92,7 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
 
         const data = await response.json();
 
-        // Скрываем индикатор загрузки
+        // Скр��ваем индикатор загрузки
         buttonText.style.display = 'inline-block';
         loader.style.display = 'none';
 
