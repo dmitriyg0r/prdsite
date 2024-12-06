@@ -5,7 +5,15 @@ const pool = new Pool({
     host: 'localhost',
     database: 'adminflow',
     password: 'sGLTccA_Na#9zC',
-    port: 5003,
+    port: 5432
+});
+
+pool.connect((err, client, release) => {
+    if (err) {
+        console.error('Error acquiring client', err.stack);
+    } else {
+        console.log('Database connection successful');
+    }
 });
 
 module.exports = pool; 
