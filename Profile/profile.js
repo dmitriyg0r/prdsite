@@ -73,18 +73,21 @@ const apiRequest = async (endpoint, options = {}) => {
         : `${API_BASE_URL}/api/${cleanEndpoint}`;
     
     try {
+        const token = getToken(); // Используем функцию получения токена
+        
         console.log('Sending request to:', url);
         const response = await fetch(url, {
             ...options,
             headers: {
                 'Content-Type': options.body instanceof FormData ? undefined : 'application/json',
-                'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user'))?.username || ''}`,
+                'Authorization': token ? `Bearer ${token}` : '',
                 ...options.headers
             }
         });
 
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            const errorData = await response.json();
+            throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
         }
 
         const contentType = response.headers.get('content-type');
@@ -101,8 +104,13 @@ const apiRequest = async (endpoint, options = {}) => {
 // Функции аутентификации
 const handleLogin = async (event) => {
     event.preventDefault();
-    const username = document.getElementById('login-username').value;
-    const password = document.getElementById('login-password').value;
+    const username = document.getElementById('login-username')?.value;
+    const password = document.getElementById('login-password')?.value;
+
+    if (!username || !password) {
+        showError('Пожалуйста, заполните все поля');
+        return;
+    }
 
     try {
         const response = await apiRequest(API_PATHS.AUTH, {
@@ -128,10 +136,16 @@ const handleLogin = async (event) => {
         showError('Ошибка при входе');
     }
 };
+
 const handleRegister = async (event) => {
     event.preventDefault();
-    const username = document.getElementById('reg-username').value;
-    const password = document.getElementById('reg-password').value;
+    const username = document.getElementById('reg-username')?.value;
+    const password = document.getElementById('reg-password')?.value;
+
+    if (!username || !password) {
+        showError('Пожалуйста, заполните все поля');
+        return;
+    }
 
     try {
         const response = await apiRequest(API_PATHS.PASSWORD, {
@@ -153,14 +167,15 @@ const handleRegister = async (event) => {
 const handleLogout = async () => {
     try {
         localStorage.removeItem('user');
-        document.getElementById('login-container').style.display = 'block';
-        document.getElementById('profile-info').style.display = 'none';
-        document.getElementById('admin-section').style.display = 'none';
-        
+        const loginContainer = document.getElementById('login-container');
+        const profileInfo = document.getElementById('profile-info');
+        const adminSection = document.getElementById('admin-section');
         const chatLink = document.getElementById('chat-link');
-        if (chatLink) {
-            chatLink.style.display = 'none';
-        }
+
+        if (loginContainer) loginContainer.style.display = 'block';
+        if (profileInfo) profileInfo.style.display = 'none';
+        if (adminSection) adminSection.style.display = 'none';
+        if (chatLink) chatLink.style.display = 'none';
         
         showSuccess('Вы успешно вышли из системы');
         stopRoleChecking();
@@ -171,12 +186,22 @@ const handleLogout = async () => {
 
 // Функции профиля
 const showProfile = async (userData) => {
-    document.getElementById('login-container').style.display = 'none';
-    document.getElementById('register-container').style.display = 'none';
-    document.getElementById('profile-info').style.display = 'block';
+    if (!userData) {
+        console.error('User data is missing');
+        return;
+    }
 
-    document.getElementById('profile-username').textContent = userData.username;
-    document.getElementById('profile-role').textContent = userData.role;
+    const loginContainer = document.getElementById('login-container');
+    const registerContainer = document.getElementById('register-container');
+    const profileInfo = document.getElementById('profile-info');
+    const profileUsername = document.getElementById('profile-username');
+    const profileRole = document.getElementById('profile-role');
+
+    if (loginContainer) loginContainer.style.display = 'none';
+    if (registerContainer) registerContainer.style.display = 'none';
+    if (profileInfo) profileInfo.style.display = 'block';
+    if (profileUsername) profileUsername.textContent = userData.username;
+    if (profileRole) profileRole.textContent = userData.role;
 
     await loadUserAvatar(userData.username);
 };
@@ -186,27 +211,28 @@ const loadUserAvatar = async (username) => {
         console.error('Username is undefined');
         const userAvatar = document.getElementById('user-avatar');
         if (userAvatar) {
-            userAvatar.src = API_PATHS.UPLOAD_AVATAR;
+            userAvatar.src = `${API_BASE_URL}${API_PATHS.UPLOAD_AVATAR}`;
         }
         return;
     }
 
     try {
         const response = await apiRequest(`/users/${username}/avatar`);
-        
+        const userAvatar = document.getElementById('user-avatar');
+        if (!userAvatar) return;
+
         if (response.success && response.data.avatarUrl) {
-            const userAvatar = document.getElementById('user-avatar');
-            if (userAvatar) {
-                userAvatar.src = response.data.avatarUrl.startsWith('http') 
-                    ? response.data.avatarUrl 
-                    : `${API_BASE_URL}${response.data.avatarUrl}`;
-            }
+            userAvatar.src = response.data.avatarUrl.startsWith('http') 
+                ? response.data.avatarUrl 
+                : `${API_BASE_URL}${response.data.avatarUrl}`;
+        } else {
+            userAvatar.src = `${API_BASE_URL}${API_PATHS.UPLOAD_AVATAR}`;
         }
     } catch (error) {
         console.error('Error loading avatar:', error);
         const userAvatar = document.getElementById('user-avatar');
         if (userAvatar) {
-            userAvatar.src = API_PATHS.UPLOAD_AVATAR;
+            userAvatar.src = `${API_BASE_URL}${API_PATHS.UPLOAD_AVATAR}`;
         }
     }
 };
@@ -224,7 +250,7 @@ const loadFriendsList = async () => {
                 const friendItem = document.createElement('tr');
                 friendItem.innerHTML = `
                     <td>
-                        <img src="${friend.avatarUrl || API_PATHS.UPLOAD_AVATAR}" alt="Аватар" class="friend-avatar">
+                        <img src="${friend.avatarUrl || `${API_BASE_URL}${API_PATHS.UPLOAD_AVATAR}`}" alt="Аватар" class="friend-avatar">
                     </td>
                     <td>${friend.username}</td>
                     <td>
@@ -261,7 +287,7 @@ const loadFriendRequests = async () => {
                 const requestItem = document.createElement('div');
                 requestItem.className = 'friend-request-item';
                 requestItem.innerHTML = `
-                    <img src="${request.avatarUrl || API_PATHS.UPLOAD_AVATAR}" alt="Аватар" class="friend-avatar">
+                    <img src="${request.avatarUrl || `${API_BASE_URL}${API_PATHS.UPLOAD_AVATAR}`}" alt="Аватар" class="friend-avatar">
                     <span>${request.username}</span>
                     <div class="request-actions">
                         <button onclick="acceptFriendRequest('${request.id}')" class="btn primary-btn">Принять</button>
@@ -278,8 +304,8 @@ const loadFriendRequests = async () => {
 
 // Функции постов
 const createPost = async () => {
-    const content = document.getElementById('post-content').value;
-    if (!content.trim()) {
+    const content = document.getElementById('post-content')?.value;
+    if (!content?.trim()) {
         showError('Пост не может быть пустым');
         return;
     }
@@ -287,12 +313,13 @@ const createPost = async () => {
     try {
         const response = await apiRequest('/posts', {
             method: 'POST',
-            body: JSON.stringify({ content })
+            body: JSON.stringify({ content: content.trim() })
         });
 
         if (response.success) {
             showSuccess('Пост создан');
-            document.getElementById('post-content').value = '';
+            const postContent = document.getElementById('post-content');
+            if (postContent) postContent.value = '';
             loadPosts();
         }
     } catch (error) {
@@ -313,7 +340,7 @@ const loadPosts = async () => {
                 postElement.className = 'post';
                 postElement.innerHTML = `
                     <div class="post-header">
-                        <img src="${post.authorAvatar || API_PATHS.UPLOAD_AVATAR}" alt="Аватар" class="post-avatar">
+                        <img src="${post.authorAvatar || `${API_BASE_URL}${API_PATHS.UPLOAD_AVATAR}`}" alt="Аватар" class="post-avatar">
                         <div class="post-info">
                             <span class="post-author">${post.author}</span>
                             <span class="post-date">${new Date(post.createdAt).toLocaleString()}</span>
@@ -458,6 +485,11 @@ window.deleteUser = deleteUser;
 
 // Функция для загрузки аватара
 async function uploadAvatar(file) {
+    if (!file) {
+        showError('Файл не выбран');
+        return;
+    }
+
     const formData = new FormData();
     formData.append('avatar', file);
 
@@ -468,8 +500,10 @@ async function uploadAvatar(file) {
         });
         
         if (response.success) {
-            // Обновляем аватар на странице
-            document.querySelector('.profile-avatar').src = response.data.avatarUrl;
+            const profileAvatar = document.querySelector('.profile-avatar');
+            if (profileAvatar) {
+                profileAvatar.src = response.data.avatarUrl;
+            }
             showSuccess('Аватар успешно обновлен');
         }
     } catch (error) {
@@ -513,6 +547,11 @@ async function getFriendRequests() {
 
 // Функция для изменения пароля
 async function changePassword(oldPassword, newPassword) {
+    if (!oldPassword || !newPassword) {
+        showError('Пожалуйста, заполните все поля');
+        return;
+    }
+
     try {
         const response = await apiRequest('/users/password', {
             method: 'POST',
@@ -535,8 +574,13 @@ async function changePassword(oldPassword, newPassword) {
 
 // Вспомогательная функция для получения токена
 function getToken() {
-    const user = JSON.parse(localStorage.getItem('user'));
-    return user ? user.token : null;
+    try {
+        const user = JSON.parse(localStorage.getItem('user'));
+        return user ? user.token : null;
+    } catch (error) {
+        console.error('Error getting token:', error);
+        return null;
+    }
 }
 
 // Функция показа кнопки чата
@@ -546,4 +590,3 @@ const showChatButton = () => {
         chatLink.style.display = 'block';
     }
 };
-
