@@ -1,5 +1,6 @@
 // Добавить в начало файла
 const API_BASE_URL = 'https://adminflow.ru';
+const AVATARS_PATH = '/api/uploads/avatars';
 
 // Константы для путей API
 const API_PATHS = {
@@ -247,15 +248,15 @@ const loadUserAvatar = async (username) => {
         if (response.success && response.data.avatarUrl) {
             userAvatar.src = response.data.avatarUrl.startsWith('http') 
                 ? response.data.avatarUrl 
-                : `${API_BASE_URL}/uploads/avatars/${response.data.avatarUrl}`;
+                : `${API_BASE_URL}${AVATARS_PATH}/${response.data.avatarUrl}`;
         } else {
-            userAvatar.src = `${API_BASE_URL}/uploads/avatars/default-avatar.png`;
+            userAvatar.src = `${API_BASE_URL}${AVATARS_PATH}/default-avatar.png`;
         }
     } catch (error) {
         console.error('Error loading avatar:', error);
         const userAvatar = document.getElementById('user-avatar');
         if (userAvatar) {
-            userAvatar.src = `${API_BASE_URL}/uploads/avatars/default-avatar.png`;
+            userAvatar.src = `${API_BASE_URL}${AVATARS_PATH}/default-avatar.png`;
         }
     }
 };
@@ -273,7 +274,7 @@ const loadFriendsList = async () => {
                 const friendItem = document.createElement('tr');
                 friendItem.innerHTML = `
                     <td>
-                        <img src="${friend.avatarUrl || `${API_BASE_URL}/uploads/avatars/default-avatar.png`}" alt="Аватар" class="friend-avatar">
+                        <img src="${friend.avatarUrl || `${API_BASE_URL}${AVATARS_PATH}/default-avatar.png`}" alt="Аватар" class="friend-avatar">
                     </td>
                     <td>${friend.username}</td>
                     <td>
@@ -310,7 +311,7 @@ const loadFriendRequests = async () => {
                 const requestItem = document.createElement('div');
                 requestItem.className = 'friend-request-item';
                 requestItem.innerHTML = `
-                    <img src="${request.avatarUrl || `${API_BASE_URL}/uploads/avatars/default-avatar.png`}" alt="Аватар" class="friend-avatar">
+                    <img src="${request.avatarUrl || `${API_BASE_URL}${AVATARS_PATH}/default-avatar.png`}" alt="Аватар" class="friend-avatar">
                     <span>${request.username}</span>
                     <div class="request-actions">
                         <button onclick="acceptFriendRequest('${request.id}')" class="btn primary-btn">Принять</button>
@@ -362,7 +363,7 @@ const loadPosts = async () => {
                 postElement.className = 'post';
                 postElement.innerHTML = `
                     <div class="post-header">
-                        <img src="${post.authorAvatar || `${API_BASE_URL}/uploads/avatars/default-avatar.png`}" alt="Аватар" class="post-avatar">
+                        <img src="${post.authorAvatar || `${API_BASE_URL}${AVATARS_PATH}/default-avatar.png`}" alt="Аватар" class="post-avatar">
                         <div class="post-info">
                             <span class="post-author">${post.author}</span>
                             <span class="post-date">${new Date(post.createdAt).toLocaleString()}</span>
@@ -532,7 +533,7 @@ async function uploadAvatar(file) {
             if (userAvatar) {
                 userAvatar.src = response.data.avatarUrl.startsWith('http')
                     ? response.data.avatarUrl
-                    : `${API_BASE_URL}/uploads/avatars/${response.data.avatarUrl}`;
+                    : `${API_BASE_URL}${AVATARS_PATH}/${response.data.avatarUrl}`;
             }
             showSuccess('Аватар успешно обновлен');
         }
