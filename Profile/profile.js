@@ -28,9 +28,22 @@ const showChatButton = () => {
 };
 
 const updateInterfaceBasedOnRole = (role) => {
+    console.log('Updating interface for role:', role);
+    
     const adminSection = document.getElementById('admin-section');
     if (adminSection) {
-        adminSection.style.display = role === 'admin' ? 'block' : 'none';
+        const isAdmin = role === 'admin';
+        adminSection.style.display = isAdmin ? 'block' : 'none';
+        console.log('Admin section visibility:', isAdmin ? 'visible' : 'hidden');
+    } else {
+        console.log('Admin section element not found');
+    }
+    
+    // Можно добавить дополнительные элементы интерфейса, зависящие от роли
+    const roleIndicator = document.getElementById('user-role');
+    if (roleIndicator) {
+        roleIndicator.textContent = `Роль: ${role}`;
+        console.log('Role indicator updated');
     }
 };
 
@@ -57,7 +70,7 @@ const showSuccess = (message) => {
     }
 };
 
-// Обновляем функцию apiRequest для правильной обработки FormData
+// Обновляем функцию apiRequest для логирования ответа
 const apiRequest = async (endpoint, options = {}) => {
     if (!endpoint) {
         throw new Error('API endpoint is required');
@@ -75,23 +88,21 @@ const apiRequest = async (endpoint, options = {}) => {
         }
         
         console.log('Making request to:', url);
-        
-        // Не добавляем Content-Type для FormData
-        const headers = {
-            'Authorization': `Bearer ${token}`,
-            ...options.headers
-        };
-
-        // Если тело запроса не FormData, добавляем Content-Type: application/json
-        if (options.body && !(options.body instanceof FormData)) {
-            headers['Content-Type'] = 'application/json';
-        }
-
-        console.log('Request headers:', headers);
+        console.log('Request options:', {
+            ...options,
+            headers: {
+                ...options.headers,
+                'Authorization': `Bearer ${token}`
+            }
+        });
         
         const response = await fetch(url, {
             ...options,
-            headers: headers
+            headers: {
+                ...(!(options.body instanceof FormData) && {'Content-Type': 'application/json'}),
+                'Authorization': `Bearer ${token}`,
+                ...options.headers
+            }
         });
 
         console.log('Response status:', response.status);
@@ -108,8 +119,21 @@ const apiRequest = async (endpoint, options = {}) => {
         }
 
         const contentType = response.headers.get('content-type');
+        let responseData;
+        
         if (contentType && contentType.includes('application/json')) {
-            return await response.json();
+            responseData = await response.json();
+            
+            // Добавляем логирование для role.php
+            if (url.includes('/role.php')) {
+                console.log('Role check response:', {
+                    success: responseData.success,
+                    role: responseData.data?.role,
+                    username: responseData.data?.username
+                });
+            }
+            
+            return responseData;
         }
         return await response.text();
     } catch (error) {
@@ -367,16 +391,16 @@ const stopRoleChecking = () => {
     }
 };
 
+// Обновляем функцию checkUserRole для более подробного логирования
 const checkUserRole = async () => {
     try {
         const user = JSON.parse(localStorage.getItem('user'));
-        if (!user) return;
-
-        // Проверям наличие пути
-        if (!API_PATHS.ROLE) {
-            console.error('Role API path is not defined');
+        if (!user) {
+            console.log('No user data in localStorage');
             return;
         }
+
+        console.log('Checking role for user:', user.username);
 
         const response = await apiRequest(API_PATHS.ROLE, {
             method: 'GET',
@@ -385,11 +409,18 @@ const checkUserRole = async () => {
             }
         });
         
+        console.log('Role check complete:', {
+            success: response.success,
+            role: response.data?.role,
+            username: response.data?.username
+        });
+        
         if (response.success) {
             updateInterfaceBasedOnRole(response.data.role);
+            console.log('Interface updated for role:', response.data.role);
         }
     } catch (error) {
-        console.error('Ошибка при проверке роли:', error);
+        console.error('Role check error:', error);
     }
 };
 
@@ -643,7 +674,7 @@ const initializeAvatarUpload = () => {
     }
 };
 
-// Обно��ляем инициализацию при загрузке страницы
+// Обноляем инициализацию при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Initializing avatar upload functionality');
     initializeAvatarUpload();
