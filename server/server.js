@@ -172,10 +172,16 @@ app.post('/api/upload-avatar', upload.single('avatar'), async (req, res) => {
             return res.status(400).json({ error: 'Файл не загружен' });
         }
 
+        // Получаем ID пользователя из тела запроса
+        const userId = req.body.userId;
+        if (!userId) {
+            return res.status(400).json({ error: 'ID пользователя не указан' });
+        }
+
         // Обновляем путь к аватару в базе данных
         await pool.query(
             'UPDATE users SET avatar_url = $1 WHERE id = $2',
-            [`/uploads/avatars/${req.file.filename}`, req.user.id]
+            [`/uploads/avatars/${req.file.filename}`, userId]
         );
 
         res.json({ 

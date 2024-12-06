@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const formData = new FormData();
         formData.append('avatar', file);
+        formData.append('userId', user.id);
 
         try {
             const response = await fetch('https://adminflow.ru:5003/api/upload-avatar', {
