@@ -306,7 +306,7 @@ app.get('/api/friends', async (req, res) => {
         res.json({ friends: result.rows });
     } catch (err) {
         console.error('Get friends error:', err);
-        res.status(500).json({ error: 'Ошибка при получении ��иска друзей' });
+        res.status(500).json({ error: 'Ошибка при получении иска друзей' });
     }
 });
 
@@ -347,20 +347,57 @@ app.post('/api/friend/remove', async (req, res) => {
     }
 });
 
-// Отправка личного сообщения
-app.post('/api/messages/send', async (req, res) => {
+// Настройка хранилища для файлов сообщений
+const messageStorage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, '/var/www/html/uploads/messages')  // Убедитесь, что эта директория существует
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+        cb(null, 'message-' + uniqueSuffix + path.extname(file.originalname))
+    }
+});
+
+const messageUpload = multer({ 
+    storage: messageStorage,
+    limits: {
+        fileSize: 10 * 1024 * 1024 // 10MB макс размер
+    },
+    fileFilter: (req, file, cb) => {
+        // Разрешенные типы файлов
+        const filetypes = /jpeg|jpg|png|gif|pdf|doc|docx|txt/;
+        const mimetype = filetypes.test(file.mimetype);
+        const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+
+        if (mimetype && extname) {
+            return cb(null, true);
+        }
+        cb(new Error('Неподдерживаемый тип файла!'));
+    }
+});
+
+// Эндпоинт для отправки сообщения с файлом
+app.post('/api/messages/send-with-file', messageUpload.single('file'), async (req, res) => {
     try {
-        const { senderId, receiverId, message, attachmentUrl, replyTo } = req.body;
+        const { senderId, receiverId, message, replyTo } = req.body;
+        let attachmentUrl = null;
+
+        if (req.file) {
+            attachmentUrl = `/uploads/messages/${req.file.filename}`;
+        }
 
         const result = await pool.query(
             'INSERT INTO messages (sender_id, receiver_id, message, attachment_url, reply_to) VALUES ($1, $2, $3, $4, $5) RETURNING *',
             [senderId, receiverId, message, attachmentUrl, replyTo]
         );
 
-        res.json({ success: true, message: result.rows[0] });
+        res.json({ 
+            success: true, 
+            message: result.rows[0] 
+        });
     } catch (err) {
-        console.error('Error sending message:', err);
-        res.status(500).json({ error: 'Ошибка при отправке сообщения' });
+        console.error('Error sending message with file:', err);
+        res.status(500).json({ error: 'Ошибка при отправке сообщения с файлом' });
     }
 });
 

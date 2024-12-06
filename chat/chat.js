@@ -192,31 +192,38 @@ function displayMessages(messages) {
 
 async function sendMessage() {
     const messageInput = document.getElementById('messageInput');
+    const fileInput = document.getElementById('fileInput');
     const message = messageInput.value.trim();
-    
-    if (!message || !currentChatPartner) return;
+    const file = fileInput.files[0];
+
+    if (!message && !file) return;
+    if (!currentChatPartner) return;
 
     try {
-        const response = await fetch('https://adminflow.ru:5003/api/messages/send', {
+        const formData = new FormData();
+        formData.append('senderId', currentUser.id);
+        formData.append('receiverId', currentChatPartner.id);
+        formData.append('message', message);
+        
+        if (file) {
+            formData.append('file', file);
+        }
+
+        const response = await fetch('https://adminflow.ru:5003/api/messages/send-with-file', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                senderId: currentUser.id,
-                receiverId: currentChatPartner.id,
-                message: message
-            })
+            body: formData
         });
 
-        const data = await response.json();
-        if (data.success) {
+        if (response.ok) {
             messageInput.value = '';
-            await loadChatHistory();
-            await loadLastMessage(currentChatPartner.id);
+            fileInput.value = '';
+            await loadMessages(currentChatPartner.id);
+            scrollToBottom();
+        } else {
+            console.error('Error sending message');
         }
     } catch (err) {
-        console.error('Error sending message:', err);
+        console.error('Error:', err);
     }
 }
 
@@ -235,7 +242,7 @@ async function markMessagesAsRead() {
             })
         });
 
-        // Обновляем с��етчик непрочитанных сообщений
+        // Обновляем сетчик непрочитанных сообщений
         await updateUnreadCount(currentChatPartner.id);
     } catch (err) {
         console.error('Error marking messages as read:', err);
@@ -251,6 +258,45 @@ function setupEventListeners() {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             sendMessage();
+        }
+    });
+
+    // Добавляем обработчик для предпросмотра файла
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            // Если это изображение, можно показать предпросмотр
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // Показываем предпросмотр изображения
+                    const preview = document.createElement('div');
+                    preview.className = 'file-preview';
+                    preview.innerHTML = `
+                        <img src="${e.target.result}" alt="Preview">
+                        <span class="file-name">${file.name}</span>
+                        <button class="remove-file">×</button>
+                    `;
+                    document.querySelector('.input-area').insertBefore(
+                        preview, 
+                        document.getElementById('messageInput')
+                    );
+                };
+                reader.readAsDataURL(file);
+            } else {
+                // Для других типов файлов показываем только имя
+                const preview = document.createElement('div');
+                preview.className = 'file-preview';
+                preview.innerHTML = `
+                    <i class="fas fa-file"></i>
+                    <span class="file-name">${file.name}</span>
+                    <button class="remove-file">×</button>
+                `;
+                document.querySelector('.input-area').insertBefore(
+                    preview, 
+                    document.getElementById('messageInput')
+                );
+            }
         }
     });
 }

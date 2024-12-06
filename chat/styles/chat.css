@@ -264,4 +264,73 @@
     .chat-area {
         width: 100%;
     }
+}
+
+/* Стили для файлов в сообщениях */
+.message-attachment {
+    margin-top: 5px;
+    max-width: 200px;
+}
+
+.message-attachment img {
+    max-width: 100%;
+    border-radius: 8px;
+}
+
+.message-attachment .file-info {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    background: rgba(var(--button-background-rgb), 0.1);
+    border-radius: 8px;
+    margin-top: 5px;
+}
+
+.message-attachment .file-icon {
+    margin-right: 8px;
+    color: var(--text-secondary);
+}
+
+.message-attachment .file-name {
+    color: var(--text-color);
+    font-size: 0.9em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Стили для предпросмотра файла перед отправкой */
+.file-preview {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    background: var(--background-color);
+    border-radius: 8px;
+    margin-right: 10px;
+}
+
+.file-preview img {
+    max-height: 40px;
+    border-radius: 4px;
+    margin-right: 8px;
+}
+
+.file-preview .file-name {
+    color: var(--text-color);
+    font-size: 0.9em;
+    margin-right: 8px;
+}
+
+.file-preview .remove-file {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 50%;
+}
+
+.file-preview .remove-file:hover {
+    color: var(--primary-color);
+    background-color: rgba(var(--button-background-rgb), 0.1);
 } 
