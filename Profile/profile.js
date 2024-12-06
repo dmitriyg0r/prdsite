@@ -1,6 +1,6 @@
 // Обновляем константы в начале файла
-const API_BASE_URL = 'https://adminflow.ru';
-const AVATARS_PATH = '/api/uploads/avatars/';  // Добавляем /api/ в путь
+const API_BASE_URL = 'https://adminflow.ru/api';
+const AVATARS_PATH = '/uploads/avatars/';  // Добавляем /api/ в путь
 
 // Обновляем API_PATHS с учетом расположения PHP файлов
 const API_PATHS = {
@@ -27,11 +27,36 @@ const showChatButton = () => {
     }
 };
 
-const updateInterfaceBasedOnRole = (role) => {
+const updateInterfaceBasedOnRole = (role, username, userId) => {
+    console.log('Updating interface for:', { role, username, userId });
+    
     const adminSection = document.getElementById('admin-section');
     if (adminSection) {
-        adminSection.style.display = role === 'admin' ? 'block' : 'none';
+        const isAdmin = role === 'admin';
+        adminSection.style.display = isAdmin ? 'block' : 'none';
     }
+    
+    // Обновляем информацию о пользователе
+    const roleIndicator = document.getElementById('user-role');
+    if (roleIndicator) {
+        roleIndicator.textContent = `Роль: ${role || 'не определена'}`;
+    }
+    
+    const usernameIndicator = document.getElementById('username-display');
+    if (usernameIndicator) {
+        usernameIndicator.textContent = `Пользователь: ${username || 'не определен'}`;
+    }
+    
+    const userIdIndicator = document.getElementById('user-id');
+    if (userIdIndicator) {
+        userIdIndicator.textContent = `ID: ${userId || 'не определен'}`;
+    }
+    
+    console.log('Interface updated with:', {
+        role: role || 'undefined',
+        username: username || 'undefined',
+        userId: userId || 'undefined'
+    });
 };
 
 // Утилиты
@@ -57,7 +82,7 @@ const showSuccess = (message) => {
     }
 };
 
-// Обновляем функцию apiRequest для обработки ошибок авторизации
+// Обновляем функцию apiRequest для корректного логирования
 const apiRequest = async (endpoint, options = {}) => {
     if (!endpoint) {
         throw new Error('API endpoint is required');
@@ -106,8 +131,31 @@ const apiRequest = async (endpoint, options = {}) => {
         }
 
         const contentType = response.headers.get('content-type');
+        let responseData;
+        
         if (contentType && contentType.includes('application/json')) {
-            return await response.json();
+            responseData = await response.json();
+            
+            // Добавляем подробное логирование для role.php
+            if (url.includes('/role.php')) {
+                console.log('Raw response data:', responseData);
+                
+                // Проверяем структуру ответа
+                if (responseData.success && responseData.data) {
+                    const { role, username, id, expires_at } = responseData.data;
+                    console.log('Role check details:', {
+                        success: responseData.success,
+                        role,
+                        username,
+                        id,
+                        expires_at
+                    });
+                } else {
+                    console.warn('Unexpected response structure:', responseData);
+                }
+            }
+            
+            return responseData;
         }
         return await response.text();
     } catch (error) {
@@ -116,7 +164,7 @@ const apiRequest = async (endpoint, options = {}) => {
     }
 };
 
-// Функции аутентификации
+// Функци аутентификации
 const handleLogout = async () => {
     try {
         localStorage.removeItem('user');
@@ -149,16 +197,16 @@ const showProfile = async (userData) => {
 
 // Обновляем функцию getAvatarUrl
 const getAvatarUrl = (serverPath) => {
-    if (!serverPath) return `${API_BASE_URL}/api/uploads/avatars/default-avatar.png`;
+    if (!serverPath) return `${API_BASE_URL}/uploads/avatars/default-avatar.png`;
     if (serverPath.startsWith('http')) return serverPath;
     
     // Если путь начинается с /uploads, добавляем /api
     if (serverPath.startsWith('/uploads/')) {
-        return `${API_BASE_URL}/api${serverPath}`;
+        return `${API_BASE_URL}${serverPath}`;
     }
     
     // Если это просто имя файла, добавляем полный путь
-    return `${API_BASE_URL}/api/uploads/avatars/${serverPath.split('/').pop()}`;
+    return `${API_BASE_URL}/uploads/avatars/${serverPath.split('/').pop()}`;
 };
 
 // Обновляем функцию loadUserAvatar
@@ -193,7 +241,7 @@ const loadUserAvatar = async (username) => {
     }
 };
 
-// Функции друзей
+// Фнкции друзей
 const loadFriendsList = async () => {
     try {
         const response = await apiRequest(API_PATHS.FRIENDS);
@@ -261,7 +309,7 @@ const loadFriendRequests = async () => {
 const createPost = async () => {
     const content = document.getElementById('post-content')?.value;
     if (!content?.trim()) {
-        showError('Пост не может быть пустым');
+        showError('Пост не может ыть пустым');
         return;
     }
 
@@ -278,7 +326,7 @@ const createPost = async () => {
             loadPosts();
         }
     } catch (error) {
-        showError('Ошибка при создании поста');
+        showError('Ошибка при созд��нии поста');
     }
 };
 
@@ -365,16 +413,16 @@ const stopRoleChecking = () => {
     }
 };
 
+// Обновляем функцию checkUserRole
 const checkUserRole = async () => {
     try {
         const user = JSON.parse(localStorage.getItem('user'));
-        if (!user) return;
-
-        // Проверяем наличие пути
-        if (!API_PATHS.ROLE) {
-            console.error('Role API path is not defined');
+        if (!user) {
+            console.log('No user data in localStorage');
             return;
         }
+
+        console.log('Checking role for user:', user.username);
 
         const response = await apiRequest(API_PATHS.ROLE, {
             method: 'GET',
@@ -383,11 +431,26 @@ const checkUserRole = async () => {
             }
         });
         
-        if (response.success) {
-            updateInterfaceBasedOnRole(response.data.role);
+        if (response.success && response.data) {
+            const { role, username, id } = response.data;
+            
+            console.log('Role check successful:', {
+                id,
+                role,
+                username
+            });
+            
+            // Проверяем наличие всех необходимых данных
+            if (!role || !username || !id) {
+                console.warn('Missing required data:', { role, username, id });
+            }
+            
+            updateInterfaceBasedOnRole(role, username, id);
+        } else {
+            console.warn('Invalid response structure:', response);
         }
     } catch (error) {
-        console.error('Ошибка при проверке роли:', error);
+        console.error('Role check error:', error);
     }
 };
 
@@ -446,7 +509,7 @@ window.addEventListener('error', (event) => {
 
 window.addEventListener('unhandledrejection', (event) => {
     console.error('Unhandled promise rejection:', event.reason);
-    showError('Произошла ошибка при выполнении асинхронной операции');
+    showError('Произошла ошибк при выполнении асинхронной операции');
 });
 
 // Экспорт глобальных функций
@@ -457,81 +520,197 @@ window.deletePost = deletePost;
 window.changeRole = changeRole;
 window.deleteUser = deleteUser;
 
+// Перенесем объявления функций в начало файла
+const hideAddFriendModal = () => {
+    const modal = document.getElementById('add-friend-modal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+};
+
+const showAddFriendModal = () => {
+    const modal = document.getElementById('add-friend-modal');
+    if (modal) {
+        modal.style.display = 'block';
+    }
+};
+
+const acceptFriendRequest = async (requestId) => {
+    try {
+        const response = await apiRequest(API_PATHS.FRIEND_REQUESTS, {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'accept',
+                requestId: requestId
+            })
+        });
+        
+        if (response.success) {
+            showSuccess('Заявка в друзья принята');
+            await Promise.all([
+                loadFriendsList(),
+                loadFriendRequests()
+            ]);
+        }
+    } catch (error) {
+        showError('Ошибка при принятии заявки в друзья');
+    }
+};
+
 // Обновляем функцию uploadAvatar
-async function uploadAvatar(file) {
+const uploadAvatar = async (file) => {
     if (!file) {
         console.error('No file selected');
         showError('Файл не выбран');
         return;
     }
 
-    console.log('Starting avatar upload...', file);
+    console.log('Starting avatar upload...', {
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: file.type
+    });
     
-    const formData = new FormData();
-    formData.append('avatar', file);
-
     try {
-        console.log('Sending request to:', API_PATHS.UPLOAD_AVATAR);
-        console.log('FormData contents:', Array.from(formData.entries()));
-        
-        const response = await apiRequest(API_PATHS.UPLOAD_AVATAR, {
-            method: 'POST',
-            body: formData,
-            headers: {
-                // Убираем Content-Type, чтобы браузер сам установил правильный с boundary
-                'Content-Type': undefined
-            }
+        // Проверки файла
+        if (file.size > 5 * 1024 * 1024) {
+            throw new Error('Файл слишком большой. Максимальный размер 5MB');
+        }
+
+        if (!file.type.startsWith('image/')) {
+            throw new Error('Можно загружать только изображения');
+        }
+
+        // Получаем токен
+        const token = getToken();
+        if (!token) {
+            window.location.href = '../authreg/authreg.html';
+            return;
+        }
+
+        // Создаем FormData и добавляем файл
+        const formData = new FormData();
+        formData.append('avatar', file, file.name);
+
+        console.log('Preparing upload request:', {
+            url: API_PATHS.UPLOAD_AVATAR,
+            token: token ? `Bearer ${token.substring(0, 10)}...` : 'Missing',
+            formDataEntries: Array.from(formData.entries()).map(entry => ({
+                fieldName: entry[0],
+                fileName: entry[1] instanceof File ? entry[1].name : 'not a file'
+            }))
         });
+
+        // Выполняем запрос через fetch
+        const response = await fetch(`${API_BASE_URL}${API_PATHS.UPLOAD_AVATAR}`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                // Важно: не добавляем Content-Type для FormData
+            },
+            body: formData,
+            credentials: 'include' // Добавляем для переачи куки
+        });
+
+        console.log('Upload response status:', response.status);
         
-        console.log('Upload response:', response);
-        
-        if (response.success) {
+        // Проверяем статус ответа
+        if (response.status === 401) {
+            localStorage.removeItem('user');
+            window.location.href = '../authreg/authreg.html';
+            return;
+        }
+
+        // Пытаемся получить ответ как JSON
+        const responseData = await response.json();
+        console.log('Upload response data:', responseData);
+
+        if (!response.ok) {
+            throw new Error(responseData.error || `HTTP error! status: ${response.status}`);
+        }
+
+        if (responseData.success) {
             const userAvatar = document.getElementById('user-avatar');
             if (userAvatar) {
-                const avatarUrl = getAvatarUrl(response.data.avatarUrl);
+                const avatarUrl = getAvatarUrl(responseData.data.avatarUrl);
                 console.log('New avatar URL:', avatarUrl);
                 
-                // Добавляем timestamp для предотвращения кэширования
-                userAvatar.src = `${avatarUrl}?t=${Date.now()}`;
-                showSuccess('Аватар успешно обновлен');
+                // Добавляем обработчики событий для изображения
+                userAvatar.onload = () => {
+                    console.log('Avatar image loaded successfully');
+                    showSuccess('Аватар успешно обновлен');
+                };
+                
+                userAvatar.onerror = (e) => {
+                    console.error('Error loading avatar image:', e);
+                    showError('Ошибка при загрузке изображения');
+                };
+                
+                // Обновляем src с timestamp для предотвращения кэширования
+                const timestamp = new Date().getTime();
+                userAvatar.src = `${avatarUrl}?t=${timestamp}`;
+            } else {
+                console.error('User avatar element not found');
             }
         } else {
-            throw new Error(response.error || 'Ошибка при загрузке аватара');
+            throw new Error(responseData.error || 'Неизвестная ошибка при загрузке аватара');
         }
     } catch (error) {
         console.error('Avatar upload error:', error);
         showError(error.message || 'Ошибка при загрузке аватара');
+        
+        // Если ошибка связана с авторизацией, перенаправляем на страницу входа
+        if (error.message.includes('Authorization required')) {
+            localStorage.removeItem('user');
+            window.location.href = '../authreg/authreg.html';
+            return;
+        }
     }
-}
+};
 
-// Обновляем обработчик события для загрузки аватара
-document.addEventListener('DOMContentLoaded', () => {
+// Обновляем обработчики событий
+const initializeAvatarUpload = () => {
     const avatarUpload = document.getElementById('avatar-upload');
     const avatarContainer = document.querySelector('.avatar-container');
     
     if (avatarUpload) {
-        console.log('Avatar upload input found');
+        console.log('Avatar upload input initialized');
         
         avatarUpload.addEventListener('change', (event) => {
-            console.log('File input change event triggered');
+            console.log('Avatar file input change detected');
             const file = event.target.files[0];
             if (file) {
-                console.log('Selected file:', file);
+                console.log('File selected:', {
+                    name: file.name,
+                    type: file.type,
+                    size: file.size
+                });
                 uploadAvatar(file);
             }
         });
-    } else {
-        console.error('Avatar upload input not found');
-    }
 
-    // Добавляем обработчик клика на контейнер аватара
-    if (avatarContainer) {
-        avatarContainer.addEventListener('click', () => {
-            console.log('Avatar container clicked');
-            avatarUpload?.click();
-        });
+        // Добавляем обработчик клика на контейнер
+        if (avatarContainer) {
+            avatarContainer.addEventListener('click', (event) => {
+                // Предотвращаем всплытие события
+                event.stopPropagation();
+                console.log('Avatar container clicked');
+                avatarUpload.click();
+            });
+        }
+    } else {
+        console.error('Avatar upload input element not found');
     }
+};
+
+// Обноляем инициализацию при загрузке страницы
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('Initializing avatar upload functionality');
+    initializeAvatarUpload();
 });
+
+// Экспортируем функцию в глобальную область видимости
+window.uploadAvatar = uploadAvatar;
 
 // Функция для получения постов
 async function getPosts() {
@@ -569,7 +748,7 @@ async function getFriendRequests() {
 // Функция для изменения пароля
 async function changePassword(oldPassword, newPassword) {
     if (!oldPassword || !newPassword) {
-        showError('Пожалуйста, заполните все поля');
+        showError('Поалуйста, заполните все поля');
         return;
     }
 
@@ -593,11 +772,20 @@ async function changePassword(oldPassword, newPassword) {
     }
 }
 
-// Обновляем функцию getToken
+// Обновляем функцию getToken для более надежной проверки
 function getToken() {
     try {
-        const user = JSON.parse(localStorage.getItem('user'));
-        return user?.token;
+        const userData = localStorage.getItem('user');
+        if (!userData) {
+            return null;
+        }
+        
+        const user = JSON.parse(userData);
+        if (!user || !user.token) {
+            return null;
+        }
+        
+        return user.token;
     } catch (error) {
         console.error('Error getting token:', error);
         return null;
@@ -609,6 +797,28 @@ const hideAddFriendModal = () => {
     const modal = document.getElementById('add-friend-modal');
     if (modal) {
         modal.style.display = 'none';
+    }
+};
+
+const acceptFriendRequest = async (requestId) => {
+    try {
+        const response = await apiRequest(API_PATHS.FRIEND_REQUESTS, {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'accept',
+                requestId: requestId
+            })
+        });
+        
+        if (response.success) {
+            showSuccess('Заявка в друзья принята');
+            await Promise.all([
+                loadFriendsList(),
+                loadFriendRequests()
+            ]);
+        }
+    } catch (error) {
+        showError('Ошибка при принятии заявки в друзья');
     }
 };
 
@@ -627,7 +837,7 @@ const rejectFriendRequest = async (requestId) => {
             await loadFriendRequests();
         }
     } catch (error) {
-        showError('Ошибка при отклонении заявки в друзья');
+        showError('Ошбка при отклонении заявки в друзья');
     }
 };
 
