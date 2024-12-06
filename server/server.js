@@ -306,7 +306,7 @@ app.get('/api/friends', async (req, res) => {
         res.json({ friends: result.rows });
     } catch (err) {
         console.error('Get friends error:', err);
-        res.status(500).json({ error: 'Ошибка при получении писка друзей' });
+        res.status(500).json({ error: 'Ошибка при получении ��иска друзей' });
     }
 });
 
@@ -456,5 +456,96 @@ app.get('/api/messages/unread/:userId', async (req, res) => {
     } catch (err) {
         console.error('Error getting unread counts:', err);
         res.status(500).json({ error: 'Ошибка при получении количества непрочитанных сообщений' });
+    }
+});
+
+// Поиск пользователей для чата
+app.get('/api/chat/search-users', async (req, res) => {
+    try {
+        const { q, userId } = req.query;
+
+        const result = await pool.query(`
+            SELECT DISTINCT 
+                u.id, 
+                u.username, 
+                u.avatar_url,
+                f.status as friendship_status
+            FROM users u
+            LEFT JOIN friendships f ON 
+                ((f.user_id = $1 AND f.friend_id = u.id) OR 
+                (f.friend_id = $1 AND f.user_id = u.id))
+            WHERE u.id != $1 
+            AND u.username ILIKE $2
+            AND (f.status = 'accepted' OR f.status IS NULL)
+            ORDER BY 
+                CASE WHEN f.status = 'accepted' THEN 0 ELSE 1 END,
+                u.username
+            LIMIT 10
+        `, [userId, `%${q}%`]);
+
+        res.json({ users: result.rows });
+    } catch (err) {
+        console.error('Chat search error:', err);
+        res.status(500).json({ error: 'Ошибка при поиске пользователей' });
+    }
+});
+
+// Обновленный эндпоинт получения списка друзей для чата
+app.get('/api/chat/friends', async (req, res) => {
+    try {
+        const userId = req.query.userId;
+
+        const result = await pool.query(`
+            WITH LastMessages AS (
+                SELECT DISTINCT ON (
+                    CASE 
+                        WHEN sender_id = $1 THEN receiver_id 
+                        ELSE sender_id 
+                    END
+                )
+                    CASE 
+                        WHEN sender_id = $1 THEN receiver_id 
+                        ELSE sender_id 
+                    END as friend_id,
+                    message,
+                    created_at,
+                    is_read
+                FROM messages
+                WHERE sender_id = $1 OR receiver_id = $1
+                ORDER BY friend_id, created_at DESC
+            )
+            SELECT 
+                u.id,
+                u.username,
+                u.avatar_url,
+                f.status as friendship_status,
+                lm.message as last_message,
+                lm.created_at as last_message_time,
+                lm.is_read,
+                (
+                    SELECT COUNT(*)
+                    FROM messages m
+                    WHERE m.sender_id = u.id 
+                    AND m.receiver_id = $1 
+                    AND m.is_read = false
+                ) as unread_count
+            FROM users u
+            INNER JOIN friendships f ON 
+                ((f.user_id = $1 AND f.friend_id = u.id) OR 
+                (f.friend_id = $1 AND f.user_id = u.id))
+            LEFT JOIN LastMessages lm ON lm.friend_id = u.id
+            WHERE f.status = 'accepted'
+            ORDER BY 
+                CASE WHEN lm.created_at IS NULL THEN 1 ELSE 0 END,
+                lm.created_at DESC
+        `, [userId]);
+
+        res.json({ 
+            success: true, 
+            friends: result.rows 
+        });
+    } catch (err) {
+        console.error('Get chat friends error:', err);
+        res.status(500).json({ error: 'Ошибка при получении списка друзей' });
     }
 }); 

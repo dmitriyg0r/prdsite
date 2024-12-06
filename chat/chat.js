@@ -17,11 +17,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function initializeChat() {
     try {
-        // Загружаем список друзей
+        console.log('Загрузка списка друзей...');
         const response = await fetch(`https://adminflow.ru:5003/api/friends?userId=${currentUser.id}`);
         const data = await response.json();
+        console.log('Ответ сервера:', data);
 
-        if (data.success) {
+        if (data.friends) {
             displayFriendsList(data.friends);
             // Проверяем, есть ли сохраненный собеседник
             const savedPartner = localStorage.getItem('chatPartner');
@@ -29,6 +30,8 @@ async function initializeChat() {
                 openChat(JSON.parse(savedPartner));
                 localStorage.removeItem('chatPartner');
             }
+        } else {
+            console.error('Ошибка загрузки друзей:', data.error);
         }
     } catch (err) {
         console.error('Error initializing chat:', err);
@@ -37,11 +40,15 @@ async function initializeChat() {
 
 function displayFriendsList(friends) {
     const friendsList = document.getElementById('friends-list');
-    if (!friendsList) return;
+    console.log('Displaying friends:', friends);
+    if (!friendsList) {
+        console.error('friends-list element not found');
+        return;
+    }
 
     friendsList.innerHTML = friends.map(friend => `
-        <div class="chat-partner" data-friend-id="${friend.id}" onclick="openChat(${JSON.stringify(friend).replace(/"/g, '&quot;')})">
-            <img src="${friend.avatar_url || '/uploads/avatars/default.png'}" alt="${friend.username}" class="chat-avatar">
+        <div class="chat-partner" data-friend-id="${friend.id}">
+            <img src="${friend.avatar_url || '../uploads/avatars/default.png'}" alt="${friend.username}" class="chat-avatar">
             <div class="friend-info">
                 <div class="friend-name">${friend.username}</div>
                 <div class="last-message" id="last-message-${friend.id}">...</div>
@@ -49,6 +56,17 @@ function displayFriendsList(friends) {
             <div class="unread-count" id="unread-${friend.id}"></div>
         </div>
     `).join('');
+
+    // Добавляем обработчики событий для каждого друга
+    document.querySelectorAll('.chat-partner').forEach(partner => {
+        partner.addEventListener('click', () => {
+            const friendId = partner.dataset.friendId;
+            const friend = friends.find(f => f.id === parseInt(friendId));
+            if (friend) {
+                openChat(friend);
+            }
+        });
+    });
 
     // Загружаем последние сообщения и счетчики для каждого друга
     friends.forEach(friend => {
@@ -104,14 +122,14 @@ async function openChat(friend) {
     );
     document.querySelector(`[data-friend-id="${friend.id}"]`)?.classList.add('active');
 
-    // Показываем заголовок чата
+    // Показываем заголоок чата
     const chatHeader = document.getElementById('chat-header');
     const chatPlaceholder = document.getElementById('chat-placeholder');
     
     chatHeader.style.display = 'block';
     chatPlaceholder.style.display = 'none';
     
-    document.getElementById('chat-header-avatar').src = friend.avatar_url || '/uploads/avatars/default.png';
+    document.getElementById('chat-header-avatar').src = friend.avatar_url || '../uploads/avatars/default.png';
     document.getElementById('chat-header-name').textContent = friend.username;
 
     // Загружаем историю сообщений
@@ -217,7 +235,7 @@ async function markMessagesAsRead() {
             })
         });
 
-        // Обновляем счетчик непрочитанных сообщений
+        // Обновляем с��етчик непрочитанных сообщений
         await updateUnreadCount(currentChatPartner.id);
     } catch (err) {
         console.error('Error marking messages as read:', err);
