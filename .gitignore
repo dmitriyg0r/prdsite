@@ -4,3 +4,6 @@
 /rasp_news/news/
 /home/uploads/
 /uploads/avatars/
+/server/node_modules/
+/server/package.json
+/server/package-lock.json
