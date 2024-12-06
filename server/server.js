@@ -213,4 +213,118 @@ process.on('uncaughtException', (error) => {
 
 process.on('unhandledRejection', (error) => {
     console.error('Unhandled Rejection:', error);
+});
+
+// Поиск пользователей
+app.get('/api/search-users', async (req, res) => {
+    try {
+        const { q } = req.query;
+        const userId = req.query.userId; // ID текущего пользователя
+
+        // Поиск пользователей, исключая текущего пользователя
+        const result = await pool.query(`
+            SELECT u.id, u.username, u.avatar_url,
+                CASE
+                    WHEN f1.status IS NOT NULL THEN f1.status
+                    WHEN f2.status IS NOT NULL THEN f2.status
+                    ELSE 'none'
+                END as friendship_status
+            FROM users u
+            LEFT JOIN friendships f1 ON (f1.user_id = $1 AND f1.friend_id = u.id)
+            LEFT JOIN friendships f2 ON (f2.user_id = u.id AND f2.friend_id = $1)
+            WHERE u.id != $1 
+            AND u.username ILIKE $2
+            LIMIT 10
+        `, [userId, `%${q}%`]);
+
+        res.json({ users: result.rows });
+    } catch (err) {
+        console.error('Search error:', err);
+        res.status(500).json({ error: 'Ошибка при поиске пользователей' });
+    }
+});
+
+// Отправка заявки в друзья
+app.post('/api/friend-request', async (req, res) => {
+    try {
+        const { userId, friendId } = req.body;
+
+        // Проверяем, нет ли уже существующей заявки
+        const existingRequest = await pool.query(
+            'SELECT * FROM friendships WHERE (user_id = $1 AND friend_id = $2) OR (user_id = $2 AND friend_id = $1)',
+            [userId, friendId]
+        );
+
+        if (existingRequest.rows.length > 0) {
+            return res.status(400).json({ error: 'Заявка уже существует' });
+        }
+
+        // Создаем новую заявку
+        await pool.query(
+            'INSERT INTO friendships (user_id, friend_id, status) VALUES ($1, $2, $3)',
+            [userId, friendId, 'pending']
+        );
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Friend request error:', err);
+        res.status(500).json({ error: 'Ошибка при отправке заявки' });
+    }
+});
+
+// Принятие/отклонение заявки в друзья
+app.post('/api/friend-request/respond', async (req, res) => {
+    try {
+        const { userId, friendId, status } = req.body; // status: 'accepted' или 'rejected'
+
+        await pool.query(
+            'UPDATE friendships SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE user_id = $2 AND friend_id = $3',
+            [status, friendId, userId]
+        );
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Friend response error:', err);
+        res.status(500).json({ error: 'Ошибка при обработке заявки' });
+    }
+});
+
+// Получение списка друзей
+app.get('/api/friends', async (req, res) => {
+    try {
+        const userId = req.query.userId;
+
+        const result = await pool.query(`
+            SELECT u.id, u.username, u.avatar_url, f.status
+            FROM users u
+            INNER JOIN friendships f ON 
+                ((f.user_id = $1 AND f.friend_id = u.id) OR 
+                (f.friend_id = $1 AND f.user_id = u.id))
+            WHERE f.status = 'accepted'
+        `, [userId]);
+
+        res.json({ friends: result.rows });
+    } catch (err) {
+        console.error('Get friends error:', err);
+        res.status(500).json({ error: 'Ошибка при получении списка друзей' });
+    }
+});
+
+// Получение входящих заявок в друзья
+app.get('/api/friend-requests', async (req, res) => {
+    try {
+        const userId = req.query.userId;
+
+        const result = await pool.query(`
+            SELECT u.id, u.username, u.avatar_url
+            FROM users u
+            INNER JOIN friendships f ON f.user_id = u.id
+            WHERE f.friend_id = $1 AND f.status = 'pending'
+        `, [userId]);
+
+        res.json({ requests: result.rows });
+    } catch (err) {
+        console.error('Get friend requests error:', err);
+        res.status(500).json({ error: 'Ошибка при получении заявок в друзья' });
+    }
 }); 

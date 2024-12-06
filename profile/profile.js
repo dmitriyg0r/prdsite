@@ -151,4 +151,191 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `).join('');
     }
+
+    // Функции для работы с друзьями
+    async function loadFriends() {
+        try {
+            const response = await fetch(`https://adminflow.ru:5003/api/friends?userId=${user.id}`);
+            const data = await response.json();
+            
+            if (response.ok) {
+                displayFriends(data.friends);
+                updateFriendsCount(data.friends.length);
+            }
+        } catch (err) {
+            console.error('Error loading friends:', err);
+        }
+    }
+
+    async function loadFriendRequests() {
+        try {
+            const response = await fetch(`https://adminflow.ru:5003/api/friend-requests?userId=${user.id}`);
+            const data = await response.json();
+            
+            if (response.ok) {
+                displayFriendRequests(data.requests);
+                updateRequestsCount(data.requests.length);
+            }
+        } catch (err) {
+            console.error('Error loading friend requests:', err);
+        }
+    }
+
+    function displayFriends(friends) {
+        const friendsList = document.querySelector('.friends-list');
+        friendsList.innerHTML = friends.map(friend => `
+            <div class="friend-card">
+                <img src="${friend.avatar_url || '/uploads/avatars/default.png'}" alt="${friend.username}">
+                <div class="friend-info">
+                    <div class="friend-name">${friend.username}</div>
+                    <div class="friend-status">В сети</div>
+                </div>
+            </div>
+        `).join('');
+
+        // Обновляем мини-список друзей
+        const friendsGrid = document.querySelector('.friends-grid');
+        friendsGrid.innerHTML = friends.slice(0, 3).map(friend => `
+            <div class="friend-placeholder">
+                <div class="friend-avatar">
+                    <img src="${friend.avatar_url || '/uploads/avatars/default.png'}" alt="${friend.username}">
+                </div>
+                <span class="friend-name">${friend.username}</span>
+            </div>
+        `).join('');
+    }
+
+    function displayFriendRequests(requests) {
+        const requestsList = document.querySelector('.requests-list');
+        requestsList.innerHTML = requests.map(request => `
+            <div class="friend-card">
+                <img src="${request.avatar_url || '/uploads/avatars/default.png'}" alt="${request.username}">
+                <div class="friend-info">
+                    <div class="friend-name">${request.username}</div>
+                    <div class="friend-actions">
+                        <button class="accept-friend-btn" data-user-id="${request.id}">
+                            <i class="fas fa-check"></i> Принять
+                        </button>
+                        <button class="reject-friend-btn" data-user-id="${request.id}">
+                            <i class="fas fa-times"></i> Отклонить
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+
+        // Добавляем обработчики для кнопок
+        document.querySelectorAll('.accept-friend-btn').forEach(btn => {
+            btn.addEventListener('click', () => respondToFriendRequest(btn.dataset.userId, 'accepted'));
+        });
+
+        document.querySelectorAll('.reject-friend-btn').forEach(btn => {
+            btn.addEventListener('click', () => respondToFriendRequest(btn.dataset.userId, 'rejected'));
+        });
+    }
+
+    async function respondToFriendRequest(friendId, status) {
+        try {
+            const response = await fetch('https://adminflow.ru:5003/api/friend-request/respond', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    userId: user.id,
+                    friendId,
+                    status
+                })
+            });
+
+            if (response.ok) {
+                // Перезагружаем списки друзей и заявок
+                loadFriendRequests();
+                loadFriends();
+            }
+        } catch (err) {
+            console.error('Error responding to friend request:', err);
+            alert('Ошибка при обработке заявки');
+        }
+    }
+
+    // Обновляем функцию поиска
+    async function searchUsers(query) {
+        try {
+            const response = await fetch(`https://adminflow.ru:5003/api/search-users?q=${query}&userId=${user.id}`);
+            const data = await response.json();
+            
+            if (response.ok) {
+                displaySearchResults(data.users);
+            }
+        } catch (err) {
+            console.error('Search error:', err);
+            alert('Ошибка при поиске пользователей');
+        }
+    }
+
+    // Обновляем отображение результатов поиска
+    function displaySearchResults(users) {
+        const searchResults = document.querySelector('.search-results');
+        searchResults.innerHTML = users.map(user => {
+            let actionButton = '';
+            switch(user.friendship_status) {
+                case 'none':
+                    actionButton = `<button class="add-friend-btn" data-user-id="${user.id}">
+                        <i class="fas fa-user-plus"></i> Добавить в друзья
+                    </button>`;
+                    break;
+                case 'pending':
+                    actionButton = '<span class="pending-request">Заявка отправлена</span>';
+                    break;
+                case 'accepted':
+                    actionButton = '<span class="friend-status">В друзьях</span>';
+                    break;
+            }
+
+            return `
+                <div class="friend-card">
+                    <img src="${user.avatar_url || '/uploads/avatars/default.png'}" alt="${user.username}">
+                    <div class="friend-info">
+                        <div class="friend-name">${user.username}</div>
+                        ${actionButton}
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        // Добавляем обработчики для кнопок добавления в друзья
+        document.querySelectorAll('.add-friend-btn').forEach(btn => {
+            btn.addEventListener('click', () => sendFriendRequest(btn.dataset.userId));
+        });
+    }
+
+    async function sendFriendRequest(friendId) {
+        try {
+            const response = await fetch('https://adminflow.ru:5003/api/friend-request', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    userId: user.id,
+                    friendId
+                })
+            });
+
+            if (response.ok) {
+                // Обновляем результаты поиска
+                searchUsers(document.querySelector('.search-input').value.trim());
+            }
+        } catch (err) {
+            console.error('Error sending friend request:', err);
+            alert('Ошибка при отправке заявки');
+        }
+    }
+
+    // Загружаем друзей и заявки при открытии модального окна
+    document.querySelector('.friends-header-btn').addEventListener('click', () => {
+        loadFriends();
+        loadFriendRequests();
+    });
 }); 
