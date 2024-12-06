@@ -7,15 +7,52 @@ body {
 }
 
 .sidebar {
-    flex-shrink: 0;
+    position: fixed;
+    z-index: 100;
 }
 
 .chat-container {
-    flex: 1;
+    position: fixed;
+    left: 80px; /* Ширина свёрнутого сайдбара */
+    right: 0;
+    top: 0;
+    bottom: 0;
     display: flex;
-    height: 100vh;
-    margin-left: 80px; /* Ширина свернутого сайдбара */
     background-color: var(--background-color);
+}
+
+/* Список чатов */
+.chat-list {
+    width: 300px;
+    height: 100%;
+    border-right: 1px solid var(--border-color);
+    background-color: var(--text-container-background);
+    display: flex;
+    flex-direction: column;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .chat-container {
+        left: 0;
+    }
+
+    .chat-list {
+        position: fixed;
+        left: -300px;
+        top: 0;
+        bottom: 0;
+        z-index: 90;
+        transition: left 0.3s ease;
+    }
+
+    .chat-list.active {
+        left: 0;
+    }
+
+    .chat-area {
+        width: 100%;
+    }
 }
 
 /* Остальные стили остаются без изменений */ 
