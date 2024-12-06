@@ -4,14 +4,14 @@ const AVATARS_PATH = '/api/uploads/avatars';
 
 // Константы для путей API
 const API_PATHS = {
-    UPLOAD_AVATAR: '/api/users/avatar',
-    AVATAR: '/api/users/avatar',
-    ROLE: '/api/users/role',
-    POSTS: '/api/users/posts',
-    FRIENDS: '/api/users/friends',
-    FRIEND_REQUESTS: '/api/users/friend-requests',
-    PASSWORD: '/auth/register.php',
-    AUTH: '/auth/login.php'
+    UPLOAD_AVATAR: '/api/users/avatar.php',
+    AVATAR: '/api/users/avatar.php',
+    ROLE: '/api/users/role.php',
+    POSTS: '/api/users/posts.php',
+    FRIENDS: '/api/users/friends.php',
+    FRIEND_REQUESTS: '/api/users/friend-requests.php',
+    PASSWORD: '/api/auth/register.php',
+    AUTH: '/api/auth/login.php'
 };
 
 // Глобальные функции
@@ -84,18 +84,15 @@ const showSuccess = (message) => {
     }
 };
 
+// Обновляем функцию apiRequest для корректной обработки путей
 const apiRequest = async (endpoint, options = {}) => {
-    // Если endpoint начинается с '/', убираем его, так как он уже есть в API_PATHS
-    const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
-    
-    // Проверяем, есть ли путь в API_PATHS
-    const apiPath = Object.values(API_PATHS).find(path => cleanEndpoint.includes(path));
-    const url = apiPath 
-        ? `${API_BASE_URL}${apiPath}`
-        : `${API_BASE_URL}/api/${cleanEndpoint}`;
+    // Используем полный путь из API_PATHS или строим его из endpoint
+    const url = endpoint.startsWith('http') 
+        ? endpoint 
+        : `${API_BASE_URL}${endpoint.startsWith('/') ? endpoint : '/' + endpoint}`;
     
     try {
-        const token = getToken(); // Используем функцию получения токена
+        const token = getToken();
         
         console.log('Sending request to:', url);
         const response = await fetch(url, {
