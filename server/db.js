@@ -5,15 +5,30 @@ const pool = new Pool({
     host: 'localhost',
     database: 'adminflow',
     password: 'sGLTccA_Na#9zC',
-    port: 5003
+    port: 5432,
+    max: 20,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 2000,
 });
 
-pool.connect((err, client, release) => {
-    if (err) {
-        console.error('Error acquiring client', err.stack);
-    } else {
+pool.on('connect', () => {
+    console.log('Connected to the database');
+});
+
+pool.on('error', (err) => {
+    console.error('Unexpected error on idle client', err);
+});
+
+const testConnection = async () => {
+    try {
+        const client = await pool.connect();
         console.log('Database connection successful');
+        client.release();
+        return true;
+    } catch (err) {
+        console.error('Database connection error:', err.message);
+        return false;
     }
-});
+};
 
-module.exports = pool; 
+module.exports = { pool, testConnection }; 
