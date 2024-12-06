@@ -197,33 +197,41 @@ body {
 /* Вложения в сообщениях */
 .message-attachment {
     margin-top: 8px;
-    max-width: 100%;
+    max-width: 300px;
 }
 
 .message-attachment img {
     max-width: 100%;
+    max-height: 200px;
     border-radius: 8px;
     cursor: pointer;
+    object-fit: cover;
 }
 
 .message-attachment .file-info {
     display: flex;
     align-items: center;
-    padding: 8px;
+    padding: 8px 12px;
     background: rgba(var(--button-background-rgb), 0.1);
     border-radius: 8px;
     margin-top: 5px;
+    max-width: 250px;
 }
 
 .message-attachment .file-icon {
     margin-right: 8px;
     color: var(--text-secondary);
+    flex-shrink: 0;
 }
 
 .message-attachment .file-name {
     color: var(--text-color);
     font-size: 0.9em;
     text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
 }
 
 /* Ответ на сообщение */
