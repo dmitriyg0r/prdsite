@@ -324,7 +324,7 @@ const loadUsers = async () => {
                     <td>${new Date(user.createdAt).toLocaleDateString()}</td>
                     <td>
                         <button onclick="changeRole('${user.username}')" class="role-btn">Изменить роль</button>
-                        <button onclick="deleteUser('${user.username}')" class="delete-btn">Удалит��</button>
+                        <button onclick="deleteUser('${user.username}')" class="delete-btn">Удалит</button>
                     </td>
                 `;
                 usersTableBody.appendChild(userRow);
@@ -519,3 +519,126 @@ function getToken() {
         return null;
     }
 }
+
+// Функции для работы с друзьями
+const showAddFriendModal = () => {
+    const modal = document.getElementById('add-friend-modal');
+    if (modal) {
+        modal.style.display = 'block';
+    }
+};
+
+const hideAddFriendModal = () => {
+    const modal = document.getElementById('add-friend-modal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+};
+
+const acceptFriendRequest = async (requestId) => {
+    try {
+        const response = await apiRequest(API_PATHS.FRIEND_REQUESTS, {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'accept',
+                requestId: requestId
+            })
+        });
+        
+        if (response.success) {
+            showSuccess('Заявка в друзья принята');
+            await Promise.all([
+                loadFriendsList(),
+                loadFriendRequests()
+            ]);
+        }
+    } catch (error) {
+        showError('Ошибка при принятии заявки в друзья');
+    }
+};
+
+const rejectFriendRequest = async (requestId) => {
+    try {
+        const response = await apiRequest(API_PATHS.FRIEND_REQUESTS, {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'reject',
+                requestId: requestId
+            })
+        });
+        
+        if (response.success) {
+            showSuccess('Заявка в друзья отклонена');
+            await loadFriendRequests();
+        }
+    } catch (error) {
+        showError('Ошибка при отклонении заявки в друзья');
+    }
+};
+
+// Добавляем обработчики событий для модального окна
+document.addEventListener('DOMContentLoaded', () => {
+    // Закрытие модального окна при клике на крестик
+    const closeBtn = document.querySelector('.close');
+    if (closeBtn) {
+        closeBtn.onclick = hideAddFriendModal;
+    }
+
+    // Закрытие модального окна при клике вне его
+    window.onclick = (event) => {
+        const modal = document.getElementById('add-friend-modal');
+        if (event.target === modal) {
+            hideAddFriendModal();
+        }
+    };
+
+    // Инициализация поиска друзей
+    const searchInput = document.getElementById('friend-search');
+    if (searchInput) {
+        searchInput.addEventListener('input', debounce(searchUsers, 300));
+    }
+});
+
+// Функция для поиска пользователей
+const searchUsers = async (event) => {
+    const searchQuery = event.target.value.trim();
+    const searchResults = document.getElementById('search-results');
+    
+    if (!searchResults) return;
+    
+    if (searchQuery.length < 3) {
+        searchResults.innerHTML = '';
+        return;
+    }
+
+    try {
+        const response = await apiRequest(`/users/search?query=${encodeURIComponent(searchQuery)}`);
+        if (response.success) {
+            searchResults.innerHTML = response.data
+                .map(user => `
+                    <div class="search-result-item">
+                        <img src="${getAvatarUrl(user.avatarUrl)}" alt="Avatar" class="search-result-avatar">
+                        <span>${user.username}</span>
+                        <button onclick="sendFriendRequest('${user.username}')" class="btn primary-btn">
+                            <i class="fas fa-user-plus"></i>
+                        </button>
+                    </div>
+                `).join('');
+        }
+    } catch (error) {
+        showError('Ошибка при поиске пользователей');
+    }
+};
+
+// Вспомогательная функция debounce
+const debounce = (func, wait) => {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+};
