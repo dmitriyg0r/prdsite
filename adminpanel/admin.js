@@ -98,5 +98,5 @@ document.addEventListener('DOMContentLoaded', () => {
 // Обработка выхода
 document.getElementById('logoutBtn').addEventListener('click', () => {
     localStorage.removeItem('token');
-    window.location.href = '/authreg.html';
+    window.location.href = '../authreg/authreg.html';
 });
