@@ -9,11 +9,12 @@ body {
 .sidebar {
     position: fixed;
     z-index: 100;
+    width: 60px;
 }
 
 .chat-container {
     position: fixed;
-    left: 80px; /* Ширина свёрнутого сайдбара */
+    left: 60px;
     right: 0;
     top: 0;
     bottom: 0;
