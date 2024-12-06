@@ -82,11 +82,13 @@ input:focus {
     font-weight: 500;
     cursor: pointer;
     transition: all 0.3s ease;
+    background: var(--button-background);
+    color: var(--button-text);
 }
 
 .primary-btn {
-    background: linear-gradient(45deg, var(--primary-color), var(--primary-light));
-    color: white;
+    background: var(--button-background);
+    color: var(--button-text);
 }
 
 .auth-switch {
