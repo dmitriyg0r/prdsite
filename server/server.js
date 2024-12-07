@@ -639,8 +639,32 @@ app.post('/api/messages/send-with-file', messageUpload.single('file'), async (re
     }
 });
 
-// Админ роуты
-app.get('/api/admin/stats', async (req, res) => {
+// Middleware для проверки прав администратора
+const checkAdmin = async (req, res, next) => {
+    try {
+        const userId = req.query.userId || req.body.userId;
+        if (!userId) {
+            return res.status(401).json({ error: 'Требуется авторизация' });
+        }
+
+        const userResult = await pool.query(
+            'SELECT role FROM users WHERE id = $1',
+            [userId]
+        );
+
+        if (userResult.rows.length === 0 || userResult.rows[0].role !== 'admin') {
+            return res.status(403).json({ error: 'Доступ запрещен' });
+        }
+
+        next();
+    } catch (err) {
+        console.error('Auth error:', err);
+        res.status(500).json({ error: 'Ошибка сервера' });
+    }
+};
+
+// Обновленные админ роуты с middleware
+app.get('/api/admin/stats', checkAdmin, async (req, res) => {
     try {
         const stats = await pool.query(`
             SELECT 
@@ -658,7 +682,7 @@ app.get('/api/admin/stats', async (req, res) => {
     }
 });
 
-app.get('/api/admin/users', async (req, res) => {
+app.get('/api/admin/users', checkAdmin, async (req, res) => {
     try {
         const { page = 1, limit = 10, search = '' } = req.query;
         const offset = (page - 1) * limit;
@@ -691,7 +715,7 @@ app.get('/api/admin/users', async (req, res) => {
     }
 });
 
-app.delete('/api/admin/users/:id', async (req, res) => {
+app.delete('/api/admin/users/:id', checkAdmin, async (req, res) => {
     try {
         const { id } = req.params;
         await pool.query('DELETE FROM users WHERE id = $1', [id]);

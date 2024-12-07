@@ -1,9 +1,17 @@
 let currentPage = 1;
 let totalPages = 1;
 
+// Добавим функцию для получения userId из URL или localStorage
+function getAdminId() {
+    // Здесь нужно реализовать получение userId администратора
+    // Например, из localStorage или URL параметров
+    return localStorage.getItem('adminId');
+}
+
 async function loadStats() {
     try {
-        const response = await fetch('https://adminflow.ru/api/admin/stats');
+        const adminId = getAdminId();
+        const response = await fetch(`https://adminflow.ru/api/admin/stats?userId=${adminId}`);
         const data = await response.json();
         
         if (data.success) {
@@ -11,15 +19,19 @@ async function loadStats() {
             document.getElementById('newUsers').textContent = data.stats.new_users_24h;
             document.getElementById('totalMessages').textContent = data.stats.total_messages;
             document.getElementById('newMessages').textContent = data.stats.new_messages_24h;
+        } else {
+            alert(data.error || 'Ошибка загрузки статистики');
         }
     } catch (err) {
         console.error('Error loading stats:', err);
+        alert('Ошибка загрузки статистики');
     }
 }
 
 async function loadUsers(page = 1, search = '') {
     try {
-        const response = await fetch(`https://adminflow.ru/api/admin/users?page=${page}&search=${search}`);
+        const adminId = getAdminId();
+        const response = await fetch(`https://adminflow.ru/api/admin/users?userId=${adminId}&page=${page}&search=${search}`);
         const data = await response.json();
         
         if (data.success) {
@@ -44,9 +56,12 @@ async function loadUsers(page = 1, search = '') {
 
             totalPages = data.pages;
             updatePagination();
+        } else {
+            alert(data.error || 'Ошибка загрузки пользователей');
         }
     } catch (err) {
         console.error('Error loading users:', err);
+        alert('Ошибка загрузки пользователей');
     }
 }
 
@@ -102,8 +117,46 @@ async function deleteUser(id) {
     }
 }
 
+async function login() {
+    const username = document.getElementById('adminUsername').value;
+    const password = document.getElementById('adminPassword').value;
+
+    try {
+        const response = await fetch('https://adminflow.ru/api/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username, password })
+        });
+
+        const data = await response.json();
+
+        if (data.success && data.user.role === 'admin') {
+            localStorage.setItem('adminId', data.user.id);
+            document.getElementById('loginForm').style.display = 'none';
+            document.querySelector('.admin-panel').style.display = 'block';
+            loadStats();
+            loadUsers();
+        } else {
+            alert('Доступ запрещен');
+        }
+    } catch (err) {
+        console.error('Login error:', err);
+        alert('Ошибка авторизации');
+    }
+}
+
 // Инициализация
 document.addEventListener('DOMContentLoaded', () => {
+    const adminId = localStorage.getItem('adminId');
+    if (adminId) {
+        document.getElementById('loginForm').style.display = 'none';
+        document.querySelector('.admin-panel').style.display = 'block';
+        loadStats();
+        loadUsers();
+    }
+
     loadStats();
     loadUsers();
 
