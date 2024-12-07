@@ -154,16 +154,23 @@ async function loadChatHistory() {
 
         if (data.success) {
             const messagesContainer = document.getElementById('messages');
+            
+            // При первой загрузке отображаем все сообщения
+            if (messagesContainer.children.length === 0) {
+                displayMessages(data.messages);
+                scrollToBottom();
+                return;
+            }
+
+            // При обновлении добавляем только новые сообщения
             const currentMessages = Array.from(messagesContainer.querySelectorAll('.message'))
                 .map(el => el.dataset.messageId);
             
-            // Фильтруем только действительно новые сообщения
+            // Фильтруем только новые сообщения, независимо от отправителя
             const newMessages = data.messages.filter(message => 
-                !currentMessages.includes(message.id.toString()) && 
-                message.sender_id !== currentUser.id // Пропускаем свои сообщения, так как они уже добавлены
+                !currentMessages.includes(message.id.toString())
             );
 
-            // Если есть новые сообщения, добавляем их
             if (newMessages.length > 0) {
                 const isScrolledToBottom = 
                     messagesContainer.scrollHeight - messagesContainer.scrollTop <= 
@@ -175,6 +182,17 @@ async function loadChatHistory() {
     } catch (err) {
         console.error('Error loading chat history:', err);
     }
+}
+
+function displayMessages(messages) {
+    const messagesContainer = document.getElementById('messages');
+    messagesContainer.innerHTML = '';
+
+    messages.forEach(message => {
+        const messageElement = createMessageElement(message);
+        messageElement.dataset.messageId = message.id;
+        messagesContainer.appendChild(messageElement);
+    });
 }
 
 function displayNewMessages(newMessages, shouldScroll) {
@@ -191,7 +209,7 @@ function displayNewMessages(newMessages, shouldScroll) {
 
     if (shouldScroll) {
         requestAnimationFrame(() => {
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            scrollToBottom();
         });
     }
 }
@@ -345,7 +363,7 @@ function setupEventListeners() {
         }
     });
 
-    // Добавляем обрабо��чик для предпросмотра файла
+    // Добавляем обработчик для предпросмотра файла
     document.getElementById('fileInput').addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (file) {
@@ -410,81 +428,6 @@ async function loadMessages(friendId) {
     }
 }
 
-// Функция отображения сообщений
-function displayMessages(messages) {
-    const messagesContainer = document.getElementById('messages');
-    messagesContainer.innerHTML = '';
-
-    messages.forEach(message => {
-        const messageElement = document.createElement('div');
-        messageElement.className = `message ${message.sender_id === currentUser.id ? 'message-sent' : 'message-received'}`;
-
-        // Добавляем информацию об отправителе для входящих сообщений
-        if (message.sender_id !== currentUser.id) {
-            const senderInfo = document.createElement('div');
-            senderInfo.className = 'message-sender';
-            senderInfo.textContent = message.sender_username;
-            messageElement.appendChild(senderInfo);
-        }
-
-        // Если есть reply_data, показываем его
-        if (message.reply_data) {
-            const replyElement = document.createElement('div');
-            replyElement.className = 'message-reply';
-            replyElement.textContent = `↳ ${message.reply_data.message}`;
-            messageElement.appendChild(replyElement);
-        }
-
-        // Основной текст сообщения
-        const messageText = document.createElement('div');
-        messageText.className = 'message-text';
-        messageText.textContent = message.message;
-        messageElement.appendChild(messageText);
-
-        // Если есть вложение, показываем его
-        if (message.attachment_url) {
-            const attachmentElement = document.createElement('div');
-            attachmentElement.className = 'message-attachment';
-
-            if (message.attachment_url.match(/\.(jpg|jpeg|png|gif)$/i)) {
-                // Если это изображение
-                const img = document.createElement('img');
-                // Добавляем базовый URL сервера к пути файла
-                img.src = `https://adminflow.ru:5003${message.attachment_url}`;
-                img.alt = 'Attachment';
-                img.onclick = () => showImageModal(img.src);
-                attachmentElement.appendChild(img);
-            } else {
-                // Если это другой файл
-                const fileInfo = document.createElement('div');
-                fileInfo.className = 'file-info';
-                const fileName = message.attachment_url.split('/').pop();
-                fileInfo.innerHTML = `
-                    <i class="fas fa-file file-icon"></i>
-                    <a href="https://adminflow.ru:5003${message.attachment_url}" 
-                       target="_blank" 
-                       class="file-name">
-                        ${fileName}
-                    </a>
-                `;
-                attachmentElement.appendChild(fileInfo);
-            }
-
-            messageElement.appendChild(attachmentElement);
-        }
-
-        // Время сообщения
-        const timeElement = document.createElement('div');
-        timeElement.className = 'message-time';
-        timeElement.textContent = new Date(message.created_at).toLocaleTimeString();
-        messageElement.appendChild(timeElement);
-
-        messagesContainer.appendChild(messageElement);
-    });
-
-    scrollToBottom();
-}
-
 // Функция прокрутки чата вниз
 function scrollToBottom() {
     const messagesContainer = document.getElementById('messages');
@@ -517,7 +460,7 @@ async function markMessagesAsRead(friendId) {
 function showImageModal(imageUrl) {
     const modal = document.querySelector('.image-modal');
     const modalImage = document.getElementById('modalImage');
-    modalImage.src = imageUrl; // Используем полный URL
+    modalImage.src = imageUrl; // ��спользуем полный URL
     modal.style.display = 'flex';
 }
 
