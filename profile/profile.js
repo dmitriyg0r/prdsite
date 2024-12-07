@@ -202,7 +202,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         `).join('');
     }
 
-    // Функции для работы �� друзьями
+    // Функции для работы с друзьями
     async function loadFriends() {
         try {
             const response = await fetch(`https://adminflow.ru:5003/api/friends?userId=${currentUser.id}`);
@@ -472,7 +472,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
             
             if (!response.ok) {
-                throw new Error('Ошибка при загрузке профиля пользователя');
+                throw new Error('Ошибка при з��грузке профиля пользователя');
             }
 
             const data = await response.json();
@@ -615,6 +615,11 @@ function displayPosts(posts) {
                     <div class="post-author">${post.author_name}</div>
                     <div class="post-date">${new Date(post.created_at).toLocaleString()}</div>
                 </div>
+                ${post.user_id === currentUser.id ? `
+                    <button class="delete-post-btn" data-post-id="${post.id}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                ` : ''}
             </div>
             <div class="post-content">${post.content}</div>
             ${post.image_url ? `
@@ -632,10 +637,44 @@ function displayPosts(posts) {
             </div>
         </div>
     `).join('') : '<div class="no-posts">Не найдено публикаций</div>';
+
+    // Добавляем обработчики для кнопок удаления
+    document.querySelectorAll('.delete-post-btn').forEach(btn => {
+        btn.addEventListener('click', () => deletePost(btn.dataset.postId));
+    });
 }
 
 function removePostImage() {
     selectedPostImage = null;
     document.getElementById('post-image').value = '';
     document.getElementById('image-preview').innerHTML = '';
+}
+
+// Добавляем функцию удаления поста
+async function deletePost(postId) {
+    if (!confirm('Вы уверены, что хотите удалить эту публикацию?')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`https://adminflow.ru:5003/api/posts/delete/${postId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                userId: currentUser.id
+            })
+        });
+
+        if (response.ok) {
+            // Перезагружаем посты после удаления
+            loadPosts();
+        } else {
+            throw new Error('Ошибка при удалении поста');
+        }
+    } catch (err) {
+        console.error('Error deleting post:', err);
+        alert('Ошибка при удалении публикации');
+    }
 } 

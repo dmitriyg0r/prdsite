@@ -856,7 +856,7 @@ body {
     color: white;
 }
 
-/* Обновляем стили для кар��очки друга */
+/* Обновляем стили для карточки друга */
 .friend-card {
     position: relative;
     overflow: hidden;
@@ -1168,6 +1168,7 @@ body {
     align-items: center;
     gap: 12px;
     margin-bottom: 15px;
+    position: relative;
 }
 
 .post-avatar {
@@ -1238,7 +1239,7 @@ body {
     font-size: 1.1em;
 }
 
-/* Анимации дл�� постов */
+/* Анимации для постов */
 @keyframes postAppear {
     from {
         opacity: 0;
@@ -1257,4 +1258,27 @@ body {
 /* Добавляем стили для контейнера постов */
 .posts-container {
     padding: 20px;
+}
+
+.delete-post-btn {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    opacity: 0;
+}
+
+.post:hover .delete-post-btn {
+    opacity: 1;
+}
+
+.delete-post-btn:hover {
+    color: #ff4444;
+    background: rgba(255, 68, 68, 0.1);
 }

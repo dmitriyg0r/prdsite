@@ -608,7 +608,7 @@ messageStorage.destination = function (req, file, cb) {
 messageStorage.filename = function (req, file, cb) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     const filename = 'message-' + uniqueSuffix + path.extname(file.originalname);
-    // Сохраняем полный URL для доступа к файлу
+    // Сохраняе�� полный URL для доступа к файлу
     file.fileUrl = `/uploads/messages/${filename}`;
     cb(null, filename);
 };
@@ -642,7 +642,7 @@ app.post('/api/messages/send-with-file', messageUpload.single('file'), async (re
 // Обновляем middleware checkAdmin
 const checkAdmin = async (req, res, next) => {
     try {
-        // Проверяем adminId в query параметрах или в теле запроса
+        // Проверяем adminId в query параметрах или в теле з��проса
         const adminId = req.query.adminId || req.body.adminId;
         
         console.log('Checking admin rights for:', adminId); // Добавляем лог
@@ -726,7 +726,7 @@ app.get('/api/admin/users', checkAdmin, async (req, res) => {
         });
     } catch (err) {
         console.error('Admin users error:', err);
-        res.status(500).json({ error: 'Ошибка при получении спис��а пользователей' });
+        res.status(500).json({ error: 'Ошибка при получении списка пользователей' });
     }
 });
 
@@ -967,6 +967,50 @@ app.post('/api/posts/unlike', async (req, res) => {
         res.status(500).json({ 
             success: false,
             error: 'Ошибка при удалении лайка' 
+        });
+    }
+});
+
+// Удаление поста
+app.delete('/api/posts/delete/:postId', async (req, res) => {
+    try {
+        const { postId } = req.params;
+        const { userId } = req.body;
+
+        // Проверяем, является ли пользователь автором поста
+        const post = await pool.query(
+            'SELECT * FROM posts WHERE id = $1 AND user_id = $2',
+            [postId, userId]
+        );
+
+        if (post.rows.length === 0) {
+            return res.status(403).json({ 
+                success: false,
+                error: 'У вас нет прав на удаление этого поста' 
+            });
+        }
+
+        // Удаляем связанные лайки и комментарии
+        await pool.query('DELETE FROM post_likes WHERE post_id = $1', [postId]);
+        await pool.query('DELETE FROM post_comments WHERE post_id = $1', [postId]);
+
+        // Удаляем сам пост
+        await pool.query('DELETE FROM posts WHERE id = $1', [postId]);
+
+        // Если у поста было изображение, удаляем его
+        if (post.rows[0].image_url) {
+            const imagePath = path.join(__dirname, '..', 'public', post.rows[0].image_url);
+            if (fs.existsSync(imagePath)) {
+                fs.unlinkSync(imagePath);
+            }
+        }
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Error deleting post:', err);
+        res.status(500).json({ 
+            success: false,
+            error: 'Ошибка при удалении поста' 
         });
     }
 }); 
