@@ -9,7 +9,7 @@ function getAdminId() {
 async function loadStats() {
     try {
         const adminId = getAdminId();
-        const response = await fetch(`/api/admin/stats?userId=${adminId}`);
+        const response = await fetch(`../api/admin/stats?userId=${adminId}`);
         const data = await response.json();
         
         if (data.success) {
@@ -29,7 +29,7 @@ async function loadStats() {
 async function loadUsers(page = 1, search = '') {
     try {
         const adminId = getAdminId();
-        const response = await fetch(`/api/admin/users?userId=${adminId}&page=${page}&search=${search}`);
+        const response = await fetch(`../api/admin/users?userId=${adminId}&page=${page}&search=${search}`);
         const data = await response.json();
         
         if (data.success) {
@@ -59,7 +59,7 @@ async function loadUsers(page = 1, search = '') {
         }
     } catch (err) {
         console.error('Error loading users:', err);
-        alert('Ошибка загрузки пользователей');
+        alert('Ошибка ��агрузки пользователей');
     }
 }
 
@@ -98,9 +98,9 @@ function updatePagination() {
 }
 
 async function deleteUser(id) {
-    if (confirm('Вы уверены, что хотите удалить этого пользователя?')) {
+    if (confirm('Вы уверены, что хотите удалить э��ого пользователя?')) {
         try {
-            const response = await fetch(`/api/admin/users/${id}`, {
+            const response = await fetch(`../api/admin/users/${id}`, {
                 method: 'DELETE'
             });
             const data = await response.json();
@@ -120,7 +120,7 @@ async function login() {
     const password = document.getElementById('adminPassword').value;
 
     try {
-        const response = await fetch('/api/login', {
+        const response = await fetch('../api/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
