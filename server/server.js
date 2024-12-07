@@ -726,26 +726,32 @@ app.delete('/api/admin/users/:id', checkAdmin, async (req, res) => {
     }
 });
 
-// Эндпоинт для изменения роли пользователя
-app.post('/api/admin/users/:id/role', checkAdmin, async (req, res) => {
+// Эндпоинт для изменения роли польз��вателя
+app.post('/api/admin/role', checkAdmin, async (req, res) => {
     try {
-        const { id } = req.params;
-        const { role } = req.body;
+        const { userId, role } = req.body;
         
         // Проверяем допустимые роли
         const validRoles = ['user', 'moderator', 'admin'];
         if (!validRoles.includes(role)) {
-            return res.status(400).json({ error: 'Недопустимая роль' });
+            return res.status(400).json({ 
+                success: false,
+                error: 'Недопустимая роль' 
+            });
         }
 
+        // Обновляем роль в базе данных
         await pool.query(
             'UPDATE users SET role = $1 WHERE id = $2',
-            [role, id]
+            [role, userId]
         );
         
         res.json({ success: true });
     } catch (err) {
         console.error('Change role error:', err);
-        res.status(500).json({ error: 'Ошибка при изменении роли' });
+        res.status(500).json({ 
+            success: false,
+            error: 'Ошибка при изменении роли' 
+        });
     }
 }); 
