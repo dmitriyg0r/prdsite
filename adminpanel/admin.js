@@ -187,7 +187,7 @@ async function banUser(userId) {
 async function changeUserRole(userId, newRole) {
     try {
         const adminId = getAdminId();
-        const response = await fetch(`${API_URL}/api/admin/role`, {
+        const response = await fetch(`${API_URL}/api/admin/role?adminId=${adminId}`, { // Добавляем adminId в URL
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -196,8 +196,7 @@ async function changeUserRole(userId, newRole) {
             credentials: 'include',
             body: JSON.stringify({ 
                 userId: userId,
-                role: newRole,
-                adminId: adminId
+                role: newRole
             })
         });
 

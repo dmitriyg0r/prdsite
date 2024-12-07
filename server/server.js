@@ -639,27 +639,42 @@ app.post('/api/messages/send-with-file', messageUpload.single('file'), async (re
     }
 });
 
-// Middleware для проверки прав администратора
+// Обновляем middleware checkAdmin
 const checkAdmin = async (req, res, next) => {
     try {
-        const userId = req.query.userId || req.body.userId;
-        if (!userId) {
-            return res.status(401).json({ error: 'Требуется авторизация' });
+        // Проверяем adminId в query параметрах или в теле запроса
+        const adminId = req.query.adminId || req.body.adminId;
+        
+        console.log('Checking admin rights for:', adminId); // Добавляем лог
+
+        if (!adminId) {
+            return res.status(401).json({ 
+                success: false,
+                error: 'Требуется авторизация' 
+            });
         }
 
         const userResult = await pool.query(
             'SELECT role FROM users WHERE id = $1',
-            [userId]
+            [adminId]
         );
 
+        console.log('User role:', userResult.rows[0]?.role); // Добавляем лог
+
         if (userResult.rows.length === 0 || userResult.rows[0].role !== 'admin') {
-            return res.status(403).json({ error: 'Доступ запрещен' });
+            return res.status(403).json({ 
+                success: false,
+                error: 'Доступ запрещен' 
+            });
         }
 
         next();
     } catch (err) {
         console.error('Auth error:', err);
-        res.status(500).json({ error: 'Ошибка сервера' });
+        res.status(500).json({ 
+            success: false,
+            error: 'Ошибка сервера' 
+        });
     }
 };
 
@@ -740,6 +755,7 @@ app.post('/api/admin/role', checkAdmin, async (req, res) => {
             });
         }
 
+        // Обновляем роль в базе данных
         // Обновляем роль в базе данных
         await pool.query(
             'UPDATE users SET role = $1 WHERE id = $2',
