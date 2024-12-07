@@ -26,11 +26,15 @@ async function initializeChat() {
 
         if (data.friends) {
             displayFriendsList(data.friends);
-            // Проверяем, есть ли сохраненный собеседник
-            const savedPartner = localStorage.getItem('chatPartner');
+            
+            // Проверяем сохраненного собеседника в sessionStorage
+            const savedPartner = sessionStorage.getItem('selectedChatUser');
             if (savedPartner) {
-                openChat(JSON.parse(savedPartner));
-                localStorage.removeItem('chatPartner');
+                const partner = JSON.parse(savedPartner);
+                // Открываем чат с выбранным пользователем
+                openChat(partner);
+                // Очищаем данные из sessionStorage
+                sessionStorage.removeItem('selectedChatUser');
             }
         } else {
             console.error('Ошибка загрузки друзей:', data.error);
@@ -143,7 +147,7 @@ async function openChat(friend) {
     document.getElementById('chat-header-avatar').src = friend.avatar_url || '../uploads/avatars/default.png';
     document.getElementById('chat-header-name').textContent = friend.username;
 
-    // Очищаем п��ле ввода и превью файла
+    // Очищаем поле ввода и превью файла
     const messageInput = document.getElementById('messageInput');
     const fileInput = document.getElementById('fileInput');
     messageInput.value = '';
