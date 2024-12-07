@@ -134,7 +134,7 @@ async function openChat(friend) {
     document.getElementById('chat-header-avatar').src = friend.avatar_url || '../uploads/avatars/default.png';
     document.getElementById('chat-header-name').textContent = friend.username;
 
-    // Загружаем историю сообщен��й
+    // Загружаем историю сообщений
     await loadChatHistory();
     
     // Отмечаем сообщения как прочитанные
@@ -153,87 +153,118 @@ async function loadChatHistory() {
         const data = await response.json();
 
         if (data.success) {
-            displayMessages(data.messages);
+            // Получаем текущий скролл и высоту контента
+            const messagesContainer = document.getElementById('messages');
+            const isScrolledToBottom = messagesContainer.scrollHeight - messagesContainer.scrollTop <= messagesContainer.clientHeight + 100;
+            const previousHeight = messagesContainer.scrollHeight;
+
+            // Проверяем, есть ли новые сообщения
+            const currentMessages = messagesContainer.querySelectorAll('.message');
+            const lastCurrentMessage = currentMessages[currentMessages.length - 1];
+            const lastCurrentMessageTime = lastCurrentMessage ? new Date(lastCurrentMessage.dataset.timestamp).getTime() : 0;
+
+            // Находим новые сообщения
+            const newMessages = data.messages.filter(message => 
+                new Date(message.created_at).getTime() > lastCurrentMessageTime
+            );
+
+            if (newMessages.length > 0) {
+                displayNewMessages(newMessages, isScrolledToBottom);
+            }
         }
     } catch (err) {
         console.error('Error loading chat history:', err);
     }
 }
 
-function displayMessages(messages) {
+function displayNewMessages(newMessages, shouldScroll) {
     const messagesContainer = document.getElementById('messages');
-    messagesContainer.innerHTML = '';
 
-    messages.forEach(message => {
-        const messageElement = document.createElement('div');
-        messageElement.className = `message ${message.sender_id === currentUser.id ? 'message-sent' : 'message-received'}`;
-
-        // Добавляем информацию об отправителе для входящих сообщений
-        if (message.sender_id !== currentUser.id) {
-            const senderInfo = document.createElement('div');
-            senderInfo.className = 'message-sender';
-            senderInfo.textContent = message.sender_username;
-            messageElement.appendChild(senderInfo);
-        }
-
-        // Если есть reply_data, показываем его
-        if (message.reply_data) {
-            const replyElement = document.createElement('div');
-            replyElement.className = 'message-reply';
-            replyElement.textContent = ` ${message.reply_data.message}`;
-            messageElement.appendChild(replyElement);
-        }
-
-        // Основной текст сообщения
-        const messageText = document.createElement('div');
-        messageText.className = 'message-text';
-        messageText.textContent = message.message;
-        messageElement.appendChild(messageText);
-
-        // Если есть вложение, показываем его
-        if (message.attachment_url) {
-            const attachmentElement = document.createElement('div');
-            attachmentElement.className = 'message-attachment';
-            
-            // Формируем полный URL с правильным доменом и портом
-            const fullUrl = `https://adminflow.ru:5003${message.attachment_url}`;
-
-            if (message.attachment_url.match(/\.(jpg|jpeg|png|gif)$/i)) {
-                // Если это изображение
-                const img = document.createElement('img');
-                img.src = fullUrl;
-                img.alt = 'Attachment';
-                img.onclick = () => showImageModal(fullUrl);
-                attachmentElement.appendChild(img);
-            } else {
-                // Если это другой файл
-                const fileInfo = document.createElement('div');
-                fileInfo.className = 'file-info';
-                const fileName = message.attachment_url.split('/').pop();
-                fileInfo.innerHTML = `
-                    <i class="fas fa-file file-icon"></i>
-                    <a href="${fullUrl}" 
-                       target="_blank" 
-                       class="file-name">
-                        ${fileName}
-                    </a>
-                `;
-                attachmentElement.appendChild(fileInfo);
-            }
-
-            messageElement.appendChild(attachmentElement);
-        }
-
-        // Время сообщения
-        const timeElement = document.createElement('div');
-        timeElement.className = 'message-time';
-        timeElement.textContent = new Date(message.created_at).toLocaleTimeString();
-        messageElement.appendChild(timeElement);
-
+    newMessages.forEach(message => {
+        const messageElement = createMessageElement(message);
+        messageElement.style.opacity = '0';
+        messageElement.style.transform = 'translateY(20px)';
         messagesContainer.appendChild(messageElement);
+
+        // Плавно показываем новое сообщение
+        requestAnimationFrame(() => {
+            messageElement.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            messageElement.style.opacity = '1';
+            messageElement.style.transform = 'translateY(0)';
+        });
     });
 
-    scrollToBottom();
+    if (shouldScroll) {
+        scrollToBottom();
+    }
+}
+
+function createMessageElement(message) {
+    const messageElement = document.createElement('div');
+    messageElement.className = `message ${message.sender_id === currentUser.id ? 'message-sent' : 'message-received'}`;
+    messageElement.dataset.timestamp = message.created_at;
+
+    // Добавляем информацию об отправителе для входящих сообщений
+    if (message.sender_id !== currentUser.id) {
+        const senderInfo = document.createElement('div');
+        senderInfo.className = 'message-sender';
+        senderInfo.textContent = message.sender_username;
+        messageElement.appendChild(senderInfo);
+    }
+
+    // Если есть reply_data, показываем его
+    if (message.reply_data) {
+        const replyElement = document.createElement('div');
+        replyElement.className = 'message-reply';
+        replyElement.textContent = `↳ ${message.reply_data.message}`;
+        messageElement.appendChild(replyElement);
+    }
+
+    // Основной текст сообщения
+    const messageText = document.createElement('div');
+    messageText.className = 'message-text';
+    messageText.textContent = message.message;
+    messageElement.appendChild(messageText);
+
+    // Добавляем вложения, если есть
+    if (message.attachment_url) {
+        const attachmentElement = createAttachmentElement(message.attachment_url);
+        messageElement.appendChild(attachmentElement);
+    }
+
+    // Время сообщения
+    const timeElement = document.createElement('div');
+    timeElement.className = 'message-time';
+    timeElement.textContent = new Date(message.created_at).toLocaleTimeString();
+    messageElement.appendChild(timeElement);
+
+    return messageElement;
+}
+
+function createAttachmentElement(attachmentUrl) {
+    const attachmentElement = document.createElement('div');
+    attachmentElement.className = 'message-attachment';
+    
+    const fullUrl = `https://adminflow.ru:5003${attachmentUrl}`;
+
+    if (attachmentUrl.match(/\.(jpg|jpeg|png|gif)$/i)) {
+        const img = document.createElement('img');
+        img.src = fullUrl;
+        img.alt = 'Attachment';
+        img.onclick = () => showImageModal(fullUrl);
+        attachmentElement.appendChild(img);
+    } else {
+        const fileInfo = document.createElement('div');
+        fileInfo.className = 'file-info';
+        const fileName = attachmentUrl.split('/').pop();
+        fileInfo.innerHTML = `
+            <i class="fas fa-file file-icon"></i>
+            <a href="${fullUrl}" target="_blank" class="file-name">${fileName}</a>
+        `;
+        attachmentElement.appendChild(fileInfo);
+    }
+
+    return attachmentElement;
 }
 
 async function sendMessage() {
@@ -311,7 +342,7 @@ function setupEventListeners() {
     document.getElementById('fileInput').addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (file) {
-            // Если это изображение, можно показать предпросмотр
+            // Если это изоб��ажение, можно показать предпросмотр
             if (file.type.startsWith('image/')) {
                 const reader = new FileReader();
                 reader.onload = function(e) {

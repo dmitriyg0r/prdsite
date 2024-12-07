@@ -153,6 +153,7 @@ body {
     background-color: var(--background-color);
     display: flex;
     flex-direction: column;
+    scroll-behavior: smooth;
 }
 
 /* Стили сообщений */
@@ -163,6 +164,7 @@ body {
     border-radius: 15px;
     position: relative;
     word-wrap: break-word;
+    transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 .message-sent {
