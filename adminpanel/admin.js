@@ -26,7 +26,7 @@ async function loadStats() {
         }
     } catch (err) {
         console.error('Ошибка загрузки статистики:', err);
-        alert('Ош��бка загрузки статистики');
+        alert('Ошибка загрузки статистики');
     }
 }
 
@@ -55,7 +55,7 @@ async function loadUsers(page = 1, search = '') {
                     <td>${user.messages_sent}</td>
                     <td>${user.friends_count}</td>
                     <td>
-                        <button onclick="deleteUser(${user.id})" class="action-btn delete">Удалить</button>
+                        <button onclick="deleteUser(${user.id})" class="action-btn delete">У��алить</button>
                         <button onclick="banUser(${user.id})" class="action-btn ban">
                             ${user.is_banned ? 'Разблокировать' : 'Заблокировать'}
                         </button>
@@ -86,7 +86,7 @@ function updatePagination() {
 
     // Кнопка "Назад"
     const prevButton = document.createElement('button');
-    prevButton.textContent = 'Наза��';
+    prevButton.textContent = 'Назад';
     prevButton.disabled = currentPage === 1;
     prevButton.onclick = () => {
         if (currentPage > 1) {
@@ -196,6 +196,120 @@ async function changeUserRole(userId, newRole) {
     }
 }
 
+async function loadCharts() {
+    try {
+        const adminId = getAdminId();
+        const response = await fetch(`${API_URL}/api/admin/charts?adminId=${adminId}`, {
+            credentials: 'include'
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            createRegistrationChart(data.data.registrations);
+            createMessageChart(data.data.messages);
+            createUserActivityChart(data.data.userActivity);
+        }
+    } catch (err) {
+        console.error('Ошибка загрузки графиков:', err);
+    }
+}
+
+function createRegistrationChart(data) {
+    const ctx = document.getElementById('registrationChart');
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: data.map(item => new Date(item.date).toLocaleDateString()),
+            datasets: [{
+                label: 'Новые регистрации',
+                data: data.map(item => item.count),
+                borderColor: '#2ecc71',
+                tension: 0.1,
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Регистрации за последние 7 дней'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+}
+
+function createMessageChart(data) {
+    const ctx = document.getElementById('messageChart');
+    
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: data.map(item => new Date(item.date).toLocaleDateString()),
+            datasets: [{
+                label: 'Сообщения',
+                data: data.map(item => item.count),
+                backgroundColor: '#3498db',
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Активность сообщений за последние 7 дней'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+}
+
+function createUserActivityChart(data) {
+    const ctx = document.getElementById('userActivityChart');
+    
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: data.map(item => item.role),
+            datasets: [{
+                data: data.map(item => item.count),
+                backgroundColor: [
+                    '#3498db',  // user
+                    '#e74c3c',  // admin
+                    '#f1c40f'   // moderator
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Распределение пользователей по ролям'
+                }
+            }
+        }
+    });
+}
+
 // Инициализация
 document.addEventListener('DOMContentLoaded', () => {
     const adminId = localStorage.getItem('adminId');
@@ -204,6 +318,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelector('.admin-panel').style.display = 'block';
         loadStats();
         loadUsers();
+        loadCharts();
     }
 
     const searchInput = document.getElementById('searchUsers');

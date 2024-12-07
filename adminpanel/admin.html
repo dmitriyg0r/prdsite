@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Админ панель - AdminFlow</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="admin.css">
+
 </head>
 <body>
     <div class="login-form" id="loginForm">
@@ -18,7 +20,6 @@
         <div class="admin-header">
             <h1>Админ панель AdminFlow</h1>
         </div>
-
         <div class="stats-grid">
             <div class="stat-card">
                 <h3>Всего пользователей</h3>
@@ -35,6 +36,17 @@
             <div class="stat-card">
                 <h3>Сообщений за 24ч</h3>
                 <div class="value" id="newMessages">-</div>
+            </div>
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <canvas id="registrationChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <canvas id="messageChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <canvas id="userActivityChart"></canvas>
+                </div>
             </div>
         </div>
 

@@ -456,7 +456,7 @@ app.post('/api/messages/read', async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         console.error('Error marking messages as read:', err);
-        res.status(500).json({ error: 'Ошибка при отметке сообщений как прочитанных' });
+        res.status(500).json({ error: 'Ошибка при о��метке сообщений как прочитанных' });
     }
 });
 
@@ -741,11 +741,12 @@ app.delete('/api/admin/users/:id', checkAdmin, async (req, res) => {
     }
 });
 
-// Эндпоинт для изменения роли пользователя
+// Эндпоинт для изменения роли польз��вателя
 app.post('/api/admin/role', checkAdmin, async (req, res) => {
     try {
         const { userId, role } = req.body;
         
+        // Проверяем допустимые роли
         const validRoles = ['user', 'moderator', 'admin'];
         if (!validRoles.includes(role)) {
             return res.status(400).json({ 
@@ -754,6 +755,7 @@ app.post('/api/admin/role', checkAdmin, async (req, res) => {
             });
         }
 
+        // Обновляем роль в базе данных
         await pool.query(
             'UPDATE users SET role = $1 WHERE id = $2',
             [role, userId]
@@ -766,5 +768,50 @@ app.post('/api/admin/role', checkAdmin, async (req, res) => {
             success: false,
             error: 'Ошибка при изменении роли' 
         });
+    }
+});
+
+app.get('/api/admin/charts', checkAdmin, async (req, res) => {
+    try {
+        // Получаем данные за последние 7 дней
+        const registrationData = await pool.query(`
+            SELECT 
+                DATE(created_at) as date,
+                COUNT(*) as count
+            FROM users
+            WHERE created_at > NOW() - INTERVAL '7 days'
+            GROUP BY DATE(created_at)
+            ORDER BY date
+        `);
+
+        const messageData = await pool.query(`
+            SELECT 
+                DATE(created_at) as date,
+                COUNT(*) as count
+            FROM messages
+            WHERE created_at > NOW() - INTERVAL '7 days'
+            GROUP BY DATE(created_at)
+            ORDER BY date
+        `);
+
+        const userActivityData = await pool.query(`
+            SELECT 
+                role,
+                COUNT(*) as count
+            FROM users
+            GROUP BY role
+        `);
+
+        res.json({
+            success: true,
+            data: {
+                registrations: registrationData.rows,
+                messages: messageData.rows,
+                userActivity: userActivityData.rows
+            }
+        });
+    } catch (err) {
+        console.error('Charts data error:', err);
+        res.status(500).json({ error: 'Ошибка при получении данных для графиков' });
     }
 }); 
