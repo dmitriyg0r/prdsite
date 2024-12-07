@@ -159,7 +159,8 @@ async function loadChatHistory() {
             
             // Фильтруем только действительно новые сообщения
             const newMessages = data.messages.filter(message => 
-                !currentMessages.includes(message.id.toString())
+                !currentMessages.includes(message.id.toString()) && 
+                message.sender_id !== currentUser.id // Пропускаем свои сообщения, так как они уже добавлены
             );
 
             // Если есть новые сообщения, добавляем их
@@ -287,11 +288,21 @@ async function sendMessage() {
             body: formData
         });
 
+        const data = await response.json();
+        
         if (response.ok) {
             messageInput.value = '';
             fileInput.value = '';
-            await loadMessages(currentChatPartner.id);
-            scrollToBottom();
+            removeFilePreview();
+            
+            // Добавляем новое сообщение сразу, не перезагружая весь чат
+            if (data.message) {
+                const messagesContainer = document.getElementById('messages');
+                const messageElement = createMessageElement(data.message);
+                messageElement.dataset.messageId = data.message.id;
+                messagesContainer.appendChild(messageElement);
+                scrollToBottom();
+            }
         } else {
             console.error('Error sending message');
         }
@@ -334,7 +345,7 @@ function setupEventListeners() {
         }
     });
 
-    // Добавляем обработчик для предпросмотра файла
+    // Добавляем обрабо��чик для предпросмотра файла
     document.getElementById('fileInput').addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (file) {
@@ -477,7 +488,11 @@ function displayMessages(messages) {
 // Функция прокрутки чата вниз
 function scrollToBottom() {
     const messagesContainer = document.getElementById('messages');
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    // Используем плавную прокрутку
+    messagesContainer.scrollTo({
+        top: messagesContainer.scrollHeight,
+        behavior: 'smooth'
+    });
 }
 
 // Функция отметки сообщений как прочитанных
@@ -498,7 +513,7 @@ async function markMessagesAsRead(friendId) {
     }
 }
 
-// Функция показа модального окна с ��зображением
+// Функция показа модального окна с изображением
 function showImageModal(imageUrl) {
     const modal = document.querySelector('.image-modal');
     const modalImage = document.getElementById('modalImage');
