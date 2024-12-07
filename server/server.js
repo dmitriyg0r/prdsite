@@ -306,7 +306,7 @@ app.get('/api/friends', async (req, res) => {
         res.json({ friends: result.rows });
     } catch (err) {
         console.error('Get friends error:', err);
-        res.status(500).json({ error: 'Ошибка при получении ��ка друзей' });
+        res.status(500).json({ error: 'Ошибка при получении списка друзей' });
     }
 });
 
@@ -636,5 +636,68 @@ app.post('/api/messages/send-with-file', messageUpload.single('file'), async (re
     } catch (err) {
         console.error('Error sending message with file:', err);
         res.status(500).json({ error: 'Ошибка при отправке сообщения с файлом' });
+    }
+});
+
+// Админ роуты
+app.get('/api/admin/stats', async (req, res) => {
+    try {
+        const stats = await pool.query(`
+            SELECT 
+                (SELECT COUNT(*) FROM users) as total_users,
+                (SELECT COUNT(*) FROM users WHERE created_at > NOW() - INTERVAL '24 HOURS') as new_users_24h,
+                (SELECT COUNT(*) FROM messages) as total_messages,
+                (SELECT COUNT(*) FROM messages WHERE created_at > NOW() - INTERVAL '24 HOURS') as new_messages_24h,
+                (SELECT COUNT(*) FROM friendships WHERE status = 'accepted') as total_friendships
+        `);
+        
+        res.json({ success: true, stats: stats.rows[0] });
+    } catch (err) {
+        console.error('Admin stats error:', err);
+        res.status(500).json({ error: 'Ошибка при получении статистики' });
+    }
+});
+
+app.get('/api/admin/users', async (req, res) => {
+    try {
+        const { page = 1, limit = 10, search = '' } = req.query;
+        const offset = (page - 1) * limit;
+
+        const users = await pool.query(`
+            SELECT 
+                u.*, 
+                (SELECT COUNT(*) FROM messages WHERE sender_id = u.id) as messages_sent,
+                (SELECT COUNT(*) FROM friendships WHERE (user_id = u.id OR friend_id = u.id) AND status = 'accepted') as friends_count
+            FROM users u
+            WHERE u.username ILIKE $1
+            ORDER BY u.created_at DESC
+            LIMIT $2 OFFSET $3
+        `, [`%${search}%`, limit, offset]);
+
+        const total = await pool.query(
+            'SELECT COUNT(*) FROM users WHERE username ILIKE $1',
+            [`%${search}%`]
+        );
+
+        res.json({
+            success: true,
+            users: users.rows,
+            total: parseInt(total.rows[0].count),
+            pages: Math.ceil(total.rows[0].count / limit)
+        });
+    } catch (err) {
+        console.error('Admin users error:', err);
+        res.status(500).json({ error: 'Ошибка при получении списка пользователей' });
+    }
+});
+
+app.delete('/api/admin/users/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        await pool.query('DELETE FROM users WHERE id = $1', [id]);
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Admin delete user error:', err);
+        res.status(500).json({ error: 'Ошибка при удалении пользователя' });
     }
 }); 

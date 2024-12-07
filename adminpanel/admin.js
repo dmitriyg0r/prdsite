@@ -1,209 +1,120 @@
-// Проверка авторизации админа
-async function checkAdminAuth() {
-    const adminToken = localStorage.getItem('admin_token');
-    if (!adminToken) {
-        showLoginForm();
-        return false;
-    }
-    return true;
-}
+let currentPage = 1;
+let totalPages = 1;
 
-// Показать форму входа
-function showLoginForm() {
-    document.body.innerHTML = `
-        <div class="admin-login-container">
-            <div class="admin-login-form">
-                <h2>Вход в панель администратора</h2>
-                <form id="adminLoginForm">
-                    <div class="form-group">
-                        <label for="username">Логин:</label>
-                        <input type="text" id="username" name="username" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="password">Пароль:</label>
-                        <input type="password" id="password" name="password" required>
-                    </div>
-                    <button type="submit">Войти</button>
-                </form>
-            </div>
-        </div>
-    `;
-
-    // Добавляем обработчик формы
-    document.getElementById('adminLoginForm').addEventListener('submit', handleAdminLogin);
-}
-
-// Обработка входа админа
-async function handleAdminLogin(e) {
-    e.preventDefault();
-    
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
-
+async function loadStats() {
     try {
-        const response = await fetch('https://adminflow.ru/api/admin/auth.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ username, password })
-        });
-
+        const response = await fetch('https://adminflow.ru/api/admin/stats');
         const data = await response.json();
-
+        
         if (data.success) {
-            localStorage.setItem('admin_token', data.data.token);
-            window.location.reload(); // Перезагружаем страницу для показа админ-панели
-        } else {
-            alert(data.error || 'Ошибка авторизации');
+            document.getElementById('totalUsers').textContent = data.stats.total_users;
+            document.getElementById('newUsers').textContent = data.stats.new_users_24h;
+            document.getElementById('totalMessages').textContent = data.stats.total_messages;
+            document.getElementById('newMessages').textContent = data.stats.new_messages_24h;
         }
-    } catch (error) {
-        console.error('Login error:', error);
-        alert('Ошибка при попытке входа');
+    } catch (err) {
+        console.error('Error loading stats:', err);
     }
 }
 
-// Загрузка списка пользователей
-async function loadUsers() {
+async function loadUsers(page = 1, search = '') {
     try {
-        const response = await fetch('https://adminflow.ru/api/admin/users.php', {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
-            }
-        });
+        const response = await fetch(`https://adminflow.ru/api/admin/users?page=${page}&search=${search}`);
         const data = await response.json();
-
+        
         if (data.success) {
             const tbody = document.getElementById('usersTableBody');
             tbody.innerHTML = '';
-
-            data.data.forEach(user => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
+            
+            data.users.forEach(user => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
                     <td>${user.id}</td>
                     <td>${user.username}</td>
                     <td>${user.role}</td>
-                    <td>${user.status}</td>
+                    <td>${new Date(user.created_at).toLocaleDateString()}</td>
+                    <td>${user.messages_sent}</td>
+                    <td>${user.friends_count}</td>
                     <td>
-                        <button onclick="editUser(${user.id})" class="btn-edit">Редактировать</button>
-                        <button onclick="toggleUserStatus(${user.id})" class="btn-toggle">
-                            ${user.status === 'active' ? 'Заблокировать' : 'Разблокировать'}
-                        </button>
+                        <button onclick="deleteUser(${user.id})">Удалить</button>
                     </td>
                 `;
-                tbody.appendChild(tr);
+                tbody.appendChild(row);
             });
+
+            totalPages = data.pages;
+            updatePagination();
         }
-    } catch (error) {
-        console.error('Failed to load users:', error);
+    } catch (err) {
+        console.error('Error loading users:', err);
     }
 }
 
-// Загрузка жалоб
-async function loadReports() {
-    try {
-        const response = await fetch('https://adminflow.ru/api/admin/reports.php', {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
-            }
-        });
-        const data = await response.json();
+function updatePagination() {
+    const pagination = document.getElementById('pagination');
+    pagination.innerHTML = '';
 
-        if (data.success) {
-            const container = document.getElementById('reportsContainer');
-            container.innerHTML = '';
+    // Кнопка "Назад"
+    const prevButton = document.createElement('button');
+    prevButton.textContent = 'Назад';
+    prevButton.disabled = currentPage === 1;
+    prevButton.onclick = () => {
+        if (currentPage > 1) {
+            currentPage--;
+            loadUsers(currentPage, document.getElementById('searchUsers').value);
+        }
+    };
+    pagination.appendChild(prevButton);
 
-            data.data.forEach(report => {
-                const reportElement = document.createElement('div');
-                reportElement.className = 'report-item';
-                reportElement.innerHTML = `
-                    <div class="report-header">
-                        <span class="report-type">${report.type}</span>
-                        <span class="report-date">${new Date(report.created_at).toLocaleString()}</span>
-                    </div>
-                    <div class="report-content">
-                        <p><strong>От:</strong> ${report.reporter}</p>
-                        <p><strong>На:</strong> ${report.reported}</p>
-                        <p><strong>Причина:</strong> ${report.reason}</p>
-                    </div>
-                    <div class="report-actions">
-                        <button onclick="resolveReport(${report.id})" class="btn-resolve">Разрешить</button>
-                        <button onclick="dismissReport(${report.id})" class="btn-dismiss">Отклонить</button>
-                    </div>
-                `;
-                container.appendChild(reportElement);
+    // Номер текущей страницы
+    const pageInfo = document.createElement('span');
+    pageInfo.textContent = `${currentPage} из ${totalPages}`;
+    pagination.appendChild(pageInfo);
+
+    // Кнопка "Вперед"
+    const nextButton = document.createElement('button');
+    nextButton.textContent = 'Вперед';
+    nextButton.disabled = currentPage === totalPages;
+    nextButton.onclick = () => {
+        if (currentPage < totalPages) {
+            currentPage++;
+            loadUsers(currentPage, document.getElementById('searchUsers').value);
+        }
+    };
+    pagination.appendChild(nextButton);
+}
+
+async function deleteUser(id) {
+    if (confirm('Вы уверены, что хотите удалить этого пользователя?')) {
+        try {
+            const response = await fetch(`https://adminflow.ru/api/admin/users/${id}`, {
+                method: 'DELETE'
             });
-        }
-    } catch (error) {
-        console.error('Failed to load reports:', error);
-    }
-}
-
-// Загрузка статистики
-async function loadStats() {
-    try {
-        const response = await fetch('https://adminflow.ru/api/admin/stats.php', {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
-            }
-        });
-        const data = await response.json();
-
-        if (data.success) {
-            // Обновляем статистику
-            document.getElementById('totalUsers').textContent = data.data.users.total;
-            document.getElementById('totalPosts').textContent = data.data.posts.total;
-            document.getElementById('activeUsers').textContent = data.data.users.active;
-            document.getElementById('totalReports').textContent = data.data.reports.total;
-
-            // Обновляем графики
-            updateCharts(data.data.charts);
-        }
-    } catch (error) {
-        console.error('Failed to load stats:', error);
-    }
-}
-
-// Навигация по секциям
-document.querySelectorAll('.nav-btn').forEach(button => {
-    button.addEventListener('click', () => {
-        // Убираем активный класс у всех кнопок и секций
-        document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-        document.querySelectorAll('.content-section').forEach(section => section.classList.remove('active'));
-
-        // Добавляем активный класс выбранной кнопке и секции
-        button.classList.add('active');
-        const sectionId = button.dataset.section;
-        document.getElementById(sectionId).classList.add('active');
-
-        // Загружаем данные для выбранной секции
-        switch(sectionId) {
-            case 'users':
-                loadUsers();
-                break;
-            case 'posts':
-                loadPosts();
-                break;
-            case 'reports':
-                loadReports();
-                break;
-            case 'stats':
+            const data = await response.json();
+            
+            if (data.success) {
+                loadUsers(currentPage, document.getElementById('searchUsers').value);
                 loadStats();
-                break;
+            }
+        } catch (err) {
+            console.error('Error deleting user:', err);
         }
-    });
-});
-
-// Инициализация при загрузке страницы
-document.addEventListener('DOMContentLoaded', async () => {
-    const isAdmin = await checkAdminAuth();
-    if (isAdmin) {
-        loadUsers();
     }
-});
+}
 
-// Обработка выхода
-document.getElementById('logoutBtn').addEventListener('click', () => {
-    localStorage.removeItem('token');
-    window.location.href = '../authreg/authreg.html';
+// Инициализация
+document.addEventListener('DOMContentLoaded', () => {
+    loadStats();
+    loadUsers();
+
+    const searchInput = document.getElementById('searchUsers');
+    let searchTimeout;
+
+    searchInput.addEventListener('input', (e) => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            currentPage = 1;
+            loadUsers(1, e.target.value);
+        }, 300);
+    });
 });
