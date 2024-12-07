@@ -50,6 +50,7 @@
     padding: 12px;
     text-align: left;
     border-bottom: 1px solid #eee;
+    vertical-align: middle;
 }
 
 .search-bar {
@@ -113,4 +114,34 @@
 
 .login-form button:hover {
     background: #34495e;
+}
+
+.action-btn {
+    padding: 5px 10px;
+    margin: 0 5px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.action-btn.delete {
+    background: #e74c3c;
+    color: white;
+}
+
+.action-btn.ban {
+    background: #f39c12;
+    color: white;
+}
+
+.role-select {
+    padding: 4px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    margin-left: 5px;
+}
+
+.users-table tr.banned {
+    background-color: #ffecec;
 }

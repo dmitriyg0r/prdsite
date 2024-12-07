@@ -44,6 +44,9 @@ async function loadUsers(page = 1, search = '') {
             
             data.users.forEach(user => {
                 const row = document.createElement('tr');
+                if (user.is_banned) {
+                    row.classList.add('banned');
+                }
                 row.innerHTML = `
                     <td>${user.id}</td>
                     <td>${user.username}</td>
@@ -52,7 +55,15 @@ async function loadUsers(page = 1, search = '') {
                     <td>${user.messages_sent}</td>
                     <td>${user.friends_count}</td>
                     <td>
-                        <button onclick="deleteUser(${user.id})">Удалить</button>
+                        <button onclick="deleteUser(${user.id})" class="action-btn delete">Удалить</button>
+                        <button onclick="banUser(${user.id})" class="action-btn ban">
+                            ${user.is_banned ? 'Разблокировать' : 'Заблокировать'}
+                        </button>
+                        <select onchange="changeUserRole(${user.id}, this.value)" class="role-select">
+                            <option value="user" ${user.role === 'user' ? 'selected' : ''}>Пользователь</option>
+                            <option value="moderator" ${user.role === 'moderator' ? 'selected' : ''}>Модератор</option>
+                            <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Админ</option>
+                        </select>
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -149,6 +160,50 @@ async function login() {
     } catch (err) {
         console.error('Login error:', err);
         alert('Ошибка авторизации');
+    }
+}
+
+// Функция для блокировки пользователя
+async function banUser(userId) {
+    try {
+        const response = await fetch(`${API_URL}/api/admin/users/${userId}/ban`, {
+            method: 'POST',
+            credentials: 'include'
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            loadUsers(currentPage, document.getElementById('searchUsers').value);
+        } else {
+            alert(data.error || 'Ошибка при блокировке пользователя');
+        }
+    } catch (err) {
+        console.error('Error banning user:', err);
+        alert('Ошибка при блокировке пользователя');
+    }
+}
+
+// Функция для изменения роли пользователя
+async function changeUserRole(userId, newRole) {
+    try {
+        const response = await fetch(`${API_URL}/api/admin/users/${userId}/role`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify({ role: newRole })
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            loadUsers(currentPage, document.getElementById('searchUsers').value);
+        } else {
+            alert(data.error || 'Ошибка при изменении роли');
+        }
+    } catch (err) {
+        console.error('Error changing role:', err);
+        alert('Ошибка при изменении роли');
     }
 }
 
