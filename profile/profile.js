@@ -29,6 +29,23 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('edit-profile-btn').style.display = 'none';
             document.getElementById('logout-btn').style.display = 'none';
             document.querySelector('.avatar-overlay').style.display = 'none';
+
+            // Добавляем кнопку "Написать сообщение"
+            const actionsContainer = document.querySelector('.profile-actions');
+            const messageButton = document.createElement('button');
+            messageButton.className = 'action-btn message-btn';
+            messageButton.innerHTML = '<i class="fas fa-envelope"></i>';
+            messageButton.title = 'Написать сообщение';
+            messageButton.addEventListener('click', () => {
+                // Сохраняем ID собеседника в sessionStorage
+                sessionStorage.setItem('selectedChatUser', JSON.stringify({
+                    id: data.user.id,
+                    username: data.user.username,
+                    avatar_url: data.user.avatar_url
+                }));
+                window.location.href = '/chat/chat.html';
+            });
+            actionsContainer.appendChild(messageButton);
         } catch (err) {
             console.error('Error loading user profile:', err);
             alert('Ошибка при загрузке профиля пользователя');
@@ -99,7 +116,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Обновляем селектор для кнопки открытия модального окна
     const friendsHeaderBtn = document.querySelector('.friends-header-btn');
     
-    // Открытие модального окна при к��ике на заголовок "Друзья"
+    // Открытие модального окна при клике на заголовок "Друзья"
     friendsHeaderBtn.addEventListener('click', (e) => {
         e.preventDefault();
         friendsModal.classList.add('active');
