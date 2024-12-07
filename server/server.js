@@ -727,7 +727,7 @@ app.delete('/api/admin/users/:id', checkAdmin, async (req, res) => {
 });
 
 // Эндпоинт для изменения роли пользователя
-app.put('/api/admin/users/:id/role', checkAdmin, async (req, res) => {
+app.post('/api/admin/users/:id/role', checkAdmin, async (req, res) => {
     try {
         const { id } = req.params;
         const { role } = req.body;

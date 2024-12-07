@@ -187,18 +187,23 @@ async function banUser(userId) {
 async function changeUserRole(userId, newRole) {
     try {
         const adminId = getAdminId();
-        const response = await fetch(`${API_URL}/api/admin/role`, {
+        const response = await fetch(`${API_URL}/api/admin/users/${userId}/role?userId=${adminId}`, {
             method: 'PUT',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
             },
             credentials: 'include',
             body: JSON.stringify({ 
-                adminId: adminId,
-                userId: userId,
-                role: newRole 
+                role: newRole,
+                userId: adminId
             })
         });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const data = await response.json();
         
         if (data.success) {
@@ -208,7 +213,7 @@ async function changeUserRole(userId, newRole) {
         }
     } catch (err) {
         console.error('Error changing role:', err);
-        alert('Ошибка при изменении роли');
+        alert(`Ошибка при изменении роли: ${err.message}`);
     }
 }
 
