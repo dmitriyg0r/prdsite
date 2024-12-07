@@ -1,9 +1,10 @@
 let selectedPostImage = null;
+let currentUser = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const profileId = urlParams.get('id');
-    const currentUser = JSON.parse(localStorage.getItem('user'));
+    currentUser = JSON.parse(localStorage.getItem('user'));
 
     if (!currentUser) {
         window.location.href = '/authreg/authreg.html';
@@ -243,7 +244,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <div class="friend-status">В сети</div>
                     <div class="friend-actions">
                         <button class="remove-friend-btn" data-user-id="${friend.id}">
-                            <i class="fas fa-user-minus"></i> У��алить из друзей
+                            <i class="fas fa-user-minus"></i> Удалить из друзей
                         </button>
                     </div>
                 </div>
@@ -412,7 +413,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Обновляем обработчик открытия модального окна
     document.querySelector('.friends-header-btn').addEventListener('click', () => {
-        // Обновляем списки при открытии модального ��кна
+        // Обновляем списки при открытии модального окна
         loadFriends();
         loadFriendRequests();
     });
@@ -618,7 +619,7 @@ function displayPosts(posts) {
                 </div>
             </div>
         </div>
-    `).join('') : '<div class="no-posts">Нет публикаций</div>';
+    `).join('') : '<div class="no-posts">Не�� публикаций</div>';
 }
 
 function removePostImage() {
