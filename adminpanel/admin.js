@@ -187,13 +187,17 @@ async function banUser(userId) {
 async function changeUserRole(userId, newRole) {
     try {
         const adminId = getAdminId();
-        const response = await fetch(`${API_URL}/api/admin/users/${userId}/role?userId=${adminId}`, {
+        const response = await fetch(`${API_URL}/api/admin/role`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
             },
             credentials: 'include',
-            body: JSON.stringify({ role: newRole })
+            body: JSON.stringify({ 
+                adminId: adminId,
+                userId: userId,
+                role: newRole 
+            })
         });
         const data = await response.json();
         
