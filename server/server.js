@@ -306,7 +306,7 @@ app.get('/api/friends', async (req, res) => {
         res.json({ friends: result.rows });
     } catch (err) {
         console.error('Get friends error:', err);
-        res.status(500).json({ error: 'Ошибка при получении списка друзей' });
+        res.status(500).json({ error: 'Ошибка при получении ��писка друзей' });
     }
 });
 
@@ -456,7 +456,7 @@ app.post('/api/messages/read', async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         console.error('Error marking messages as read:', err);
-        res.status(500).json({ error: 'Ошибка при о��метке сообщений как прочитанных' });
+        res.status(500).json({ error: 'Ошибка при отметке сообщений как прочитанных' });
     }
 });
 
@@ -498,7 +498,7 @@ app.get('/api/messages/unread/:userId', async (req, res) => {
         res.json({ success: true, unreadCounts: result.rows });
     } catch (err) {
         console.error('Error getting unread counts:', err);
-        res.status(500).json({ error: 'Ошибка при поучении количества непрочитанных сообщений' });
+        res.status(500).json({ error: 'Ошибка при получении количества непрочитанных сообщений' });
     }
 });
 
@@ -818,5 +818,30 @@ app.get('/api/admin/charts', checkAdmin, async (req, res) => {
     } catch (err) {
         console.error('Charts data error:', err);
         res.status(500).json({ error: 'Ошибка при получении данных для графиков' });
+    }
+});
+
+// Получение информации о пользователе
+app.get('/api/users/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        const result = await pool.query(`
+            SELECT id, username, role, created_at, last_login, avatar_url
+            FROM users 
+            WHERE id = $1
+        `, [id]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Пользователь не найден' });
+        }
+
+        res.json({ 
+            success: true,
+            user: result.rows[0]
+        });
+    } catch (err) {
+        console.error('Get user error:', err);
+        res.status(500).json({ error: 'Ошибка при получении данных пользователя' });
     }
 }); 

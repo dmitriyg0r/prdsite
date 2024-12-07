@@ -1,22 +1,50 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const user = JSON.parse(localStorage.getItem('user'));
-    
-    if (!user) {
+document.addEventListener('DOMContentLoaded', async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const profileId = urlParams.get('id');
+    const currentUser = JSON.parse(localStorage.getItem('user'));
+
+    if (!currentUser) {
         window.location.href = '/authreg/authreg.html';
         return;
     }
 
-    // Заполняем информацию профиля
-    document.getElementById('username').textContent = user.username;
-    document.getElementById('role').textContent = user.role;
-    document.getElementById('created_at').textContent = new Date(user.created_at).toLocaleString();
-    document.getElementById('last_login').textContent = user.last_login ? 
-        new Date(user.last_login).toLocaleString() : 'Нет данных';
+    // Если есть id в URL, загружаем профиль друга
+    if (profileId) {
+        try {
+            const response = await fetch(`https://adminflow.ru:5003/api/users/${profileId}`);
+            if (!response.ok) {
+                throw new Error('Пользователь не найден');
+            }
+            const data = await response.json();
+            
+            // Заполняем информацию профиля друга
+            document.getElementById('username').textContent = data.user.username;
+            document.getElementById('role').textContent = data.user.role;
+            document.getElementById('created_at').textContent = new Date(data.user.created_at).toLocaleString();
+            document.getElementById('last_login').textContent = data.user.last_login ? 
+                new Date(data.user.last_login).toLocaleString() : 'Нет данных';
+            document.getElementById('profile-avatar').src = data.user.avatar_url || '/uploads/avatars/default.png';
 
-    // Устанавливаем аватар пользователя
-    document.getElementById('profile-avatar').src = user.avatar_url || '/uploads/avatars/default.png';
+            // Скрываем кнопки редактирования и выхода
+            document.getElementById('edit-profile-btn').style.display = 'none';
+            document.getElementById('logout-btn').style.display = 'none';
+            document.querySelector('.avatar-overlay').style.display = 'none';
+        } catch (err) {
+            console.error('Error loading user profile:', err);
+            alert('Ошибка при загрузке профиля пользователя');
+            window.location.href = '/profile/profile.html';
+        }
+    } else {
+        // Загружаем профиль текущего пользователя
+        document.getElementById('username').textContent = currentUser.username;
+        document.getElementById('role').textContent = currentUser.role;
+        document.getElementById('created_at').textContent = new Date(currentUser.created_at).toLocaleString();
+        document.getElementById('last_login').textContent = currentUser.last_login ? 
+            new Date(currentUser.last_login).toLocaleString() : 'Нет данных';
+        document.getElementById('profile-avatar').src = currentUser.avatar_url || '/uploads/avatars/default.png';
+    }
 
-    // Загружаем список друзей сразу при загрузке страницы
+    // Загружаем список друзей
     loadFriends();
     loadFriendRequests();
 
@@ -28,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const formData = new FormData();
         formData.append('avatar', file);
-        formData.append('userId', user.id);
+        formData.append('userId', currentUser.id);
 
         try {
             const response = await fetch('https://adminflow.ru:5003/api/upload-avatar', {
@@ -44,8 +72,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('profile-avatar').src = newAvatarUrl;
                 
                 // Обновляем URL аватарки в localStorage
-                user.avatar_url = data.avatarUrl;
-                localStorage.setItem('user', JSON.stringify(user));
+                currentUser.avatar_url = data.avatarUrl;
+                localStorage.setItem('user', JSON.stringify(currentUser));
             } else {
                 alert(data.error || 'Ошибка при загрузке аватара');
             }
@@ -71,7 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Обновляем селектор для кнопки открытия модального окна
     const friendsHeaderBtn = document.querySelector('.friends-header-btn');
     
-    // Открытие модального окна при клике на заголовок "Друзья"
+    // Открытие модального окна при к��ике на заголовок "Друзья"
     friendsHeaderBtn.addEventListener('click', (e) => {
         e.preventDefault();
         friendsModal.classList.add('active');
@@ -159,7 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Функции для работы с друзьями
     async function loadFriends() {
         try {
-            const response = await fetch(`https://adminflow.ru:5003/api/friends?userId=${user.id}`);
+            const response = await fetch(`https://adminflow.ru:5003/api/friends?userId=${currentUser.id}`);
             const data = await response.json();
             
             if (response.ok) {
@@ -173,7 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function loadFriendRequests() {
         try {
-            const response = await fetch(`https://adminflow.ru:5003/api/friend-requests?userId=${user.id}`);
+            const response = await fetch(`https://adminflow.ru:5003/api/friend-requests?userId=${currentUser.id}`);
             const data = await response.json();
             
             if (response.ok) {
@@ -205,16 +233,9 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `).join('');
 
-        // Добавляем обработчики для аватарок в списке друзей
-        document.querySelectorAll('.friend-avatar-link').forEach(avatar => {
-            avatar.addEventListener('click', () => {
-                openFriendProfile(avatar.dataset.userId);
-            });
-        });
-
         // Обновляем мини-список друзей
         const friendsGrid = document.querySelector('.friends-grid');
-        friendsGrid.innerHTML = friends.slice(0, 3).map(friend => `
+        friendsGrid.innerHTML = friends.length > 0 ? friends.slice(0, 3).map(friend => `
             <div class="friend-placeholder">
                 <div class="friend-avatar">
                     <img src="${friend.avatar_url || '/uploads/avatars/default.png'}" 
@@ -224,12 +245,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <span class="friend-name">${friend.username}</span>
             </div>
-        `).join('');
+        `).join('') : `
+            <div class="friend-placeholder">
+                <div class="friend-avatar">
+                    <img src="/uploads/avatars/default.png" alt="Friend">
+                </div>
+                <span class="friend-name">Пока нет друзей</span>
+            </div>
+        `;
 
-        // Добавляем обработчики для аватарок в мини-списке
-        document.querySelectorAll('.friend-avatar img').forEach(avatar => {
+        // Добавляем обработчики для всех аватарок
+        document.querySelectorAll('.friend-avatar-link').forEach(avatar => {
             avatar.addEventListener('click', () => {
-                openFriendProfile(avatar.dataset.userId);
+                const userId = avatar.dataset.userId;
+                if (userId) {
+                    window.location.href = `/profile/profile.html?id=${userId}`;
+                }
             });
         });
     }
@@ -271,7 +302,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    userId: user.id,
+                    userId: currentUser.id,
                     friendId,
                     status
                 })
@@ -288,10 +319,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Об��овляем функцию поиска
+    // Обновляем функцию поиска
     async function searchUsers(query) {
         try {
-            const response = await fetch(`https://adminflow.ru:5003/api/search-users?q=${query}&userId=${user.id}`);
+            const response = await fetch(`https://adminflow.ru:5003/api/search-users?q=${query}&userId=${currentUser.id}`);
             const data = await response.json();
             
             if (response.ok) {
@@ -347,7 +378,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    userId: user.id,
+                    userId: currentUser.id,
                     friendId
                 })
             });
@@ -385,7 +416,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Добавляем функцию удаления из ��рузей
+    // Добавляем функцию удаления из друзей
     async function removeFriend(friendId) {
         if (!confirm('Вы уверены, что хотите удалить пользователя из друзей?')) {
             return;
@@ -398,7 +429,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    userId: user.id,
+                    userId: currentUser.id,
                     friendId
                 })
             });
