@@ -1,3 +1,5 @@
+const API_URL = 'https://adminflow.ru:5003';
+
 let currentPage = 1;
 let totalPages = 1;
 
@@ -9,7 +11,9 @@ function getAdminId() {
 async function loadStats() {
     try {
         const adminId = getAdminId();
-        const response = await fetch(`../api/admin/stats?userId=${adminId}`);
+        const response = await fetch(`${API_URL}/api/admin/stats?userId=${adminId}`, {
+            credentials: 'include'
+        });
         const data = await response.json();
         
         if (data.success) {
@@ -29,7 +33,9 @@ async function loadStats() {
 async function loadUsers(page = 1, search = '') {
     try {
         const adminId = getAdminId();
-        const response = await fetch(`../api/admin/users?userId=${adminId}&page=${page}&search=${search}`);
+        const response = await fetch(`${API_URL}/api/admin/users?userId=${adminId}&page=${page}&search=${search}`, {
+            credentials: 'include'
+        });
         const data = await response.json();
         
         if (data.success) {
@@ -59,7 +65,7 @@ async function loadUsers(page = 1, search = '') {
         }
     } catch (err) {
         console.error('Error loading users:', err);
-        alert('Ошибка ��агрузки пользователей');
+        alert('Ошибка загрузки пользователей');
     }
 }
 
@@ -98,10 +104,11 @@ function updatePagination() {
 }
 
 async function deleteUser(id) {
-    if (confirm('Вы уверены, что хотите удалить э��ого пользователя?')) {
+    if (confirm('Вы уверены, что хотите удалить этого пользователя?')) {
         try {
-            const response = await fetch(`../api/admin/users/${id}`, {
-                method: 'DELETE'
+            const response = await fetch(`${API_URL}/api/admin/users/${id}`, {
+                method: 'DELETE',
+                credentials: 'include'
             });
             const data = await response.json();
             
@@ -120,14 +127,14 @@ async function login() {
     const password = document.getElementById('adminPassword').value;
 
     try {
-        const response = await fetch('../api/login', {
+        const response = await fetch(`${API_URL}/api/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ username, password })
+            body: JSON.stringify({ username, password }),
+            credentials: 'include'
         });
-
         const data = await response.json();
 
         if (data.success && data.user.role === 'admin') {
