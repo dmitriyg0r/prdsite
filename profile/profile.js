@@ -213,6 +213,9 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="friend-placeholder">
                 <div class="friend-avatar">
                     <img src="${friend.avatar_url || '/uploads/avatars/default.png'}" alt="${friend.username}">
+                         alt="${friend.username}"
+                         onclick="openFriendProfile(${friend.id})"
+                         class="friend-avatar-link">
                 </div>
                 <span class="friend-name">${friend.username}</span>
             </div>
@@ -338,7 +341,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (response.ok) {
-                // Обновляем реультаты поиска
+                // Обновляем реультаты поиск��
                 searchUsers(document.querySelector('.search-input').value.trim());
             }
         } catch (err) {
@@ -407,7 +410,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             
             if (response.ok) {
-                // Сохраняем текущего пользователя во временное хранилище
+                // Сохраняем данные профиля друга во временное хранилище
                 sessionStorage.setItem('viewing_profile', JSON.stringify(data.user));
                 // Перенаправляем на страницу профиля с параметром
                 window.location.href = `/profile/profile.html?id=${userId}`;

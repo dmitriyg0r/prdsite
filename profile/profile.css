@@ -822,7 +822,7 @@ body {
     color: white;
 }
 
-/* Обновляем стили д��я карточки друга */
+/* Обновляем стили для карточки друга */
 .friend-card {
     position: relative;
     overflow: hidden;
