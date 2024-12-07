@@ -768,7 +768,7 @@ body {
     text-align: center;
 }
 
-/* Если счетчик равен нулю, скрываем его */
+/* Если счетчик равен нулю, скрывае�� его */
 .friend-count:empty,
 .request-count:empty {
     display: none;
@@ -882,7 +882,7 @@ body {
     background: var(--button-hover);
 }
 
-/* Обновляем стили для ��нопки сообщения */
+/* Обновляем стили для кнопки сообщения */
 .action-btn.message-btn.full-width {
     width: 100%;
     margin-top: 15px;
@@ -936,7 +936,7 @@ body {
     color: var(--text-color);
 }
 
-/* Стили для блока создания поста */
+/* Стили для б��ока создания поста */
 .create-post-block {
     background: var(--text-container-background);
     border-radius: 8px;
@@ -977,6 +977,18 @@ body {
 /* Стили для формы создания поста */
 .post-form {
     padding: 20px;
+    background: var(--text-container-background);
+    border-radius: 8px;
+    margin-top: 10px;
+    border: 1px solid var(--border-color);
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.post-form.active {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .post-form textarea {
@@ -991,11 +1003,6 @@ body {
     resize: vertical;
     margin-bottom: 15px;
     transition: border-color 0.3s ease;
-}
-
-.post-form textarea:focus {
-    border-color: var(--primary-color);
-    outline: none;
 }
 
 .post-form-actions {
@@ -1212,4 +1219,9 @@ body {
 
 .post {
     animation: postAppear 0.4s ease forwards;
+}
+
+/* Добавляем стили для контейнера постов */
+.posts-container {
+    padding: 20px;
 }

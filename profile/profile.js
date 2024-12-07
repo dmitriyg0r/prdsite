@@ -202,7 +202,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         `).join('');
     }
 
-    // Функции для работы с друзьями
+    // Функции для работы �� друзьями
     async function loadFriends() {
         try {
             const response = await fetch(`https://adminflow.ru:5003/api/friends?userId=${currentUser.id}`);
@@ -504,9 +504,21 @@ function initializePostHandlers() {
     const publishPostBtn = document.getElementById('publish-post-btn');
     const postImage = document.getElementById('post-image');
 
-    // Показываем/скрываем форму создания поста
+    // Обновляем обработчик показа/скрытия формы
     createPostBtn?.addEventListener('click', () => {
-        postForm.style.display = postForm.style.display === 'none' ? 'block' : 'none';
+        if (postForm.style.display === 'none' || !postForm.style.display) {
+            postForm.style.display = 'block';
+            // Добавляем класс active после небольшой задержки для анимации
+            setTimeout(() => {
+                postForm.classList.add('active');
+            }, 10);
+        } else {
+            postForm.classList.remove('active');
+            // Скрываем форму после завершения анимации
+            setTimeout(() => {
+                postForm.style.display = 'none';
+            }, 300);
+        }
     });
 
     // Обработка загрузки изображения
@@ -619,7 +631,7 @@ function displayPosts(posts) {
                 </div>
             </div>
         </div>
-    `).join('') : '<div class="no-posts">Не�� публикаций</div>';
+    `).join('') : '<div class="no-posts">Не найдено публикаций</div>';
 }
 
 function removePostImage() {
