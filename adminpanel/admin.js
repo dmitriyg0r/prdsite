@@ -163,50 +163,6 @@ async function login() {
     }
 }
 
-// Функция для блокировки пользователя
-async function banUser(userId) {
-    try {
-        const response = await fetch(`${API_URL}/api/admin/users/${userId}/ban`, {
-            method: 'POST',
-            credentials: 'include'
-        });
-        const data = await response.json();
-        
-        if (data.success) {
-            loadUsers(currentPage, document.getElementById('searchUsers').value);
-        } else {
-            alert(data.error || 'Ошибка при блокировке пользователя');
-        }
-    } catch (err) {
-        console.error('Error banning user:', err);
-        alert('Ошибка при блокировке пользователя');
-    }
-}
-
-// Функция для изменения роли пользователя
-async function changeUserRole(userId, newRole) {
-    try {
-        const response = await fetch(`${API_URL}/api/admin/users/${userId}/role`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            credentials: 'include',
-            body: JSON.stringify({ role: newRole })
-        });
-        const data = await response.json();
-        
-        if (data.success) {
-            loadUsers(currentPage, document.getElementById('searchUsers').value);
-        } else {
-            alert(data.error || 'Ошибка при изменении роли');
-        }
-    } catch (err) {
-        console.error('Error changing role:', err);
-        alert('Ошибка при изменении роли');
-    }
-}
-
 // Инициализация
 document.addEventListener('DOMContentLoaded', () => {
     const adminId = localStorage.getItem('adminId');
