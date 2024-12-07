@@ -155,33 +155,33 @@ async function loadChatHistory() {
         if (data.success) {
             const messagesContainer = document.getElementById('messages');
             
-            // При первой загрузке отображаем все сообщения
+            // Оптимизация проверки новых сообщений
+            const currentMessageIds = new Set(
+                Array.from(messagesContainer.querySelectorAll('.message'))
+                    .map(el => el.dataset.messageId)
+            );
+            
+            // Фильтрация только новых сообщений
+            const newMessages = data.messages.filter(message => 
+                !currentMessageIds.has(message.id.toString())
+            );
+
             if (messagesContainer.children.length === 0) {
                 displayMessages(data.messages);
                 scrollToBottom();
-                return;
-            }
-
-            // При обновлении добавляем только новые сообщения
-            const currentMessages = Array.from(messagesContainer.querySelectorAll('.message'))
-                .map(el => el.dataset.messageId);
-            
-            // Фильтруем только новые сообщения, независимо от отправителя
-            const newMessages = data.messages.filter(message => 
-                !currentMessages.includes(message.id.toString())
-            );
-
-            if (newMessages.length > 0) {
-                const isScrolledToBottom = 
-                    messagesContainer.scrollHeight - messagesContainer.scrollTop <= 
-                    messagesContainer.clientHeight + 50;
-
+            } else if (newMessages.length > 0) {
+                const isScrolledToBottom = isUserAtBottom(messagesContainer);
                 displayNewMessages(newMessages, isScrolledToBottom);
             }
         }
     } catch (err) {
-        console.error('Error loading chat history:', err);
+        console.error('Ошибка загрузки истории чата:', err);
     }
+}
+
+// Вспомогательная функция для проверки положения скролла
+function isUserAtBottom(container) {
+    return container.scrollHeight - container.scrollTop <= container.clientHeight + 50;
 }
 
 function displayMessages(messages) {
@@ -292,11 +292,11 @@ async function sendMessage() {
     const message = messageInput.value.trim();
     const file = fileInput.files[0];
 
-    if (!message && !file) return;
-    if (!currentChatPartner) return;
+    if (!message && !file || !currentChatPartner) return;
 
     try {
         isMessageSending = true;
+        messageInput.disabled = true;
 
         const formData = new FormData();
         formData.append('senderId', currentUser.id);
@@ -304,6 +304,10 @@ async function sendMessage() {
         formData.append('message', message);
         
         if (file) {
+            // Проверка размера файла
+            if (file.size > 5 * 1024 * 1024) {
+                throw new Error('Файл слишком большой (максимум 5MB)');
+            }
             formData.append('file', file);
         }
 
@@ -314,7 +318,7 @@ async function sendMessage() {
 
         const data = await response.json();
         
-        if (response.ok) {
+        if (data.success) {
             messageInput.value = '';
             fileInput.value = '';
             removeFilePreview();
@@ -327,12 +331,15 @@ async function sendMessage() {
                 scrollToBottom();
             }
         } else {
-            console.error('Error sending message');
+            throw new Error(data.error || 'Ошибка отправки сообщения');
         }
     } catch (err) {
-        console.error('Error:', err);
+        console.error('Ошибка:', err);
+        alert(err.message || 'Произошла ошибка при отправке сообщения');
     } finally {
         isMessageSending = false;
+        messageInput.disabled = false;
+        messageInput.focus();
     }
 }
 
@@ -451,44 +458,31 @@ function setupAttachmentHandlers() {
     const attachButton = document.getElementById('attachButton');
     const fileInput = document.getElementById('fileInput');
     const messageInput = document.getElementById('messageInput');
-    const sendButton = document.getElementById('sendMessage');
 
-    // Обработчик клика по кнопке прикрепления
-    attachButton.addEventListener('click', () => {
-        fileInput.click();
-    });
+    attachButton?.addEventListener('click', () => fileInput.click());
 
-    // Обработчик выбора файла
-    fileInput.addEventListener('change', (e) => {
+    fileInput?.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
-        // Проверяем размер файла (максимум 5MB)
+        // Проверка размера и типа файла
         const maxSize = 5 * 1024 * 1024;
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf'];
+
         if (file.size > maxSize) {
             alert('Файл слишком большой. Максимальный размер: 5MB');
+            fileInput.value = '';
+            return;
+        }
+
+        if (!allowedTypes.includes(file.type)) {
+            alert('Неподдерживаемый тип файла. Разрешены: JPG, PNG, GIF, PDF');
+            fileInput.value = '';
             return;
         }
 
         selectedFile = file;
         showFilePreview(file);
-    });
-
-    // Обработчик отправки сообщения с файлом
-    sendButton.addEventListener('click', async () => {
-        const message = messageInput.value.trim();
-        
-        if (!message && !selectedFile) return;
-
-        if (selectedFile) {
-            await sendMessageWithFile(message);
-        } else {
-            await sendMessage(message);
-        }
-
-        messageInput.value = '';
-        removeFilePreview();
-        selectedFile = null;
     });
 }
 
