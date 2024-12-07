@@ -1,25 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const viewingUserId = urlParams.get('id');
+    const user = JSON.parse(localStorage.getItem('user'));
     
-    // Если есть id в URL, загружаем профиль друга
-    if (viewingUserId) {
-        const viewingProfile = JSON.parse(sessionStorage.getItem('viewing_profile'));
-        if (viewingProfile) {
-            displayUserProfile(viewingProfile);
-            // Скрываем элементы управления для чужого профиля
-            document.getElementById('avatar-upload').style.display = 'none';
-            document.querySelector('.avatar-overlay').style.display = 'none';
-            document.getElementById('edit-profile-btn').style.display = 'none';
-        }
-    } else {
-        // Загружаем свой профиль как обычно
-        const user = JSON.parse(localStorage.getItem('user'));
-        if (!user) {
-            window.location.href = '/authreg/authreg.html';
-            return;
-        }
-        displayUserProfile(user);
+    if (!user) {
+        window.location.href = '/authreg/authreg.html';
+        return;
     }
 
     // Заполняем информацию профиля
@@ -205,10 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const friendsList = document.querySelector('.friends-list');
         friendsList.innerHTML = friends.map(friend => `
             <div class="friend-card">
-                <img src="${friend.avatar_url || '/uploads/avatars/default.png'}" 
-                     alt="${friend.username}"
-                     class="friend-avatar-link"
-                     data-user-id="${friend.id}">
+                <img src="${friend.avatar_url || '/uploads/avatars/default.png'}" alt="${friend.username}">
                 <div class="friend-info">
                     <div class="friend-name">${friend.username}</div>
                     <div class="friend-status">В сети</div>
@@ -226,29 +207,16 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.addEventListener('click', () => removeFriend(btn.dataset.userId));
         });
 
-        // Добавляем обработчики для аватарок
-        document.querySelectorAll('.friend-avatar-link').forEach(avatar => {
-            avatar.addEventListener('click', () => openFriendProfile(avatar.dataset.userId));
-        });
-
         // Обновляем мини-список друзей
         const friendsGrid = document.querySelector('.friends-grid');
         friendsGrid.innerHTML = friends.slice(0, 3).map(friend => `
             <div class="friend-placeholder">
                 <div class="friend-avatar">
-                    <img src="${friend.avatar_url || '/uploads/avatars/default.png'}" 
-                         alt="${friend.username}"
-                         class="friend-avatar-link"
-                         data-user-id="${friend.id}">
+                    <img src="${friend.avatar_url || '/uploads/avatars/default.png'}" alt="${friend.username}">
                 </div>
                 <span class="friend-name">${friend.username}</span>
             </div>
         `).join('');
-
-        // Добавляем обработчики для аватарок в мини-списке
-        friendsGrid.querySelectorAll('.friend-avatar-link').forEach(avatar => {
-            avatar.addEventListener('click', () => openFriendProfile(avatar.dataset.userId));
-        });
     }
 
     function displayFriendRequests(requests) {
@@ -431,35 +399,5 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Error removing friend:', err);
             alert('Ошибка при удалении из друзей');
         }
-    }
-
-    // Добавляем новую функцию для открытия профиля друга
-    async function openFriendProfile(userId) {
-        try {
-            const response = await fetch(`https://adminflow.ru:5003/api/user/${userId}`);
-            const data = await response.json();
-            
-            if (response.ok) {
-                // Сохраняем текущего пользователя во временное хранилище
-                sessionStorage.setItem('viewing_profile', JSON.stringify(data.user));
-                // Перенаправляем на страницу профиля с параметром
-                window.location.href = `/profile/profile.html?id=${userId}`;
-            } else {
-                alert(data.error || 'Ошибка при загрузке профиля пользователя');
-            }
-        } catch (err) {
-            console.error('Error loading user profile:', err);
-            alert('Ошибка при загрузке профиля пользователя');
-        }
-    }
-
-    // Добавляем функцию отображения профиля
-    function displayUserProfile(user) {
-        document.getElementById('username').textContent = user.username;
-        document.getElementById('role').textContent = user.role;
-        document.getElementById('created_at').textContent = new Date(user.created_at).toLocaleString();
-        document.getElementById('last_login').textContent = user.last_login ? 
-            new Date(user.last_login).toLocaleString() : 'Нет данных';
-        document.getElementById('profile-avatar').src = user.avatar_url || '/uploads/avatars/default.png';
     }
 }); 
