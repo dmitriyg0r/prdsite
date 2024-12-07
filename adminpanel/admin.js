@@ -26,7 +26,7 @@ async function loadStats() {
         }
     } catch (err) {
         console.error('Ошибка загрузки статистики:', err);
-        alert('Ошибка загрузки статистики');
+        alert('Ош��бка загрузки статистики');
     }
 }
 
@@ -86,7 +86,7 @@ function updatePagination() {
 
     // Кнопка "Назад"
     const prevButton = document.createElement('button');
-    prevButton.textContent = 'Назад';
+    prevButton.textContent = 'Наза��';
     prevButton.disabled = currentPage === 1;
     prevButton.onclick = () => {
         if (currentPage > 1) {
@@ -164,6 +164,35 @@ async function login() {
     } catch (err) {
         console.error('Ошибка авторизации:', err);
         alert('Ошибка авторизации');
+    }
+}
+
+async function changeUserRole(userId, newRole) {
+    try {
+        const adminId = getAdminId();
+        const response = await fetch(`${API_URL}/api/admin/role`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+                adminId: adminId,
+                userId: userId,
+                role: newRole
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            loadUsers(currentPage, document.getElementById('searchUsers').value);
+        } else {
+            alert(data.error || 'Ошибка при изменении роли пользователя');
+        }
+    } catch (err) {
+        console.error('Ошибка при изменении роли:', err);
+        alert('Ошибка при изменении роли пользователя');
     }
 }
 
