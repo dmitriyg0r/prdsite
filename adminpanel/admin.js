@@ -117,7 +117,7 @@ function updatePagination() {
 async function deleteUser(id) {
     if (confirm('Вы уверены, что хотите удалить этого пользователя?')) {
         try {
-            const response = await fetch(`${API_URL}/api/users/${id}`, {
+            const response = await fetch(`${API_URL}/api/admin/users/${id}`, {
                 method: 'DELETE',
                 credentials: 'include'
             });
@@ -186,24 +186,25 @@ async function banUser(userId) {
 // Функция для изменения роли пользователя
 async function changeUserRole(userId, newRole) {
     try {
-        const response = await fetch(`${API_URL}/api/users/${userId}`, {
-            method: 'PUT',
+        const adminId = getAdminId();
+        const response = await fetch(`${API_URL}/api/admin/role?adminId=${adminId}`, { // Добавляем adminId в URL
+            method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
             },
             credentials: 'include',
             body: JSON.stringify({ 
                 userId: userId,
-                newRole: newRole 
+                role: newRole
             })
         });
 
-        // Проверяем тип контента ответа
-        const contentType = response.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-            throw new Error('Сервер вернул неверный формат данных');
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
         }
-
+        
         const data = await response.json();
         
         if (data.success) {
