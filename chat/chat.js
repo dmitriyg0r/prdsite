@@ -282,7 +282,11 @@ function createAttachmentElement(attachmentUrl) {
     return attachmentElement;
 }
 
+let isMessageSending = false;
+
 async function sendMessage() {
+    if (isMessageSending) return;
+    
     const messageInput = document.getElementById('messageInput');
     const fileInput = document.getElementById('fileInput');
     const message = messageInput.value.trim();
@@ -292,6 +296,8 @@ async function sendMessage() {
     if (!currentChatPartner) return;
 
     try {
+        isMessageSending = true;
+
         const formData = new FormData();
         formData.append('senderId', currentUser.id);
         formData.append('receiverId', currentChatPartner.id);
@@ -313,7 +319,6 @@ async function sendMessage() {
             fileInput.value = '';
             removeFilePreview();
             
-            // Добавляем новое сообщение сразу, не перезагружая весь чат
             if (data.message) {
                 const messagesContainer = document.getElementById('messages');
                 const messageElement = createMessageElement(data.message);
@@ -326,6 +331,8 @@ async function sendMessage() {
         }
     } catch (err) {
         console.error('Error:', err);
+    } finally {
+        isMessageSending = false;
     }
 }
 
@@ -352,55 +359,25 @@ async function markMessagesAsRead() {
 }
 
 function setupEventListeners() {
-    // Отправка сообщения по кнопке
-    document.getElementById('sendMessage')?.addEventListener('click', sendMessage);
+    // Удаляем старые обработчики перед добавлением новых
+    const sendButton = document.getElementById('sendMessage');
+    const messageInput = document.getElementById('messageInput');
+    
+    // Удаляем старые обработчики
+    sendButton?.removeEventListener('click', sendMessage);
+    messageInput?.removeEventListener('keypress', handleEnterPress);
 
-    // Отправка сообщения по Enter
-    document.getElementById('messageInput')?.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-        }
-    });
+    // Добавляем новые обработчики
+    sendButton?.addEventListener('click', sendMessage);
+    messageInput?.addEventListener('keypress', handleEnterPress);
+}
 
-    // Добавляем обработчик для предпросмотра файла
-    document.getElementById('fileInput').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (file) {
-            // Если это изображение, можно показать предпросмотр
-            if (file.type.startsWith('image/')) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    // Показываем предпросмотр изображения
-                    const preview = document.createElement('div');
-                    preview.className = 'file-preview';
-                    preview.innerHTML = `
-                        <img src="${e.target.result}" alt="Preview">
-                        <span class="file-name">${file.name}</span>
-                        <button class="remove-file">×</button>
-                    `;
-                    document.querySelector('.input-area').insertBefore(
-                        preview, 
-                        document.getElementById('messageInput')
-                    );
-                };
-                reader.readAsDataURL(file);
-            } else {
-                // Для других типов файлов показываем только имя
-                const preview = document.createElement('div');
-                preview.className = 'file-preview';
-                preview.innerHTML = `
-                    <i class="fas fa-file"></i>
-                    <span class="file-name">${file.name}</span>
-                    <button class="remove-file">×</button>
-                `;
-                document.querySelector('.input-area').insertBefore(
-                    preview, 
-                    document.getElementById('messageInput')
-                );
-            }
-        }
-    });
+// Выносим обработчик Enter в отдельную функцию
+function handleEnterPress(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+    }
 }
 
 // Очистка при уходе со страницы
@@ -460,7 +437,7 @@ async function markMessagesAsRead(friendId) {
 function showImageModal(imageUrl) {
     const modal = document.querySelector('.image-modal');
     const modalImage = document.getElementById('modalImage');
-    modalImage.src = imageUrl; // ��спользуем полный URL
+    modalImage.src = imageUrl; // спользуем полный URL
     modal.style.display = 'flex';
 }
 
