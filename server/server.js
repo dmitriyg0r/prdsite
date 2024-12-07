@@ -741,7 +741,7 @@ app.delete('/api/admin/users/:id', checkAdmin, async (req, res) => {
     }
 });
 
-// Эндпоинт для изменения роли польз��вателя
+// Эндпоинт для изменения роли пользователя
 app.post('/api/admin/role', checkAdmin, async (req, res) => {
     try {
         const { userId, role } = req.body;
@@ -773,7 +773,8 @@ app.post('/api/admin/role', checkAdmin, async (req, res) => {
 
 app.get('/api/admin/charts', checkAdmin, async (req, res) => {
     try {
-        // Получаем данные за последние 7 дней
+        console.log('Fetching charts data...');
+        
         const registrationData = await pool.query(`
             SELECT 
                 DATE(created_at) as date,
@@ -783,6 +784,7 @@ app.get('/api/admin/charts', checkAdmin, async (req, res) => {
             GROUP BY DATE(created_at)
             ORDER BY date
         `);
+        console.log('Registration data:', registrationData.rows);
 
         const messageData = await pool.query(`
             SELECT 
@@ -802,14 +804,17 @@ app.get('/api/admin/charts', checkAdmin, async (req, res) => {
             GROUP BY role
         `);
 
-        res.json({
+        const responseData = {
             success: true,
             data: {
                 registrations: registrationData.rows,
                 messages: messageData.rows,
                 userActivity: userActivityData.rows
             }
-        });
+        };
+        
+        console.log('Sending charts data:', responseData);
+        res.json(responseData);
     } catch (err) {
         console.error('Charts data error:', err);
         res.status(500).json({ error: 'Ошибка при получении данных для графиков' });

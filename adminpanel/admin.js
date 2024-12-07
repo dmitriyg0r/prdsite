@@ -55,7 +55,7 @@ async function loadUsers(page = 1, search = '') {
                     <td>${user.messages_sent}</td>
                     <td>${user.friends_count}</td>
                     <td>
-                        <button onclick="deleteUser(${user.id})" class="action-btn delete">У��алить</button>
+                        <button onclick="deleteUser(${user.id})" class="action-btn delete">Удалить</button>
                         <button onclick="banUser(${user.id})" class="action-btn ban">
                             ${user.is_banned ? 'Разблокировать' : 'Заблокировать'}
                         </button>
@@ -312,8 +312,10 @@ function createUserActivityChart(data) {
 
 // Инициализация
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM loaded, checking admin status');
     const adminId = localStorage.getItem('adminId');
     if (adminId) {
+        console.log('Admin logged in, initializing panel');
         document.getElementById('loginForm').style.display = 'none';
         document.querySelector('.admin-panel').style.display = 'block';
         loadStats();
