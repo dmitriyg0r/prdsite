@@ -105,6 +105,8 @@ body {
     padding: 20px;
     box-shadow: var(--text-container-shadow);
     margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
 }
 
 #profile-avatar {
@@ -404,7 +406,7 @@ body {
     margin: 0 auto;
 }
 
-/* Обновленные стили для кно��ок действий */
+/* Обновленные стили для кнопок действий */
 .profile-info-header {
     padding: 15px 20px;
     border-bottom: 1px solid var(--border-color);
@@ -477,7 +479,7 @@ body {
     }
 }
 
-/* Адаптивн��сть для блока друзей */
+/* Адаптивность для блока друзей */
 @media (max-width: 992px) {
     .friend-placeholder {
         width: 70px;
@@ -878,4 +880,37 @@ body {
 
 .action-btn.message-btn:hover {
     background: var(--button-hover);
+}
+
+/* Обновляем стили для кнопки сообщения */
+.action-btn.message-btn.full-width {
+    width: 100%;
+    margin-top: 15px;
+    padding: 12px;
+    background: var(--primary-color);
+    color: var(--button-text);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 0.95em;
+    transition: all 0.3s ease;
+}
+
+.action-btn.message-btn.full-width:hover {
+    background: var(--button-hover);
+    transform: translateY(-2px);
+}
+
+.action-btn.message-btn.full-width i {
+    font-size: 1.1em;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .action-btn.message-btn.full-width {
+        padding: 10px;
+        font-size: 0.9em;
+    }
 } 

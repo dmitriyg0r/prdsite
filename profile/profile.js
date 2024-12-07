@@ -30,14 +30,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('logout-btn').style.display = 'none';
             document.querySelector('.avatar-overlay').style.display = 'none';
 
-            // Добавляем кнопку "Написать сообщение"
-            const actionsContainer = document.querySelector('.profile-actions');
+            // Добавляем кнопку "Написать сообщение" под аватаркой
+            const avatarBlock = document.querySelector('.profile-avatar-block');
             const messageButton = document.createElement('button');
-            messageButton.className = 'action-btn message-btn';
-            messageButton.innerHTML = '<i class="fas fa-envelope"></i>';
-            messageButton.title = 'Написать сообщение';
+            messageButton.className = 'action-btn message-btn full-width';
+            messageButton.innerHTML = '<i class="fas fa-envelope"></i> Написать сообщение';
             messageButton.addEventListener('click', () => {
-                // Сохраняем ID собеседника в sessionStorage
                 sessionStorage.setItem('selectedChatUser', JSON.stringify({
                     id: data.user.id,
                     username: data.user.username,
@@ -45,7 +43,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }));
                 window.location.href = '/chat/chat.html';
             });
-            actionsContainer.appendChild(messageButton);
+            avatarBlock.appendChild(messageButton);
         } catch (err) {
             console.error('Error loading user profile:', err);
             alert('Ошибка при загрузке профиля пользователя');
