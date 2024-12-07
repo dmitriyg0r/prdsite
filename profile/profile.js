@@ -288,7 +288,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Обновляем функцию поиска
+    // Об��овляем функцию поиска
     async function searchUsers(query) {
         try {
             const response = await fetch(`https://adminflow.ru:5003/api/search-users?q=${query}&userId=${user.id}`);
@@ -385,7 +385,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Добавляем функцию удаления из друзей
+    // Добавляем функцию удаления из ��рузей
     async function removeFriend(friendId) {
         if (!confirm('Вы уверены, что хотите удалить пользователя из друзей?')) {
             return;
@@ -418,16 +418,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function openFriendProfile(userId) {
         try {
-            const response = await fetch(`https://adminflow.ru:5003/api/user/${userId}`);
+            const response = await fetch(`https://adminflow.ru:5003/api/users/${userId}`, {
+                credentials: 'include'
+            });
+            
+            if (!response.ok) {
+                throw new Error('Ошибка при загрузке профиля пользователя');
+            }
+
             const data = await response.json();
             
-            if (response.ok) {
+            if (data.user) {
                 // Сохраняем данные профиля друга во временное хранилище
                 sessionStorage.setItem('viewing_profile', JSON.stringify(data.user));
                 // Перенаправляем на страницу профиля с параметром
                 window.location.href = `/profile/profile.html?id=${userId}`;
             } else {
-                alert(data.error || 'Ошибка при загрузке профиля пользователя');
+                alert('Пользователь не найден');
             }
         } catch (err) {
             console.error('Error loading user profile:', err);
