@@ -3,15 +3,13 @@ let totalPages = 1;
 
 // Добавим функцию для получения userId из URL или localStorage
 function getAdminId() {
-    // Здесь нужно реализовать получение userId администратора
-    // Например, из localStorage или URL параметров
     return localStorage.getItem('adminId');
 }
 
 async function loadStats() {
     try {
         const adminId = getAdminId();
-        const response = await fetch(`https://adminflow.ru/api/admin/stats?userId=${adminId}`);
+        const response = await fetch(`/api/admin/stats?userId=${adminId}`);
         const data = await response.json();
         
         if (data.success) {
@@ -31,7 +29,7 @@ async function loadStats() {
 async function loadUsers(page = 1, search = '') {
     try {
         const adminId = getAdminId();
-        const response = await fetch(`https://adminflow.ru/api/admin/users?userId=${adminId}&page=${page}&search=${search}`);
+        const response = await fetch(`/api/admin/users?userId=${adminId}&page=${page}&search=${search}`);
         const data = await response.json();
         
         if (data.success) {
@@ -102,7 +100,7 @@ function updatePagination() {
 async function deleteUser(id) {
     if (confirm('Вы уверены, что хотите удалить этого пользователя?')) {
         try {
-            const response = await fetch(`https://adminflow.ru/api/admin/users/${id}`, {
+            const response = await fetch(`/api/admin/users/${id}`, {
                 method: 'DELETE'
             });
             const data = await response.json();
@@ -122,7 +120,7 @@ async function login() {
     const password = document.getElementById('adminPassword').value;
 
     try {
-        const response = await fetch('https://adminflow.ru/api/login', {
+        const response = await fetch('/api/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -156,9 +154,6 @@ document.addEventListener('DOMContentLoaded', () => {
         loadStats();
         loadUsers();
     }
-
-    loadStats();
-    loadUsers();
 
     const searchInput = document.getElementById('searchUsers');
     let searchTimeout;
