@@ -767,7 +767,7 @@ body {
     text-align: center;
 }
 
-/* Если счетчик равен нулю, скрываем е��о */
+/* Если счетчик равен нулю, скрываем его */
 .friend-count:empty,
 .request-count:empty {
     display: none;
@@ -822,7 +822,7 @@ body {
     color: white;
 }
 
-/* Обновляем стили для карточки друга */
+/* Обновляем стили д��я карточки друга */
 .friend-card {
     position: relative;
     overflow: hidden;
@@ -848,4 +848,26 @@ body {
 
 .friend-card button:hover {
     transform: translateY(-2px);
+}
+
+.friend-avatar-link {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.friend-avatar-link:hover {
+    transform: scale(1.05);
+}
+
+.friend-card img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.friend-card img:hover {
+    transform: scale(1.05);
 } 
