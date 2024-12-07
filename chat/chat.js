@@ -116,6 +116,15 @@ async function updateUnreadCount(friendId) {
 }
 
 async function openChat(friend) {
+    // Очищаем предыдущий чат и сбрасываем интервал
+    if (messageUpdateInterval) {
+        clearInterval(messageUpdateInterval);
+        messageUpdateInterval = null;
+    }
+    
+    const messagesContainer = document.getElementById('messages');
+    messagesContainer.innerHTML = ''; // Очищаем контейнер сообщений
+    
     currentChatPartner = friend;
     
     // Обновляем UI
@@ -124,7 +133,7 @@ async function openChat(friend) {
     );
     document.querySelector(`[data-friend-id="${friend.id}"]`)?.classList.add('active');
 
-    // Показываем заголоок чата
+    // Показываем заголовок чата
     const chatHeader = document.getElementById('chat-header');
     const chatPlaceholder = document.getElementById('chat-placeholder');
     
@@ -134,14 +143,20 @@ async function openChat(friend) {
     document.getElementById('chat-header-avatar').src = friend.avatar_url || '../uploads/avatars/default.png';
     document.getElementById('chat-header-name').textContent = friend.username;
 
+    // Очищаем п��ле ввода и превью файла
+    const messageInput = document.getElementById('messageInput');
+    const fileInput = document.getElementById('fileInput');
+    messageInput.value = '';
+    fileInput.value = '';
+    removeFilePreview();
+
     // Загружаем историю сообщений
     await loadChatHistory();
     
     // Отмечаем сообщения как прочитанные
     await markMessagesAsRead();
 
-    // Устанавливаем интервал обновления каждую секунду
-    if (messageUpdateInterval) clearInterval(messageUpdateInterval);
+    // Устанавливаем новый интервал обновления
     messageUpdateInterval = setInterval(loadChatHistory, 1000);
 }
 
