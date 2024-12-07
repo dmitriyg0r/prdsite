@@ -882,7 +882,7 @@ body {
     background: var(--button-hover);
 }
 
-/* Обновляем стили для кнопки сообщения */
+/* Обновляем стили для ��нопки сообщения */
 .action-btn.message-btn.full-width {
     width: 100%;
     margin-top: 15px;
@@ -1106,4 +1106,110 @@ body {
         width: 100%;
         justify-content: center;
     }
+}
+
+/* Стили для постов */
+.post {
+    background: var(--text-container-background);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: var(--text-container-shadow);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.post:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+.post-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.post-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.post-info {
+    flex: 1;
+}
+
+.post-author {
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 4px;
+}
+
+.post-date {
+    font-size: 0.9em;
+    color: var(--text-secondary);
+}
+
+.post-content {
+    color: var(--text-color);
+    line-height: 1.5;
+    margin-bottom: 15px;
+    white-space: pre-wrap;
+}
+
+.post-image {
+    width: 100%;
+    max-height: 500px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.post-actions {
+    display: flex;
+    gap: 20px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-color);
+}
+
+.post-action {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.post-action:hover {
+    color: var(--primary-color);
+}
+
+.post-action i {
+    font-size: 1.2em;
+}
+
+.no-posts {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-secondary);
+    font-size: 1.1em;
+}
+
+/* Анимации для постов */
+@keyframes postAppear {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.post {
+    animation: postAppear 0.4s ease forwards;
 }
