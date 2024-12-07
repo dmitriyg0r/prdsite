@@ -186,7 +186,8 @@ async function banUser(userId) {
 // Функция для изменения роли пользователя
 async function changeUserRole(userId, newRole) {
     try {
-        const response = await fetch(`${API_URL}/api/admin/users/${userId}/role`, {
+        const adminId = getAdminId();
+        const response = await fetch(`${API_URL}/api/admin/users/${userId}/role?userId=${adminId}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
