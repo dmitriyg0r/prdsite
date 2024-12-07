@@ -456,7 +456,7 @@ app.post('/api/messages/read', async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         console.error('Error marking messages as read:', err);
-        res.status(500).json({ error: 'Ошибка при о��метке сообщений как прочитанных' });
+        res.status(500).json({ error: 'Ошибка при отметке сообщений как прочитанных' });
     }
 });
 
@@ -741,12 +741,11 @@ app.delete('/api/admin/users/:id', checkAdmin, async (req, res) => {
     }
 });
 
-// Эндпоинт для изменения роли польз��вателя
+// Эндпоинт для изменения роли пользователя
 app.post('/api/admin/role', checkAdmin, async (req, res) => {
     try {
         const { userId, role } = req.body;
         
-        // Проверяем допустимые роли
         const validRoles = ['user', 'moderator', 'admin'];
         if (!validRoles.includes(role)) {
             return res.status(400).json({ 
@@ -755,8 +754,6 @@ app.post('/api/admin/role', checkAdmin, async (req, res) => {
             });
         }
 
-        // Обновляем роль в базе данных
-        // Обновляем роль в базе данных
         await pool.query(
             'UPDATE users SET role = $1 WHERE id = $2',
             [role, userId]
