@@ -202,7 +202,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         `).join('');
     }
 
-    // Функции для работы �� друзьями
+    // Функции для работы с друзьями
     async function loadFriends() {
         try {
             const response = await fetch(`https://adminflow.ru:5003/api/friends?userId=${currentUser.id}`);
@@ -491,90 +491,139 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    function displayPosts(posts) {
-        const container = document.getElementById('posts-container');
-        
-        if (!posts.length) {
-            container.innerHTML = `
-                <div class="no-posts">
-                    <i class="far fa-newspaper" style="font-size: 2em; margin-bottom: 15px;"></i>
-                    <p>Нет публикаций</p>
-                </div>`;
-            return;
+    // Инициализация обработчиков для постов
+    initializePostHandlers();
+    
+    // Загружаем посты
+    loadPosts();
+});
+
+function initializePostHandlers() {
+    const createPostBtn = document.getElementById('create-post-btn');
+    const postForm = document.getElementById('post-form');
+    const publishPostBtn = document.getElementById('publish-post-btn');
+    const postImage = document.getElementById('post-image');
+
+    // Показываем/скрываем форму создания поста
+    createPostBtn?.addEventListener('click', () => {
+        postForm.style.display = postForm.style.display === 'none' ? 'block' : 'none';
+    });
+
+    // Обработка загрузки изображения
+    postImage?.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            if (file.size > 5 * 1024 * 1024) { // 5MB
+                alert('Файл слишком большой. Максимальный размер: 5MB');
+                postImage.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const preview = document.getElementById('image-preview');
+                preview.innerHTML = `
+                    <img src="${e.target.result}" alt="Preview">
+                    <button class="remove-image" onclick="removePostImage()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+            };
+            reader.readAsDataURL(file);
+            selectedPostImage = file;
+        }
+    });
+
+    // Публикация поста
+    publishPostBtn?.addEventListener('click', createPost);
+}
+
+async function createPost() {
+    const content = document.getElementById('post-content').value.trim();
+    if (!content && !selectedPostImage) {
+        alert('Добавьте текст или изображение');
+        return;
+    }
+
+    try {
+        const formData = new FormData();
+        formData.append('userId', currentUser.id);
+        formData.append('content', content);
+        if (selectedPostImage) {
+            formData.append('image', selectedPostImage);
         }
 
-        container.innerHTML = posts.map((post, index) => `
-            <div class="post" data-post-id="${post.id}" style="animation-delay: ${index * 0.1}s">
-                <div class="post-header">
-                    <img src="${post.author_avatar || '/uploads/avatars/default.png'}" 
-                         alt="${post.author_name}" 
-                         class="post-avatar">
-                    <div class="post-info">
-                        <div class="post-author">${post.author_name}</div>
-                        <div class="post-date">
-                            <i class="far fa-clock"></i> 
-                            ${formatDate(post.created_at)}
-                        </div>
-                    </div>
-                </div>
-                <div class="post-content">${formatContent(post.content)}</div>
-                ${post.image_url ? `
-                    <div class="post-image-container">
-                        <img src="${post.image_url}" 
-                             alt="Изображение к посту" 
-                             class="post-image"
-                             loading="lazy"
-                             onclick="openImagePreview('${post.image_url}')">
-                    </div>
-                ` : ''}
-                <div class="post-actions">
-                    <div class="post-action" onclick="likePost(${post.id})">
-                        <i class="${post.liked ? 'fas' : 'far'} fa-heart"></i>
-                        <span>${formatCount(post.likes_count)}</span>
-                    </div>
-                    <div class="post-action" onclick="openComments(${post.id})">
-                        <i class="far fa-comment"></i>
-                        <span>${formatCount(post.comments_count)}</span>
-                    </div>
+        const response = await fetch('https://adminflow.ru:5003/api/posts/create', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            // Очищаем форму
+            document.getElementById('post-content').value = '';
+            document.getElementById('image-preview').innerHTML = '';
+            document.getElementById('post-form').style.display = 'none';
+            selectedPostImage = null;
+
+            // Перезагружаем посты
+            loadPosts();
+        } else {
+            throw new Error(data.error);
+        }
+    } catch (err) {
+        console.error('Error creating post:', err);
+        alert('Ошибка при создании публикации');
+    }
+}
+
+async function loadPosts() {
+    try {
+        const userId = new URLSearchParams(window.location.search).get('id') || currentUser.id;
+        const response = await fetch(`https://adminflow.ru:5003/api/posts/${userId}`);
+        const data = await response.json();
+
+        if (data.success) {
+            displayPosts(data.posts);
+        }
+    } catch (err) {
+        console.error('Error loading posts:', err);
+    }
+}
+
+function displayPosts(posts) {
+    const container = document.getElementById('posts-container');
+    container.innerHTML = posts.length ? posts.map(post => `
+        <div class="post" data-post-id="${post.id}">
+            <div class="post-header">
+                <img src="${post.author_avatar || '/uploads/avatars/default.png'}" 
+                     alt="${post.author_name}" 
+                     class="post-avatar">
+                <div class="post-info">
+                    <div class="post-author">${post.author_name}</div>
+                    <div class="post-date">${new Date(post.created_at).toLocaleString()}</div>
                 </div>
             </div>
-        `).join('');
-    }
+            <div class="post-content">${post.content}</div>
+            ${post.image_url ? `
+                <img src="${post.image_url}" alt="Post image" class="post-image">
+            ` : ''}
+            <div class="post-actions">
+                <div class="post-action">
+                    <i class="far fa-heart"></i>
+                    <span>${post.likes_count || 0}</span>
+                </div>
+                <div class="post-action">
+                    <i class="far fa-comment"></i>
+                    <span>${post.comments_count || 0}</span>
+                </div>
+            </div>
+        </div>
+    `).join('') : '<div class="no-posts">Не�� публикаций</div>';
+}
 
-    // Вспомогательные функции
-    function formatDate(dateString) {
-        const date = new Date(dateString);
-        const now = new Date();
-        const diff = now - date;
-        
-        // Менее часа назад
-        if (diff < 3600000) {
-            const minutes = Math.floor(diff / 60000);
-            return `${minutes} ${declOfNum(minutes, ['минуту', 'минуты', 'минут'])} назад`;
-        }
-        
-        // Менее суток назад
-        if (diff < 86400000) {
-            const hours = Math.floor(diff / 3600000);
-            return `${hours} ${declOfNum(hours, ['час', 'часа', 'часов'])} назад`;
-        }
-        
-        // Более суток назад
-        return date.toLocaleString('ru-RU', {
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    }
-
-    function formatContent(content) {
-        if (!content) return '';
-        // Заменяем URL на кликабельные ссылки
-        return content.replace(
-            /(https?:\/\/[^\s]+)/g, 
-            '<a href="$1" target="_blank" rel="noopener nor'
-        );
-    }
-}); 
+function removePostImage() {
+    selectedPostImage = null;
+    document.getElementById('post-image').value = '';
+    document.getElementById('image-preview').innerHTML = '';
+} 
