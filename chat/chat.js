@@ -140,9 +140,9 @@ async function openChat(friend) {
     // Отмечаем сообщения как прочитанные
     await markMessagesAsRead();
 
-    // Устанавливаем интервал обновления
+    // Устанавливаем интервал обновления каждую секунду
     if (messageUpdateInterval) clearInterval(messageUpdateInterval);
-    messageUpdateInterval = setInterval(loadChatHistory, 5000);
+    messageUpdateInterval = setInterval(loadChatHistory, 1000);
 }
 
 async function loadChatHistory() {
@@ -153,22 +153,21 @@ async function loadChatHistory() {
         const data = await response.json();
 
         if (data.success) {
-            // Получаем текущий скролл и высоту контента
             const messagesContainer = document.getElementById('messages');
-            const isScrolledToBottom = messagesContainer.scrollHeight - messagesContainer.scrollTop <= messagesContainer.clientHeight + 100;
-            const previousHeight = messagesContainer.scrollHeight;
-
-            // Проверяем, есть ли новые сообщения
-            const currentMessages = messagesContainer.querySelectorAll('.message');
-            const lastCurrentMessage = currentMessages[currentMessages.length - 1];
-            const lastCurrentMessageTime = lastCurrentMessage ? new Date(lastCurrentMessage.dataset.timestamp).getTime() : 0;
-
-            // Находим новые сообщения
+            const currentMessages = Array.from(messagesContainer.querySelectorAll('.message'))
+                .map(el => el.dataset.messageId);
+            
+            // Фильтруем только действительно новые сообщения
             const newMessages = data.messages.filter(message => 
-                new Date(message.created_at).getTime() > lastCurrentMessageTime
+                !currentMessages.includes(message.id.toString())
             );
 
+            // Если есть новые сообщения, добавляем их
             if (newMessages.length > 0) {
+                const isScrolledToBottom = 
+                    messagesContainer.scrollHeight - messagesContainer.scrollTop <= 
+                    messagesContainer.clientHeight + 50;
+
                 displayNewMessages(newMessages, isScrolledToBottom);
             }
         }
@@ -179,23 +178,20 @@ async function loadChatHistory() {
 
 function displayNewMessages(newMessages, shouldScroll) {
     const messagesContainer = document.getElementById('messages');
+    const fragment = document.createDocumentFragment();
 
     newMessages.forEach(message => {
         const messageElement = createMessageElement(message);
-        messageElement.style.opacity = '0';
-        messageElement.style.transform = 'translateY(20px)';
-        messagesContainer.appendChild(messageElement);
-
-        // Плавно показываем новое сообщение
-        requestAnimationFrame(() => {
-            messageElement.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-            messageElement.style.opacity = '1';
-            messageElement.style.transform = 'translateY(0)';
-        });
+        messageElement.dataset.messageId = message.id;
+        fragment.appendChild(messageElement);
     });
 
+    messagesContainer.appendChild(fragment);
+
     if (shouldScroll) {
-        scrollToBottom();
+        requestAnimationFrame(() => {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        });
     }
 }
 
@@ -342,7 +338,7 @@ function setupEventListeners() {
     document.getElementById('fileInput').addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (file) {
-            // Если это изоб��ажение, можно показать предпросмотр
+            // Если это изображение, можно показать предпросмотр
             if (file.type.startsWith('image/')) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
@@ -502,7 +498,7 @@ async function markMessagesAsRead(friendId) {
     }
 }
 
-// Функция показа модального окна с изображением
+// Функция показа модального окна с ��зображением
 function showImageModal(imageUrl) {
     const modal = document.querySelector('.image-modal');
     const modalImage = document.getElementById('modalImage');
