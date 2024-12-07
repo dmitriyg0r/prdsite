@@ -182,6 +182,39 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="posts-section">
+                    <div class="posts-header">
+                        <h3>Публикации</h3>
+                        <!-- Кнопка создания поста будет видна только на своей странице -->
+                        <button id="create-post-btn" class="action-btn">
+                            <i class="fas fa-plus"></i> Создать публикацию
+                        </button>
+                    </div>
+                    
+                    <!-- Форма создания поста (изначально скрыта) -->
+                    <div id="post-form" class="post-form" style="display: none;">
+                        <textarea id="post-content" placeholder="Что у вас нового?"></textarea>
+                        <div class="post-form-actions">
+                            <div class="post-attachments">
+                                <label for="post-image" class="attachment-btn">
+                                    <i class="fas fa-image"></i>
+                                    <span>Добавить фото</span>
+                                </label>
+                                <input type="file" id="post-image" accept="image/*" style="display: none;">
+                            </div>
+                            <div class="post-preview" id="image-preview"></div>
+                            <button id="publish-post-btn" class="action-btn">
+                                <i class="fas fa-paper-plane"></i> Опубликовать
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Контейнер для постов -->
+                    <div id="posts-container" class="posts-container">
+                        <!-- Посты будут добавляться динамически -->
+                    </div>
+                </div>
             </div>
         </div>
     </div>

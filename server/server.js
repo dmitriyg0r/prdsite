@@ -306,7 +306,7 @@ app.get('/api/friends', async (req, res) => {
         res.json({ friends: result.rows });
     } catch (err) {
         console.error('Get friends error:', err);
-        res.status(500).json({ error: 'Ошибка при получении ��писка друзей' });
+        res.status(500).json({ error: 'Ошибка при получении списка друзей' });
     }
 });
 
@@ -726,7 +726,7 @@ app.get('/api/admin/users', checkAdmin, async (req, res) => {
         });
     } catch (err) {
         console.error('Admin users error:', err);
-        res.status(500).json({ error: 'Ошибка при получении списка пользователей' });
+        res.status(500).json({ error: 'Ошибка при получении спис��а пользователей' });
     }
 });
 
@@ -843,5 +843,130 @@ app.get('/api/users/:id', async (req, res) => {
     } catch (err) {
         console.error('Get user error:', err);
         res.status(500).json({ error: 'Ошибка при получении данных пользователя' });
+    }
+});
+
+// Настройка хранилища для изображений постов
+const postStorage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        const dir = 'uploads/posts';
+        // Создаем директорию, если её нет
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+        }
+        cb(null, dir);
+    },
+    filename: function (req, file, cb) {
+        cb(null, 'post-' + Date.now() + path.extname(file.originalname));
+    }
+});
+
+const uploadPost = multer({ 
+    storage: postStorage,
+    limits: {
+        fileSize: 5 * 1024 * 1024 // 5MB
+    },
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+        if (allowedTypes.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Неподдерживаемый формат файла'));
+        }
+    }
+});
+
+// Создание поста
+app.post('/api/posts/create', uploadPost.single('image'), async (req, res) => {
+    try {
+        const { userId, content } = req.body;
+        const imageUrl = req.file ? `/uploads/posts/${req.file.filename}` : null;
+
+        const result = await pool.query(
+            'INSERT INTO posts (user_id, content, image_url) VALUES ($1, $2, $3) RETURNING *',
+            [userId, content, imageUrl]
+        );
+
+        res.json({
+            success: true,
+            post: result.rows[0]
+        });
+    } catch (err) {
+        console.error('Error creating post:', err);
+        res.status(500).json({ 
+            success: false,
+            error: 'Ошибка при создании поста' 
+        });
+    }
+});
+
+// Получение постов пользователя
+app.get('/api/posts/:userId', async (req, res) => {
+    try {
+        const { userId } = req.params;
+        
+        const result = await pool.query(`
+            SELECT 
+                p.*,
+                u.username as author_name,
+                u.avatar_url as author_avatar,
+                (SELECT COUNT(*) FROM post_likes WHERE post_id = p.id) as likes_count,
+                (SELECT COUNT(*) FROM post_comments WHERE post_id = p.id) as comments_count
+            FROM posts p
+            JOIN users u ON p.user_id = u.id
+            WHERE p.user_id = $1
+            ORDER BY p.created_at DESC
+        `, [userId]);
+
+        res.json({
+            success: true,
+            posts: result.rows
+        });
+    } catch (err) {
+        console.error('Error fetching posts:', err);
+        res.status(500).json({ 
+            success: false,
+            error: 'Ошибка при получении постов' 
+        });
+    }
+});
+
+// Лайк поста (опционально)
+app.post('/api/posts/like', async (req, res) => {
+    try {
+        const { userId, postId } = req.body;
+
+        await pool.query(
+            'INSERT INTO post_likes (user_id, post_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+            [userId, postId]
+        );
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Error liking post:', err);
+        res.status(500).json({ 
+            success: false,
+            error: 'Ошибка при добавлении лайка' 
+        });
+    }
+});
+
+// Удаление лайка (опционально)
+app.post('/api/posts/unlike', async (req, res) => {
+    try {
+        const { userId, postId } = req.body;
+
+        await pool.query(
+            'DELETE FROM post_likes WHERE user_id = $1 AND post_id = $2',
+            [userId, postId]
+        );
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Error unliking post:', err);
+        res.status(500).json({ 
+            success: false,
+            error: 'Ошибка при удалении лайка' 
+        });
     }
 }); 

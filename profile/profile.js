@@ -1,3 +1,5 @@
+let selectedPostImage = null;
+
 document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const profileId = urlParams.get('id');
@@ -241,7 +243,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <div class="friend-status">В сети</div>
                     <div class="friend-actions">
                         <button class="remove-friend-btn" data-user-id="${friend.id}">
-                            <i class="fas fa-user-minus"></i> Удалить из друзей
+                            <i class="fas fa-user-minus"></i> У��алить из друзей
                         </button>
                     </div>
                 </div>
@@ -410,7 +412,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Обновляем обработчик открытия модального окна
     document.querySelector('.friends-header-btn').addEventListener('click', () => {
-        // Обновляем списки при открытии модального окна
+        // Обновляем списки при открытии модального ��кна
         loadFriends();
         loadFriendRequests();
     });
@@ -487,4 +489,140 @@ document.addEventListener('DOMContentLoaded', async () => {
             alert('Ошибка при загрузке профиля пользователя');
         }
     }
-}); 
+
+    // Инициализация обработчиков для постов
+    initializePostHandlers();
+    
+    // Загружаем посты
+    loadPosts();
+});
+
+function initializePostHandlers() {
+    const createPostBtn = document.getElementById('create-post-btn');
+    const postForm = document.getElementById('post-form');
+    const publishPostBtn = document.getElementById('publish-post-btn');
+    const postImage = document.getElementById('post-image');
+
+    // Показываем/скрываем форму создания поста
+    createPostBtn?.addEventListener('click', () => {
+        postForm.style.display = postForm.style.display === 'none' ? 'block' : 'none';
+    });
+
+    // Обработка загрузки изображения
+    postImage?.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            if (file.size > 5 * 1024 * 1024) { // 5MB
+                alert('Файл слишком большой. Максимальный размер: 5MB');
+                postImage.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const preview = document.getElementById('image-preview');
+                preview.innerHTML = `
+                    <img src="${e.target.result}" alt="Preview">
+                    <button class="remove-image" onclick="removePostImage()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+            };
+            reader.readAsDataURL(file);
+            selectedPostImage = file;
+        }
+    });
+
+    // Публикация поста
+    publishPostBtn?.addEventListener('click', createPost);
+}
+
+async function createPost() {
+    const content = document.getElementById('post-content').value.trim();
+    if (!content && !selectedPostImage) {
+        alert('Добавьте текст или изображение');
+        return;
+    }
+
+    try {
+        const formData = new FormData();
+        formData.append('userId', currentUser.id);
+        formData.append('content', content);
+        if (selectedPostImage) {
+            formData.append('image', selectedPostImage);
+        }
+
+        const response = await fetch('https://adminflow.ru:5003/api/posts/create', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            // Очищаем форму
+            document.getElementById('post-content').value = '';
+            document.getElementById('image-preview').innerHTML = '';
+            document.getElementById('post-form').style.display = 'none';
+            selectedPostImage = null;
+
+            // Перезагружаем посты
+            loadPosts();
+        } else {
+            throw new Error(data.error);
+        }
+    } catch (err) {
+        console.error('Error creating post:', err);
+        alert('Ошибка при создании публикации');
+    }
+}
+
+async function loadPosts() {
+    try {
+        const userId = new URLSearchParams(window.location.search).get('id') || currentUser.id;
+        const response = await fetch(`https://adminflow.ru:5003/api/posts/${userId}`);
+        const data = await response.json();
+
+        if (data.success) {
+            displayPosts(data.posts);
+        }
+    } catch (err) {
+        console.error('Error loading posts:', err);
+    }
+}
+
+function displayPosts(posts) {
+    const container = document.getElementById('posts-container');
+    container.innerHTML = posts.length ? posts.map(post => `
+        <div class="post" data-post-id="${post.id}">
+            <div class="post-header">
+                <img src="${post.author_avatar || '/uploads/avatars/default.png'}" 
+                     alt="${post.author_name}" 
+                     class="post-avatar">
+                <div class="post-info">
+                    <div class="post-author">${post.author_name}</div>
+                    <div class="post-date">${new Date(post.created_at).toLocaleString()}</div>
+                </div>
+            </div>
+            <div class="post-content">${post.content}</div>
+            ${post.image_url ? `
+                <img src="${post.image_url}" alt="Post image" class="post-image">
+            ` : ''}
+            <div class="post-actions">
+                <div class="post-action">
+                    <i class="far fa-heart"></i>
+                    <span>${post.likes_count || 0}</span>
+                </div>
+                <div class="post-action">
+                    <i class="far fa-comment"></i>
+                    <span>${post.comments_count || 0}</span>
+                </div>
+            </div>
+        </div>
+    `).join('') : '<div class="no-posts">Нет публикаций</div>';
+}
+
+function removePostImage() {
+    selectedPostImage = null;
+    document.getElementById('post-image').value = '';
+    document.getElementById('image-preview').innerHTML = '';
+} 

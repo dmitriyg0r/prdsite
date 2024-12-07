@@ -882,7 +882,7 @@ body {
     background: var(--button-hover);
 }
 
-/* Обновляем стили для кнопки сообщения */
+/* Обновляем стили для ��нопки сообщения */
 .action-btn.message-btn.full-width {
     width: 100%;
     margin-top: 15px;
@@ -913,4 +913,152 @@ body {
         padding: 10px;
         font-size: 0.9em;
     }
-} 
+}
+
+/* Стили для секции постов */
+.posts-section {
+    background: var(--text-container-background);
+    border-radius: 4px;
+    margin-top: 20px;
+    box-shadow: var(--text-container-shadow);
+}
+
+.posts-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.posts-header h3 {
+    margin: 0;
+    color: var(--text-color);
+}
+
+/* Форма создания поста */
+.post-form {
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.post-form textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: var(--input-background);
+    color: var(--text-color);
+    resize: vertical;
+    margin-bottom: 15px;
+}
+
+.post-form-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.post-attachments {
+    display: flex;
+    gap: 10px;
+}
+
+.attachment-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--text-color);
+    background: var(--button-secondary);
+    transition: all 0.3s ease;
+}
+
+.attachment-btn:hover {
+    background: rgba(var(--button-background-rgb), 0.1);
+}
+
+.post-preview {
+    max-width: 200px;
+    margin: 10px 0;
+}
+
+.post-preview img {
+    max-width: 100%;
+    border-radius: 4px;
+}
+
+/* Контейнер постов */
+.posts-container {
+    padding: 20px;
+}
+
+/* Стили для отдельного поста */
+.post {
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.post:last-child {
+    border-bottom: none;
+}
+
+.post-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.post-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 12px;
+}
+
+.post-info {
+    flex: 1;
+}
+
+.post-author {
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.post-date {
+    font-size: 0.9em;
+    color: var(--text-secondary);
+}
+
+.post-content {
+    margin-bottom: 15px;
+    color: var(--text-color);
+    line-height: 1.5;
+}
+
+.post-image {
+    max-width: 100%;
+    border-radius: 4px;
+    margin-bottom: 15px;
+}
+
+.post-actions {
+    display: flex;
+    gap: 15px;
+}
+
+.post-action {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.post-action:hover {
+    color: var(--primary-color);
+}
