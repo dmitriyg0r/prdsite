@@ -25,7 +25,7 @@ async function loadStats() {
             alert(data.error || 'Ошибка загрузки статистики');
         }
     } catch (err) {
-        console.error('Error loading stats:', err);
+        console.error('Ошибка загрузки статистики:', err);
         alert('Ошибка загрузки статистики');
     }
 }
@@ -75,7 +75,7 @@ async function loadUsers(page = 1, search = '') {
             alert(data.error || 'Ошибка загрузки пользователей');
         }
     } catch (err) {
-        console.error('Error loading users:', err);
+        console.error('Ошибка загрузки пользователей:', err);
         alert('Ошибка загрузки пользователей');
     }
 }
@@ -126,9 +126,12 @@ async function deleteUser(id) {
             if (data.success) {
                 loadUsers(currentPage, document.getElementById('searchUsers').value);
                 loadStats();
+            } else {
+                alert('Ошибка при удалении пользователя');
             }
         } catch (err) {
-            console.error('Error deleting user:', err);
+            console.error('Ошибка удаления пользователя:', err);
+            alert('Ошибка при удалении пользователя');
         }
     }
 }
@@ -158,7 +161,7 @@ async function login() {
             alert('Доступ запрещен');
         }
     } catch (err) {
-        console.error('Login error:', err);
+        console.error('Ошибка авторизации:', err);
         alert('Ошибка авторизации');
     }
 }
