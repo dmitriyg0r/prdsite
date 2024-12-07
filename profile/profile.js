@@ -189,7 +189,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const friendsList = document.querySelector('.friends-list');
         friendsList.innerHTML = friends.map(friend => `
             <div class="friend-card">
-                <img src="${friend.avatar_url || '/uploads/avatars/default.png'}" alt="${friend.username}">
+                <img src="${friend.avatar_url || '/uploads/avatars/default.png'}" 
+                     alt="${friend.username}" 
+                     class="friend-avatar-link"
+                     data-user-id="${friend.id}">
                 <div class="friend-info">
                     <div class="friend-name">${friend.username}</div>
                     <div class="friend-status">В сети</div>
@@ -202,9 +205,11 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `).join('');
 
-        // Добавляем обработчики для кнопок удаления
-        document.querySelectorAll('.remove-friend-btn').forEach(btn => {
-            btn.addEventListener('click', () => removeFriend(btn.dataset.userId));
+        // Добавляем обработчики для аватарок в списке друзей
+        document.querySelectorAll('.friend-avatar-link').forEach(avatar => {
+            avatar.addEventListener('click', () => {
+                openFriendProfile(avatar.dataset.userId);
+            });
         });
 
         // Обновляем мини-список друзей
@@ -212,14 +217,21 @@ document.addEventListener('DOMContentLoaded', () => {
         friendsGrid.innerHTML = friends.slice(0, 3).map(friend => `
             <div class="friend-placeholder">
                 <div class="friend-avatar">
-                    <img src="${friend.avatar_url || '/uploads/avatars/default.png'}" alt="${friend.username}">
+                    <img src="${friend.avatar_url || '/uploads/avatars/default.png'}" 
                          alt="${friend.username}"
-                         onclick="openFriendProfile(${friend.id})"
-                         class="friend-avatar-link">
+                         class="friend-avatar-link"
+                         data-user-id="${friend.id}">
                 </div>
                 <span class="friend-name">${friend.username}</span>
             </div>
         `).join('');
+
+        // Добавляем обработчики для аватарок в мини-списке
+        document.querySelectorAll('.friend-avatar img').forEach(avatar => {
+            avatar.addEventListener('click', () => {
+                openFriendProfile(avatar.dataset.userId);
+            });
+        });
     }
 
     function displayFriendRequests(requests) {
@@ -341,7 +353,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (response.ok) {
-                // Обновляем реультаты поиск��
+                // Обновляем реультаты поиска
                 searchUsers(document.querySelector('.search-input').value.trim());
             }
         } catch (err) {
