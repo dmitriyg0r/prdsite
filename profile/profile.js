@@ -400,4 +400,23 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('Ошибка при удалении из друзей');
         }
     }
+
+    async function openFriendProfile(userId) {
+        try {
+            const response = await fetch(`https://adminflow.ru:5003/api/user/${userId}`);
+            const data = await response.json();
+            
+            if (response.ok) {
+                // Сохраняем текущего пользователя во временное хранилище
+                sessionStorage.setItem('viewing_profile', JSON.stringify(data.user));
+                // Перенаправляем на страницу профиля с параметром
+                window.location.href = `/profile/profile.html?id=${userId}`;
+            } else {
+                alert(data.error || 'Ошибка при загрузке профиля пользователя');
+            }
+        } catch (err) {
+            console.error('Error loading user profile:', err);
+            alert('Ошибка при загрузке профиля пользователя');
+        }
+    }
 }); 
