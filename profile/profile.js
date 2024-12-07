@@ -202,7 +202,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         `).join('');
     }
 
-    // Функции для работы с друзьями
+    // Функции для работы �� друзьями
     async function loadFriends() {
         try {
             const response = await fetch(`https://adminflow.ru:5003/api/friends?userId=${currentUser.id}`);
@@ -364,7 +364,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </button>`;
                     break;
                 case 'pending':
-                    actionButton = '<span class="pending-request">Заявка отправлена</span>';
+                    actionButton = '<span class="pending-request">Заявка отправлен��</span>';
                     break;
                 case 'accepted':
                     actionButton = '<span class="friend-status">В друзьях</span>';
@@ -504,9 +504,22 @@ function initializePostHandlers() {
     const publishPostBtn = document.getElementById('publish-post-btn');
     const postImage = document.getElementById('post-image');
 
-    // Показываем/скрываем форму создания поста
+    // Показываем/скрываем форму создания поста с анимацией
     createPostBtn?.addEventListener('click', () => {
-        postForm.style.display = postForm.style.display === 'none' ? 'block' : 'none';
+        if (postForm.style.display === 'none') {
+            postForm.style.display = 'block';
+            // Добавляем небольшую задержку для анимации
+            setTimeout(() => {
+                postForm.classList.add('active');
+                // Фокусируемся на текстовом поле
+                document.getElementById('post-content').focus();
+            }, 10);
+        } else {
+            postForm.classList.remove('active');
+            setTimeout(() => {
+                postForm.style.display = 'none';
+            }, 300); // Время должно совпадать с transition в CSS
+        }
     });
 
     // Обработка загрузки изображения
@@ -619,7 +632,7 @@ function displayPosts(posts) {
                 </div>
             </div>
         </div>
-    `).join('') : '<div class="no-posts">Не�� публикаций</div>';
+    `).join('') : '<div class="no-posts">Не найдено публикаций</div>';
 }
 
 function removePostImage() {

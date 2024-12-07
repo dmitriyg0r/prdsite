@@ -215,6 +215,33 @@
                         <!-- Посты будут добавляться динамически -->
                     </div>
                 </div>
+
+                <div class="create-post-block">
+                    <div class="create-post-header">
+                        <button id="create-post-btn" class="create-post-btn">
+                            <i class="fas fa-plus"></i>
+                            <span>Создать публикацию</span>
+                        </button>
+                    </div>
+                    
+                    <div id="post-form" class="post-form" style="display: none;">
+                        <textarea id="post-content" placeholder="Что у вас нового?"></textarea>
+                        <div class="post-form-actions">
+                            <div class="post-attachments">
+                                <label for="post-image" class="attachment-btn">
+                                    <i class="fas fa-image"></i>
+                                    <span>Фото</span>
+                                </label>
+                                <input type="file" id="post-image" accept="image/*" style="display: none;">
+                            </div>
+                            <div id="image-preview" class="post-preview"></div>
+                            <button id="publish-post-btn" class="publish-btn">
+                                <i class="fas fa-paper-plane"></i>
+                                <span>Опубликовать</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

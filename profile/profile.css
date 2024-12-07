@@ -882,7 +882,7 @@ body {
     background: var(--button-hover);
 }
 
-/* Обновляем стили для ��нопки сообщения */
+/* Обновляем стили для кнопки сообщения */
 .action-btn.message-btn.full-width {
     width: 100%;
     margin-top: 15px;
@@ -936,28 +936,73 @@ body {
     color: var(--text-color);
 }
 
-/* Форма создания поста */
+/* Стили для блока создания поста */
+.create-post-block {
+    background: var(--text-container-background);
+    border-radius: 8px;
+    box-shadow: var(--text-container-shadow);
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.create-post-header {
+    padding: 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.create-post-btn {
+    width: 100%;
+    padding: 12px;
+    background: var(--button-secondary);
+    border: none;
+    border-radius: 6px;
+    color: var(--text-color);
+    font-size: 1em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.create-post-btn:hover {
+    background: rgba(var(--button-background-rgb), 0.1);
+}
+
+.create-post-btn i {
+    font-size: 1.1em;
+}
+
+/* Стили для формы создания поста */
 .post-form {
     padding: 20px;
-    border-bottom: 1px solid var(--border-color);
 }
 
 .post-form textarea {
     width: 100%;
-    min-height: 100px;
-    padding: 12px;
+    min-height: 120px;
+    padding: 15px;
     border: 1px solid var(--border-color);
-    border-radius: 4px;
+    border-radius: 8px;
     background: var(--input-background);
     color: var(--text-color);
+    font-size: 1em;
     resize: vertical;
     margin-bottom: 15px;
+    transition: border-color 0.3s ease;
+}
+
+.post-form textarea:focus {
+    border-color: var(--primary-color);
+    outline: none;
 }
 
 .post-form-actions {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
+    gap: 15px;
 }
 
 .post-attachments {
@@ -968,9 +1013,9 @@ body {
 .attachment-btn {
     display: flex;
     align-items: center;
-    gap: 5px;
-    padding: 8px 12px;
-    border-radius: 4px;
+    gap: 6px;
+    padding: 8px 15px;
+    border-radius: 6px;
     cursor: pointer;
     color: var(--text-color);
     background: var(--button-secondary);
@@ -982,83 +1027,83 @@ body {
 }
 
 .post-preview {
-    max-width: 200px;
-    margin: 10px 0;
+    max-width: 150px;
+    position: relative;
 }
 
 .post-preview img {
-    max-width: 100%;
-    border-radius: 4px;
+    width: 100%;
+    border-radius: 6px;
+    object-fit: cover;
 }
 
-/* Контейнер постов */
-.posts-container {
-    padding: 20px;
-}
-
-/* Стили для отдельного поста */
-.post {
-    padding: 20px;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.post:last-child {
-    border-bottom: none;
-}
-
-.post-header {
-    display: flex;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.post-avatar {
-    width: 40px;
-    height: 40px;
+.remove-image {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
-    margin-right: 12px;
-}
-
-.post-info {
-    flex: 1;
-}
-
-.post-author {
-    font-weight: 500;
-    color: var(--text-color);
-}
-
-.post-date {
-    font-size: 0.9em;
-    color: var(--text-secondary);
-}
-
-.post-content {
-    margin-bottom: 15px;
-    color: var(--text-color);
-    line-height: 1.5;
-}
-
-.post-image {
-    max-width: 100%;
-    border-radius: 4px;
-    margin-bottom: 15px;
-}
-
-.post-actions {
-    display: flex;
-    gap: 15px;
-}
-
-.post-action {
+    background: var(--text-container-background);
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 5px;
+    justify-content: center;
     color: var(--text-secondary);
-    cursor: pointer;
-    transition: color 0.3s ease;
+    transition: all 0.3s ease;
 }
 
-.post-action:hover {
-    color: var(--primary-color);
+.remove-image:hover {
+    background: var(--button-hover);
+    color: white;
+}
+
+.publish-btn {
+    padding: 10px 20px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.95em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.publish-btn:hover {
+    background: var(--button-hover);
+    transform: translateY(-1px);
+}
+
+.publish-btn:active {
+    transform: translateY(0);
+}
+
+/* Анимация для формы */
+.post-form {
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+}
+
+.post-form.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .post-form-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .publish-btn {
+        width: 100%;
+        justify-content: center;
+    }
 }
