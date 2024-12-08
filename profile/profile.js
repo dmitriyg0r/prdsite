@@ -88,6 +88,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             new Date(currentUser.last_login).toLocaleString() : 'Нет данных';
         document.getElementById('profile-avatar').src = currentUser.avatar_url || '/uploads/avatars/default.png';
 
+        // Добавляем отображение своего статуса
+        const statusElement = document.querySelector('.online-status');
+        if (statusElement) {
+            statusElement.innerHTML = '<i class="fas fa-circle"></i> В сети';
+            statusElement.className = 'online-status online';
+        }
+
         // Загружаем список своих друзей
         await loadFriends(currentUser.id);
         
@@ -153,7 +160,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Обновляем селектор для кнопки открытия модального окна
     const friendsHeaderBtn = document.querySelector('.friends-header-btn');
     
-    // Открытие модального окна при клике на заголовок "Друзья"
+    // Открытие модального окна при клике на заголовок "Д��узья"
     friendsHeaderBtn.addEventListener('click', (e) => {
         e.preventDefault();
         friendsModal.classList.add('active');
@@ -206,7 +213,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Функция поиска поль��ователей (заглушка)
+    // Функция поиска пользователей (заглушка)
     async function searchUsers(query) {
         try {
             const response = await fetch(`https://adminflow.ru:5003/api/search-users?q=${query}`);
@@ -238,7 +245,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         `).join('');
     }
 
-    // ��ункции для работы с друзьями
+    // Функции для работы с друзьями
     async function loadFriends(userId) {
         if (!userId) {
             console.warn('loadFriends: userId is undefined');
@@ -421,7 +428,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         } catch (err) {
             console.error('Search error:', err);
-            alert('Ошибка при поиске пользователей');
+            alert('Ошибка при поиске пользоват��лей');
         }
     }
 
@@ -553,7 +560,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (data.user) {
                 // Сохраняем данные профиля друга во временное хранилище
                 sessionStorage.setItem('viewing_profile', JSON.stringify(data.user));
-                // Перенаправляем на страницу профиля с параметром
+                // Перенаправляем на страницу профиля с ��араметром
                 window.location.href = `/profile/profile.html?id=${userId}`;
             } else {
                 alert('Пользователь не найден');
@@ -941,7 +948,7 @@ async function toggleLike(postId) {
         }
     } catch (err) {
         console.error('Error toggling like:', err);
-        alert('Ошибка при обработке лайка');
+        alert('Оши��ка при обработке лайка');
     }
 }
 
@@ -1088,7 +1095,7 @@ window.openFriendsModal = function() {
     }
 };
 
-// Ф��нкция для определения иконки файла
+// Функция для определения иконки файла
 function getFileIcon(extension) {
     const iconMap = {
         'pdf': 'fas fa-file-pdf',
