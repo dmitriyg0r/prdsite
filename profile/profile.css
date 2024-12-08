@@ -1160,3 +1160,40 @@ body {
 .profile-avatar-wrapper:hover .avatar-overlay {
     opacity: 1;
 }
+
+/* Стили для статуса онлайн */
+.online-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    margin-top: 4px;
+}
+
+.online-status i {
+    font-size: 10px;
+}
+
+.online-status.online {
+    color: #44b700;
+}
+
+.online-status.online i {
+    color: #44b700;
+}
+
+.online-status.offline {
+    color: #bdbdbd;
+}
+
+.online-status.offline i {
+    color: #bdbdbd;
+}
+
+.online-status.away {
+    color: #FFA500;
+}
+
+.online-status.away i {
+    color: #FFA500;
+}
