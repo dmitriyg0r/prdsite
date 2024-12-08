@@ -239,13 +239,17 @@ body {
     gap: 8px;
 }
 
+/* Стили для формы поста */
 .post-form {
     background: var(--background-color);
     border-radius: 16px;
     padding: 20px;
     margin-bottom: 24px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
+/* Стили для текстового поля */
 #post-content {
     width: 100%;
     min-height: 100px;
@@ -256,6 +260,10 @@ body {
     color: var(--text-primary);
     resize: vertical;
     margin-bottom: 16px;
+    box-sizing: border-box;
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.5;
 }
 
 .post-form-actions {
