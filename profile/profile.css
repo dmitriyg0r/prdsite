@@ -1138,36 +1138,6 @@ body {
     animation: likeAnimation 0.3s ease;
 }
 
-/* Убираем кнопку расширения изображения */
-.image-overlay .fa-expand {
-    display: none;
-}
-
-/* Обновляем стили для overlay изображения */
-.post-image-container {
-    position: relative;
-    cursor: pointer;
-}
-
-.post-image-container .image-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    cursor: pointer;
-}
-
-.post-image-container:hover .image-overlay {
-    opacity: 1;
-}
-
 /* Стили для overlay аватарки профиля */
 .profile-avatar-wrapper {
     position: relative;
