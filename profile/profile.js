@@ -202,7 +202,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         `).join('');
     }
 
-    // Функции для работы с друзьями
+    // Функции для работы �� друзьями
     async function loadFriends() {
         try {
             const response = await fetch(`https://adminflow.ru:5003/api/friends?userId=${currentUser.id}`);
@@ -487,7 +487,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         } catch (err) {
             console.error('Error loading user profile:', err);
-            alert('Ошибка при загрузке профиля пользовател��');
+            alert('Ошибка при загрузке профиля пользователя');
         }
     }
 
@@ -624,7 +624,12 @@ function displayPosts(posts) {
             <div class="post-content">${post.content}</div>
             ${post.image_url ? `
                 <div class="post-media">
-                    <div class="post-image-container" onclick="openImageInFullscreen('${post.image_url}')">
+                    <div class="post-image-container" onclick='openImageInFullscreen("${post.image_url}", ${JSON.stringify({
+                        author_name: post.author_name,
+                        author_avatar: post.author_avatar,
+                        created_at: post.created_at,
+                        content: post.content
+                    }).replace(/'/g, "&apos;")})'>
                         <img src="${post.image_url}" 
                              alt="Post image" 
                              class="post-image">
@@ -679,7 +684,7 @@ async function toggleLike(postId) {
             const heartIcon = postElement.querySelector('.like-action i');
             const likesCountElement = postElement.querySelector('.likes-count');
             
-            // Обновляем UI на основе ответа сервер��
+            // Обновляем UI на основе ответа сервер
             if (data.liked) {
                 heartIcon.classList.replace('far', 'fas');
                 likeButton.classList.add('liked');
@@ -737,41 +742,64 @@ async function deletePost(postId) {
 }
 
 // Добавляем функции в глобальную область видимости (window)
-window.openImageInFullscreen = function(imageSrc) {
+window.openImageInFullscreen = function(imageSrc, postData) {
     const modal = document.createElement('div');
     modal.className = 'image-modal';
+    
+    // Форматируем дату
+    const postDate = new Date(postData.created_at).toLocaleString('ru-RU', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+
     modal.innerHTML = `
         <div class="modal-content">
-            <button class="close-modal">
-                <i class="fas fa-times"></i>
-            </button>
-            <img src="${imageSrc}" alt="Full size image">
+            <div class="modal-image-header">
+                <div class="modal-author-info">
+                    <img src="${postData.author_avatar || '/uploads/avatars/default.png'}" 
+                         alt="${postData.author_name}" 
+                         class="modal-author-avatar">
+                    <div class="modal-author-details">
+                        <span class="modal-author-name">${postData.author_name}</span>
+                        <span class="modal-post-date">${postDate}</span>
+                    </div>
+                </div>
+                <button class="close-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-image-container">
+                <img src="${imageSrc}" alt="Full size image">
+            </div>
+            ${postData.content ? `
+                <div class="modal-post-content">
+                    ${postData.content}
+                </div>
+            ` : ''}
         </div>
     `;
     
     document.body.appendChild(modal);
     
-    // Добавляем класс active после добавления в DOM для анимации
     requestAnimationFrame(() => {
         modal.classList.add('active');
     });
     
-    // Блокируем прокрутку страницы
     document.body.style.overflow = 'hidden';
     
-    // Закрытие по клику на крестик
     modal.querySelector('.close-modal').onclick = function() {
         closeImageModal(modal);
     };
     
-    // Закрытие по клику вне изображения
     modal.onclick = function(e) {
         if (e.target === modal) {
             closeImageModal(modal);
         }
     };
     
-    // Закрытие по Escape
     const escHandler = (e) => {
         if (e.key === 'Escape') {
             closeImageModal(modal);

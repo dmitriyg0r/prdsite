@@ -1491,3 +1491,104 @@ body {
         right: 0;
     }
 }
+
+.modal-image-header {
+    position: absolute;
+    top: -60px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    color: white;
+}
+
+.modal-author-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.modal-author-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.modal-author-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-author-name {
+    font-weight: 600;
+    font-size: 1.1em;
+}
+
+.modal-post-date {
+    font-size: 0.9em;
+    opacity: 0.8;
+}
+
+.modal-image-container {
+    position: relative;
+    max-height: calc(90vh - 120px);
+    overflow: hidden;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.modal-post-content {
+    color: white;
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+    font-size: 1.1em;
+    line-height: 1.6;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 0 0 8px 8px;
+    white-space: pre-wrap;
+}
+
+.image-modal .modal-content {
+    background: transparent;
+    max-width: 90%;
+    margin: 0 auto;
+}
+
+.image-modal img {
+    max-width: 100%;
+    max-height: calc(90vh - 120px);
+    object-fit: contain;
+    display: block;
+    margin: 0 auto;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .modal-image-header {
+        top: -80px;
+        padding: 10px;
+    }
+
+    .modal-author-avatar {
+        width: 32px;
+        height: 32px;
+    }
+
+    .modal-author-name {
+        font-size: 1em;
+    }
+
+    .modal-post-date {
+        font-size: 0.8em;
+    }
+
+    .modal-post-content {
+        padding: 15px;
+        font-size: 1em;
+    }
+}
