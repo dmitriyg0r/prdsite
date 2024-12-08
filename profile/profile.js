@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         } catch (err) {
             console.error('Error loading user profile:', err);
-            alert('Ошибка при загрузке профиля пользователя');
+            alert('Ошибка при загрузке профиля ��ользователя');
             window.location.href = '/profile/profile.html';
         }
     } else {
@@ -203,7 +203,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Функция поиска поль��ователей (заглушка)
+    // Функция поиска пользователей (заглушка)
     async function searchUsers(query) {
         try {
             const response = await fetch(`https://adminflow.ru:5003/api/search-users?q=${query}`);
@@ -235,7 +235,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         `).join('');
     }
 
-    // ��ункции для работы с друзьями
+    // Функции для работы с друзьями
     async function loadFriends(userId) {
         if (!userId) {
             console.warn('loadFriends: userId is undefined');
@@ -280,27 +280,27 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        const friendsList = document.querySelector('.friends-list');
-        if (!friendsList) {
-            console.error('displayFriends: friends-list element not found');
-            return;
-        }
-
-        // Обновляем мини-список друзей в профиле
+        // Обновляем мини-список друзей в профиле (максимум 4 друга)
         const friendsGrid = document.querySelector('.friends-grid');
-        friendsGrid.innerHTML = friends.length > 0 ? friends.slice(0, 3).map(friend => `
-            <a href="/profile/profile.html?id=${friend.id}" class="friend-item">
-                <img src="${friend.avatar_url || '/uploads/avatars/default.png'}" 
-                     alt="${friend.username}"
-                     class="friend-avatar">
-                <span class="friend-name">${friend.username}</span>
-            </a>
-        `).join('') : `
-            <div class="friend-placeholder">
-                <img src="/uploads/avatars/default.png" alt="No friends" class="friend-avatar">
-                <span class="friend-name">Пока нет друзей</span>
-            </div>
-        `;
+        const maxFriendsInGrid = 4;
+        
+        friendsGrid.innerHTML = friends.length > 0 
+            ? friends.slice(0, maxFriendsInGrid).map(friend => `
+                <a href="/profile/profile.html?id=${friend.id}" class="friend-item">
+                    <img src="${friend.avatar_url || '/uploads/avatars/default.png'}" 
+                         alt="${friend.username}"
+                         class="friend-avatar">
+                    <span class="friend-name">${friend.username}</span>
+                </a>
+            `).join('') + (friends.length > maxFriendsInGrid 
+                ? `<div class="friend-item more-friends">
+                     <span>+${friends.length - maxFriendsInGrid}</span>
+                   </div>`
+                : '')
+            : `<div class="friend-placeholder">
+                 <img src="/uploads/avatars/default.png" alt="No friends" class="friend-avatar">
+                 <span class="friend-name">Пока нет друзей</span>
+               </div>`;
 
         // Обновляем полный список друзей в модальном окне
         friendsList.innerHTML = friends.map(friend => `
@@ -558,7 +558,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.addEventListener(eventName, updateActivity);
         });
         
-        // Проверяем активность каждую минуту
+        // Проверяем активн��сть каждую минуту
         setInterval(() => {
             const now = new Date();
             const diffMinutes = Math.floor((now - lastActivity) / (1000 * 60));
@@ -609,7 +609,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Обновляем функцию проверки статуса
+    // О��новляем функцию проверки статуса
     async function checkOnlineStatus(userId) {
         if (!userId) {
             console.warn('checkOnlineStatus: userId is undefined');
@@ -707,7 +707,7 @@ function initializePostHandlers() {
         }
     });
 
-    // Обработк�� загрузки изображения
+    // Обработк загрузки изображения
     postImage?.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (file) {

@@ -346,18 +346,37 @@ body {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 8px;
-    background: var(--surface-color);
     padding: var(--spacing-sm);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--border-light);
 }
 
+.more-friends {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface-color);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.more-friends:hover {
+    background: var(--hover-color);
+    color: var(--text-primary);
+}
+
+.more-friends span {
+    font-weight: 500;
+}
+
+/* Обновляем стили для элементов друзей */
 .friend-item {
     display: flex;
     align-items: center;
     gap: 8px;
+    padding: 8px;
     text-decoration: none;
-    padding: 4px;
     border-radius: var(--radius-md);
     transition: background-color 0.3s;
 }
