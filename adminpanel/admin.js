@@ -26,16 +26,17 @@ async function loadStats() {
         }
     } catch (err) {
         console.error('Ошибка загрузки статистики:', err);
-        alert('Ошибка загрузки статистики');
+        alert('Ош��бка загрузки статистики');
     }
 }
 
-async function loadUsers(page = 1, search = '') {
+async function loadUsers(page = 1, search = '', role = '', status = '') {
     try {
         const adminId = getAdminId();
-        const response = await fetch(`${API_URL}/api/admin/users?adminId=${adminId}&page=${page}&search=${search}`, {
-            credentials: 'include'
-        });
+        const response = await fetch(
+            `${API_URL}/api/admin/users?adminId=${adminId}&page=${page}&search=${search}&role=${role}&status=${status}`,
+            { credentials: 'include' }
+        );
         const data = await response.json();
         
         if (data.success) {
@@ -75,8 +76,7 @@ async function loadUsers(page = 1, search = '') {
             alert(data.error || 'Ошибка загрузки пользователей');
         }
     } catch (err) {
-        console.error('Ошибка загрузки пользователей:', err);
-        alert('Ошибка загрузки пользователей');
+        console.error('Error loading users:', err);
     }
 }
 
@@ -310,6 +310,50 @@ function createUserActivityChart(data) {
     });
 }
 
+// Функция для загрузки последних действий
+async function loadRecentActivity() {
+    try {
+        const adminId = getAdminId();
+        const response = await fetch(`${API_URL}/api/admin/activity?adminId=${adminId}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            const activityList = document.getElementById('activityList');
+            activityList.innerHTML = '';
+            
+            data.activities.forEach(activity => {
+                const item = document.createElement('div');
+                item.className = 'activity-item';
+                item.innerHTML = `
+                    <div class="activity-icon">
+                        <i class="fas ${getActivityIcon(activity.type)}"></i>
+                    </div>
+                    <div class="activity-details">
+                        <div class="activity-text">${activity.description}</div>
+                        <div class="activity-time">${formatTimeAgo(activity.created_at)}</div>
+                    </div>
+                `;
+                activityList.appendChild(item);
+            });
+        }
+    } catch (err) {
+        console.error('Error loading activity:', err);
+    }
+}
+
+// Функция для экспорта данных
+function exportData(type) {
+    const adminId = getAdminId();
+    window.location.href = `${API_URL}/api/admin/export/${type}?adminId=${adminId}`;
+}
+
+// Функция для обработки фильтров
+function handleFilters() {
+    const roleFilter = document.getElementById('roleFilter').value;
+    const statusFilter = document.getElementById('statusFilter').value;
+    loadUsers(1, document.getElementById('searchUsers').value, roleFilter, statusFilter);
+}
+
 // Инициализация
 document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM loaded, checking admin status');
@@ -333,4 +377,17 @@ document.addEventListener('DOMContentLoaded', () => {
             loadUsers(1, e.target.value);
         }, 300);
     });
+
+    // Добавляем обработчики для фильтров
+    document.getElementById('roleFilter').addEventListener('change', handleFilters);
+    document.getElementById('statusFilter').addEventListener('change', handleFilters);
+    
+    // Загружаем последние действия
+    loadRecentActivity();
+    
+    // Обновляем данные каждые 30 секунд
+    setInterval(() => {
+        loadStats();
+        loadRecentActivity();
+    }, 30000);
 });
