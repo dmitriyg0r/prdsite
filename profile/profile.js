@@ -202,7 +202,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         `).join('');
     }
 
-    // Функции для работы с друзьями
+    // Функции для работы �� друзьями
     async function loadFriends() {
         try {
             const response = await fetch(`https://adminflow.ru:5003/api/friends?userId=${currentUser.id}`);
@@ -578,7 +578,7 @@ async function createPost() {
             document.getElementById('post-form').style.display = 'none';
             selectedPostImage = null;
 
-            // Перезагружаем посты
+            // Перезагр��жаем посты
             loadPosts();
         } else {
             throw new Error(data.error);
@@ -624,11 +624,10 @@ function displayPosts(posts) {
             <div class="post-content">${post.content}</div>
             ${post.image_url ? `
                 <div class="post-media">
-                    <div class="post-image-container">
+                    <div class="post-image-container" onclick="openImageInFullscreen('${post.image_url}')">
                         <img src="${post.image_url}" 
                              alt="Post image" 
-                             class="post-image"
-                             onclick="openImageInFullscreen(this.src)">
+                             class="post-image">
                         <div class="image-overlay">
                             <i class="fas fa-expand"></i>
                         </div>
@@ -649,30 +648,58 @@ function displayPosts(posts) {
     `).join('') : '<div class="no-posts">Не найдено публикаций</div>';
 
     // Добавляем функцию для открытия изображения в полноэкранном режиме
-    window.openImageInFullscreen = function(imageSrc) {
+    function openImageInFullscreen(imageSrc) {
         const modal = document.createElement('div');
         modal.className = 'image-modal';
         modal.innerHTML = `
             <div class="modal-content">
-                <span class="close-modal">&times;</span>
+                <button class="close-modal">
+                    <i class="fas fa-times"></i>
+                </button>
                 <img src="${imageSrc}" alt="Full size image">
             </div>
         `;
         
         document.body.appendChild(modal);
         
+        // Добавляем класс active после добавления в DOM для анимации
+        requestAnimationFrame(() => {
+            modal.classList.add('active');
+        });
+        
+        // Блокируем прокрутку страницы
+        document.body.style.overflow = 'hidden';
+        
         // Закрытие по клику на крестик
         modal.querySelector('.close-modal').onclick = function() {
-            modal.remove();
+            closeImageModal(modal);
         };
         
         // Закрытие по клику вне изображения
         modal.onclick = function(e) {
             if (e.target === modal) {
-                modal.remove();
+                closeImageModal(modal);
             }
         };
-    };
+        
+        // Закрытие по Escape
+        const escHandler = (e) => {
+            if (e.key === 'Escape') {
+                closeImageModal(modal);
+                document.removeEventListener('keydown', escHandler);
+            }
+        };
+        document.addEventListener('keydown', escHandler);
+    }
+
+    // Функция закрытия модального окна
+    function closeImageModal(modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+        setTimeout(() => {
+            modal.remove();
+        }, 300); // Время должно совпадать с длительностью CSS-анимации
+    }
 
     // Добавляем обработчики
     document.querySelectorAll('.delete-post-btn').forEach(btn => {
