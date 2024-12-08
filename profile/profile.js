@@ -202,7 +202,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         `).join('');
     }
 
-    // Функции для работы с друзьями
+    // Функции для работы �� друзьями
     async function loadFriends() {
         try {
             const response = await fetch(`https://adminflow.ru:5003/api/friends?userId=${currentUser.id}`);
@@ -472,7 +472,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
             
             if (!response.ok) {
-                throw new Error('Ошибка при з��грузке профиля пользователя');
+                throw new Error('Ошибка при загрузке профиля пользователя');
             }
 
             const data = await response.json();
@@ -740,11 +740,13 @@ async function deletePost(postId) {
             })
         });
 
-        if (response.ok) {
+        const data = await response.json();
+        
+        if (response.ok || data.success) {
             // Перезагружаем посты после удаления
             loadPosts();
         } else {
-            throw new Error('Ошибка при удалении поста');
+            alert(data.error || 'Ошибка при удалении публикации');
         }
     } catch (err) {
         console.error('Error deleting post:', err);
