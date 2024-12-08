@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('logout-btn').style.display = 'none';
             document.querySelector('.avatar-overlay').style.display = 'none';
             
-            // Скрываем вкладку запросов в друзья в модальном окне
+            // Скрываем вкладку запросов в д��узья в модальном окне
             const requestsTab = document.querySelector('[data-tab="requests-tab"]');
             if (requestsTab) {
                 requestsTab.style.display = 'none';
@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 currentUser.avatar_url = data.avatarUrl;
                 localStorage.setItem('user', JSON.stringify(currentUser));
             } else {
-                alert(data.error || 'Ошибка при загрузке аватара');
+                alert(data.error || 'Ошибка п��и загрузке аватара');
             }
         } catch (err) {
             console.error('Error uploading avatar:', err);
@@ -534,7 +534,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const data = await response.json();
             
             if (data.user) {
-                // Сохраняем данные профиля друга во временное хранилище
+                // Сохраняем данные профиля друга во вре��енное хранилище
                 sessionStorage.setItem('viewing_profile', JSON.stringify(data.user));
                 // Перенаправляем на страницу профиля с параметром
                 window.location.href = `/profile/profile.html?id=${userId}`;
@@ -552,6 +552,66 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Загружаем посты
     loadPosts();
+
+    // Обновляем интервал обновления статуса для текущего пользователя
+    function startStatusUpdates() {
+        // Немедленно обновляем статус
+        updateUserStatus();
+        
+        // Обновляем статус каждую минуту
+        setInterval(updateUserStatus, 60000);
+        
+        // Добавляем обработчики событий для отслеживания активности
+        ['mousemove', 'keydown', 'click', 'scroll'].forEach(eventName => {
+            document.addEventListener(eventName, updateUserStatus);
+        });
+    }
+
+    // Функция обновления статуса пользователя
+    async function updateUserStatus() {
+        if (!currentUser) return;
+
+        try {
+            const response = await fetch('https://adminflow.ru:5003/api/users/update-status', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    userId: currentUser.id,
+                    is_online: true,
+                    last_activity: new Date().toISOString()
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update status');
+            }
+        } catch (err) {
+            console.error('Error updating user status:', err);
+        }
+    }
+
+    // Добавляем обработчик перед уходом со страницы
+    window.addEventListener('beforeunload', async () => {
+        if (currentUser) {
+            try {
+                await fetch('https://adminflow.ru:5003/api/users/update-status', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userId: currentUser.id,
+                        is_online: false,
+                        last_activity: new Date().toISOString()
+                    })
+                });
+            } catch (err) {
+                console.error('Error updating offline status:', err);
+            }
+        }
+    });
 });
 
 function initializePostHandlers() {
@@ -641,7 +701,7 @@ async function createPost() {
         }
     } catch (err) {
         console.error('Error creating post:', err);
-        alert('Ошибк�� при создании публикации');
+        alert('Ошибка при создании публикации');
     }
 }
 
@@ -768,7 +828,7 @@ function removePostImage() {
 
 // Добавляем функцию удаления поста
 async function deletePost(postId) {
-    if (!confirm('В�� уверены, что хотите удалить эту публикацию?')) {
+    if (!confirm('Вы уверены, что хотите удалить эту публикацию?')) {
         return;
     }
 
@@ -875,24 +935,32 @@ window.closeImageModal = function(modal) {
     }, 300);
 };
 
-// Добавляем функцию проверки онлайн-статуса
+// Обновляем функцию проверки онлайн-статуса
 async function checkOnlineStatus(userId) {
     try {
-        const response = await fetch(`https://adminflow.ru:5003/api/users/status/${userId}`);
-        const data = await response.json();
-        
-        if (response.ok) {
-            const statusElement = document.querySelector('.online-status');
-            if (statusElement) {
-                const isOnline = data.last_activity && 
-                    (new Date().getTime() - new Date(data.last_activity).getTime()) < 5 * 60 * 1000; // 5 минут
-
-                statusElement.innerHTML = isOnline ? 
-                    '<i class="fas fa-circle"></i> В сети' : 
-                    `<i class="far fa-circle"></i> Был(а) в сети ${formatLastSeen(data.last_activity)}`;
-                
-                statusElement.className = `online-status ${isOnline ? 'online' : 'offline'}`;
+        const response = await fetch(`https://adminflow.ru:5003/api/users/status/${userId}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
             }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to fetch status');
+        }
+
+        const data = await response.json();
+        const statusElement = document.querySelector('.online-status');
+        
+        if (statusElement) {
+            const isOnline = data.is_online;
+            const lastActivity = data.last_activity;
+
+            statusElement.innerHTML = isOnline ? 
+                '<i class="fas fa-circle"></i> В сети' : 
+                `<i class="far fa-circle"></i> ${formatLastSeen(lastActivity)}`;
+            
+            statusElement.className = `online-status ${isOnline ? 'online' : 'offline'}`;
         }
     } catch (err) {
         console.error('Error checking online status:', err);
@@ -930,7 +998,7 @@ function formatLastSeen(lastActivity) {
         return `${days} ${declOfNum(days, ['день', 'дня', 'дней'])} назад`;
     }
     
-    // Более недели
+    // Более неде��и
     return activity.toLocaleString('ru-RU', {
         day: 'numeric',
         month: 'long',
