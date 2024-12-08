@@ -620,7 +620,24 @@ function displayPosts(posts) {
     const container = document.getElementById('posts-container');
     container.innerHTML = posts.length ? posts.map(post => `
         <div class="post" data-post-id="${post.id}">
-            // ... существующий код ...
+            <div class="post-header">
+                <img src="${post.author_avatar || '/uploads/avatars/default.png'}" 
+                     alt="${post.author_name}" 
+                     class="post-avatar">
+                <div class="post-info">
+                    <div class="post-author">${post.author_name}</div>
+                    <div class="post-date">${new Date(post.created_at).toLocaleString()}</div>
+                </div>
+                ${post.user_id === currentUser.id ? `
+                    <button class="delete-post-btn" data-post-id="${post.id}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                ` : ''}
+            </div>
+            <div class="post-content">${post.content}</div>
+            ${post.image_url ? `
+                <img src="${post.image_url}" alt="Post image" class="post-image">
+            ` : ''}
             <div class="post-actions">
                 <button class="post-action like-action ${post.is_liked ? 'liked' : ''}" data-post-id="${post.id}">
                     <i class="${post.is_liked ? 'fas' : 'far'} fa-heart"></i>
@@ -633,6 +650,17 @@ function displayPosts(posts) {
             </div>
         </div>
     `).join('') : '<div class="no-posts">Не найдено публикаций</div>';
+
+    // Добавляем обработчики
+    document.querySelectorAll('.delete-post-btn').forEach(btn => {
+        btn.addEventListener('click', () => deletePost(btn.dataset.postId));
+    });
+
+    // Добавляем обработчики для лайков
+    document.querySelectorAll('.like-action').forEach(btn => {
+        btn.addEventListener('click', () => toggleLike(btn.dataset.postId));
+    });
+
 
     async function toggleLike(postId) {
         try {
