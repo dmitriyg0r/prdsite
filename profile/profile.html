@@ -78,61 +78,24 @@
                     <span id="role" class="profile-role"></span>
                 </div>
 
-                <div class="profile-info">
-                    <div class="profile-stats">
-                        <div class="stat-item">
-                            <span class="stat-value friends-count">0</span>
-                            <span class="stat-label">Друзей</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-value" id="posts-count">0</span>
-                            <span class="stat-label">Публикаций</span>
-                        </div>
-                    </div>
-
-                    <div class="profile-actions">
-                        <button id="edit-profile-btn" class="profile-action-btn action-primary">
-                            <i class="fas fa-edit"></i>
-                            <span>Редактировать</span>
-                        </button>
-                        <button id="logout-btn" class="profile-action-btn action-secondary">
-                            <i class="fas fa-sign-out-alt"></i>
-                            <span>Выйти</span>
+                <!-- Блок друзей -->
+                <div class="friends-block">
+                    <div class="section-header">
+                        <h3>Друзья</h3>
+                        <button class="friends-header-btn" id="show-all-friends">
+                            Показать всех
+                            <span class="friends-count">0</span>
                         </button>
                     </div>
-                </div>
-            </div>
-
-            <!-- Блок друзей -->
-            <div class="card friends-block">
-                <div class="section-header">
-                    <h3>Друзья</h3>
-                    <button class="button button-secondary friends-header-btn">
-                        Показать всех
-                    </button>
-                </div>
-                <div class="friends-grid">
-                    <!-- Друзья добавляются динамически -->
+                    <div class="friends-grid">
+                        <!-- Друзья добавляются динамически -->
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Правая колонка -->
         <div class="profile-content">
-            <!-- Информационный блок -->
-            <div class="content-section">
-                <div class="info-block">
-                    <div class="info-row">
-                        <span class="info-label">Дата регистрации:</span>
-                        <span class="info-value" id="created_at"></span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Последний вход:</span>
-                        <span class="info-value" id="last_login"></span>
-                    </div>
-                </div>
-            </div>
-
             <!-- Секция постов -->
             <div class="content-section">
                 <div class="section-header">
@@ -144,11 +107,11 @@
                 </div>
 
                 <!-- Форма создания поста -->
-                <div id="post-form" class="post-form card" style="display: none;">
+                <div id="post-form" class="post-form" style="display: none;">
                     <textarea id="post-content" class="post-textarea" placeholder="Что у вас нового?"></textarea>
                     <div class="post-form-actions">
                         <div class="post-attachments">
-                            <label for="post-image" class="button button-secondary">
+                            <label for="post-image" class="attachment-btn">
                                 <i class="fas fa-image"></i>
                                 <span>Добавить фото</span>
                             </label>
@@ -196,14 +159,14 @@
                 <!-- Вкладка всех друзей -->
                 <div class="tab-content active" id="all-friends">
                     <div class="friends-list">
-                        <!-- Друзья будут добавляться динамически -->
+                        <!-- Друзья добавляются динамически -->
                     </div>
                 </div>
 
                 <!-- Вкладка заявок в друзья -->
                 <div class="tab-content" id="friend-requests">
                     <div class="requests-list">
-                        <!-- Заявки будут добавляться динамически -->
+                        <!-- Заявки добавляются динамически -->
                     </div>
                 </div>
 
@@ -216,7 +179,7 @@
                         </button>
                     </div>
                     <div class="search-results">
-                        <!-- Результаты поиска будут добавляться динамически -->
+                        <!-- Результаты поиска добавляются динамически -->
                     </div>
                 </div>
             </div>
