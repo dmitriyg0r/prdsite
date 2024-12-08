@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         } catch (err) {
             console.error('Error loading user profile:', err);
-            alert('Ошибка при загрузке профиля ��ользователя');
+            alert('Ошибка при загрузке профиля пользователя');
             window.location.href = '/profile/profile.html';
         }
     } else {
@@ -527,7 +527,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 loadFriends();
             } else {
                 const data = await response.json();
-                alert(data.error || 'Ошибка при ��далении из друзей');
+                alert(data.error || 'Ошибка при удалении из друзей');
             }
         } catch (err) {
             console.error('Error removing friend:', err);
@@ -557,7 +557,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         } catch (err) {
             console.error('Error loading user profile:', err);
-            alert('Ошибка при загрузке профи��я пользователя');
+            alert('Ошибка при загрузке профиля пользователя');
         }
     }
 
@@ -589,7 +589,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             if (diffMinutes >= 5) {
                 // Если нет активности 5+ минут, обновляем статус
-                updateUserStatus(true); // Всё ещё онлайн, но не активен
+                updateUserStatus(true); // Всё ещё онлайн, но не ��ктивен
             }
         }, 60000);
         
@@ -718,7 +718,7 @@ function initializePostHandlers() {
     createPostBtn?.addEventListener('click', () => {
         if (postForm.style.display === 'none' || !postForm.style.display) {
             postForm.style.display = 'block';
-            // Добавляем класс active ��осле небольшой задержки для анимации
+            // Добавляем класс active после небольшой задержки для анимации
             setTimeout(() => {
                 postForm.classList.add('active');
             }, 10);
@@ -940,7 +940,7 @@ async function toggleLike(postId) {
             // Устанавливаем точное количество лайков из ответа сервера
             likesCountElement.textContent = data.likes_count;
         } else {
-            throw new Error(data.error || 'Ошибка при обработке лайка');
+            throw new Error(data.error || 'Ошибка при обр��ботке лайка');
         }
     } catch (err) {
         console.error('Error toggling like:', err);
@@ -987,6 +987,7 @@ async function deletePost(postId) {
 
 // Добавляем функции в глобальную область видимости (window)
 window.openImageInFullscreen = function(imageSrc, postData) {
+    // Создаем модальное окно
     const modal = document.createElement('div');
     modal.className = 'image-modal';
     
@@ -1028,31 +1029,43 @@ window.openImageInFullscreen = function(imageSrc, postData) {
         </div>
     `;
     
+    // Добавляем модальное окно в DOM
     document.body.appendChild(modal);
     
+    // Добавляем класс active после небольшой задержки для анимации
     requestAnimationFrame(() => {
         modal.classList.add('active');
     });
     
+    // Блокируем прокрутку body
     document.body.style.overflow = 'hidden';
     
-    modal.querySelector('.close-modal').onclick = function() {
-        closeImageModal(modal);
+    // Обработчики закрытия
+    const closeModal = () => {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+        setTimeout(() => {
+            modal.remove();
+        }, 300);
     };
     
-    modal.onclick = function(e) {
+    // Закрытие по клику на кнопку
+    modal.querySelector('.close-modal').onclick = closeModal;
+    
+    // Закрытие по клику вне изображения
+    modal.onclick = (e) => {
         if (e.target === modal) {
-            closeImageModal(modal);
+            closeModal();
         }
     };
     
-    const escHandler = (e) => {
+    // Закрытие по Escape
+    document.addEventListener('keydown', function escHandler(e) {
         if (e.key === 'Escape') {
-            closeImageModal(modal);
+            closeModal();
             document.removeEventListener('keydown', escHandler);
         }
-    };
-    document.addEventListener('keydown', escHandler);
+    });
 };
 
 window.closeImageModal = function(modal) {
