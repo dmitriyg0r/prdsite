@@ -356,7 +356,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <i class="fas fa-check"></i> Принять
                         </button>
                         <button class="reject-friend-btn" data-user-id="${request.id}">
-                            <i class="fas fa-times"></i> Отк��онить
+                            <i class="fas fa-times"></i> Отклонить
                         </button>
                     </div>
                 </div>
@@ -558,22 +558,38 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Загружаем посты
     loadPosts();
 
-    // Обновляем интервал обновления статуса для текущего пользователя
+    // Обновляем интервал обн��вления статуса для текущего пользователя
     function startStatusUpdates() {
-        // Немедленно обновляем статус
-        updateUserStatus();
+        let lastActivity = new Date();
         
-        // Обновляем статус каждую минуту
-        setInterval(updateUserStatus, 60000);
+        // Функция обновления активности
+        const updateActivity = () => {
+            lastActivity = new Date();
+            updateUserStatus(true);
+        };
         
-        // Добавляем обработчики событий для отслеживания активности
-        ['mousemove', 'keydown', 'click', 'scroll'].forEach(eventName => {
-            document.addEventListener(eventName, updateUserStatus);
+        // Отслеживаем действия пользователя
+        ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'].forEach(eventName => {
+            document.addEventListener(eventName, updateActivity);
         });
+        
+        // Проверяем активность каждую минуту
+        setInterval(() => {
+            const now = new Date();
+            const diffMinutes = Math.floor((now - lastActivity) / (1000 * 60));
+            
+            if (diffMinutes >= 5) {
+                // Если нет активности 5+ минут, обновляем статус
+                updateUserStatus(true); // Всё ещё онлайн, но не активен
+            }
+        }, 60000);
+        
+        // Начальное обновление статуса
+        updateActivity();
     }
 
     // Функция обновления статуса пользователя
-    async function updateUserStatus() {
+    async function updateUserStatus(force = false) {
         if (!currentUser) return;
 
         try {
@@ -600,7 +616,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Обновляем обработчик перед уходом со страницы
     window.addEventListener('beforeunload', (event) => {
         if (currentUser && currentUser.id) {
-            // Используем синхронный запрос для гарантированн��й отправки
+            // Используем синхронный запрос для гарантированной отправки
             navigator.sendBeacon('https://adminflow.ru:5003/api/users/update-status', JSON.stringify({
                 userId: currentUser.id,
                 is_online: false
@@ -622,66 +638,65 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             
             const data = await response.json();
-            
             const statusElement = document.querySelector('.online-status');
+            
             if (statusElement) {
-                const isOnline = data.is_online;
-                statusElement.innerHTML = isOnline ? 
-                    '<i class="fas fa-circle"></i> В сети' : 
-                    `<i class="far fa-circle"></i> ${formatLastSeen(data.last_activity)}`;
+                const lastActiveTime = new Date(data.last_activity);
+                const now = new Date();
+                const diffMinutes = Math.floor((now - lastActiveTime) / (1000 * 60));
                 
-                statusElement.className = `online-status ${isOnline ? 'online' : 'offline'}`;
+                let statusText, statusClass;
+                
+                if (data.is_online) {
+                    if (diffMinutes < 5) {
+                        statusText = '<i class="fas fa-circle"></i> В сети';
+                        statusClass = 'online';
+                    } else {
+                        statusText = '<i class="fas fa-moon"></i> Нет на месте';
+                        statusClass = 'away';
+                    }
+                } else {
+                    statusText = `<i class="far fa-circle"></i> ${formatLastSeen(data.last_activity)}`;
+                    statusClass = 'offline';
+                }
+                
+                statusElement.innerHTML = statusText;
+                statusElement.className = `online-status ${statusClass}`;
             }
         } catch (err) {
             console.error('Error checking online status:', err);
         }
     }
 
-    // Функция форматирования времени последнего посещения
+    // Функция форматирования времени последней активности
     function formatLastSeen(lastActivity) {
-        if (!lastActivity) return 'давно';
+        if (!lastActivity) return 'Не в сети';
         
+        const lastActiveTime = new Date(lastActivity);
         const now = new Date();
-        const activity = new Date(lastActivity);
-        const diff = now - activity;
+        const diffMinutes = Math.floor((now - lastActiveTime) / (1000 * 60));
         
-        // Меньше минуты
-        if (diff < 60 * 1000) {
-            return 'только что';
-        }
+        if (diffMinutes < 1) return 'Только что';
+        if (diffMinutes < 5) return 'Активен';
+        if (diffMinutes < 60) return `Был ${diffMinutes} мин. назад`;
         
-        // Меньше часа
-        if (diff < 60 * 60 * 1000) {
-            const minutes = Math.floor(diff / (60 * 1000));
-            return `${minutes} ${declOfNum(minutes, ['минуту', 'минуты', 'минут'])} назад`;
-        }
+        const hours = Math.floor(diffMinutes / 60);
+        if (hours < 24) return `Был ${hours} ч. назад`;
         
-        // Меньше суток
-        if (diff < 24 * 60 * 60 * 1000) {
-            const hours = Math.floor(diff / (60 * 60 * 1000));
-            return `${hours} ${declOfNum(hours, ['час', 'часа', 'часов'])} назад`;
-        }
-        
-        // Меньше недели
-        if (diff < 7 * 24 * 60 * 60 * 1000) {
-            const days = Math.floor(diff / (24 * 60 * 60 * 1000));
-            return `${days} ${declOfNum(days, ['день', 'дня', 'дней'])} назад`;
-        }
-        
-        // Более недели
-        return activity.toLocaleString('ru-RU', {
-            day: 'numeric',
-            month: 'long',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
+        return `Был ${lastActiveTime.toLocaleDateString()}`;
     }
 
-    // Вспомогательная функция для склонения слов
-    function declOfNum(number, words) {
-        return words[(number % 100 > 4 && number % 100 < 20) ? 2 : 
-            [2, 0, 1, 1, 1, 2][(number % 10 < 5) ? number % 10 : 5]];
-    } 
+    // Добавляем стили для нового статуса
+    const style = document.createElement('style');
+    style.textContent = `
+        .online-status.away {
+            color: #FFA500;
+        }
+        .online-status.away i {
+            color: #FFA500;
+        }
+    `;
+    document.head.appendChild(style);
 });
 
 function initializePostHandlers() {
@@ -916,7 +931,7 @@ async function deletePost(postId) {
         const data = await response.json();
         
         if (response.ok || data.success) {
-            // Перезагружаем посты после удаления
+            // Перезагруж��ем посты после удаления
             loadPosts();
         } else {
             alert(data.error || 'Ошибка при удалении публикации');
