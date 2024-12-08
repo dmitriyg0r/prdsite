@@ -311,148 +311,81 @@ body {
     }
 }
 
-/* Улучшенные стили для блока друзей */
+/* Единый стиль для отображения друзей */
 .friends-block {
     background: var(--surface-color);
     border-radius: var(--radius-lg);
     margin-top: var(--spacing-xl);
-    overflow: hidden;
     border: 1px solid var(--border-light);
-    box-shadow: var(--shadow-sm);
 }
 
+/* Заголовок блока друзей */
 .friends-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     padding: var(--spacing-md) var(--spacing-lg);
     border-bottom: 1px solid var(--border-light);
-    background: var(--background-color);
-}
-
-.friends-header-btn {
-    width: 100%;
-    background: none;
-    border: none;
-    padding: var(--spacing-sm) var(--spacing-md);
     display: flex;
-    align-items: center;
     justify-content: space-between;
-    color: var(--text-primary);
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border-radius: var(--radius-md);
-}
-
-.friends-header-btn:hover {
-    background: rgba(var(--primary-color-rgb), 0.1);
-}
-
-.friends-header-btn h3 {
-    margin: 0;
-    font-size: 18px;
-    display: flex;
     align-items: center;
-    gap: var(--spacing-sm);
 }
 
-.friends-header-btn h3 i {
-    color: var(--primary-color);
+.friends-header h3 {
+    margin: 0;
+    font-size: 16px;
+    color: var(--text-primary);
 }
 
-.friends-count {
-    background: rgba(var(--primary-color-rgb), 0.1);
-    color: var(--primary-color);
-    padding: 4px 12px;
-    border-radius: 12px;
-    font-size: 14px;
-    font-weight: 500;
-}
-
+/* Сетка друзей в профиле */
 .friends-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: var(--spacing-md);
-    padding: var(--spacing-lg);
+    gap: 12px;
+    padding: var(--spacing-md);
 }
 
 .friend-item {
-    position: relative;
-    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: var(--spacing-sm);
     border-radius: var(--radius-lg);
-    overflow: hidden;
-    cursor: pointer;
     transition: all 0.3s ease;
 }
 
 .friend-item:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-md);
+    background: var(--background-color);
 }
 
 .friend-avatar {
-    width: 100%;
-    height: 100%;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
     object-fit: cover;
-    transition: transform 0.3s ease;
-}
-
-.friend-item:hover .friend-avatar {
-    transform: scale(1.1);
-}
-
-.friend-info {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: var(--spacing-md);
-    background: linear-gradient(
-        to top,
-        rgba(0, 0, 0, 0.8) 0%,
-        rgba(0, 0, 0, 0.4) 50%,
-        transparent 100%
-    );
-    color: white;
-    transform: translateY(100%);
-    transition: transform 0.3s ease;
-}
-
-.friend-item:hover .friend-info {
-    transform: translateY(0);
+    margin-bottom: 8px;
 }
 
 .friend-name {
-    font-weight: 600;
     font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
     margin-bottom: 4px;
-    white-space: nowrap;
+    max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .friend-status {
     font-size: 12px;
-    opacity: 0.8;
-    display: flex;
-    align-items: center;
-    gap: 4px;
+    color: var(--text-tertiary);
 }
 
-.friend-status.online::before {
-    content: '';
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    background: var(--success-color);
-    border-radius: 50%;
-}
-
-/* Улучшенные стили для списка друзей в модальном окне */
+/* Стили для модального окна со списком друзей */
 .friends-list {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: var(--spacing-md);
+    padding: var(--spacing-md);
 }
 
 .friend-card {
@@ -462,93 +395,83 @@ body {
     padding: var(--spacing-md);
     background: var(--background-color);
     border-radius: var(--radius-lg);
-    border: 1px solid var(--border-light);
     transition: all 0.3s ease;
 }
 
 .friend-card:hover {
     transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-    border-color: var(--primary-color);
+    box-shadow: var(--shadow-sm);
 }
 
 .friend-card-avatar {
-    width: 56px;
-    height: 56px;
-    border-radius: var(--radius-lg);
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
     object-fit: cover;
 }
 
 .friend-card-info {
     flex: 1;
+    min-width: 0; /* Для работы text-overflow */
 }
 
 .friend-card-name {
-    font-weight: 600;
+    font-size: 15px;
+    font-weight: 500;
     color: var(--text-primary);
     margin-bottom: 4px;
-    font-size: 16px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .friend-card-status {
-    font-size: 14px;
+    font-size: 13px;
     color: var(--text-tertiary);
     display: flex;
     align-items: center;
     gap: 6px;
 }
 
-/* Плейсхолдер для пустого списка друзей */
+/* Плейсхолдер */
 .friend-placeholder {
     text-align: center;
     padding: var(--spacing-xl);
     color: var(--text-tertiary);
-    background: var(--background-color);
-    border-radius: var(--radius-lg);
-    border: 2px dashed var(--border-light);
 }
 
 .friend-placeholder img {
-    width: 80px;
-    height: 80px;
+    width: 64px;
+    height: 64px;
     opacity: 0.5;
     margin-bottom: var(--spacing-md);
-}
-
-.friend-placeholder-text {
-    font-size: 16px;
-    margin-bottom: var(--spacing-sm);
 }
 
 /* Адаптивность */
 @media (max-width: 1200px) {
     .friends-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(3, 1fr);
     }
 }
 
 @media (max-width: 768px) {
     .friends-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: var(--spacing-sm);
+        grid-template-columns: repeat(4, 1fr);
     }
     
     .friends-list {
         grid-template-columns: 1fr;
     }
-    
-    .friend-name {
-        font-size: 12px;
-    }
-    
-    .friend-status {
-        font-size: 11px;
+
+    .friend-avatar {
+        width: 48px;
+        height: 48px;
     }
 }
 
 @media (max-width: 480px) {
     .friends-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(3, 1fr);
     }
 }
 
