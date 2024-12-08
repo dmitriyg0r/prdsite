@@ -306,7 +306,7 @@ app.get('/api/friends', async (req, res) => {
         res.json({ friends: result.rows });
     } catch (err) {
         console.error('Get friends error:', err);
-        res.status(500).json({ error: 'Ошибка при получении списка друзей' });
+        res.status(500).json({ error: 'Ошибка при получении ��писка друзей' });
     }
 });
 
@@ -608,7 +608,7 @@ messageStorage.destination = function (req, file, cb) {
 messageStorage.filename = function (req, file, cb) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     const filename = 'message-' + uniqueSuffix + path.extname(file.originalname);
-    // Сохраняе�� полный URL для доступа к файлу
+    // Сохраняем полный URL для доступа к файлу
     file.fileUrl = `/uploads/messages/${filename}`;
     cb(null, filename);
 };
@@ -642,7 +642,7 @@ app.post('/api/messages/send-with-file', messageUpload.single('file'), async (re
 // Обновляем middleware checkAdmin
 const checkAdmin = async (req, res, next) => {
     try {
-        // Проверяем adminId в query параметрах или в теле з��проса
+        // Про��еряем adminId в query параметрах или в теле зпроса
         const adminId = req.query.adminId || req.body.adminId;
         
         console.log('Checking admin rights for:', adminId); // Добавляем лог
@@ -883,8 +883,8 @@ app.post('/api/posts/create', uploadPost.single('image'), async (req, res) => {
         const imageUrl = req.file ? `/uploads/posts/${req.file.filename}` : null;
 
         const result = await pool.query(
-            'INSERT INTO posts (user_id, content, image_url) VALUES ($1, $2, $3) RETURNING *',
-            [userId, content, imageUrl]
+            'INSERT INTO posts (user_id, type, content, image_url) VALUES ($1, $2, $3, $4) RETURNING *',
+            [userId, 'post', content, imageUrl]
         );
 
         res.json({
@@ -893,10 +893,7 @@ app.post('/api/posts/create', uploadPost.single('image'), async (req, res) => {
         });
     } catch (err) {
         console.error('Error creating post:', err);
-        res.status(500).json({ 
-            success: false,
-            error: 'Ошибка при создании поста' 
-        });
+        res.status(500).json({ error: 'Ошибка при создании поста' });
     }
 });
 
@@ -910,11 +907,11 @@ app.get('/api/posts/:userId', async (req, res) => {
                 p.*,
                 u.username as author_name,
                 u.avatar_url as author_avatar,
-                (SELECT COUNT(*) FROM post_likes WHERE post_id = p.id) as likes_count,
-                (SELECT COUNT(*) FROM post_comments WHERE post_id = p.id) as comments_count
+                (SELECT COUNT(*) FROM posts WHERE parent_id = p.id AND type = 'like') as likes_count,
+                (SELECT COUNT(*) FROM posts WHERE parent_id = p.id AND type = 'comment') as comments_count
             FROM posts p
             JOIN users u ON p.user_id = u.id
-            WHERE p.user_id = $1
+            WHERE p.user_id = $1 AND p.type = 'post'
             ORDER BY p.created_at DESC
         `, [userId]);
 
@@ -924,50 +921,32 @@ app.get('/api/posts/:userId', async (req, res) => {
         });
     } catch (err) {
         console.error('Error fetching posts:', err);
-        res.status(500).json({ 
-            success: false,
-            error: 'Ошибка при получении постов' 
-        });
+        res.status(500).json({ error: 'Ошибка при получении постов' });
     }
 });
 
-// Лайк поста (опционально)
+// Лайк поста
 app.post('/api/posts/like', async (req, res) => {
     try {
         const { userId, postId } = req.body;
 
-        await pool.query(
-            'INSERT INTO post_likes (user_id, post_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
-            [userId, postId]
+        // Проверяем, не лайкнул ли уже пользователь этот пост
+        const existingLike = await pool.query(
+            'SELECT id FROM posts WHERE parent_id = $1 AND user_id = $2 AND type = $3',
+            [postId, userId, 'like']
         );
+
+        if (existingLike.rows.length === 0) {
+            await pool.query(
+                'INSERT INTO posts (user_id, parent_id, type) VALUES ($1, $2, $3)',
+                [userId, postId, 'like']
+            );
+        }
 
         res.json({ success: true });
     } catch (err) {
         console.error('Error liking post:', err);
-        res.status(500).json({ 
-            success: false,
-            error: 'Ошибка при добавлении лайка' 
-        });
-    }
-});
-
-// Удаление лайка (опционально)
-app.post('/api/posts/unlike', async (req, res) => {
-    try {
-        const { userId, postId } = req.body;
-
-        await pool.query(
-            'DELETE FROM post_likes WHERE user_id = $1 AND post_id = $2',
-            [userId, postId]
-        );
-
-        res.json({ success: true });
-    } catch (err) {
-        console.error('Error unliking post:', err);
-        res.status(500).json({ 
-            success: false,
-            error: 'Ошибка при удалении лайка' 
-        });
+        res.status(500).json({ error: 'Ошибка при добавлении лайка' });
     }
 });
 
@@ -979,38 +958,22 @@ app.delete('/api/posts/delete/:postId', async (req, res) => {
 
         // Проверяем, является ли пользователь автором поста
         const post = await pool.query(
-            'SELECT * FROM posts WHERE id = $1 AND user_id = $2',
-            [postId, userId]
+            'SELECT * FROM posts WHERE id = $1 AND user_id = $2 AND type = $3',
+            [postId, userId, 'post']
         );
 
         if (post.rows.length === 0) {
-            return res.status(403).json({ 
-                success: false,
-                error: 'У вас нет прав на удаление этого поста' 
-            });
+            return res.status(403).json({ error: 'У вас нет прав на удаление этого поста' });
         }
 
-        // Удаляем связанные лайки и комментарии
-        await pool.query('DELETE FROM post_likes WHERE post_id = $1', [postId]);
-        await pool.query('DELETE FROM post_comments WHERE post_id = $1', [postId]);
-
+        // Удаляем все связанные записи (лайки, комментарии)
+        await pool.query('DELETE FROM posts WHERE parent_id = $1', [postId]);
         // Удаляем сам пост
         await pool.query('DELETE FROM posts WHERE id = $1', [postId]);
-
-        // Если у поста было изображение, удаляем его
-        if (post.rows[0].image_url) {
-            const imagePath = path.join(__dirname, '..', 'public', post.rows[0].image_url);
-            if (fs.existsSync(imagePath)) {
-                fs.unlinkSync(imagePath);
-            }
-        }
 
         res.json({ success: true });
     } catch (err) {
         console.error('Error deleting post:', err);
-        res.status(500).json({ 
-            success: false,
-            error: 'Ошибка при удалении поста' 
-        });
+        res.status(500).json({ error: 'Ошибка при удалении поста' });
     }
 }); 

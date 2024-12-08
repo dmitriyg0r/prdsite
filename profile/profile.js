@@ -626,10 +626,10 @@ function displayPosts(posts) {
                 <img src="${post.image_url}" alt="Post image" class="post-image">
             ` : ''}
             <div class="post-actions">
-                <div class="post-action">
-                    <i class="far fa-heart"></i>
-                    <span>${post.likes_count || 0}</span>
-                </div>
+                <button class="post-action like-action ${post.is_liked ? 'liked' : ''}" data-post-id="${post.id}">
+                    <i class="${post.is_liked ? 'fas' : 'far'} fa-heart"></i>
+                    <span class="likes-count">${post.likes_count || 0}</span>
+                </button>
                 <div class="post-action">
                     <i class="far fa-comment"></i>
                     <span>${post.comments_count || 0}</span>
@@ -638,11 +638,56 @@ function displayPosts(posts) {
         </div>
     `).join('') : '<div class="no-posts">Не найдено публикаций</div>';
 
+    async function toggleLike(postId, button) {
+        try {
+            const response = await fetch('https://adminflow.ru:5003/api/posts/like', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    userId: currentUser.id,
+                    postId: postId
+                })
+            });
+    
+            if (response.ok) {
+                const data = await response.json();
+                const likesCount = button.querySelector('.likes-count');
+                const heartIcon = button.querySelector('i');
+    
+                if (data.liked) {
+                    button.classList.add('liked');
+                    heartIcon.classList.remove('far');
+                    heartIcon.classList.add('fas');
+                } else {
+                    button.classList.remove('liked');
+                    heartIcon.classList.remove('fas');
+                    heartIcon.classList.add('far');
+                }
+                
+                likesCount.textContent = data.likes_count;
+            }
+        } catch (err) {
+            console.error('Error toggling like:', err);
+            alert('Ошибка при обработке лайка');
+        }
+    }
+    // Добавляем обработчики
+    document.querySelectorAll('.delete-post-btn').forEach(btn => {
+        btn.addEventListener('click', () => deletePost(btn.dataset.postId));
+    });
+
+    // Добавляем обработчики для лайков
+    document.querySelectorAll('.like-action').forEach(btn => {
+        btn.addEventListener('click', () => toggleLike(btn.dataset.postId, btn));
+    });
+}
     // Добавляем обработчики для кнопок удаления
     document.querySelectorAll('.delete-post-btn').forEach(btn => {
         btn.addEventListener('click', () => deletePost(btn.dataset.postId));
     });
-}
+
 
 function removePostImage() {
     selectedPostImage = null;
