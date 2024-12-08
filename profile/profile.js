@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         } catch (err) {
             console.error('Error loading user profile:', err);
-            alert('Ошибка при загрузке профиля ��льзователя');
+            alert('Ошибка при загрузке профиля пользователя');
             window.location.href = '/profile/profile.html';
         }
     } else {
@@ -235,7 +235,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         `).join('');
     }
 
-    // Функции для работы �� друзьями
+    // Функции для работы с друзьями
     async function loadFriends(userId) {
         if (!userId) {
             console.warn('loadFriends: userId is undefined');
@@ -280,46 +280,63 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        // Обновляем мини-список друзей в профиле (максимум 4 друга)
+        // Обновляем счетчик друзей в заголовке секции
+        const friendsHeaderCount = document.querySelector('.friends-section .friends-count');
+        if (friendsHeaderCount) {
+            friendsHeaderCount.textContent = friends.length;
+        }
+
+        // Обновляем счетчик в модальном окне
+        const modalFriendCount = document.querySelector('.modal-tabs .friend-count');
+        if (modalFriendCount) {
+            modalFriendCount.textContent = friends.length;
+        }
+
+        // Обновляем мини-список друзей в профиле
         const friendsGrid = document.querySelector('.friends-grid');
         const maxFriendsInGrid = 4;
         
-        friendsGrid.innerHTML = friends.length > 0 
-            ? friends.slice(0, maxFriendsInGrid).map(friend => `
-                <a href="/profile/profile.html?id=${friend.id}" class="friend-item">
-                    <img src="${friend.avatar_url || '/uploads/avatars/default.png'}" 
-                         alt="${friend.username}"
-                         class="friend-avatar">
-                    <span class="friend-name">${friend.username}</span>
-                </a>
-            `).join('') + (friends.length > maxFriendsInGrid 
-                ? `<button class="friend-item more-friends" onclick="openFriendsModal()">
-                     <span>+${friends.length - maxFriendsInGrid}</span>
-                   </button>`
-                : '')
-            : `<div class="friend-placeholder">
-                 <img src="/uploads/avatars/default.png" alt="No friends" class="friend-avatar">
-                 <span class="friend-name">Пока нет друзей</span>
-               </div>`;
+        if (friendsGrid) {
+            friendsGrid.innerHTML = friends.length > 0 
+                ? friends.slice(0, maxFriendsInGrid).map(friend => `
+                    <a href="/profile/profile.html?id=${friend.id}" class="friend-item">
+                        <img src="${friend.avatar_url || '/uploads/avatars/default.png'}" 
+                             alt="${friend.username}"
+                             class="friend-avatar">
+                        <span class="friend-name">${friend.username}</span>
+                    </a>
+                `).join('') + (friends.length > maxFriendsInGrid 
+                    ? `<button class="friend-item more-friends" onclick="openFriendsModal()">
+                         <span>+${friends.length - maxFriendsInGrid}</span>
+                       </button>`
+                    : '')
+                : `<div class="friend-placeholder">
+                     <img src="/uploads/avatars/default.png" alt="No friends" class="friend-avatar">
+                     <span class="friend-name">Пока нет друзей</span>
+                   </div>`;
+        }
 
         // Обновляем полный список друзей в модальном окне
-        friendsList.innerHTML = friends.map(friend => `
-            <div class="friend-card">
-                <img src="${friend.avatar_url || '/uploads/avatars/default.png'}" 
-                     alt="${friend.username}" 
-                     class="friend-avatar">
-                <div class="friend-info">
-                    <div class="friend-name">${friend.username}</div>
-                    ${isCurrentUser ? `
-                        <div class="friend-actions">
-                            <button class="remove-friend-btn" data-user-id="${friend.id}">
-                                <i class="fas fa-user-minus"></i> Удалить из друзей
-                            </button>
-                        </div>
-                    ` : ''}
+        const friendsList = document.querySelector('.friends-list');
+        if (friendsList) {
+            friendsList.innerHTML = friends.map(friend => `
+                <div class="friend-card">
+                    <img src="${friend.avatar_url || '/uploads/avatars/default.png'}" 
+                         alt="${friend.username}" 
+                         class="friend-avatar">
+                    <div class="friend-info">
+                        <div class="friend-name">${friend.username}</div>
+                        ${isCurrentUser ? `
+                            <div class="friend-actions">
+                                <button class="remove-friend-btn" data-user-id="${friend.id}">
+                                    <i class="fas fa-user-minus"></i> Удалить из друзей
+                                </button>
+                            </div>
+                        ` : ''}
+                    </div>
                 </div>
-            </div>
-        `).join('');
+            `).join('');
+        }
 
         // Добавляем обработчики для кнопок удаления
         if (isCurrentUser) {
@@ -328,23 +345,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }
 
-        // Добавляем обработчик для кнопки "Показать больше друзей"
-        const moreFriendsBtn = document.querySelector('.more-friends');
-        if (moreFriendsBtn) {
-            moreFriendsBtn.addEventListener('click', () => {
-                const friendsModal = document.getElementById('friends-modal');
-                const friendsTab = document.querySelector('[data-tab="friends-tab"]');
-                
-                // Открываем модальное окно
-                friendsModal.classList.add('active');
-                document.body.style.overflow = 'hidden';
-                
-                // Активируем вкладку с друзьями
-                if (friendsTab) {
-                    friendsTab.click();
-                }
-            });
-        }
+        // Добавляем отладочную информацию
+        console.log('Displaying friends:', {
+            total: friends.length,
+            displayed: Math.min(friends.length, maxFriendsInGrid),
+            isCurrentUser
+        });
     }
 
     function displayFriendRequests(requests) {
@@ -416,7 +422,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Обновляем отображе��ие результатов поиска
+    // Обновляем отображение результатов поиска
     function displaySearchResults(users) {
         const searchResults = document.querySelector('.search-results');
         searchResults.innerHTML = users.map(user => {
@@ -446,7 +452,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             `;
         }).join('');
 
-        // Д��бавляем обработчики для кнопок добавления в друзья
+        // Добавляем обработчики для кнопок добавления в друзья
         document.querySelectorAll('.add-friend-btn').forEach(btn => {
             btn.addEventListener('click', () => sendFriendRequest(btn.dataset.userId));
         });
@@ -477,7 +483,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Обновляем обработчик открытия модального окна
     document.querySelector('.friends-header-btn').addEventListener('click', () => {
-        // Обновляем списки при открытии модально��о окна
+        // Обновляем списки при открытии модального окна
         loadFriends();
         loadFriendRequests();
     });
@@ -679,7 +685,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const now = new Date();
         const diffMinutes = Math.floor((now - lastActiveTime) / (1000 * 60));
         
-        if (diffMinutes < 1) return 'Только что';
+        if (diffMinutes < 1) return 'То��ько что';
         if (diffMinutes < 5) return 'Активен';
         if (diffMinutes < 60) return `Был ${diffMinutes} мин. назад`;
         
@@ -718,7 +724,7 @@ function initializePostHandlers() {
             }, 10);
         } else {
             postForm.classList.remove('active');
-            // Скрываем форму после завершения ани��ации
+            // Скрываем форму после завершения анимации
             setTimeout(() => {
                 postForm.style.display = 'none';
             }, 300);
@@ -920,7 +926,7 @@ function removePostImage() {
 
 // Добавляем функцию удаления поста
 async function deletePost(postId) {
-    if (!confirm('Вы уверены, чт�� хотите удалить эту публикацию?')) {
+    if (!confirm('Вы уверены, что хотите удалить эту публикацию?')) {
         return;
     }
 
@@ -1036,7 +1042,7 @@ window.openFriendsModal = function() {
     friendsModal.classList.add('active');
     document.body.style.overflow = 'hidden';
     
-    // Активируем вкладку с друзьями
+    // Активируем вкладку с друзь��ми
     if (friendsTab) {
         friendsTab.click();
     }
