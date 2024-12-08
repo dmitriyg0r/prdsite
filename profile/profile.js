@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         } catch (err) {
             console.error('Error loading user profile:', err);
-            alert('Ошибка при загрузке профиля пользователя');
+            alert('Ошибка при загрузке профиля ��ользователя');
             window.location.href = '/profile/profile.html';
         }
     } else {
@@ -527,7 +527,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 loadFriends();
             } else {
                 const data = await response.json();
-                alert(data.error || 'Ошибка при удалении из друзей');
+                alert(data.error || 'Ошибка при ��далении из друзей');
             }
         } catch (err) {
             console.error('Error removing friend:', err);
@@ -557,7 +557,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         } catch (err) {
             console.error('Error loading user profile:', err);
-            alert('Ошибка при загрузке профиля пользователя');
+            alert('Ошибка при загрузке профи��я пользователя');
         }
     }
 
@@ -685,7 +685,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const now = new Date();
         const diffMinutes = Math.floor((now - lastActiveTime) / (1000 * 60));
         
-        if (diffMinutes < 1) return 'То��ько что';
+        if (diffMinutes < 1) return 'Только что';
         if (diffMinutes < 5) return 'Активен';
         if (diffMinutes < 60) return `Был ${diffMinutes} мин. назад`;
         
@@ -718,7 +718,7 @@ function initializePostHandlers() {
     createPostBtn?.addEventListener('click', () => {
         if (postForm.style.display === 'none' || !postForm.style.display) {
             postForm.style.display = 'block';
-            // Добавляем класс active после небольшой задержки для анимации
+            // Добавляем класс active ��осле небольшой задержки для анимации
             setTimeout(() => {
                 postForm.classList.add('active');
             }, 10);
@@ -819,52 +819,82 @@ async function loadPosts() {
 
 function displayPosts(posts) {
     const container = document.getElementById('posts-container');
-    container.innerHTML = posts.length ? posts.map(post => `
-        <div class="post" data-post-id="${post.id}">
-            <div class="post-header">
-                <img src="${post.author_avatar || '/uploads/avatars/default.png'}" 
-                     alt="${post.author_name}" 
-                     class="post-avatar">
-                <div class="post-info">
-                    <div class="post-author">${post.author_name}</div>
-                    <div class="post-date">${new Date(post.created_at).toLocaleString()}</div>
-                </div>
-                ${post.user_id === currentUser.id ? `
-                    <button class="delete-post-btn" data-post-id="${post.id}">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                ` : ''}
-            </div>
-            <div class="post-content">${post.content}</div>
-            ${post.image_url ? `
-                <div class="post-media">
-                    <div class="post-image-container" onclick='openImageInFullscreen("${post.image_url}", ${JSON.stringify({
-                        author_name: post.author_name,
-                        author_avatar: post.author_avatar,
-                        created_at: post.created_at,
-                        content: post.content
-                    }).replace(/'/g, "&apos;")})'>
-                        <img src="${post.image_url}" 
-                             alt="Post image" 
-                             class="post-image">
-                        <div class="image-overlay">
-                            <i class="fas fa-expand"></i>
+    container.innerHTML = posts.length ? posts.map(post => {
+        // Определяем тип файла
+        let mediaContent = '';
+        if (post.image_url) {
+            const fileExtension = post.image_url.split('.').pop().toLowerCase();
+            
+            // Список расширений изображений
+            const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+            
+            if (imageExtensions.includes(fileExtension)) {
+                // Для изображений
+                mediaContent = `
+                    <div class="post-media">
+                        <div class="post-image-container" onclick='openImageInFullscreen("${post.image_url}", ${JSON.stringify({
+                            author_name: post.author_name,
+                            author_avatar: post.author_avatar,
+                            created_at: post.created_at,
+                            content: post.content
+                        }).replace(/'/g, "&apos;")})'>
+                            <img src="${post.image_url}" alt="Post image" class="post-image">
+                            <div class="image-overlay">
+                                <i class="fas fa-expand"></i>
+                            </div>
                         </div>
                     </div>
+                `;
+            } else {
+                // Для документов
+                const fileName = post.image_url.split('/').pop();
+                const fileIcon = getFileIcon(fileExtension);
+                mediaContent = `
+                    <div class="post-file">
+                        <i class="${fileIcon} post-file-icon"></i>
+                        <div class="post-file-info">
+                            <div class="post-file-name">${fileName}</div>
+                            <div class="post-file-size">Документ</div>
+                        </div>
+                        <a href="${post.image_url}" target="_blank" class="post-file-download">
+                            <i class="fas fa-download"></i>
+                        </a>
+                    </div>
+                `;
+            }
+        }
+
+        return `
+            <div class="post" data-post-id="${post.id}">
+                <div class="post-header">
+                    <img src="${post.author_avatar || '/uploads/avatars/default.png'}" 
+                         alt="${post.author_name}" 
+                         class="post-avatar">
+                    <div class="post-info">
+                        <div class="post-author">${post.author_name}</div>
+                        <div class="post-date">${new Date(post.created_at).toLocaleString()}</div>
+                    </div>
+                    ${post.user_id === currentUser.id ? `
+                        <button class="delete-post-btn" data-post-id="${post.id}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    ` : ''}
                 </div>
-            ` : ''}
-            <div class="post-actions">
-                <button class="post-action like-action ${post.is_liked ? 'liked' : ''}" data-post-id="${post.id}">
-                    <i class="${post.is_liked ? 'fas' : 'far'} fa-heart"></i>
-                    <span class="likes-count">${post.likes_count || 0}</span>
-                </button>
-                <div class="post-action">
-                    <i class="far fa-comment"></i>
-                    <span>${post.comments_count || 0}</span>
+                <div class="post-content">${post.content}</div>
+                ${mediaContent}
+                <div class="post-actions">
+                    <button class="post-action like-action ${post.is_liked ? 'liked' : ''}" data-post-id="${post.id}">
+                        <i class="${post.is_liked ? 'fas' : 'far'} fa-heart"></i>
+                        <span class="likes-count">${post.likes_count || 0}</span>
+                    </button>
+                    <div class="post-action">
+                        <i class="far fa-comment"></i>
+                        <span>${post.comments_count || 0}</span>
+                    </div>
                 </div>
             </div>
-        </div>
-    `).join('') : '<div class="no-posts">Не найдено публикаций</div>';
+        `;
+    }).join('') : '<div class="no-posts">Не найдено публикаций</div>';
 
     // Добавляем обработчики
     document.querySelectorAll('.delete-post-btn').forEach(btn => {
@@ -1042,8 +1072,23 @@ window.openFriendsModal = function() {
     friendsModal.classList.add('active');
     document.body.style.overflow = 'hidden';
     
-    // Активируем вкладку с друзь��ми
+    // Активируем вкладку с друзьями
     if (friendsTab) {
         friendsTab.click();
     }
-}; 
+};
+
+// Функция для определения иконки файла
+function getFileIcon(extension) {
+    const iconMap = {
+        'pdf': 'fas fa-file-pdf',
+        'doc': 'fas fa-file-word',
+        'docx': 'fas fa-file-word',
+        'xls': 'fas fa-file-excel',
+        'xlsx': 'fas fa-file-excel',
+        'txt': 'fas fa-file-alt',
+        // Добавьте другие типы файлов по необходимости
+    };
+    
+    return iconMap[extension] || 'fas fa-file';
+}
