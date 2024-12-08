@@ -202,7 +202,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         `).join('');
     }
 
-    // Функции для работы �� друзьями
+    // Функции для работы с друзьями
     async function loadFriends() {
         try {
             const response = await fetch(`https://adminflow.ru:5003/api/friends?userId=${currentUser.id}`);
@@ -757,28 +757,30 @@ window.openImageInFullscreen = function(imageSrc, postData) {
 
     modal.innerHTML = `
         <div class="modal-content">
-            <div class="modal-image-header">
-                <div class="modal-author-info">
-                    <img src="${postData.author_avatar || '/uploads/avatars/default.png'}" 
-                         alt="${postData.author_name}" 
-                         class="modal-author-avatar">
-                    <div class="modal-author-details">
-                        <span class="modal-author-name">${postData.author_name}</span>
-                        <span class="modal-post-date">${postDate}</span>
+            <button class="close-modal">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-flex-container">
+                <div class="modal-image-side">
+                    <img src="${imageSrc}" alt="Full size image">
+                </div>
+                <div class="modal-info-side">
+                    <div class="modal-author-info">
+                        <img src="${postData.author_avatar || '/uploads/avatars/default.png'}" 
+                             alt="${postData.author_name}" 
+                             class="modal-author-avatar">
+                        <div class="modal-author-details">
+                            <span class="modal-author-name">${postData.author_name}</span>
+                            <span class="modal-post-date">${postDate}</span>
+                        </div>
                     </div>
+                    ${postData.content ? `
+                        <div class="modal-post-content">
+                            ${postData.content}
+                        </div>
+                    ` : ''}
                 </div>
-                <button class="close-modal">
-                    <i class="fas fa-times"></i>
-                </button>
             </div>
-            <div class="modal-image-container">
-                <img src="${imageSrc}" alt="Full size image">
-            </div>
-            ${postData.content ? `
-                <div class="modal-post-content">
-                    ${postData.content}
-                </div>
-            ` : ''}
         </div>
     `;
     

@@ -1444,70 +1444,51 @@ body {
     visibility: visible;
 }
 
-.image-modal .modal-content {
+.modal-content {
     position: relative;
-    max-width: 90%;
-    max-height: 90vh;
-    transform: scale(0.95);
-    transition: transform 0.3s ease;
+    width: 90%;
+    max-width: 1200px;
+    height: 90vh;
+    background: var(--text-container-background);
+    border-radius: 8px;
+    overflow: hidden;
 }
 
-.image-modal.active .modal-content {
-    transform: scale(1);
+.modal-flex-container {
+    display: flex;
+    height: 100%;
 }
 
-.image-modal img {
-    max-width: 100%;
-    max-height: 90vh;
-    object-fit: contain;
-    border-radius: 4px;
-}
-
-.image-modal .close-modal {
-    position: absolute;
-    top: -40px;
-    right: -40px;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.1);
-    border: none;
-    color: white;
-    cursor: pointer;
+.modal-image-side {
+    flex: 1;
+    background: #000;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.3s ease;
+    min-width: 0; /* Для корректной работы flex-shrink */
 }
 
-.image-modal .close-modal:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: rotate(90deg);
+.modal-image-side img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
 }
 
-@media (max-width: 768px) {
-    .image-modal .close-modal {
-        top: -50px;
-        right: 0;
-    }
-}
-
-.modal-image-header {
-    position: absolute;
-    top: -60px;
-    left: 0;
-    right: 0;
+.modal-info-side {
+    width: 350px;
+    padding: 20px;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 0;
-    color: white;
+    flex-direction: column;
+    border-left: 1px solid var(--border-color);
+    background: var(--text-container-background);
 }
 
 .modal-author-info {
     display: flex;
     align-items: center;
     gap: 12px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .modal-author-avatar {
@@ -1515,7 +1496,6 @@ body {
     height: 40px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid rgba(255, 255, 255, 0.2);
 }
 
 .modal-author-details {
@@ -1525,70 +1505,75 @@ body {
 
 .modal-author-name {
     font-weight: 600;
-    font-size: 1.1em;
+    color: var(--text-color);
 }
 
 .modal-post-date {
     font-size: 0.9em;
-    opacity: 0.8;
-}
-
-.modal-image-container {
-    position: relative;
-    max-height: calc(90vh - 120px);
-    overflow: hidden;
-    border-radius: 8px;
-    background: rgba(0, 0, 0, 0.1);
+    color: var(--text-secondary);
 }
 
 .modal-post-content {
-    color: white;
-    padding: 20px;
-    max-width: 800px;
-    margin: 0 auto;
-    font-size: 1.1em;
+    margin-top: 15px;
+    color: var(--text-color);
     line-height: 1.6;
-    background: rgba(0, 0, 0, 0.5);
-    border-radius: 0 0 8px 8px;
+    overflow-y: auto;
     white-space: pre-wrap;
 }
 
-.image-modal .modal-content {
-    background: transparent;
-    max-width: 90%;
-    margin: 0 auto;
+.close-modal {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.5);
+    border: none;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    z-index: 2;
 }
 
-.image-modal img {
-    max-width: 100%;
-    max-height: calc(90vh - 120px);
-    object-fit: contain;
-    display: block;
-    margin: 0 auto;
+.close-modal:hover {
+    background: rgba(0, 0, 0, 0.7);
+    transform: rotate(90deg);
 }
 
 /* Адаптивность */
+@media (max-width: 992px) {
+    .modal-flex-container {
+        flex-direction: column;
+    }
+
+    .modal-image-side {
+        height: 60vh;
+    }
+
+    .modal-info-side {
+        width: 100%;
+        height: 40vh;
+        border-left: none;
+        border-top: 1px solid var(--border-color);
+    }
+}
+
 @media (max-width: 768px) {
-    .modal-image-header {
-        top: -80px;
-        padding: 10px;
+    .modal-content {
+        width: 100%;
+        height: 100%;
+        border-radius: 0;
     }
 
-    .modal-author-avatar {
-        width: 32px;
-        height: 32px;
+    .modal-image-side {
+        height: 50vh;
     }
 
-    .modal-author-name {
-        font-size: 1em;
-    }
-
-    .modal-post-date {
-        font-size: 0.8em;
-    }
-
-    .modal-post-content {
-        padding: 15px;
-        font-size: 1em;
+    .modal-info-side {
+        height: 50vh;
     }
 }
