@@ -928,10 +928,24 @@ body {
     margin-bottom: var(--spacing-md);
 }
 
+.post-media {
+    margin: var(--spacing-md) 0;
+}
+
+.post-image-container {
+    position: relative;
+    width: 100%;
+    max-height: 400px;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
 .post-image {
     width: 100%;
-    border-radius: var(--radius-md);
-    margin-bottom: var(--spacing-md);
+    height: 100%;
+    max-height: 400px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
 }
 
 /* Стили для предпросмотра изображений */
