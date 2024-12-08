@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Админ панель - AdminFlow</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="admin.css">
 </head>
@@ -23,8 +22,7 @@
                 <h2>AdminFlow</h2>
             </div>
             <nav>
-                <a href="#dashboard" class="active"><i class="fas fa-home"></i> Дашборд</a>
-                <a href="#users"><i class="fas fa-users"></i> Пользователи</a>
+                <a href="#users" class="active"><i class="fas fa-users"></i> Пользователи</a>
                 <a href="#messages"><i class="fas fa-envelope"></i> Сообщения</a>
                 <a href="#reports"><i class="fas fa-flag"></i> Жалобы</a>
                 <a href="#settings"><i class="fas fa-cog"></i> Настройки</a>
@@ -44,51 +42,6 @@
                 <div class="notifications">
                     <i class="fas fa-bell"></i>
                     <span class="badge" id="notificationCount">0</span>
-                </div>
-            </div>
-
-            <div class="dashboard-section">
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon"><i class="fas fa-users"></i></div>
-                        <div class="stat-info">
-                            <h3>Всего пользователей</h3>
-                            <div class="value" id="totalUsers">-</div>
-                            <div class="trend positive">+5.2% <i class="fas fa-arrow-up"></i></div>
-                        </div>
-                        <canvas id="userActivityChart"></canvas>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Новых за 24ч</h3>
-                        <div class="value" id="newUsers">-</div>
-                        <canvas id="registrationChart"></canvas>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Всего сообщений</h3>
-                        <div class="value" id="totalMessages">-</div>
-                        <canvas id="messageChart"></canvas>
-                    </div>
-                    <div class="stat-card">
-                        <h3>Сообщений за 24ч</h3>
-                        <div class="value" id="newMessages">-</div>
-                        <canvas id="messageChart"></canvas>
-                    </div>
-                </div>
-
-                <div class="charts-container">
-                    <div class="chart-card">
-                        <h3>Активность пользователей</h3>
-                        <canvas id="activityChart"></canvas>
-                    </div>
-                    <div class="chart-card">
-                        <h3>Статистика сообщений</h3>
-                        <canvas id="messagesChart"></canvas>
-                    </div>
-                </div>
-
-                <div class="recent-activity">
-                    <h3>Последние действия</h3>
-                    <div class="activity-list" id="activityList"></div>
                 </div>
             </div>
 
@@ -124,9 +77,9 @@
                         <tbody id="usersTableBody">
                         </tbody>
                     </table>
+                </div>
 
-                    <div class="pagination" id="pagination">
-                    </div>
+                <div class="pagination" id="pagination">
                 </div>
             </div>
         </div>
