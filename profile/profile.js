@@ -28,10 +28,23 @@ document.addEventListener('DOMContentLoaded', async () => {
                 new Date(data.user.last_login).toLocaleString() : 'Нет данных';
             document.getElementById('profile-avatar').src = data.user.avatar_url || '/uploads/avatars/default.png';
 
-            // Скрываем кнопки редактирования и выхода
+            // Проверяем онлайн-статус друга
+            checkOnlineStatus(profileId);
+            setInterval(() => checkOnlineStatus(profileId), 60000);
+
+            // Загружаем список друзей профиля друга
+            loadFriends(profileId);
+            
+            // Скрываем элементы управления профилем
             document.getElementById('edit-profile-btn').style.display = 'none';
             document.getElementById('logout-btn').style.display = 'none';
             document.querySelector('.avatar-overlay').style.display = 'none';
+            
+            // Скрываем вкладку запросов в друзья в модальном окне
+            const requestsTab = document.querySelector('[data-tab="requests-tab"]');
+            if (requestsTab) {
+                requestsTab.style.display = 'none';
+            }
 
             // Добавляем кнопку "Написать сообщение" под аватаркой
             const avatarBlock = document.querySelector('.profile-avatar-block');
@@ -48,12 +61,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
             avatarBlock.appendChild(messageButton);
 
-            // Добавляем первичную проверку статуса
-            checkOnlineStatus(profileId);
-            
-            // Запускаем периодическую проверку статуса
-            setInterval(() => checkOnlineStatus(profileId), 60000); // Проверяем каждую минуту
-            
         } catch (err) {
             console.error('Error loading user profile:', err);
             alert('Ошибка при загрузке профиля пользователя');
@@ -67,6 +74,27 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('last_login').textContent = currentUser.last_login ? 
             new Date(currentUser.last_login).toLocaleString() : 'Нет данных';
         document.getElementById('profile-avatar').src = currentUser.avatar_url || '/uploads/avatars/default.png';
+
+        // Загружаем список друзей текущего пользователя
+        loadFriends(currentUser.id);
+        loadFriendRequests();
+
+        // Обновляем статус текущего пользователя
+        setInterval(async () => {
+            try {
+                await fetch('https://adminflow.ru:5003/api/users/update-status', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        userId: currentUser.id
+                    })
+                });
+            } catch (err) {
+                console.error('Error updating status:', err);
+            }
+        }, 60000);
     }
 
     // Загружаем список друзей
@@ -210,13 +238,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Функции для работы с друзьями
-    async function loadFriends() {
+    async function loadFriends(userId) {
         try {
-            const response = await fetch(`https://adminflow.ru:5003/api/friends?userId=${currentUser.id}`);
+            const response = await fetch(`https://adminflow.ru:5003/api/friends?userId=${userId}`);
             const data = await response.json();
             
             if (response.ok) {
-                displayFriends(data.friends);
+                displayFriends(data.friends, userId === currentUser.id);
                 updateFriendsCount(data.friends.length);
             }
         } catch (err) {
@@ -238,7 +266,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    function displayFriends(friends) {
+    function displayFriends(friends, isCurrentUser) {
         const friendsList = document.querySelector('.friends-list');
         friendsList.innerHTML = friends.map(friend => `
             <div class="friend-card">
@@ -249,11 +277,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="friend-info">
                     <div class="friend-name">${friend.username}</div>
                     <div class="friend-status">В сети</div>
-                    <div class="friend-actions">
-                        <button class="remove-friend-btn" data-user-id="${friend.id}">
-                            <i class="fas fa-user-minus"></i> Удалить из друзей
-                        </button>
-                    </div>
+                    ${isCurrentUser ? `
+                        <div class="friend-actions">
+                            <button class="remove-friend-btn" data-user-id="${friend.id}">
+                                <i class="fas fa-user-minus"></i> Удалить из друзей
+                            </button>
+                        </div>
+                    ` : ''}
                 </div>
             </div>
         `).join('');
@@ -288,6 +318,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             });
         });
+
+        // Добавляем обработчики для кнопок удаления только если это профиль текущего пользователя
+        if (isCurrentUser) {
+            document.querySelectorAll('.remove-friend-btn').forEach(btn => {
+                btn.addEventListener('click', () => removeFriend(btn.dataset.userId));
+            });
+        }
     }
 
     function displayFriendRequests(requests) {
@@ -418,7 +455,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Обновляем обработчик открытия мод��льного окна
+    // Обновляем обработчик открытия модального окна
     document.querySelector('.friends-header-btn').addEventListener('click', () => {
         // Обновляем списки при открытии модального окна
         loadFriends();
@@ -515,7 +552,7 @@ function initializePostHandlers() {
     createPostBtn?.addEventListener('click', () => {
         if (postForm.style.display === 'none' || !postForm.style.display) {
             postForm.style.display = 'block';
-            // Добавляем класс active после небольшой задерж��и для анимации
+            // Добавляем класс active после небольшой задержки для анимации
             setTimeout(() => {
                 postForm.classList.add('active');
             }, 10);
