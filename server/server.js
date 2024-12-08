@@ -306,7 +306,7 @@ app.get('/api/friends', async (req, res) => {
         res.json({ friends: result.rows });
     } catch (err) {
         console.error('Get friends error:', err);
-        res.status(500).json({ error: 'Ошибка при получении ��писка друзей' });
+        res.status(500).json({ error: 'Ошибка при получении списка друзей' });
     }
 });
 
@@ -347,7 +347,7 @@ app.post('/api/friend/remove', async (req, res) => {
     }
 });
 
-// Насройка хранилища для файлов сообщений
+// Нас��ойка хранилища для файлов сообщений
 const messageStorage = multer.diskStorage({
     destination: function (req, file, cb) {
         const uploadDir = path.join(__dirname, '../public/uploads/messages');
@@ -642,7 +642,7 @@ app.post('/api/messages/send-with-file', messageUpload.single('file'), async (re
 // Обновляем middleware checkAdmin
 const checkAdmin = async (req, res, next) => {
     try {
-        // Про��еряем adminId в query параметрах или в теле зпроса
+        // Проверяем adminId в query параметрах или в теле зпроса
         const adminId = req.query.adminId || req.body.adminId;
         
         console.log('Checking admin rights for:', adminId); // Добавляем лог
@@ -849,30 +849,33 @@ app.get('/api/users/:id', async (req, res) => {
 // Настройка хранилища для изображений постов
 const postStorage = multer.diskStorage({
     destination: function (req, file, cb) {
-        const dir = 'uploads/posts';
-        // Создаем директорию, если её нет
-        if (!fs.existsSync(dir)) {
-            fs.mkdirSync(dir, { recursive: true });
+        const uploadDir = '/var/www/html/uploads/posts';
+        // Создаем директорию, если она не существует
+        if (!fs.existsSync(uploadDir)){
+            fs.mkdirSync(uploadDir, { recursive: true });
         }
-        cb(null, dir);
+        cb(null, uploadDir);
     },
     filename: function (req, file, cb) {
-        cb(null, 'post-' + Date.now() + path.extname(file.originalname));
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, 'post-' + uniqueSuffix + path.extname(file.originalname));
     }
 });
 
 const uploadPost = multer({ 
     storage: postStorage,
     limits: {
-        fileSize: 5 * 1024 * 1024 // 5MB
+        fileSize: 5 * 1024 * 1024 // 5MB макс размер
     },
     fileFilter: (req, file, cb) => {
-        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
-        if (allowedTypes.includes(file.mimetype)) {
-            cb(null, true);
-        } else {
-            cb(new Error('Неподдерживаемый формат файла'));
+        const filetypes = /jpeg|jpg|png|gif/;
+        const mimetype = filetypes.test(file.mimetype);
+        const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+
+        if (mimetype && extname) {
+            return cb(null, true);
         }
+        cb(new Error('Разрешены только изображения!'));
     }
 });
 
@@ -976,4 +979,7 @@ app.delete('/api/posts/delete/:postId', async (req, res) => {
         console.error('Error deleting post:', err);
         res.status(500).json({ error: 'Ошибка при удалении поста' });
     }
-}); 
+});
+
+// Добавляем раздачу статических файлов для постов
+app.use('/uploads/posts', express.static('/var/www/html/uploads/posts')); 
