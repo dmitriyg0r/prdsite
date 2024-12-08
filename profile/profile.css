@@ -1119,3 +1119,58 @@ body {
 .post:hover .delete-post-btn {
     opacity: 0.7;
 }
+
+/* Стили для всех списков в модальном окне друзей */
+.friends-list,
+.requests-list,
+.search-results {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: var(--spacing-md);
+    background: var(--surface-color);
+}
+
+/* Общие стили для карточек во всех разделах */
+.friend-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: var(--surface-color);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+}
+
+/* Стили для поиска */
+.search-container {
+    display: flex;
+    gap: 8px;
+    margin-bottom: var(--spacing-md);
+    background: var(--surface-color);
+}
+
+/* Стили для вкладок и их содержимого */
+.tab-content {
+    display: none;
+    background: var(--surface-color);
+}
+
+.tab-content.active {
+    display: block;
+    background: var(--surface-color);
+}
+
+/* Стили для результатов поиска */
+.search-results {
+    margin-top: var(--spacing-md);
+    background: var(--surface-color);
+}
+
+/* Общие стили для всего содержимого модального окна */
+.modal-body {
+    background: var(--surface-color);
+}
+
+.modal-body > div {
+    background: var(--surface-color);
+}
