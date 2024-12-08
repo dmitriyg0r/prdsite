@@ -292,7 +292,15 @@ app.post('/api/friend-request/respond', async (req, res) => {
 // Получение списка друзей
 app.get('/api/friends', async (req, res) => {
     try {
-        const userId = req.query.userId;
+        const userId = parseInt(req.query.userId);
+
+        // Проверяем, что userId является числом
+        if (!userId || isNaN(userId)) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'Invalid user ID' 
+            });
+        }
 
         const result = await pool.query(`
             SELECT u.id, u.username, u.avatar_url, f.status
@@ -303,10 +311,16 @@ app.get('/api/friends', async (req, res) => {
             WHERE f.status = 'accepted'
         `, [userId]);
 
-        res.json({ friends: result.rows });
+        res.json({ 
+            success: true, 
+            friends: result.rows 
+        });
     } catch (err) {
         console.error('Get friends error:', err);
-        res.status(500).json({ error: 'Ошибка при получении списка друзей' });
+        res.status(500).json({ 
+            success: false, 
+            error: 'Ошибка при получении списка друзей' 
+        });
     }
 });
 
@@ -343,7 +357,7 @@ app.post('/api/friend/remove', async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         console.error('Remove friend error:', err);
-        res.status(500).json({ error: 'Ошибка при удалении из друзей' });
+        res.status(500).json({ error: 'Ошибка при удалении из ��рузей' });
     }
 });
 
@@ -483,7 +497,7 @@ app.get('/api/messages/last/:userId/:friendId', async (req, res) => {
     }
 });
 
-// Получение колич��ства непрочитанных сообщений
+// Получение количества непрочитанных сообщений
 app.get('/api/messages/unread/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
@@ -1014,15 +1028,25 @@ app.use('/uploads/posts', express.static('/var/www/html/uploads/posts'));
 // Получение статуса пользователя
 app.get('/api/users/status/:userId', async (req, res) => {
     try {
-        const { userId } = req.params;
-        
+        const userId = parseInt(req.params.userId);
+
+        if (!userId || isNaN(userId)) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'Invalid user ID' 
+            });
+        }
+
         const result = await pool.query(
             'SELECT is_online, last_activity FROM users WHERE id = $1',
             [userId]
         );
 
         if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Пользователь не найден' });
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Пользователь не найден' 
+            });
         }
 
         res.json({
@@ -1032,15 +1056,26 @@ app.get('/api/users/status/:userId', async (req, res) => {
         });
     } catch (err) {
         console.error('Error getting user status:', err);
-        res.status(500).json({ error: 'Ошибка при получении статуса пользователя' });
+        res.status(500).json({ 
+            success: false, 
+            error: 'Ошибка при получении статуса пользователя' 
+        });
     }
 });
 
 // Обновление статуса пользователя
 app.post('/api/users/update-status', async (req, res) => {
     try {
-        const { userId, is_online = true } = req.body;
-        
+        const userId = parseInt(req.body.userId);
+        const is_online = req.body.is_online ?? true;
+
+        if (!userId || isNaN(userId)) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'Invalid user ID' 
+            });
+        }
+
         await pool.query(
             'UPDATE users SET is_online = $1, last_activity = CURRENT_TIMESTAMP WHERE id = $2',
             [is_online, userId]
@@ -1049,7 +1084,10 @@ app.post('/api/users/update-status', async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         console.error('Error updating user status:', err);
-        res.status(500).json({ error: 'Ошибка при обновлении статуса пользователя' });
+        res.status(500).json({ 
+            success: false, 
+            error: 'Ошибка при обновлении статуса пользователя' 
+        });
     }
 });
 
