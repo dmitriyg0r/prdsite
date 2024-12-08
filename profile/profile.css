@@ -555,13 +555,14 @@ body {
 }
 
 /* Стили для модальных окон */
-.modal {
+.modal, .image-modal {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(255, 255, 255, 0.1); /* Светлый полупрозрачный фон для обеих тем */
+    backdrop-filter: blur(5px); /* Добавляем размытие для лучшего эффекта */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -571,11 +572,12 @@ body {
     transition: all 0.3s ease;
 }
 
-.modal.active {
+.modal.active, .image-modal.active {
     opacity: 1;
     visibility: visible;
 }
 
+/* Остальное содержимое использует переменные темы */
 .modal .modal-content {
     width: 90%;
     max-width: 800px;
@@ -584,35 +586,6 @@ body {
     border-radius: var(--radius-lg);
     overflow: hidden;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-}
-
-/* Стили для модального окна с изображением */
-.image-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.9);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    opacity: 0;
-    transition: all 0.3s ease;
-}
-
-.image-modal.active {
-    opacity: 1;
-}
-
-.image-modal .modal-content {
-    width: 90%;
-    max-width: 1200px;
-    background: #fff;
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
 .modal-flex-container {
@@ -754,7 +727,7 @@ body {
     font-size: 13px;
 }
 
-/* Стили для аватарок в мини-списке друзей */
+/* Стили для аватарок в мини-спи��ке друзей */
 .friend-avatar {
     width: 48px;
     height: 48px;
