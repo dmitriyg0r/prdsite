@@ -1063,3 +1063,102 @@ body {
     background: rgba(0, 0, 0, 0.7);
     transform: scale(1.1);
 }
+
+/* Стили для действий с постом (лайки и комментарии) */
+.post-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 8px 0;
+    margin-top: 8px;
+    border-top: 1px solid var(--border-light);
+}
+
+.post-action {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: var(--text-secondary);
+    background: none;
+    border: none;
+}
+
+.post-action:hover {
+    background: var(--hover-color);
+    color: var(--text-primary);
+}
+
+.post-action i {
+    font-size: 18px;
+    transition: transform 0.3s ease;
+}
+
+.post-action:hover i {
+    transform: scale(1.1);
+}
+
+/* Специальные стили для кнопки лайка */
+.like-action {
+    color: var(--text-secondary);
+}
+
+.like-action.liked {
+    color: var(--error-color);
+}
+
+.like-action.liked i {
+    color: var(--error-color);
+}
+
+.like-action:hover {
+    background: var(--hover-color);
+}
+
+.like-action.liked:hover {
+    background: rgba(var(--error-rgb), 0.1);
+}
+
+.likes-count {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* Анимация для лайка */
+@keyframes likeAnimation {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+.like-action.liked i {
+    animation: likeAnimation 0.3s ease;
+}
+
+/* Убираем кнопку расширения изображения */
+.image-overlay .fa-expand {
+    display: none;
+}
+
+/* Обновляем стили для overlay изображения */
+.post-image-container .image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    cursor: pointer;
+}
+
+.post-image-container:hover .image-overlay {
+    opacity: 1;
+}
