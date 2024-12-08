@@ -233,11 +233,20 @@
 }
 
 .like-action.liked {
-    color: #FF4B6E;
+    color: #FF4B6E !important;
 }
 
 .like-action.liked i {
+    color: #FF4B6E !important;
     animation: likeAnimation 0.5s cubic-bezier(0.17, 0.89, 0.32, 1.49);
+}
+
+.like-action:hover {
+    background: rgba(255, 75, 110, 0.1);
+}
+
+.like-action.liked:hover {
+    background: rgba(255, 75, 110, 0.15);
 }
 
 @keyframes likeAnimation {
@@ -340,4 +349,12 @@
     #publish-post-btn {
         padding: 10px 20px;
     }
+}
+
+.likes-count {
+    transition: color 0.3s ease;
+}
+
+.like-action.liked .likes-count {
+    color: #FF4B6E !important;
 }
