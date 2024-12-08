@@ -318,27 +318,126 @@ body {
 
 /* Заголовок с количеством */
 .friends-header {
-    display: inline-flex;
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--border-light);
+}
+
+.friends-tabs {
+    display: flex;
+    gap: 8px;
+}
+
+.tab-btn {
+    display: flex;
     align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border: none;
+    background: none;
+    color: var(--text-secondary);
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: var(--radius-md);
+    transition: all 0.3s ease;
+}
+
+.tab-btn:hover {
+    background: var(--hover-color);
+    color: var(--text-primary);
+}
+
+.tab-btn.active {
+    background: var(--primary-color);
+    color: white;
+}
+
+.count-badge {
     background: var(--surface-color);
-    padding: 4px;
-    border-radius: 8px;
-    border: 1px solid var(--border-light);
+    color: var(--text-secondary);
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 12px;
+    min-width: 20px;
+    text-align: center;
+}
+
+.tab-btn.active .count-badge {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+/* Стили для контейнера контента */
+.friends-content {
+    padding: var(--spacing-md);
+}
+
+/* Стили для поиска друзей */
+.friend-search {
     margin-bottom: var(--spacing-md);
 }
 
-.friends-header h3 {
-    font-size: 14px;
-    margin: 0;
-    padding: 0 8px;
+.search-input-wrapper {
+    display: flex;
+    gap: 8px;
+    margin-bottom: var(--spacing-md);
 }
 
-.friends-count {
+.search-input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    background: var(--surface-color);
+    color: var(--text-primary);
+}
+
+.search-btn {
+    padding: 8px 16px;
     background: var(--primary-color);
     color: white;
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 12px;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.search-btn:hover {
+    background: var(--primary-dark);
+}
+
+/* Стили для заявок в друзья */
+.friend-request {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-radius: var(--radius-md);
+    background: var(--surface-color);
+    margin-bottom: 8px;
+}
+
+.request-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.accept-btn,
+.reject-btn {
+    padding: 4px 12px;
+    border-radius: var(--radius-md);
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.accept-btn {
+    background: var(--primary-color);
+    color: white;
+}
+
+.reject-btn {
+    background: var(--error-color);
+    color: white;
 }
 
 /* Сетка друзей */

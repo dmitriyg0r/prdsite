@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         } catch (err) {
             console.error('Error loading user profile:', err);
-            alert('Ошибка при загрузке профиля ��ользователя');
+            alert('Ошибка при загрузке профиля ользователя');
             window.location.href = '/profile/profile.html';
         }
     } else {
@@ -327,6 +327,24 @@ document.addEventListener('DOMContentLoaded', async () => {
                 btn.addEventListener('click', () => removeFriend(btn.dataset.userId));
             });
         }
+
+        // Добавляем обработчик для кнопки "Показать больше друзей"
+        const moreFriendsBtn = document.querySelector('.more-friends');
+        if (moreFriendsBtn) {
+            moreFriendsBtn.addEventListener('click', () => {
+                const friendsModal = document.getElementById('friends-modal');
+                const friendsTab = document.querySelector('[data-tab="friends-tab"]');
+                
+                // Открываем модальное окно
+                friendsModal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                
+                // Активируем вкладку с друзьями
+                if (friendsTab) {
+                    friendsTab.click();
+                }
+            });
+        }
     }
 
     function displayFriendRequests(requests) {
@@ -558,7 +576,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.addEventListener(eventName, updateActivity);
         });
         
-        // Проверяем активн��сть каждую минуту
+        // Проверяем активность каждую минуту
         setInterval(() => {
             const now = new Date();
             const diffMinutes = Math.floor((now - lastActivity) / (1000 * 60));
@@ -609,7 +627,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // О��новляем функцию проверки статуса
+    // Обновляем функцию проверки статуса
     async function checkOnlineStatus(userId) {
         if (!userId) {
             console.warn('checkOnlineStatus: userId is undefined');
