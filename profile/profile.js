@@ -47,6 +47,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 window.location.href = '/chat/chat.html';
             });
             avatarBlock.appendChild(messageButton);
+
+            // Добавляем первичную проверку статуса
+            checkOnlineStatus(profileId);
+            
+            // Запускаем периодическую проверку статуса
+            setInterval(() => checkOnlineStatus(profileId), 60000); // Проверяем каждую минуту
+            
         } catch (err) {
             console.error('Error loading user profile:', err);
             alert('Ошибка при загрузке профиля пользователя');
@@ -411,7 +418,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Обновляем обработчик открытия модального окна
+    // Обновляем обработчик открытия мод��льного окна
     document.querySelector('.friends-header-btn').addEventListener('click', () => {
         // Обновляем списки при открытии модального окна
         loadFriends();
@@ -508,7 +515,7 @@ function initializePostHandlers() {
     createPostBtn?.addEventListener('click', () => {
         if (postForm.style.display === 'none' || !postForm.style.display) {
             postForm.style.display = 'block';
-            // Добавляем класс active после небольшой задержки для анимации
+            // Добавляем класс active после небольшой задерж��и для анимации
             setTimeout(() => {
                 postForm.classList.add('active');
             }, 10);
@@ -817,4 +824,74 @@ window.closeImageModal = function(modal) {
     setTimeout(() => {
         modal.remove();
     }, 300);
-}; 
+};
+
+// Добавляем функцию проверки онлайн-статуса
+async function checkOnlineStatus(userId) {
+    try {
+        const response = await fetch(`https://adminflow.ru:5003/api/users/status/${userId}`);
+        const data = await response.json();
+        
+        if (response.ok) {
+            const statusElement = document.querySelector('.online-status');
+            if (statusElement) {
+                const isOnline = data.last_activity && 
+                    (new Date().getTime() - new Date(data.last_activity).getTime()) < 5 * 60 * 1000; // 5 минут
+
+                statusElement.innerHTML = isOnline ? 
+                    '<i class="fas fa-circle"></i> В сети' : 
+                    `<i class="far fa-circle"></i> Был(а) в сети ${formatLastSeen(data.last_activity)}`;
+                
+                statusElement.className = `online-status ${isOnline ? 'online' : 'offline'}`;
+            }
+        }
+    } catch (err) {
+        console.error('Error checking online status:', err);
+    }
+}
+
+// Функция форматирования времени последнего посещения
+function formatLastSeen(lastActivity) {
+    if (!lastActivity) return 'давно';
+    
+    const now = new Date();
+    const activity = new Date(lastActivity);
+    const diff = now - activity;
+    
+    // Меньше минуты
+    if (diff < 60 * 1000) {
+        return 'только что';
+    }
+    
+    // Меньше часа
+    if (diff < 60 * 60 * 1000) {
+        const minutes = Math.floor(diff / (60 * 1000));
+        return `${minutes} ${declOfNum(minutes, ['минуту', 'минуты', 'минут'])} назад`;
+    }
+    
+    // Меньше суток
+    if (diff < 24 * 60 * 60 * 1000) {
+        const hours = Math.floor(diff / (60 * 60 * 1000));
+        return `${hours} ${declOfNum(hours, ['час', 'часа', 'часов'])} назад`;
+    }
+    
+    // Меньше недели
+    if (diff < 7 * 24 * 60 * 60 * 1000) {
+        const days = Math.floor(diff / (24 * 60 * 60 * 1000));
+        return `${days} ${declOfNum(days, ['день', 'дня', 'дней'])} назад`;
+    }
+    
+    // Более недели
+    return activity.toLocaleString('ru-RU', {
+        day: 'numeric',
+        month: 'long',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+// Вспомогательная функция для склонения слов
+function declOfNum(number, words) {
+    return words[(number % 100 > 4 && number % 100 < 20) ? 2 : 
+        [2, 0, 1, 1, 1, 2][(number % 10 < 5) ? number % 10 : 5]];
+} 
