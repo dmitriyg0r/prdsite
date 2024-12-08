@@ -356,25 +356,26 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
+    text-decoration: none;
     padding: 4px;
+    border-radius: var(--radius-md);
+    transition: background-color 0.3s;
+}
+
+.friend-item:hover {
+    background-color: var(--hover-color);
 }
 
 .friend-avatar {
-    width: 32px;
-    height: 32px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     object-fit: cover;
 }
 
-.friend-info {
-    flex: 1;
-    min-width: 0;
-}
-
 .friend-name {
-    font-size: 12px;
     color: var(--text-primary);
-    margin: 0;
+    font-size: 14px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -398,49 +399,49 @@ body {
 .friend-card {
     display: flex;
     align-items: center;
-    gap: var(--spacing-md);
-    padding: var(--spacing-md);
-    background: var(--background-color);
-    border-radius: var(--radius-lg);
-    transition: all 0.3s ease;
+    gap: 12px;
+    padding: 8px;
+    border-radius: var(--radius-md);
+    transition: background-color 0.3s;
 }
 
 .friend-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-sm);
+    background-color: var(--hover-color);
 }
 
-.friend-card-avatar {
+.friend-card img {
     width: 48px;
     height: 48px;
     border-radius: 50%;
     object-fit: cover;
 }
 
-.friend-card-info {
+.friend-info {
     flex: 1;
-    min-width: 0; /* Для работы text-overflow */
+    min-width: 0;
 }
 
-.friend-card-name {
-    font-size: 15px;
-    font-weight: 500;
-    color: var(--text-primary);
-    margin-bottom: 4px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+.friend-actions {
+    margin-top: 4px;
 }
 
-.friend-card-status {
-    font-size: 13px;
-    color: var(--text-tertiary);
-    display: flex;
-    align-items: center;
-    gap: 6px;
+.remove-friend-btn {
+    padding: 4px 8px;
+    font-size: 12px;
+    color: var(--error-color);
+    background: none;
+    border: 1px solid var(--error-color);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.3s;
 }
 
-/* Плей��холдер */
+.remove-friend-btn:hover {
+    background: var(--error-color);
+    color: white;
+}
+
+/* Плейхолдер */
 .friend-placeholder {
     text-align: center;
     padding: var(--spacing-xl);

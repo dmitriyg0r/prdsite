@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         } catch (err) {
             console.error('Error loading user profile:', err);
-            alert('Ошибка при загрузке профиля ��ользователя');
+            alert('Ошибка при загрузке профиля пользователя');
             window.location.href = '/profile/profile.html';
         }
     } else {
@@ -203,7 +203,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Функция поиска пользователей (заглушка)
+    // Функция поиска поль��ователей (заглушка)
     async function searchUsers(query) {
         try {
             const response = await fetch(`https://adminflow.ru:5003/api/search-users?q=${query}`);
@@ -235,7 +235,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         `).join('');
     }
 
-    // Функции для работы с друзьями
+    // ��ункции для работы с друзьями
     async function loadFriends(userId) {
         if (!userId) {
             console.warn('loadFriends: userId is undefined');
@@ -286,15 +286,30 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
+        // Обновляем мини-список друзей в профиле
+        const friendsGrid = document.querySelector('.friends-grid');
+        friendsGrid.innerHTML = friends.length > 0 ? friends.slice(0, 3).map(friend => `
+            <a href="/profile/profile.html?id=${friend.id}" class="friend-item">
+                <img src="${friend.avatar_url || '/uploads/avatars/default.png'}" 
+                     alt="${friend.username}"
+                     class="friend-avatar">
+                <span class="friend-name">${friend.username}</span>
+            </a>
+        `).join('') : `
+            <div class="friend-placeholder">
+                <img src="/uploads/avatars/default.png" alt="No friends" class="friend-avatar">
+                <span class="friend-name">Пока нет друзей</span>
+            </div>
+        `;
+
+        // Обновляем полный список друзей в модальном окне
         friendsList.innerHTML = friends.map(friend => `
             <div class="friend-card">
                 <img src="${friend.avatar_url || '/uploads/avatars/default.png'}" 
                      alt="${friend.username}" 
-                     class="friend-avatar-link"
-                     data-user-id="${friend.id}">
+                     class="friend-avatar">
                 <div class="friend-info">
                     <div class="friend-name">${friend.username}</div>
-                    <div class="friend-status">В сети</div>
                     ${isCurrentUser ? `
                         <div class="friend-actions">
                             <button class="remove-friend-btn" data-user-id="${friend.id}">
@@ -306,43 +321,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             </div>
         `).join('');
 
-        // Обновляем мини-список друзей
-        const friendsGrid = document.querySelector('.friends-grid');
-        friendsGrid.innerHTML = friends.length > 0 ? friends.slice(0, 3).map(friend => `
-            <div class="friend-placeholder">
-                <div class="friend-avatar">
-                    <img src="${friend.avatar_url || '/uploads/avatars/default.png'}" 
-                         alt="${friend.username}"
-                         class="friend-avatar-link"
-                         data-user-id="${friend.id}">
-                </div>
-                <span class="friend-name">${friend.username}</span>
-            </div>
-        `).join('') : `
-            <div class="friend-placeholder">
-                <div class="friend-avatar">
-                    <img src="/uploads/avatars/default.png" alt="Friend">
-                </div>
-                <span class="friend-name">Пока нет друзей</span>
-            </div>
-        `;
-
-        // Обновляем обработчики для всех аватарок
-        document.querySelectorAll('.friend-avatar-link').forEach(avatar => {
-            avatar.addEventListener('click', () => {
-                const userId = avatar.dataset.userId;
-                if (userId) {
-                    // Если кликнули на свой профиль, переходим на основную страницу
-                    if (userId === currentUser.id.toString()) {
-                        window.location.href = '/profile/profile.html';
-                    } else {
-                        window.location.href = `/profile/profile.html?id=${userId}`;
-                    }
-                }
-            });
-        });
-
-        // Добавляем обработчики для кнопок удаления только если это профиль текущего пользователя
+        // Добавляем обработчики для кнопок удаления
         if (isCurrentUser) {
             document.querySelectorAll('.remove-friend-btn').forEach(btn => {
                 btn.addEventListener('click', () => removeFriend(btn.dataset.userId));
@@ -394,7 +373,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
 
             if (response.ok) {
-                // Перезагружаем списки друзей и ��аявок
+                // Перезагружаем списки друзей и заявок
                 loadFriendRequests();
                 loadFriends();
             }
@@ -493,7 +472,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Обновляем функцию для отображения ��оличества друзей
+    // Обновляем функцию для отображения количества друзей
     function updateFriendsCount(count) {
         const friendsCount = document.querySelector('.friends-count');
         if (friendsCount) {
@@ -728,7 +707,7 @@ function initializePostHandlers() {
         }
     });
 
-    // Обработка загрузки изображения
+    // Обработк�� загрузки изображения
     postImage?.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -861,7 +840,7 @@ function displayPosts(posts) {
                 </div>
             </div>
         </div>
-    `).join('') : '<div class="no-posts">Не найдено публика��ий</div>';
+    `).join('') : '<div class="no-posts">Не найдено публикаций</div>';
 
     // Добавляем обработчики
     document.querySelectorAll('.delete-post-btn').forEach(btn => {
