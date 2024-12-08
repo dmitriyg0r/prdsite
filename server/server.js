@@ -69,13 +69,13 @@ app.post('/api/login', async (req, res) => {
         }
 
         try {
-            // Обновляем время последнего входа
+            // Обновляем время последнего входа и статус
             await pool.query(
-                'UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1',
+                'UPDATE users SET last_login = CURRENT_TIMESTAMP, is_online = true, last_activity = CURRENT_TIMESTAMP WHERE id = $1',
                 [user.id]
             );
         } catch (updateErr) {
-            console.error('Error updating last_login:', updateErr);
+            console.error('Error updating user status:', updateErr);
         }
 
         // Отправляем успешный ответ с добавленным avatar_url
@@ -343,7 +343,7 @@ app.post('/api/friend/remove', async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         console.error('Remove friend error:', err);
-        res.status(500).json({ error: 'Ошибка при удалении из ��рузей' });
+        res.status(500).json({ error: 'Ошибка при удалении из друзей' });
     }
 });
 
@@ -483,7 +483,7 @@ app.get('/api/messages/last/:userId/:friendId', async (req, res) => {
     }
 });
 
-// Получение количества непрочитанных сообщений
+// Получение колич��ства непрочитанных сообщений
 app.get('/api/messages/unread/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
@@ -1004,9 +1004,66 @@ app.delete('/api/posts/delete/:postId', async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         console.error('Error deleting post:', err);
-        res.status(500).json({ error: 'Ош��бка при удалении поста' });
+        res.status(500).json({ error: 'Ошибка при удалении поста' });
     }
 });
 
 // Добавляем раздачу статических файлов для постов
 app.use('/uploads/posts', express.static('/var/www/html/uploads/posts')); 
+
+// Получение статуса пользователя
+app.get('/api/users/status/:userId', async (req, res) => {
+    try {
+        const { userId } = req.params;
+        
+        const result = await pool.query(
+            'SELECT is_online, last_activity FROM users WHERE id = $1',
+            [userId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Пользователь не найден' });
+        }
+
+        res.json({
+            success: true,
+            is_online: result.rows[0].is_online,
+            last_activity: result.rows[0].last_activity
+        });
+    } catch (err) {
+        console.error('Error getting user status:', err);
+        res.status(500).json({ error: 'Ошибка при получении статуса пользователя' });
+    }
+});
+
+// Обновление статуса пользователя
+app.post('/api/users/update-status', async (req, res) => {
+    try {
+        const { userId, is_online = true } = req.body;
+        
+        await pool.query(
+            'UPDATE users SET is_online = $1, last_activity = CURRENT_TIMESTAMP WHERE id = $2',
+            [is_online, userId]
+        );
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Error updating user status:', err);
+        res.status(500).json({ error: 'Ошибка при обновлении статуса пользователя' });
+    }
+});
+
+// Добавляем автоматическое обновление статуса каждые 5 минут
+setInterval(async () => {
+    try {
+        // Помечаем пользователей как оффлайн, если их последняя активность была более 5 минут назад
+        await pool.query(`
+            UPDATE users 
+            SET is_online = false 
+            WHERE last_activity < NOW() - INTERVAL '5 minutes'
+            AND is_online = true
+        `);
+    } catch (err) {
+        console.error('Error in auto-update status:', err);
+    }
+}, 5 * 60 * 1000); // Каждые 5 минут
