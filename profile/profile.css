@@ -571,7 +571,11 @@ body {
     transition: all 0.3s ease;
 }
 
-/* Стили для контента модального окна */
+.modal.active {
+    opacity: 1;
+    visibility: visible;
+}
+
 .modal .modal-content {
     width: 90%;
     max-width: 800px;
@@ -598,6 +602,10 @@ body {
     transition: all 0.3s ease;
 }
 
+.image-modal.active {
+    opacity: 1;
+}
+
 .image-modal .modal-content {
     width: 90%;
     max-width: 1200px;
@@ -621,6 +629,12 @@ body {
     overflow: hidden;
 }
 
+.modal-image-side img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
 .modal-info-side {
     width: 350px;
     padding: 20px;
@@ -629,7 +643,42 @@ body {
     overflow-y: auto;
 }
 
-/* Стили для кнопок закрытия */
+.modal-author-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.modal-author-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.modal-author-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-author-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.modal-post-date {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.modal-post-content {
+    color: var(--text-primary);
+    line-height: 1.5;
+    margin-top: 16px;
+    white-space: pre-wrap;
+}
+
 .modal .modal-close,
 .image-modal .close-modal {
     position: absolute;
