@@ -306,7 +306,7 @@ app.get('/api/friends', async (req, res) => {
         res.json({ friends: result.rows });
     } catch (err) {
         console.error('Get friends error:', err);
-        res.status(500).json({ error: 'Ошибка при получении списка друзей' });
+        res.status(500).json({ error: 'Ошибка при получении ��писка друзей' });
     }
 });
 
@@ -347,7 +347,7 @@ app.post('/api/friend/remove', async (req, res) => {
     }
 });
 
-// Нас��ойка хранилища для файлов сообщений
+// Настройка хранилища для файлов сообщений
 const messageStorage = multer.diskStorage({
     destination: function (req, file, cb) {
         const uploadDir = path.join(__dirname, '../public/uploads/messages');
@@ -483,7 +483,7 @@ app.get('/api/messages/last/:userId/:friendId', async (req, res) => {
     }
 });
 
-// Получение количества непрочитанных сообщений
+// Получение колич��ства непрочитанных сообщений
 app.get('/api/messages/unread/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
@@ -904,52 +904,88 @@ app.post('/api/posts/create', uploadPost.single('image'), async (req, res) => {
 app.get('/api/posts/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
-        
+        const currentUserId = req.query.currentUserId; // Добавляем параметр текущего пользователя
+
         const result = await pool.query(`
             SELECT 
                 p.*,
                 u.username as author_name,
                 u.avatar_url as author_avatar,
                 (SELECT COUNT(*) FROM posts WHERE parent_id = p.id AND type = 'like') as likes_count,
-                (SELECT COUNT(*) FROM posts WHERE parent_id = p.id AND type = 'comment') as comments_count
+                (SELECT COUNT(*) FROM posts WHERE parent_id = p.id AND type = 'comment') as comments_count,
+                EXISTS(
+                    SELECT 1 FROM posts 
+                    WHERE parent_id = p.id 
+                    AND type = 'like' 
+                    AND user_id = $2
+                ) as is_liked
             FROM posts p
             JOIN users u ON p.user_id = u.id
             WHERE p.user_id = $1 AND p.type = 'post'
             ORDER BY p.created_at DESC
-        `, [userId]);
+        `, [userId, currentUserId]);
 
-        res.json({
-            success: true,
-            posts: result.rows
+        res.json({ 
+            success: true, 
+            posts: result.rows 
         });
     } catch (err) {
-        console.error('Error fetching posts:', err);
-        res.status(500).json({ error: 'Ошибка при получении постов' });
+        console.error('Error loading posts:', err);
+        res.status(500).json({ error: 'Ошибка при загрузке постов' });
     }
 });
 
-// Лайк поста
+// Обработка лайков
 app.post('/api/posts/like', async (req, res) => {
     try {
         const { userId, postId } = req.body;
 
-        // Проверяем, не лайкнул ли уже пользователь этот пост
+        // Проверяем, существует ли уже лайк
         const existingLike = await pool.query(
-            'SELECT id FROM posts WHERE parent_id = $1 AND user_id = $2 AND type = $3',
+            'SELECT * FROM posts WHERE parent_id = $1 AND user_id = $2 AND type = $3',
             [postId, userId, 'like']
         );
 
-        if (existingLike.rows.length === 0) {
+        if (existingLike.rows.length > 0) {
+            // Если лайк существует - удаляем его
+            await pool.query(
+                'DELETE FROM posts WHERE parent_id = $1 AND user_id = $2 AND type = $3',
+                [postId, userId, 'like']
+            );
+            
+            // Получаем обновленное количество лайков
+            const likesCount = await pool.query(
+                'SELECT COUNT(*) FROM posts WHERE parent_id = $1 AND type = $2',
+                [postId, 'like']
+            );
+
+            res.json({ 
+                success: true, 
+                liked: false,
+                likes_count: parseInt(likesCount.rows[0].count)
+            });
+        } else {
+            // Если лайка нет - создаем его
             await pool.query(
                 'INSERT INTO posts (user_id, parent_id, type) VALUES ($1, $2, $3)',
                 [userId, postId, 'like']
             );
-        }
 
-        res.json({ success: true });
+            // Получаем обновленное количество лайков
+            const likesCount = await pool.query(
+                'SELECT COUNT(*) FROM posts WHERE parent_id = $1 AND type = $2',
+                [postId, 'like']
+            );
+
+            res.json({ 
+                success: true, 
+                liked: true,
+                likes_count: parseInt(likesCount.rows[0].count)
+            });
+        }
     } catch (err) {
-        console.error('Error liking post:', err);
-        res.status(500).json({ error: 'Ошибка при добавлении лайка' });
+        console.error('Error toggling like:', err);
+        res.status(500).json({ error: 'Ошибка при обработке лайка' });
     }
 });
 
