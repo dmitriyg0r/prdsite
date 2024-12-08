@@ -68,9 +68,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
             avatarBlock.appendChild(messageButton);
 
+            // Загружаем посты друга
+            await loadPosts();
+
         } catch (err) {
             console.error('Error loading user profile:', err);
-            alert('Ошибка при загрузке профиля пользователя');
+            alert('Ошибка при загрузке профиля ��ользователя');
             window.location.href = '/profile/profile.html';
         }
     } else {
@@ -87,6 +90,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         // Запускаем обновление своего статуса
         startStatusUpdates();
+        
+        // Загружаем посты
+        await loadPosts();
     }
 
     // Загружаем список друзей
@@ -388,7 +394,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
 
             if (response.ok) {
-                // Перезагружаем списки друзей и заявок
+                // Перезагружаем списки друзей и ��аявок
                 loadFriendRequests();
                 loadFriends();
             }
@@ -487,7 +493,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Обновляем функцию для отображения количества друзей
+    // Обновляем функцию для отображения ��оличества друзей
     function updateFriendsCount(count) {
         const friendsCount = document.querySelector('.friends-count');
         if (friendsCount) {
@@ -558,7 +564,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Загружаем посты
     loadPosts();
 
-    // Обновляем интервал обн��вления статуса для текущего пользователя
+    // Обновляем интервал обновления статуса для текущего пользователя
     function startStatusUpdates() {
         let lastActivity = new Date();
         
@@ -793,8 +799,12 @@ async function createPost() {
 async function loadPosts() {
     try {
         const userId = new URLSearchParams(window.location.search).get('id') || currentUser.id;
+        console.log('Loading posts for userId:', userId); // Отладочная информация
+        
         const response = await fetch(`https://adminflow.ru:5003/api/posts/${userId}?currentUserId=${currentUser.id}`);
         const data = await response.json();
+        
+        console.log('Posts response:', data); // Отладочная информация
 
         if (data.success) {
             displayPosts(data.posts);
@@ -851,7 +861,7 @@ function displayPosts(posts) {
                 </div>
             </div>
         </div>
-    `).join('') : '<div class="no-posts">Не найдено публикаций</div>';
+    `).join('') : '<div class="no-posts">Не найдено публика��ий</div>';
 
     // Добавляем обработчики
     document.querySelectorAll('.delete-post-btn').forEach(btn => {
@@ -931,7 +941,7 @@ async function deletePost(postId) {
         const data = await response.json();
         
         if (response.ok || data.success) {
-            // Перезагруж��ем посты после удаления
+            // Перезагружаем посты после удаления
             loadPosts();
         } else {
             alert(data.error || 'Ошибка при удалении публикации');
