@@ -11,6 +11,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
+    // Если пользователь пытается открыть свой профиль через параметр id, 
+    // перенаправляем его на основную страницу профиля
+    if (profileId === currentUser.id.toString()) {
+        window.location.href = '/profile/profile.html';
+        return;
+    }
+
     // Если есть id в URL, загружаем профиль друга
     if (profileId) {
         try {
@@ -309,12 +316,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             </div>
         `;
 
-        // Добавляем обработчики для всех аватарок
+        // Обновляем обработчики для всех аватарок
         document.querySelectorAll('.friend-avatar-link').forEach(avatar => {
             avatar.addEventListener('click', () => {
                 const userId = avatar.dataset.userId;
                 if (userId) {
-                    window.location.href = `/profile/profile.html?id=${userId}`;
+                    // Если кликнули на свой профиль, переходим на основную страницу
+                    if (userId === currentUser.id.toString()) {
+                        window.location.href = '/profile/profile.html';
+                    } else {
+                        window.location.href = `/profile/profile.html?id=${userId}`;
+                    }
                 }
             });
         });
@@ -629,7 +641,7 @@ async function createPost() {
         }
     } catch (err) {
         console.error('Error creating post:', err);
-        alert('Ошибка при создании публикации');
+        alert('Ошибк�� при создании публикации');
     }
 }
 
@@ -756,7 +768,7 @@ function removePostImage() {
 
 // Добавляем функцию удаления поста
 async function deletePost(postId) {
-    if (!confirm('Вы уверены, что хотите удалить эту публикацию?')) {
+    if (!confirm('В�� уверены, что хотите удалить эту публикацию?')) {
         return;
     }
 
