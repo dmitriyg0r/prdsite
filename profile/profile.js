@@ -53,27 +53,30 @@ document.addEventListener('DOMContentLoaded', async () => {
                 requestsTab.style.display = 'none';
             }
 
-            // Добавляем кнопку "Написать сообщение" под аватаркой
-            const avatarBlock = document.querySelector('.profile-avatar-block');
-            const messageButton = document.createElement('button');
-            messageButton.className = 'action-btn message-btn full-width';
-            messageButton.innerHTML = '<i class="fas fa-envelope"></i> Написать сообщение';
-            messageButton.addEventListener('click', () => {
-                sessionStorage.setItem('selectedChatUser', JSON.stringify({
-                    id: data.user.id,
-                    username: data.user.username,
-                    avatar_url: data.user.avatar_url
-                }));
-                window.location.href = '/chat/chat.html';
-            });
-            avatarBlock.appendChild(messageButton);
+            // Добавляем кнопку "Написать сообщение" под информацией профиля
+            const profileActions = document.querySelector('.profile-actions');
+            if (profileActions) {
+                const messageButton = document.createElement('button');
+                messageButton.className = 'action-btn message-btn';
+                messageButton.innerHTML = '<i class="fas fa-envelope"></i>';
+                messageButton.title = 'Написать сообщение';
+                messageButton.addEventListener('click', () => {
+                    sessionStorage.setItem('selectedChatUser', JSON.stringify({
+                        id: data.user.id,
+                        username: data.user.username,
+                        avatar_url: data.user.avatar_url
+                    }));
+                    window.location.href = '/chat/chat.html';
+                });
+                profileActions.appendChild(messageButton);
+            }
 
             // Загружаем посты друга
             await loadPosts();
 
         } catch (err) {
             console.error('Error loading user profile:', err);
-            alert('Ошибка при загрузке профиля ��ользователя');
+            alert('Ошибка при загрузке профиля пользователя');
             window.location.href = '/profile/profile.html';
         }
     } else {
@@ -203,7 +206,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Функция поиска пользователей (заглушка)
+    // Функция поиска поль��ователей (заглушка)
     async function searchUsers(query) {
         try {
             const response = await fetch(`https://adminflow.ru:5003/api/search-users?q=${query}`);
@@ -235,7 +238,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         `).join('');
     }
 
-    // Функции для работы с друзьями
+    // ��ункции для работы с друзьями
     async function loadFriends(userId) {
         if (!userId) {
             console.warn('loadFriends: userId is undefined');
@@ -625,7 +628,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Обновляем обработчик перед уходом со страницы
     window.addEventListener('beforeunload', (event) => {
         if (currentUser && currentUser.id) {
-            // Используем синхронный запрос для гарантированн��й отправки
+            // Используем синхронный запрос для гарантированной отправки
             navigator.sendBeacon('https://adminflow.ru:5003/api/users/update-status', JSON.stringify({
                 userId: currentUser.id,
                 is_online: false
@@ -724,7 +727,7 @@ function initializePostHandlers() {
             }, 10);
         } else {
             postForm.classList.remove('active');
-            // Скрываем форму пос��е завершения анимации
+            // Скрываем форму после завершения анимации
             setTimeout(() => {
                 postForm.style.display = 'none';
             }, 300);
@@ -1085,7 +1088,7 @@ window.openFriendsModal = function() {
     }
 };
 
-// Функция для определения иконки файла
+// Ф��нкция для определения иконки файла
 function getFileIcon(extension) {
     const iconMap = {
         'pdf': 'fas fa-file-pdf',
