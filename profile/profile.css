@@ -1282,3 +1282,143 @@ body {
     color: #ff4444;
     background: rgba(255, 68, 68, 0.1);
 }
+/* Стили для медиа-контента в постах */
+.post-media {
+    margin: 15px -20px;
+    position: relative;
+    background: var(--background-color);
+}
+
+.post-image-container {
+    position: relative;
+    overflow: hidden;
+    max-height: 500px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.post-image {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+    cursor: zoom-in;
+}
+
+.image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.image-overlay i {
+    color: white;
+    font-size: 2em;
+    transform: scale(0.8);
+    transition: transform 0.3s ease;
+}
+
+.post-image-container:hover .image-overlay {
+    opacity: 1;
+}
+
+.post-image-container:hover .image-overlay i {
+    transform: scale(1);
+}
+
+/* Стили для модального окна с изображением */
+.image-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1100;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.image-modal.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-content {
+    position: relative;
+    max-width: 90vw;
+    max-height: 90vh;
+    margin: 20px;
+    animation: modalZoom 0.3s ease;
+}
+
+.modal-content img {
+    max-width: 100%;
+    max-height: 90vh;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.close-modal {
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.close-modal:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: rotate(90deg);
+}
+
+@keyframes modalZoom {
+    from {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .post-media {
+        margin: 10px -15px;
+    }
+    
+    .post-image-container {
+        max-height: 400px;
+    }
+    
+    .close-modal {
+        top: -50px;
+        right: 0;
+    }
+}
