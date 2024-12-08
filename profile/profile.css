@@ -311,9 +311,14 @@ body {
     }
 }
 
-/* Стили для блока друзей */
+/* Улучшенные стили для блока друзей */
 .friends-block {
+    background: var(--surface-color);
+    border-radius: var(--radius-lg);
     margin-top: var(--spacing-xl);
+    overflow: hidden;
+    border: 1px solid var(--border-light);
+    box-shadow: var(--shadow-sm);
 }
 
 .friends-header {
@@ -322,38 +327,229 @@ body {
     align-items: center;
     padding: var(--spacing-md) var(--spacing-lg);
     border-bottom: 1px solid var(--border-light);
+    background: var(--background-color);
 }
 
 .friends-header-btn {
+    width: 100%;
     background: none;
     border: none;
-    padding: 0;
+    padding: var(--spacing-sm) var(--spacing-md);
     display: flex;
     align-items: center;
-    gap: var(--spacing-sm);
+    justify-content: space-between;
     color: var(--text-primary);
     cursor: pointer;
     transition: all 0.3s ease;
+    border-radius: var(--radius-md);
+}
+
+.friends-header-btn:hover {
+    background: rgba(var(--primary-color-rgb), 0.1);
 }
 
 .friends-header-btn h3 {
     margin: 0;
     font-size: 18px;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.friends-header-btn h3 i {
+    color: var(--primary-color);
 }
 
 .friends-count {
     background: rgba(var(--primary-color-rgb), 0.1);
     color: var(--primary-color);
-    padding: 2px 8px;
+    padding: 4px 12px;
     border-radius: 12px;
     font-size: 14px;
+    font-weight: 500;
 }
 
 .friends-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: var(--spacing-sm);
+    gap: var(--spacing-md);
+    padding: var(--spacing-lg);
+}
+
+.friend-item {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.friend-item:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+}
+
+.friend-avatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.friend-item:hover .friend-avatar {
+    transform: scale(1.1);
+}
+
+.friend-info {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
     padding: var(--spacing-md);
+    background: linear-gradient(
+        to top,
+        rgba(0, 0, 0, 0.8) 0%,
+        rgba(0, 0, 0, 0.4) 50%,
+        transparent 100%
+    );
+    color: white;
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+}
+
+.friend-item:hover .friend-info {
+    transform: translateY(0);
+}
+
+.friend-name {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.friend-status {
+    font-size: 12px;
+    opacity: 0.8;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.friend-status.online::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: var(--success-color);
+    border-radius: 50%;
+}
+
+/* Улучшенные стили для списка друзей в модальном окне */
+.friends-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--spacing-md);
+}
+
+.friend-card {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    background: var(--background-color);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-light);
+    transition: all 0.3s ease;
+}
+
+.friend-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-color);
+}
+
+.friend-card-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-lg);
+    object-fit: cover;
+}
+
+.friend-card-info {
+    flex: 1;
+}
+
+.friend-card-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    font-size: 16px;
+}
+
+.friend-card-status {
+    font-size: 14px;
+    color: var(--text-tertiary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Плейсхолдер для пустого списка друзей */
+.friend-placeholder {
+    text-align: center;
+    padding: var(--spacing-xl);
+    color: var(--text-tertiary);
+    background: var(--background-color);
+    border-radius: var(--radius-lg);
+    border: 2px dashed var(--border-light);
+}
+
+.friend-placeholder img {
+    width: 80px;
+    height: 80px;
+    opacity: 0.5;
+    margin-bottom: var(--spacing-md);
+}
+
+.friend-placeholder-text {
+    font-size: 16px;
+    margin-bottom: var(--spacing-sm);
+}
+
+/* Адаптивность */
+@media (max-width: 1200px) {
+    .friends-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .friends-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--spacing-sm);
+    }
+    
+    .friends-list {
+        grid-template-columns: 1fr;
+    }
+    
+    .friend-name {
+        font-size: 12px;
+    }
+    
+    .friend-status {
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 480px) {
+    .friends-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 /* Модальное окно */
@@ -458,7 +654,6 @@ body {
 }
 
 /* Списки друзей в модальном окне */
-.friends-list,
 .requests-list {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
