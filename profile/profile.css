@@ -996,3 +996,91 @@ body {
     opacity: 0.5;
     margin-bottom: var(--spacing-md);
 }
+
+/* Стили для заголовка друзей */
+.friends-section button,
+.friends-header-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 12px;
+    border-radius: var(--radius-md);
+    transition: all 0.3s ease;
+}
+
+.friends-section button:hover,
+.friends-header-btn:hover {
+    background: var(--hover-color);
+}
+
+.friends-count {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin: 0 8px;
+}
+
+.friends-section button i,
+.friends-header-btn i {
+    color: var(--text-secondary);
+    font-size: 14px;
+    transition: transform 0.3s ease;
+}
+
+.friends-section button:hover i,
+.friends-header-btn:hover i {
+    transform: translateX(4px);
+}
+
+/* Стили для секции друзей */
+.profile-card .friends-section {
+    margin-top: 16px;
+    border-top: 1px solid var(--border-light);
+}
+
+.profile-card .friends-section .friends-header-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 16px;
+    margin: 0;
+    transition: all 0.3s ease;
+}
+
+.profile-card .friends-section .friends-header-btn:hover {
+    background-color: var(--hover-color);
+}
+
+.profile-card .friends-section .friends-header-btn span {
+    margin: 0;
+    padding: 0;
+}
+
+.profile-card .friends-section .friends-header-btn .friends-count {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin: 0 8px;
+}
+
+.profile-card .friends-section .friends-header-btn i {
+    color: var(--text-secondary);
+    font-size: 14px;
+    transition: transform 0.3s ease;
+}
+
+.profile-card .friends-section .friends-header-btn:hover i {
+    transform: translateX(4px);
+}
