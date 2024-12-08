@@ -1,4 +1,4 @@
-let currentUser = null; // Объявляем глобально
+let currentUser = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
     currentUser = JSON.parse(localStorage.getItem('user'));
@@ -6,9 +6,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.location.href = '/authreg/authreg.html';
         return;
     }
-
-    // Инициализация обработчиков формы создания поста
-    initializePostForm();
     
     // Загрузка постов
     await loadFeedPosts();
@@ -34,7 +31,10 @@ function displayPosts(posts) {
     
     container.innerHTML = posts.length ? posts.map(post => {
         const mediaContent = post.image_url ? `
-            <img src="${post.image_url}" alt="Post image" class="post-image">
+            <img src="${post.image_url}" 
+                 alt="Post image" 
+                 class="post-image" 
+                 onclick="openImageInFullscreen('${post.image_url}', ${JSON.stringify(post).replace(/"/g, '&quot;')})">
         ` : '';
 
         return `
@@ -67,62 +67,12 @@ function displayPosts(posts) {
                 </div>
             </div>
         `;
-    }).join('') : '<div class="no-posts">Нет публикаций</div>';
+    }).join('') : '<div class="no-posts">Нет публикаций от ваших друзей</div>';
 
     // Добавляем обработчики для лайков
     document.querySelectorAll('.like-action').forEach(btn => {
         btn.addEventListener('click', () => toggleLike(btn.dataset.postId));
     });
-}
-
-function initializePostForm() {
-    const postForm = document.querySelector('.post-form');
-    const imageInput = document.getElementById('post-image');
-    const imagePreview = document.getElementById('image-preview');
-    const publishBtn = document.getElementById('publish-post-btn');
-
-    imageInput.addEventListener('change', handleImageSelect);
-    publishBtn.addEventListener('click', handlePostSubmit);
-}
-
-async function handlePostSubmit() {
-    const content = document.getElementById('post-content').value;
-    const imageInput = document.getElementById('post-image');
-    
-    if (!content.trim() && !imageInput.files[0]) {
-        alert('Добавьте текст или изображение');
-        return;
-    }
-
-    const formData = new FormData();
-    formData.append('content', content);
-    formData.append('userId', currentUser.id);
-    
-    if (imageInput.files[0]) {
-        formData.append('image', imageInput.files[0]);
-    }
-
-    try {
-        const response = await fetch('https://adminflow.ru:5003/api/posts', {
-            method: 'POST',
-            body: formData
-        });
-
-        if (!response.ok) {
-            throw new Error('Ошибка при создании поста');
-        }
-
-        // Очищаем форму
-        document.getElementById('post-content').value = '';
-        imageInput.value = '';
-        document.getElementById('image-preview').innerHTML = '';
-
-        // Перезагружаем ленту
-        await loadFeedPosts();
-    } catch (err) {
-        console.error('Error creating post:', err);
-        alert('Ошибка при создании поста');
-    }
 }
 
 async function toggleLike(postId) {
@@ -158,27 +108,67 @@ async function toggleLike(postId) {
     }
 }
 
-function handleImageSelect(event) {
-    const file = event.target.files[0];
-    const preview = document.getElementById('image-preview');
+// Функция для открытия изображения в полноэкранном режиме
+function openImageInFullscreen(imageSrc, postData) {
+    const modal = document.createElement('div');
+    modal.className = 'image-modal';
     
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            preview.innerHTML = `
-                <div class="image-preview-container">
-                    <img src="${e.target.result}" alt="Preview">
-                    <button class="remove-image-btn" onclick="removeImage()">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            `;
-        }
-        reader.readAsDataURL(file);
-    }
-}
+    const postDate = new Date(postData.created_at).toLocaleString('ru-RU', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
 
-function removeImage() {
-    document.getElementById('post-image').value = '';
-    document.getElementById('image-preview').innerHTML = '';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <button class="close-modal">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-flex-container">
+                <div class="modal-image-side">
+                    <img src="${imageSrc}" alt="Full size image">
+                </div>
+                <div class="modal-info-side">
+                    <div class="modal-author-info">
+                        <img src="${postData.author_avatar || '/uploads/avatars/default.png'}" 
+                             alt="${postData.author_name}" 
+                             class="modal-author-avatar">
+                        <div class="modal-author-details">
+                            <span class="modal-author-name">${postData.author_name}</span>
+                            <span class="modal-post-date">${postDate}</span>
+                        </div>
+                    </div>
+                    ${postData.content ? `
+                        <div class="modal-post-content">
+                            ${postData.content}
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    requestAnimationFrame(() => modal.classList.add('active'));
+    document.body.style.overflow = 'hidden';
+    
+    const closeModal = () => {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+        setTimeout(() => modal.remove(), 300);
+    };
+    
+    modal.querySelector('.close-modal').onclick = closeModal;
+    modal.onclick = (e) => {
+        if (e.target === modal) closeModal();
+    };
+    
+    document.addEventListener('keydown', function escHandler(e) {
+        if (e.key === 'Escape') {
+            closeModal();
+            document.removeEventListener('keydown', escHandler);
+        }
+    });
 }
