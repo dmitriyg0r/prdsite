@@ -186,13 +186,18 @@
     font-size: 16px;
 }
 
+.post-image-container {
+    max-width: 500px;
+    margin: 0 auto 20px;
+}
+
 .post-image {
     width: 100%;
     height: auto;
     border-radius: 16px;
-    margin-bottom: 20px;
     transition: transform 0.3s ease;
     cursor: zoom-in;
+    display: block;
 }
 
 .post-image:hover {

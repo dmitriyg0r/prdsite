@@ -31,10 +31,12 @@ function displayPosts(posts) {
     
     container.innerHTML = posts.length ? posts.map(post => {
         const mediaContent = post.image_url ? `
-            <img src="${post.image_url}" 
-                 alt="Post image" 
-                 class="post-image" 
-                 onclick="openImageInFullscreen('${post.image_url}', ${JSON.stringify(post).replace(/"/g, '&quot;')})">
+            <div class="post-image-container">
+                <img src="${post.image_url}" 
+                     alt="Post image" 
+                     class="post-image" 
+                     onclick="openImageInFullscreen('${post.image_url}', ${JSON.stringify(post).replace(/"/g, '&quot;')})">
+            </div>
         ` : '';
 
         return `
