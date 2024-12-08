@@ -602,29 +602,25 @@ async function loadPosts() {
         console.error('Error loading posts:', err);
     }
 }
+async function loadPosts() {
+    try {
+        const userId = new URLSearchParams(window.location.search).get('id') || currentUser.id;
+        const response = await fetch(`https://adminflow.ru:5003/api/posts/${userId}?currentUserId=${currentUser.id}`);
+        const data = await response.json();
+
+        if (data.success) {
+            displayPosts(data.posts);
+        }
+    } catch (err) {
+        console.error('Error loading posts:', err);
+    }
+}
 
 function displayPosts(posts) {
     const container = document.getElementById('posts-container');
     container.innerHTML = posts.length ? posts.map(post => `
         <div class="post" data-post-id="${post.id}">
-            <div class="post-header">
-                <img src="${post.author_avatar || '/uploads/avatars/default.png'}" 
-                     alt="${post.author_name}" 
-                     class="post-avatar">
-                <div class="post-info">
-                    <div class="post-author">${post.author_name}</div>
-                    <div class="post-date">${new Date(post.created_at).toLocaleString()}</div>
-                </div>
-                ${post.user_id === currentUser.id ? `
-                    <button class="delete-post-btn" data-post-id="${post.id}">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                ` : ''}
-            </div>
-            <div class="post-content">${post.content}</div>
-            ${post.image_url ? `
-                <img src="${post.image_url}" alt="Post image" class="post-image">
-            ` : ''}
+            // ... существующий код ...
             <div class="post-actions">
                 <button class="post-action like-action ${post.is_liked ? 'liked' : ''}" data-post-id="${post.id}">
                     <i class="${post.is_liked ? 'fas' : 'far'} fa-heart"></i>
