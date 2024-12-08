@@ -847,6 +847,7 @@ body {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: var(--spacing-md);
+    background: var(--surface-color);
 }
 
 .friend-card {
@@ -905,15 +906,16 @@ body {
     display: flex;
     gap: 8px;
     margin-bottom: var(--spacing-md);
+    background: var(--surface-color);
 }
 
 .search-input {
     flex: 1;
     padding: 8px 12px;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
-    background: #fff;
-    color: #000;
+    background: var(--surface-color);
+    color: var(--text-primary);
 }
 
 .search-btn {
