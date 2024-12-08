@@ -357,6 +357,7 @@ body {
     padding: var(--spacing-sm);
     border-radius: var(--radius-md);
     transition: all 0.3s ease;
+    text-decoration: none;
 }
 
 .friend-item:hover {
@@ -368,6 +369,13 @@ body {
     height: 40px;
     border-radius: 50%;
     object-fit: cover;
+    background: var(--surface-color);
+    border: 1px solid var(--border-light);
+    filter: none;
+}
+
+.friend-item img {
+    opacity: 1;
 }
 
 .friend-info {
@@ -425,6 +433,9 @@ body {
     height: 48px;
     border-radius: 50%;
     object-fit: cover;
+    background: var(--surface-color);
+    border: 1px solid var(--border-light);
+    filter: none;
 }
 
 .friend-card-info {
