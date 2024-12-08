@@ -497,7 +497,7 @@ app.get('/api/messages/last/:userId/:friendId', async (req, res) => {
     }
 });
 
-// Получение ��оличества непрочитанных сообщений
+// Получение количества непрочитанных сообщений
 app.get('/api/messages/unread/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
@@ -699,9 +699,15 @@ app.get('/api/admin/stats', checkAdmin, async (req, res) => {
             SELECT 
                 (SELECT COUNT(*) FROM users) as total_users,
                 (SELECT COUNT(*) FROM users WHERE created_at > NOW() - INTERVAL '24 HOURS') as new_users_24h,
+                (SELECT COUNT(*) FROM users WHERE created_at > NOW() - INTERVAL '7 DAYS') as new_users_7d,
+                (SELECT COUNT(*) FROM users WHERE role = 'admin') as admin_count,
+                (SELECT COUNT(*) FROM users WHERE role = 'moderator') as moderator_count,
                 (SELECT COUNT(*) FROM messages) as total_messages,
                 (SELECT COUNT(*) FROM messages WHERE created_at > NOW() - INTERVAL '24 HOURS') as new_messages_24h,
-                (SELECT COUNT(*) FROM friendships WHERE status = 'accepted') as total_friendships
+                (SELECT COUNT(*) FROM messages WHERE created_at > NOW() - INTERVAL '7 DAYS') as new_messages_7d,
+                (SELECT COUNT(*) FROM friendships WHERE status = 'accepted') as total_friendships,
+                (SELECT COUNT(*) FROM users WHERE is_online = true) as online_users,
+                (SELECT COUNT(*) FROM users WHERE last_activity > NOW() - INTERVAL '24 HOURS') as active_users_24h
         `);
         
         res.json({ success: true, stats: stats.rows[0] });
@@ -835,7 +841,7 @@ app.get('/api/admin/charts', checkAdmin, async (req, res) => {
     }
 });
 
-// Получение информации о польз��вателе
+// Получение информации о пользователе
 app.get('/api/users/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -914,7 +920,7 @@ app.post('/api/posts/create', uploadPost.single('image'), async (req, res) => {
     }
 });
 
-// П��лучение постов пользователя
+// Получение постов пользователя
 app.get('/api/posts/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
@@ -945,7 +951,7 @@ app.get('/api/posts/:userId', async (req, res) => {
         });
     } catch (err) {
         console.error('Error loading posts:', err);
-        res.status(500).json({ error: 'Ошибка при загрузке постов' });
+        res.status(500).json({ error: 'Ошиб��а при загрузке постов' });
     }
 });
 
@@ -1058,7 +1064,7 @@ app.get('/api/users/status/:userId', async (req, res) => {
         console.error('Error getting user status:', err);
         res.status(500).json({ 
             success: false, 
-            error: 'Ошибка при получении статуса пользователя' 
+            error: 'Ошибка при п��лучении статуса пользователя' 
         });
     }
 });

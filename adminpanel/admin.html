@@ -21,25 +21,76 @@
             <h1>Админ панель AdminFlow</h1>
         </div>
         <div class="stats-grid">
-            <div class="stat-card">
-                <h3>Всего пользователей</h3>
-                <div class="value" id="totalUsers">-</div>
+            <div class="stat-card users">
+                <h3>Пользователи</h3>
+                <div class="stat-details">
+                    <div class="stat-item">
+                        <span class="label">Всего:</span>
+                        <span class="value" id="totalUsers">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="label">Новых за 24ч:</span>
+                        <span class="value" id="newUsers24h">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="label">Новых за 7д:</span>
+                        <span class="value" id="newUsers7d">-</span>
+                    </div>
+                </div>
                 <canvas id="userActivityChart"></canvas>
             </div>
-            <div class="stat-card">
-                <h3>Новых за 24ч</h3>
-                <div class="value" id="newUsers">-</div>
-                <canvas id="registrationChart"></canvas>
+
+            <div class="stat-card roles">
+                <h3>Роли пользователей</h3>
+                <div class="stat-details">
+                    <div class="stat-item">
+                        <span class="label">Админы:</span>
+                        <span class="value" id="adminCount">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="label">Модераторы:</span>
+                        <span class="value" id="moderatorCount">-</span>
+                    </div>
+                </div>
+                <canvas id="rolesChart"></canvas>
             </div>
-            <div class="stat-card">
-                <h3>Всего сообщений</h3>
-                <div class="value" id="totalMessages">-</div>
+
+            <div class="stat-card messages">
+                <h3>Сообщения</h3>
+                <div class="stat-details">
+                    <div class="stat-item">
+                        <span class="label">Всего:</span>
+                        <span class="value" id="totalMessages">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="label">За 24ч:</span>
+                        <span class="value" id="newMessages24h">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="label">За 7д:</span>
+                        <span class="value" id="newMessages7d">-</span>
+                    </div>
+                </div>
                 <canvas id="messageChart"></canvas>
             </div>
-            <div class="stat-card">
-                <h3>Сообщений за 24ч</h3>
-                <div class="value" id="newMessages">-</div>
-                <canvas id="messageChart"></canvas>
+
+            <div class="stat-card activity">
+                <h3>Активность</h3>
+                <div class="stat-details">
+                    <div class="stat-item">
+                        <span class="label">Онлайн сейчас:</span>
+                        <span class="value" id="onlineUsers">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="label">Активны за 24ч:</span>
+                        <span class="value" id="activeUsers24h">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="label">Всего друзей:</span>
+                        <span class="value" id="totalFriendships">-</span>
+                    </div>
+                </div>
+                <canvas id="activityChart"></canvas>
             </div>
         </div>
 
