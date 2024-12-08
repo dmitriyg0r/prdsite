@@ -1,5 +1,7 @@
+let currentUser = null; // Объявляем глобально
+
 document.addEventListener('DOMContentLoaded', async () => {
-    const currentUser = JSON.parse(localStorage.getItem('user'));
+    currentUser = JSON.parse(localStorage.getItem('user'));
     if (!currentUser) {
         window.location.href = '/authreg/authreg.html';
         return;
