@@ -202,7 +202,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         `).join('');
     }
 
-    // Функции для работы �� друзьями
+    // Функции для работы с друзьями
     async function loadFriends() {
         try {
             const response = await fetch(`https://adminflow.ru:5003/api/friends?userId=${currentUser.id}`);
@@ -578,7 +578,7 @@ async function createPost() {
             document.getElementById('post-form').style.display = 'none';
             selectedPostImage = null;
 
-            // Перезагр��жаем посты
+            // Перезагружаем посты
             loadPosts();
         } else {
             throw new Error(data.error);
@@ -589,19 +589,6 @@ async function createPost() {
     }
 }
 
-async function loadPosts() {
-    try {
-        const userId = new URLSearchParams(window.location.search).get('id') || currentUser.id;
-        const response = await fetch(`https://adminflow.ru:5003/api/posts/${userId}`);
-        const data = await response.json();
-
-        if (data.success) {
-            displayPosts(data.posts);
-        }
-    } catch (err) {
-        console.error('Error loading posts:', err);
-    }
-}
 async function loadPosts() {
     try {
         const userId = new URLSearchParams(window.location.search).get('id') || currentUser.id;
