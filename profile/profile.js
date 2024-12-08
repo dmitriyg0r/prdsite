@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         } catch (err) {
             console.error('Error loading user profile:', err);
-            alert('Ошибка при загрузке профиля ользователя');
+            alert('Ошибка при загрузке профиля ��льзователя');
             window.location.href = '/profile/profile.html';
         }
     } else {
@@ -235,7 +235,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         `).join('');
     }
 
-    // Функции для работы с друзьями
+    // Функции для работы �� друзьями
     async function loadFriends(userId) {
         if (!userId) {
             console.warn('loadFriends: userId is undefined');
@@ -293,9 +293,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <span class="friend-name">${friend.username}</span>
                 </a>
             `).join('') + (friends.length > maxFriendsInGrid 
-                ? `<div class="friend-item more-friends">
+                ? `<button class="friend-item more-friends" onclick="openFriendsModal()">
                      <span>+${friends.length - maxFriendsInGrid}</span>
-                   </div>`
+                   </button>`
                 : '')
             : `<div class="friend-placeholder">
                  <img src="/uploads/avatars/default.png" alt="No friends" class="friend-avatar">
@@ -416,7 +416,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Обновляем отображение результатов поиска
+    // Обновляем отображе��ие результатов поиска
     function displaySearchResults(users) {
         const searchResults = document.querySelector('.search-results');
         searchResults.innerHTML = users.map(user => {
@@ -446,7 +446,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             `;
         }).join('');
 
-        // Добавляем обработчики для кнопок добавления в друзья
+        // Д��бавляем обработчики для кнопок добавления в друзья
         document.querySelectorAll('.add-friend-btn').forEach(btn => {
             btn.addEventListener('click', () => sendFriendRequest(btn.dataset.userId));
         });
@@ -477,7 +477,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Обновляем обработчик открытия модального окна
     document.querySelector('.friends-header-btn').addEventListener('click', () => {
-        // Обновляем списки при открытии модального окна
+        // Обновляем списки при открытии модально��о окна
         loadFriends();
         loadFriendRequests();
     });
@@ -718,7 +718,7 @@ function initializePostHandlers() {
             }, 10);
         } else {
             postForm.classList.remove('active');
-            // Скрываем форму после завершения анимации
+            // Скрываем форму после завершения ани��ации
             setTimeout(() => {
                 postForm.style.display = 'none';
             }, 300);
@@ -920,7 +920,7 @@ function removePostImage() {
 
 // Добавляем функцию удаления поста
 async function deletePost(postId) {
-    if (!confirm('Вы уверены, что хотите удалить эту публикацию?')) {
+    if (!confirm('Вы уверены, чт�� хотите удалить эту публикацию?')) {
         return;
     }
 
@@ -1025,4 +1025,19 @@ window.closeImageModal = function(modal) {
     setTimeout(() => {
         modal.remove();
     }, 300);
+};
+
+// Добавляем функцию в глобальную область видимости
+window.openFriendsModal = function() {
+    const friendsModal = document.getElementById('friends-modal');
+    const friendsTab = document.querySelector('[data-tab="friends-tab"]');
+    
+    // Открываем модальное окно
+    friendsModal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    
+    // Активируем вкладку с друзьями
+    if (friendsTab) {
+        friendsTab.click();
+    }
 }; 
