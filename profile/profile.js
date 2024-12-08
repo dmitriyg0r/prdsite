@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('logout-btn').style.display = 'none';
             document.querySelector('.avatar-overlay').style.display = 'none';
             
-            // Скрываем вкладку запросов в д��узья в модальном окне
+            // Скрываем вкладку запросов в друзья в модальном окне
             const requestsTab = document.querySelector('[data-tab="requests-tab"]');
             if (requestsTab) {
                 requestsTab.style.display = 'none';
@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 currentUser.avatar_url = data.avatarUrl;
                 localStorage.setItem('user', JSON.stringify(currentUser));
             } else {
-                alert(data.error || 'Ошибка п��и загрузке аватара');
+                alert(data.error || 'Ошибка при загрузке аватара');
             }
         } catch (err) {
             console.error('Error uploading avatar:', err);
@@ -246,12 +246,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Функции для работы с друзьями
     async function loadFriends(userId) {
+        if (!userId) {
+            console.warn('loadFriends: userId is undefined');
+            return;
+        }
+
         try {
             const response = await fetch(`https://adminflow.ru:5003/api/friends?userId=${userId}`);
+            if (!response.ok) {
+                throw new Error('Failed to load friends');
+            }
             const data = await response.json();
             
-            if (response.ok) {
-                displayFriends(data.friends, userId === currentUser.id);
+            if (data.success) {
+                displayFriends(data.friends, userId === currentUser?.id);
                 updateFriendsCount(data.friends.length);
             }
         } catch (err) {
@@ -467,7 +475,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Обновляем обработчик открытия модального окна
+    // Обновляем обработчик открытия модальн��го окна
     document.querySelector('.friends-header-btn').addEventListener('click', () => {
         // Обновляем списки при открытии модального окна
         loadFriends();
@@ -534,7 +542,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const data = await response.json();
             
             if (data.user) {
-                // Сохраняем данные профиля друга во вре��енное хранилище
+                // Сохраняем данные профиля друга во временное хранилище
                 sessionStorage.setItem('viewing_profile', JSON.stringify(data.user));
                 // Перенаправляем на страницу профиля с параметром
                 window.location.href = `/profile/profile.html?id=${userId}`;
@@ -561,7 +569,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Обновляем статус каждую минуту
         setInterval(updateUserStatus, 60000);
         
-        // Добавляем обработчики событий для отслеживания активности
+        // Добавляем обработчики событий для отслеживани�� активности
         ['mousemove', 'keydown', 'click', 'scroll'].forEach(eventName => {
             document.addEventListener(eventName, updateUserStatus);
         });
@@ -592,26 +600,91 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Добавляем обработчик перед уходом со страницы
-    window.addEventListener('beforeunload', async () => {
-        if (currentUser) {
-            try {
-                await fetch('https://adminflow.ru:5003/api/users/update-status', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        userId: currentUser.id,
-                        is_online: false,
-                        last_activity: new Date().toISOString()
-                    })
-                });
-            } catch (err) {
-                console.error('Error updating offline status:', err);
-            }
+    // Обновляем обработчик перед уходом со страницы
+    window.addEventListener('beforeunload', (event) => {
+        if (currentUser && currentUser.id) {
+            // Используем синхронный запрос для гарантированной отправки
+            navigator.sendBeacon('https://adminflow.ru:5003/api/users/update-status', JSON.stringify({
+                userId: currentUser.id,
+                is_online: false
+            }));
         }
     });
+
+    // Обновляем функцию проверки статуса
+    async function checkOnlineStatus(userId) {
+        if (!userId) {
+            console.warn('checkOnlineStatus: userId is undefined');
+            return;
+        }
+
+        try {
+            const response = await fetch(`https://adminflow.ru:5003/api/users/status/${userId}`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch status');
+            }
+            
+            const data = await response.json();
+            
+            const statusElement = document.querySelector('.online-status');
+            if (statusElement) {
+                const isOnline = data.is_online;
+                statusElement.innerHTML = isOnline ? 
+                    '<i class="fas fa-circle"></i> В сети' : 
+                    `<i class="far fa-circle"></i> ${formatLastSeen(data.last_activity)}`;
+                
+                statusElement.className = `online-status ${isOnline ? 'online' : 'offline'}`;
+            }
+        } catch (err) {
+            console.error('Error checking online status:', err);
+        }
+    }
+
+    // Функция форматирования времени последнего посещения
+    function formatLastSeen(lastActivity) {
+        if (!lastActivity) return 'давно';
+        
+        const now = new Date();
+        const activity = new Date(lastActivity);
+        const diff = now - activity;
+        
+        // Меньше минуты
+        if (diff < 60 * 1000) {
+            return 'только что';
+        }
+        
+        // Меньше часа
+        if (diff < 60 * 60 * 1000) {
+            const minutes = Math.floor(diff / (60 * 1000));
+            return `${minutes} ${declOfNum(minutes, ['минуту', 'минуты', 'минут'])} назад`;
+        }
+        
+        // Меньше суток
+        if (diff < 24 * 60 * 60 * 1000) {
+            const hours = Math.floor(diff / (60 * 60 * 1000));
+            return `${hours} ${declOfNum(hours, ['час', 'часа', 'часов'])} назад`;
+        }
+        
+        // Меньше недели
+        if (diff < 7 * 24 * 60 * 60 * 1000) {
+            const days = Math.floor(diff / (24 * 60 * 60 * 1000));
+            return `${days} ${declOfNum(days, ['день', 'дня', 'дней'])} назад`;
+        }
+        
+        // Более недели
+        return activity.toLocaleString('ru-RU', {
+            day: 'numeric',
+            month: 'long',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+
+    // Вспомогательная функция для склонения слов
+    function declOfNum(number, words) {
+        return words[(number % 100 > 4 && number % 100 < 20) ? 2 : 
+            [2, 0, 1, 1, 1, 2][(number % 10 < 5) ? number % 10 : 5]];
+    } 
 });
 
 function initializePostHandlers() {
@@ -933,82 +1006,4 @@ window.closeImageModal = function(modal) {
     setTimeout(() => {
         modal.remove();
     }, 300);
-};
-
-// Обновляем функцию проверки онлайн-статуса
-async function checkOnlineStatus(userId) {
-    try {
-        const response = await fetch(`https://adminflow.ru:5003/api/users/status/${userId}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        if (!response.ok) {
-            throw new Error('Failed to fetch status');
-        }
-
-        const data = await response.json();
-        const statusElement = document.querySelector('.online-status');
-        
-        if (statusElement) {
-            const isOnline = data.is_online;
-            const lastActivity = data.last_activity;
-
-            statusElement.innerHTML = isOnline ? 
-                '<i class="fas fa-circle"></i> В сети' : 
-                `<i class="far fa-circle"></i> ${formatLastSeen(lastActivity)}`;
-            
-            statusElement.className = `online-status ${isOnline ? 'online' : 'offline'}`;
-        }
-    } catch (err) {
-        console.error('Error checking online status:', err);
-    }
-}
-
-// Функция форматирования времени последнего посещения
-function formatLastSeen(lastActivity) {
-    if (!lastActivity) return 'давно';
-    
-    const now = new Date();
-    const activity = new Date(lastActivity);
-    const diff = now - activity;
-    
-    // Меньше минуты
-    if (diff < 60 * 1000) {
-        return 'только что';
-    }
-    
-    // Меньше часа
-    if (diff < 60 * 60 * 1000) {
-        const minutes = Math.floor(diff / (60 * 1000));
-        return `${minutes} ${declOfNum(minutes, ['минуту', 'минуты', 'минут'])} назад`;
-    }
-    
-    // Меньше суток
-    if (diff < 24 * 60 * 60 * 1000) {
-        const hours = Math.floor(diff / (60 * 60 * 1000));
-        return `${hours} ${declOfNum(hours, ['час', 'часа', 'часов'])} назад`;
-    }
-    
-    // Меньше недели
-    if (diff < 7 * 24 * 60 * 60 * 1000) {
-        const days = Math.floor(diff / (24 * 60 * 60 * 1000));
-        return `${days} ${declOfNum(days, ['день', 'дня', 'дней'])} назад`;
-    }
-    
-    // Более неде��и
-    return activity.toLocaleString('ru-RU', {
-        day: 'numeric',
-        month: 'long',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
-}
-
-// Вспомогательная функция для склонения слов
-function declOfNum(number, words) {
-    return words[(number % 100 > 4 && number % 100 < 20) ? 2 : 
-        [2, 0, 1, 1, 1, 2][(number % 10 < 5) ? number % 10 : 5]];
-} 
+}; 
