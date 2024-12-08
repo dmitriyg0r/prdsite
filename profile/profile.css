@@ -1151,31 +1151,34 @@ body {
 /* Стили для постов */
 .post {
     background: var(--text-container-background);
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: var(--text-container-shadow);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid var(--border-color);
 }
 
 .post:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(var(--button-background-rgb), 0.08);
 }
 
+/* Modernized Post Header */
 .post-header {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 15px;
-    position: relative;
+    gap: 16px;
+    margin-bottom: 20px;
 }
 
 .post-avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
     object-fit: cover;
+    border: 2px solid var(--primary-color);
+    padding: 2px;
 }
 
 .post-info {
@@ -1184,6 +1187,7 @@ body {
 
 .post-author {
     font-weight: 600;
+    font-size: 1.1em;
     color: var(--text-color);
     margin-bottom: 4px;
 }
@@ -1191,27 +1195,52 @@ body {
 .post-date {
     font-size: 0.9em;
     color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
+.post-date i {
+    font-size: 0.9em;
+    color: var(--primary-color);
+}
+
+/* Enhanced Post Content */
 .post-content {
     color: var(--text-color);
-    line-height: 1.5;
-    margin-bottom: 15px;
-    white-space: pre-wrap;
+    line-height: 1.6;
+    font-size: 1.05em;
+    margin: 0 0 20px;
+    padding: 0 4px;
+}
+
+/* Improved Media Container */
+.post-media {
+    margin: 20px -24px;
+    position: relative;
+    background: var(--background-color);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.post-image-container {
+    position: relative;
+    max-height: 600px;
 }
 
 .post-image {
     width: 100%;
-    max-height: 500px;
+    height: auto;
     object-fit: cover;
-    border-radius: 8px;
-    margin-bottom: 15px;
+    transition: all 0.3s ease;
 }
 
+/* Enhanced Post Actions */
 .post-actions {
     display: flex;
-    gap: 20px;
-    padding-top: 12px;
+    gap: 24px;
+    padding-top: 16px;
+    margin-top: 16px;
     border-top: 1px solid var(--border-color);
 }
 
@@ -1220,360 +1249,48 @@ body {
     align-items: center;
     gap: 8px;
     color: var(--text-secondary);
-    cursor: pointer;
-    transition: color 0.2s ease;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+    background: transparent;
 }
 
 .post-action:hover {
     color: var(--primary-color);
+    background: rgba(var(--button-background-rgb), 0.08);
 }
 
 .post-action i {
-    font-size: 1.2em;
+    font-size: 1.3em;
 }
 
-.no-posts {
-    text-align: center;
-    padding: 40px;
-    color: var(--text-secondary);
-    font-size: 1.1em;
+.post-action span {
+    font-size: 0.95em;
 }
 
-/* Анимации для постов */
-@keyframes postAppear {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.post {
-    animation: postAppear 0.4s ease forwards;
-}
-
-/* Добавляем стили для контейнера постов */
-.posts-container {
-    padding: 20px;
-}
-
+/* Delete Button Styling */
 .delete-post-btn {
     position: absolute;
-    right: 10px;
-    top: 10px;
-    background: none;
+    right: 16px;
+    top: 16px;
+    background: rgba(var(--button-background-rgb), 0.1);
     border: none;
     color: var(--text-secondary);
     cursor: pointer;
-    padding: 5px;
-    border-radius: 4px;
+    padding: 8px;
+    border-radius: 10px;
     transition: all 0.3s ease;
     opacity: 0;
+    transform: translateX(10px);
 }
 
 .post:hover .delete-post-btn {
     opacity: 1;
+    transform: translateX(0);
 }
 
 .delete-post-btn:hover {
     color: #ff4444;
     background: rgba(255, 68, 68, 0.1);
-}
-/* Стили для медиа-контента в постах */
-.post-media {
-    margin: 15px -20px;
-    position: relative;
-    background: var(--background-color);
-}
-
-.post-image-container {
-    position: relative;
-    overflow: hidden;
-    max-height: 500px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.post-image {
-    width: 100%;
-    height: auto;
-    object-fit: contain;
-    transition: transform 0.3s ease;
-    cursor: zoom-in;
-}
-
-.image-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.4);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.image-overlay i {
-    color: white;
-    font-size: 2em;
-    transform: scale(0.8);
-    transition: transform 0.3s ease;
-}
-
-.post-image-container:hover .image-overlay {
-    opacity: 1;
-}
-
-.post-image-container:hover .image-overlay i {
-    transform: scale(1);
-}
-
-/* Стили для модального окна с изображением */
-.image-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.9);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1100;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
-}
-
-.image-modal.active {
-    opacity: 1;
-    visibility: visible;
-}
-
-.modal-content {
-    position: relative;
-    max-width: 90vw;
-    max-height: 90vh;
-    margin: 20px;
-    animation: modalZoom 0.3s ease;
-}
-
-.modal-content img {
-    max-width: 100%;
-    max-height: 90vh;
-    object-fit: contain;
-    border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-}
-
-.close-modal {
-    position: absolute;
-    top: -40px;
-    right: -40px;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.1);
-    border: none;
-    color: white;
-    font-size: 24px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-}
-
-.close-modal:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: rotate(90deg);
-}
-
-@keyframes modalZoom {
-    from {
-        transform: scale(0.9);
-        opacity: 0;
-    }
-    to {
-        transform: scale(1);
-        opacity: 1;
-    }
-}
-
-/* Адаптивность */
-@media (max-width: 768px) {
-    .post-media {
-        margin: 10px -15px;
-    }
-    
-    .post-image-container {
-        max-height: 400px;
-    }
-    
-    .close-modal {
-        top: -50px;
-        right: 0;
-    }
-}
-/* Стили для модального окна с изображением */
-.image-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.9);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
-}
-
-.image-modal.active {
-    opacity: 1;
-    visibility: visible;
-}
-
-.modal-content {
-    position: relative;
-    width: 90%;
-    max-width: 1200px;
-    height: 90vh;
-    background: var(--text-container-background);
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-.modal-flex-container {
-    display: flex;
-    height: 100%;
-}
-
-.modal-image-side {
-    flex: 1;
-    background: #000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 0; /* Для корректной работы flex-shrink */
-}
-
-.modal-image-side img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-}
-
-.modal-info-side {
-    width: 350px;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    border-left: 1px solid var(--border-color);
-    background: var(--text-container-background);
-}
-
-.modal-author-info {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.modal-author-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-.modal-author-details {
-    display: flex;
-    flex-direction: column;
-}
-
-.modal-author-name {
-    font-weight: 600;
-    color: var(--text-color);
-}
-
-.modal-post-date {
-    font-size: 0.9em;
-    color: var(--text-secondary);
-}
-
-.modal-post-content {
-    margin-top: 15px;
-    color: var(--text-color);
-    line-height: 1.6;
-    overflow-y: auto;
-    white-space: pre-wrap;
-}
-
-.close-modal {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: rgba(0, 0, 0, 0.5);
-    border: none;
-    color: white;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-    z-index: 2;
-}
-
-.close-modal:hover {
-    background: rgba(0, 0, 0, 0.7);
-    transform: rotate(90deg);
-}
-
-/* Адаптивность */
-@media (max-width: 992px) {
-    .modal-flex-container {
-        flex-direction: column;
-    }
-
-    .modal-image-side {
-        height: 60vh;
-    }
-
-    .modal-info-side {
-        width: 100%;
-        height: 40vh;
-        border-left: none;
-        border-top: 1px solid var(--border-color);
-    }
-}
-
-@media (max-width: 768px) {
-    .modal-content {
-        width: 100%;
-        height: 100%;
-        border-radius: 0;
-    }
-
-    .modal-image-side {
-        height: 50vh;
-    }
-
-    .modal-info-side {
-        height: 50vh;
-    }
 }
