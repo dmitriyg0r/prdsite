@@ -561,8 +561,7 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(255, 255, 255, 0.1); /* Светлый полупрозрачный фон для обеих тем */
-    backdrop-filter: blur(5px); /* Добавляем размытие для лучшего эффекта */
+    background: rgba(128, 128, 128, 0.5) !important; /* Серый полупрозрачный фон */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -578,7 +577,8 @@ body {
 }
 
 /* Остальное содержимое использует переменные темы */
-.modal .modal-content {
+.modal .modal-content,
+.image-modal .modal-content {
     width: 90%;
     max-width: 800px;
     max-height: 90vh;
@@ -611,8 +611,8 @@ body {
 .modal-info-side {
     width: 350px;
     padding: 20px;
-    border-left: 1px solid #e0e0e0;
-    background: #fff;
+    border-left: 1px solid var(--border-color);
+    background: var(--surface-color);
     overflow-y: auto;
 }
 
@@ -637,16 +637,16 @@ body {
 
 .modal-author-name {
     font-weight: 600;
-    color: #000;
+    color: var(--text-primary);
 }
 
 .modal-post-date {
     font-size: 13px;
-    color: #666;
+    color: var(--text-secondary);
 }
 
 .modal-post-content {
-    color: #000;
+    color: var(--text-primary);
     line-height: 1.5;
     margin-top: 16px;
     white-space: pre-wrap;
@@ -727,7 +727,7 @@ body {
     font-size: 13px;
 }
 
-/* Стили для аватарок в мини-спи��ке друзей */
+/* Стили для аватарок в мини-списке друзей */
 .friend-avatar {
     width: 48px;
     height: 48px;
@@ -752,7 +752,7 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.9);
+    background: rgba(128, 128, 128, 0.5) !important; /* Серый полупрозрачный фон */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -854,9 +854,9 @@ body {
     align-items: center;
     gap: 12px;
     padding: 12px;
-    background: #fff;
+    background: var(--surface-color);
     border-radius: var(--radius-md);
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--border-color);
 }
 
 .friend-info {
@@ -866,7 +866,7 @@ body {
 
 .friend-name {
     font-weight: 500;
-    color: #000;
+    color: var(--text-primary);
     margin-bottom: 4px;
     overflow: hidden;
     text-overflow: ellipsis;
