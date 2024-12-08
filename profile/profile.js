@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         } catch (err) {
             console.error('Error loading user profile:', err);
-            alert('Ошибка при загрузке профиля пользователя');
+            alert('Ошибка при загрузке профиля ��ользователя');
             window.location.href = '/profile/profile.html';
         }
     } else {
@@ -589,7 +589,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             if (diffMinutes >= 5) {
                 // Если нет активности 5+ минут, обновляем статус
-                updateUserStatus(true); // Всё ещё онлайн, но не ��ктивен
+                updateUserStatus(true); // Всё ещё онлайн, но не активен
             }
         }, 60000);
         
@@ -625,7 +625,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Обновляем обработчик перед уходом со страницы
     window.addEventListener('beforeunload', (event) => {
         if (currentUser && currentUser.id) {
-            // Используем синхронный запрос для гарантированной отправки
+            // Используем синхронный запрос для гарантированн��й отправки
             navigator.sendBeacon('https://adminflow.ru:5003/api/users/update-status', JSON.stringify({
                 userId: currentUser.id,
                 is_online: false
@@ -724,7 +724,7 @@ function initializePostHandlers() {
             }, 10);
         } else {
             postForm.classList.remove('active');
-            // Скрываем форму после завершения анимации
+            // Скрываем форму пос��е завершения анимации
             setTimeout(() => {
                 postForm.style.display = 'none';
             }, 300);
@@ -820,16 +820,13 @@ async function loadPosts() {
 function displayPosts(posts) {
     const container = document.getElementById('posts-container');
     container.innerHTML = posts.length ? posts.map(post => {
-        // Определяем тип файла
         let mediaContent = '';
         if (post.image_url) {
             const fileExtension = post.image_url.split('.').pop().toLowerCase();
-            
-            // Список расширений изображений
             const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
             
             if (imageExtensions.includes(fileExtension)) {
-                // Для изображений
+                // Для изображений (убрана иконка расширения)
                 mediaContent = `
                     <div class="post-media">
                         <div class="post-image-container" onclick='openImageInFullscreen("${post.image_url}", ${JSON.stringify({
@@ -839,9 +836,6 @@ function displayPosts(posts) {
                             content: post.content
                         }).replace(/'/g, "&apos;")})'>
                             <img src="${post.image_url}" alt="Post image" class="post-image">
-                            <div class="image-overlay">
-                                <i class="fas fa-expand"></i>
-                            </div>
                         </div>
                     </div>
                 `;
@@ -940,7 +934,7 @@ async function toggleLike(postId) {
             // Устанавливаем точное количество лайков из ответа сервера
             likesCountElement.textContent = data.likes_count;
         } else {
-            throw new Error(data.error || 'Ошибка при обр��ботке лайка');
+            throw new Error(data.error || 'Ошибка при обрботке лайка');
         }
     } catch (err) {
         console.error('Error toggling like:', err);
