@@ -35,13 +35,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 new Date(data.user.last_login).toLocaleString() : 'Нет данных';
             document.getElementById('profile-avatar').src = data.user.avatar_url || '/uploads/avatars/default.png';
 
+            // Загружаем список друзей профиля друга
+            await loadFriends(profileId);
+            
             // Проверяем онлайн-статус друга
             checkOnlineStatus(profileId);
             setInterval(() => checkOnlineStatus(profileId), 60000);
 
-            // Загружаем список друзей профиля друга
-            loadFriends(profileId);
-            
             // Скрываем элементы управления профилем
             document.getElementById('edit-profile-btn').style.display = 'none';
             document.getElementById('logout-btn').style.display = 'none';
@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             window.location.href = '/profile/profile.html';
         }
     } else {
-        // Загружаем профиль текущего пользователя
+        // Загружаем свой профиль
         document.getElementById('username').textContent = currentUser.username;
         document.getElementById('role').textContent = currentUser.role;
         document.getElementById('created_at').textContent = new Date(currentUser.created_at).toLocaleString();
@@ -82,26 +82,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             new Date(currentUser.last_login).toLocaleString() : 'Нет данных';
         document.getElementById('profile-avatar').src = currentUser.avatar_url || '/uploads/avatars/default.png';
 
-        // Загружаем список друзей текущего пользователя
-        loadFriends(currentUser.id);
-        loadFriendRequests();
-
-        // Обновляем статус текущего пользователя
-        setInterval(async () => {
-            try {
-                await fetch('https://adminflow.ru:5003/api/users/update-status', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        userId: currentUser.id
-                    })
-                });
-            } catch (err) {
-                console.error('Error updating status:', err);
-            }
-        }, 60000);
+        // Загружаем список своих друзей
+        await loadFriends(currentUser.id);
+        
+        // Запускаем обновление своего статуса
+        startStatusUpdates();
     }
 
     // Загружаем список друзей
@@ -254,13 +239,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const response = await fetch(`https://adminflow.ru:5003/api/friends?userId=${userId}`);
             if (!response.ok) {
-                throw new Error('Failed to load friends');
+                throw new Error(`Failed to load friends: ${response.status}`);
             }
             const data = await response.json();
             
             if (data.success) {
                 displayFriends(data.friends, userId === currentUser?.id);
                 updateFriendsCount(data.friends.length);
+            } else {
+                throw new Error('Failed to load friends: server returned false success');
             }
         } catch (err) {
             console.error('Error loading friends:', err);
@@ -282,7 +269,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function displayFriends(friends, isCurrentUser) {
+        if (!Array.isArray(friends)) {
+            console.error('displayFriends: friends is not an array', friends);
+            return;
+        }
+
         const friendsList = document.querySelector('.friends-list');
+        if (!friendsList) {
+            console.error('displayFriends: friends-list element not found');
+            return;
+        }
+
         friendsList.innerHTML = friends.map(friend => `
             <div class="friend-card">
                 <img src="${friend.avatar_url || '/uploads/avatars/default.png'}" 
@@ -359,7 +356,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <i class="fas fa-check"></i> Принять
                         </button>
                         <button class="reject-friend-btn" data-user-id="${request.id}">
-                            <i class="fas fa-times"></i> Отклонить
+                            <i class="fas fa-times"></i> Отк��онить
                         </button>
                     </div>
                 </div>
@@ -475,7 +472,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Обновляем обработчик открытия модальн��го окна
+    // Обновляем обработчик открытия модального окна
     document.querySelector('.friends-header-btn').addEventListener('click', () => {
         // Обновляем списки при открытии модального окна
         loadFriends();
@@ -569,7 +566,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Обновляем статус каждую минуту
         setInterval(updateUserStatus, 60000);
         
-        // Добавляем обработчики событий для отслеживани�� активности
+        // Добавляем обработчики событий для отслеживания активности
         ['mousemove', 'keydown', 'click', 'scroll'].forEach(eventName => {
             document.addEventListener(eventName, updateUserStatus);
         });
@@ -603,7 +600,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Обновляем обработчик перед уходом со страницы
     window.addEventListener('beforeunload', (event) => {
         if (currentUser && currentUser.id) {
-            // Используем синхронный запрос для гарантированной отправки
+            // Используем синхронный запрос для гарантированн��й отправки
             navigator.sendBeacon('https://adminflow.ru:5003/api/users/update-status', JSON.stringify({
                 userId: currentUser.id,
                 is_online: false
