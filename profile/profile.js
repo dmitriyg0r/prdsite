@@ -638,7 +638,7 @@ function displayPosts(posts) {
         </div>
     `).join('') : '<div class="no-posts">Не найдено публикаций</div>';
 
-    async function toggleLike(postId, button) {
+    async function toggleLike(postId) {
         try {
             const response = await fetch('https://adminflow.ru:5003/api/posts/like', {
                 method: 'POST',
@@ -652,21 +652,25 @@ function displayPosts(posts) {
             });
     
             if (response.ok) {
-                const data = await response.json();
-                const likesCount = button.querySelector('.likes-count');
-                const heartIcon = button.querySelector('i');
+                // Находим элементы конкретного поста
+                const postElement = document.querySelector(`.post[data-post-id="${postId}"]`);
+                const likeButton = postElement.querySelector('.like-action');
+                const likesCountElement = postElement.querySelector('.likes-count');
+                const heartIcon = postElement.querySelector('.like-action i');
     
-                if (data.liked) {
-                    button.classList.add('liked');
-                    heartIcon.classList.remove('far');
-                    heartIcon.classList.add('fas');
+                // Получаем текущее количество лайков
+                const currentLikes = parseInt(likesCountElement.textContent);
+    
+                // Переключаем состояние лайка
+                if (heartIcon.classList.contains('far')) {
+                    // Если пост не был лайкнут - добавляем лайк
+                    heartIcon.classList.replace('far', 'fas');
+                    likesCountElement.textContent = currentLikes + 1;
                 } else {
-                    button.classList.remove('liked');
-                    heartIcon.classList.remove('fas');
-                    heartIcon.classList.add('far');
+                    // Если пост был лайкнут - убираем лайк
+                    heartIcon.classList.replace('fas', 'far');
+                    likesCountElement.textContent = Math.max(0, currentLikes - 1);
                 }
-                
-                likesCount.textContent = data.likes_count;
             }
         } catch (err) {
             console.error('Error toggling like:', err);
