@@ -202,7 +202,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         `).join('');
     }
 
-    // Функции для работы �� друзьями
+    // Функции для работы с друзьями
     async function loadFriends() {
         try {
             const response = await fetch(`https://adminflow.ru:5003/api/friends?userId=${currentUser.id}`);
@@ -660,62 +660,49 @@ function displayPosts(posts) {
     document.querySelectorAll('.like-action').forEach(btn => {
         btn.addEventListener('click', () => toggleLike(btn.dataset.postId));
     });
-
-
-    async function toggleLike(postId) {
-        try {
-            const response = await fetch('https://adminflow.ru:5003/api/posts/like', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    userId: currentUser.id,
-                    postId: postId
-                })
-            });
-    
-            if (response.ok) {
-                // Находим элементы конкретного поста
-                const postElement = document.querySelector(`.post[data-post-id="${postId}"]`);
-                const likeButton = postElement.querySelector('.like-action');
-                const likesCountElement = postElement.querySelector('.likes-count');
-                const heartIcon = postElement.querySelector('.like-action i');
-    
-                // Получаем текущее количество лайков
-                const currentLikes = parseInt(likesCountElement.textContent);
-    
-                // Переключаем состояние лайка
-                if (heartIcon.classList.contains('far')) {
-                    // Если пост не был лайкнут - добавляем лайк
-                    heartIcon.classList.replace('far', 'fas');
-                    likesCountElement.textContent = currentLikes + 1;
-                } else {
-                    // Если пост был лайкнут - убираем лайк
-                    heartIcon.classList.replace('fas', 'far');
-                    likesCountElement.textContent = Math.max(0, currentLikes - 1);
-                }
-            }
-        } catch (err) {
-            console.error('Error toggling like:', err);
-            alert('Ошибка при обработке лайка');
-        }
-    }
-    // Добавляем обработчики
-    document.querySelectorAll('.delete-post-btn').forEach(btn => {
-        btn.addEventListener('click', () => deletePost(btn.dataset.postId));
-    });
-
-    // Добавляем обработчики для лайков
-    document.querySelectorAll('.like-action').forEach(btn => {
-        btn.addEventListener('click', () => toggleLike(btn.dataset.postId, btn));
-    });
 }
-    // Добавляем обработчики для кнопок удаления
-    document.querySelectorAll('.delete-post-btn').forEach(btn => {
-        btn.addEventListener('click', () => deletePost(btn.dataset.postId));
-    });
 
+async function toggleLike(postId) {
+    try {
+        const response = await fetch('https://adminflow.ru:5003/api/posts/like', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                userId: currentUser.id,
+                postId: postId
+            })
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+            // Находим элементы конкретного поста
+            const postElement = document.querySelector(`.post[data-post-id="${postId}"]`);
+            const likeButton = postElement.querySelector('.like-action');
+            const heartIcon = postElement.querySelector('.like-action i');
+            const likesCountElement = postElement.querySelector('.likes-count');
+            
+            // Обновляем UI на основе ответа сервера
+            if (data.liked) {
+                heartIcon.classList.replace('far', 'fas');
+                likeButton.classList.add('liked');
+            } else {
+                heartIcon.classList.replace('fas', 'far');
+                likeButton.classList.remove('liked');
+            }
+            
+            // Устанавливаем точное количество лайков из ответа сервера
+            likesCountElement.textContent = data.likes_count;
+        } else {
+            throw new Error(data.error || 'Ошибка при обработке лайка');
+        }
+    } catch (err) {
+        console.error('Error toggling like:', err);
+        alert('Ошибка при обработке лайка');
+    }
+}
 
 function removePostImage() {
     selectedPostImage = null;

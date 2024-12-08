@@ -306,7 +306,7 @@ app.get('/api/friends', async (req, res) => {
         res.json({ friends: result.rows });
     } catch (err) {
         console.error('Get friends error:', err);
-        res.status(500).json({ error: 'Ошибка при получении ��писка друзей' });
+        res.status(500).json({ error: 'Ошибка при получении списка друзей' });
     }
 });
 
@@ -343,7 +343,7 @@ app.post('/api/friend/remove', async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         console.error('Remove friend error:', err);
-        res.status(500).json({ error: 'Ошибка при удалении из друзей' });
+        res.status(500).json({ error: 'Ошибка при удалении из ��рузей' });
     }
 });
 
@@ -483,7 +483,7 @@ app.get('/api/messages/last/:userId/:friendId', async (req, res) => {
     }
 });
 
-// Получение колич��ства непрочитанных сообщений
+// Получение количества непрочитанных сообщений
 app.get('/api/messages/unread/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
@@ -946,43 +946,34 @@ app.post('/api/posts/like', async (req, res) => {
             [postId, userId, 'like']
         );
 
+        let liked = false;
+        
         if (existingLike.rows.length > 0) {
             // Если лайк существует - удаляем его
             await pool.query(
                 'DELETE FROM posts WHERE parent_id = $1 AND user_id = $2 AND type = $3',
                 [postId, userId, 'like']
             );
-            
-            // Получаем обновленное количество лайков
-            const likesCount = await pool.query(
-                'SELECT COUNT(*) FROM posts WHERE parent_id = $1 AND type = $2',
-                [postId, 'like']
-            );
-
-            res.json({ 
-                success: true, 
-                liked: false,
-                likes_count: parseInt(likesCount.rows[0].count)
-            });
         } else {
             // Если лайка нет - создаем его
             await pool.query(
                 'INSERT INTO posts (user_id, parent_id, type) VALUES ($1, $2, $3)',
                 [userId, postId, 'like']
             );
-
-            // Получаем обновленное количество лайков
-            const likesCount = await pool.query(
-                'SELECT COUNT(*) FROM posts WHERE parent_id = $1 AND type = $2',
-                [postId, 'like']
-            );
-
-            res.json({ 
-                success: true, 
-                liked: true,
-                likes_count: parseInt(likesCount.rows[0].count)
-            });
+            liked = true;
         }
+
+        // Получаем обновленное количество лайков
+        const likesCount = await pool.query(
+            'SELECT COUNT(*) FROM posts WHERE parent_id = $1 AND type = $2',
+            [postId, 'like']
+        );
+
+        res.json({ 
+            success: true, 
+            liked: liked,
+            likes_count: parseInt(likesCount.rows[0].count)
+        });
     } catch (err) {
         console.error('Error toggling like:', err);
         res.status(500).json({ error: 'Ошибка при обработке лайка' });
@@ -1013,7 +1004,7 @@ app.delete('/api/posts/delete/:postId', async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         console.error('Error deleting post:', err);
-        res.status(500).json({ error: 'Ошибка при удалении поста' });
+        res.status(500).json({ error: 'Ош��бка при удалении поста' });
     }
 });
 
