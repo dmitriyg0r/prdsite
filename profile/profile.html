@@ -59,13 +59,11 @@
 
     <!-- Основной контент -->
     <div class="profile-layout">
-        <!-- Левая колонка -->
         <div class="profile-sidebar">
             <div class="profile-card">
                 <div class="profile-header">
                     <div class="profile-avatar-wrapper">
-                        <img id="profile-avatar" src="/uploads/avatars/default.png" alt="Аватар пользователя" class="profile-avatar">
-                        <div class="profile-status"></div>
+                        <img id="profile-avatar" src="/uploads/avatars/default.png" alt="Аватар пользователя">
                         <div class="avatar-overlay">
                             <label for="avatar-upload" class="avatar-upload-label">
                                 <i class="fas fa-camera"></i>
@@ -74,16 +72,33 @@
                             <input type="file" id="avatar-upload" accept="image/*" style="display: none;">
                         </div>
                     </div>
-                    <h1 id="username" class="profile-name"></h1>
-                    <span id="role" class="profile-role"></span>
+                    <h1 id="username"></h1>
+                    <span id="role"></span>
+                    <div class="profile-info">
+                        <div class="info-row">
+                            <span class="info-label">Дата регистрации:</span>
+                            <span id="created_at"></span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Последний вход:</span>
+                            <span id="last_login"></span>
+                        </div>
+                    </div>
+                    <div class="profile-actions">
+                        <button id="edit-profile-btn" class="action-btn">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button id="logout-btn" class="action-btn danger">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Блок друзей -->
                 <div class="friends-block">
-                    <div class="section-header">
-                        <h3>Друзья</h3>
-                        <button class="friends-header-btn" id="show-all-friends">
-                            Показать всех
+                    <div class="friends-header">
+                        <button class="friends-header-btn">
+                            <h3>Друзья</h3>
                             <span class="friends-count">0</span>
                         </button>
                     </div>
@@ -94,21 +109,18 @@
             </div>
         </div>
 
-        <!-- Правая колонка -->
+        <!-- Правая колонка с постами -->
         <div class="profile-content">
-            <!-- Секция постов -->
-            <div class="content-section">
-                <div class="section-header">
+            <div class="posts-section">
+                <div class="posts-header">
                     <h3>Публикации</h3>
-                    <button id="create-post-btn" class="button button-primary">
-                        <i class="fas fa-plus"></i>
-                        <span>Создать публикацию</span>
+                    <button id="create-post-btn" class="action-btn">
+                        <i class="fas fa-plus"></i> Создать публикацию
                     </button>
                 </div>
-
-                <!-- Форма создания поста -->
+                
                 <div id="post-form" class="post-form" style="display: none;">
-                    <textarea id="post-content" class="post-textarea" placeholder="Что у вас нового?"></textarea>
+                    <textarea id="post-content" placeholder="Что у вас нового?"></textarea>
                     <div class="post-form-actions">
                         <div class="post-attachments">
                             <label for="post-image" class="attachment-btn">
@@ -118,14 +130,13 @@
                             <input type="file" id="post-image" accept="image/*" style="display: none;">
                         </div>
                         <div id="image-preview" class="post-preview"></div>
-                        <button id="publish-post-btn" class="button button-primary">
+                        <button id="publish-post-btn" class="action-btn">
                             <i class="fas fa-paper-plane"></i>
                             <span>Опубликовать</span>
                         </button>
                     </div>
                 </div>
 
-                <!-- Контейнер для постов -->
                 <div id="posts-container" class="posts-container">
                     <!-- Посты добавляются динамически -->
                 </div>
@@ -142,7 +153,7 @@
                         <i class="fas fa-users"></i> Все друзья
                         <span class="friend-count">0</span>
                     </button>
-                    <button class="tab-btn" data-tab="friend-requests">
+                    <button class="tab-btn" data-tab="requests-tab">
                         <i class="fas fa-user-plus"></i> Заявки
                         <span class="request-count">0</span>
                     </button>
@@ -156,21 +167,18 @@
             </div>
             
             <div class="modal-body">
-                <!-- Вкладка всех друзей -->
                 <div class="tab-content active" id="all-friends">
                     <div class="friends-list">
                         <!-- Друзья добавляются динамически -->
                     </div>
                 </div>
 
-                <!-- Вкладка заявок в друзья -->
-                <div class="tab-content" id="friend-requests">
+                <div class="tab-content" id="requests-tab">
                     <div class="requests-list">
                         <!-- Заявки добавляются динамически -->
                     </div>
                 </div>
 
-                <!-- Вкладка поиска друзей -->
                 <div class="tab-content" id="search-friends">
                     <div class="search-container">
                         <input type="text" class="search-input" placeholder="Поиск пользователей...">
@@ -184,12 +192,6 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- Уведомления -->
-    <div id="notification" class="notification">
-        <i class="notification-icon"></i>
-        <span class="notification-message"></span>
     </div>
 
     <script src="profile.js"></script>
