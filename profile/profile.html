@@ -9,119 +9,63 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="icon" type="image/x-icon" href="../flow.ico">
 </head>
-
-<div class="overlay"></div>
-<!-- Боковое меню должно быть первым -->
-<nav class="sidebar">
-    <!-- Добавляем иконку -->
-    <div class="sidebar-logo">
-        <img src="../flow.ico" alt="Flow Logo" class="sidebar-icon">
-    </div>
-    <div class="sidebar-nav">
-        <a href="../index.html" class="sidebar-link">
-            <i class="fas fa-home"></i>
-            <span>Расписание</span>
-        </a>
-        <a href="../home/homework.html" class="sidebar-link">
-            <i class="fas fa-tasks"></i>
-            <span>Задания</span>
-        </a>
-        <a href="../downloads/downloads.html" class="sidebar-link">
-            <i class="fas fa-download"></i>
-            <span>Загрузки</span>
-        </a>
-        <a href="../memes/memes.html" class="sidebar-link">
-            <i class="fas fa-smile"></i>
-            <span>Мемы</span>
-        </a>
-        <a href="../about/about.html" class="sidebar-link">
-            <i class="fas fa-info-circle"></i>
-            <span>О нас</span>
-        </a>
-        <a href="../games/games.html" class="sidebar-link">
-            <i class="fas fa-gamepad"></i>
-            <span>Игры</span>
-        </a>
-        <a href="../profile/profile.html" class="sidebar-link active">
-            <i class="fas fa-user"></i>
-            <span>Профиль</span>
-        </a>
-
-    </div>
-    <!-- Переключатель темы после навигации -->
-    <div class="theme-switch-wrapper">
-        <div class="theme-toggle-container">
-            <i class="fas fa-sun theme-icon"></i>
-            <input type="checkbox" id="theme-toggle" class="theme-checkbox">
-            <label for="theme-toggle" class="theme-label">
-                <div class="ball"></div>
-            </label>
-            <span>Тёмная тема</span>
-        </div>
-    </div>
-</nav>
-
-<div class="overlay"></div>
-
-<div id="friends-modal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <div class="modal-tabs">
-                <button class="tab-btn active" data-tab="all-friends">
-                    <i class="fas fa-users"></i> Все друзья
-                    <span class="friend-count">0</span>
-                </button>
-                <button class="tab-btn" data-tab="friend-requests">
-                    <i class="fas fa-user-plus"></i> Заявки
-                    <span class="request-count">0</span>
-                </button>
-                <button class="tab-btn" data-tab="search-friends">
-                    <i class="fas fa-search"></i> Поиск друзей
-                </button>
-            </div>
-            <button class="modal-close">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        
-        <div class="modal-body">
-            <!-- Вкладка всех друзей -->
-            <div class="tab-content active" id="all-friends">
-                <div class="friends-list">
-                    <!-- Друзья будут добавляться динамически -->
-                </div>
-            </div>
-
-            <!-- Вкладка заявок в друзья -->
-            <div class="tab-content" id="friend-requests">
-                <div class="requests-list">
-                    <!-- Заявки будут добавляться динамически -->
-                </div>
-            </div>
-
-            <!-- Вкладка поиска друзей -->
-            <div class="tab-content" id="search-friends">
-                <div class="search-container">
-                    <input type="text" class="search-input" placeholder="Поиск пользователей...">
-                    <button class="search-btn">
-                        <i class="fas fa-search"></i>
-                    </button>
-                </div>
-                <div class="search-results">
-                    <!-- Результаты поиска будут добавляться динамически -->
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
 <body>
-    <div class="profile-page">
-        <div class="profile-content">
-            <div class="profile-left-column">
-                <div class="profile-avatar-block">
-                    <div class="profile-avatar-container">
-                        <img id="profile-avatar" src="/uploads/avatars/default.png" alt="Аватар пользователя">
+    <!-- Боковое меню -->
+    <nav class="sidebar glass-effect">
+        <div class="sidebar-logo hover-lift">
+            <img src="../flow.ico" alt="Flow Logo" class="sidebar-icon">
+        </div>
+        <div class="sidebar-nav">
+            <a href="../index.html" class="sidebar-link">
+                <i class="fas fa-home"></i>
+                <span>Расписание</span>
+            </a>
+            <a href="../home/homework.html" class="sidebar-link">
+                <i class="fas fa-tasks"></i>
+                <span>Задания</span>
+            </a>
+            <a href="../downloads/downloads.html" class="sidebar-link">
+                <i class="fas fa-download"></i>
+                <span>Загрузки</span>
+            </a>
+            <a href="../memes/memes.html" class="sidebar-link">
+                <i class="fas fa-smile"></i>
+                <span>Мемы</span>
+            </a>
+            <a href="../about/about.html" class="sidebar-link">
+                <i class="fas fa-info-circle"></i>
+                <span>О нас</span>
+            </a>
+            <a href="../games/games.html" class="sidebar-link">
+                <i class="fas fa-gamepad"></i>
+                <span>Игры</span>
+            </a>
+            <a href="../profile/profile.html" class="sidebar-link active">
+                <i class="fas fa-user"></i>
+                <span>Профиль</span>
+            </a>
+        </div>
+        <div class="theme-switch-wrapper">
+            <div class="theme-toggle-container">
+                <i class="fas fa-sun theme-icon"></i>
+                <input type="checkbox" id="theme-toggle" class="theme-checkbox">
+                <label for="theme-toggle" class="theme-label">
+                    <div class="ball"></div>
+                </label>
+                <span>Тёмная тема</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Основной контент -->
+    <div class="profile-layout">
+        <!-- Левая колонка -->
+        <div class="profile-sidebar">
+            <div class="profile-card">
+                <div class="profile-header">
+                    <div class="profile-avatar-wrapper">
+                        <img id="profile-avatar" src="/uploads/avatars/default.png" alt="Аватар пользователя" class="profile-avatar">
+                        <div class="profile-status"></div>
                         <div class="avatar-overlay">
                             <label for="avatar-upload" class="avatar-upload-label">
                                 <i class="fas fa-camera"></i>
@@ -130,93 +74,159 @@
                             <input type="file" id="avatar-upload" accept="image/*" style="display: none;">
                         </div>
                     </div>
+                    <h1 id="username" class="profile-name"></h1>
+                    <span id="role" class="profile-role"></span>
                 </div>
 
-                <div class="friends-block">
-                    <div class="friends-header">
-                        <button class="friends-header-btn">
-                            <h3>Друзья</h3>
-                            <span class="friends-count">0</span>
-                        </button>
-                    </div>
-                    <div class="friends-grid">
-                        <div class="friend-placeholder">
-                            <div class="friend-avatar">
-                                <img src="/uploads/avatars/default.png" alt="Friend">
-                            </div>
-                            <span class="friend-name">Пока нет друзей</span>
+                <div class="profile-info">
+                    <div class="profile-stats">
+                        <div class="stat-item">
+                            <span class="stat-value friends-count">0</span>
+                            <span class="stat-label">Друзей</span>
                         </div>
+                        <div class="stat-item">
+                            <span class="stat-value" id="posts-count">0</span>
+                            <span class="stat-label">Публикаций</span>
+                        </div>
+                    </div>
+
+                    <div class="profile-actions">
+                        <button id="edit-profile-btn" class="profile-action-btn action-primary">
+                            <i class="fas fa-edit"></i>
+                            <span>Редактировать</span>
+                        </button>
+                        <button id="logout-btn" class="profile-action-btn action-secondary">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Выйти</span>
+                        </button>
                     </div>
                 </div>
             </div>
 
-            <div class="profile-right-column">
-                <div class="profile-info-header">
-                    <div class="profile-name-status">
-                        <h2 id="username"></h2>
-                        <span class="online-status">online</span>
+            <!-- Блок друзей -->
+            <div class="card friends-block">
+                <div class="section-header">
+                    <h3>Друзья</h3>
+                    <button class="button button-secondary friends-header-btn">
+                        Показать всех
+                    </button>
+                </div>
+                <div class="friends-grid">
+                    <!-- Друзья добавляются динамически -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Правая колонка -->
+        <div class="profile-content">
+            <!-- Информационный блок -->
+            <div class="content-section">
+                <div class="info-block">
+                    <div class="info-row">
+                        <span class="info-label">Дата регистрации:</span>
+                        <span class="info-value" id="created_at"></span>
                     </div>
-                    <div class="profile-actions">
-                        <button id="edit-profile-btn" class="action-btn">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button id="logout-btn" class="action-btn danger">
-                            <i class="fas fa-sign-out-alt"></i>
+                    <div class="info-row">
+                        <span class="info-label">Последний вход:</span>
+                        <span class="info-value" id="last_login"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Секция постов -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h3>Публикации</h3>
+                    <button id="create-post-btn" class="button button-primary">
+                        <i class="fas fa-plus"></i>
+                        <span>Создать публикацию</span>
+                    </button>
+                </div>
+
+                <!-- Форма создания поста -->
+                <div id="post-form" class="post-form card" style="display: none;">
+                    <textarea id="post-content" class="post-textarea" placeholder="Что у вас нового?"></textarea>
+                    <div class="post-form-actions">
+                        <div class="post-attachments">
+                            <label for="post-image" class="button button-secondary">
+                                <i class="fas fa-image"></i>
+                                <span>Добавить фото</span>
+                            </label>
+                            <input type="file" id="post-image" accept="image/*" style="display: none;">
+                        </div>
+                        <div id="image-preview" class="post-preview"></div>
+                        <button id="publish-post-btn" class="button button-primary">
+                            <i class="fas fa-paper-plane"></i>
+                            <span>Опубликовать</span>
                         </button>
                     </div>
                 </div>
 
-                <div class="profile-info-content">
-                    <div class="info-block">
-                        <div class="info-row">
-                            <span class="info-label">Статус:</span>
-                            <span class="info-value" id="role"></span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Дата регистрации:</span>
-                            <span class="info-value" id="created_at"></span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Последний вход:</span>
-                            <span class="info-value" id="last_login"></span>
-                        </div>
+                <!-- Контейнер для постов -->
+                <div id="posts-container" class="posts-container">
+                    <!-- Посты добавляются динамически -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно друзей -->
+    <div id="friends-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-tabs">
+                    <button class="tab-btn active" data-tab="all-friends">
+                        <i class="fas fa-users"></i> Все друзья
+                        <span class="friend-count">0</span>
+                    </button>
+                    <button class="tab-btn" data-tab="friend-requests">
+                        <i class="fas fa-user-plus"></i> Заявки
+                        <span class="request-count">0</span>
+                    </button>
+                    <button class="tab-btn" data-tab="search-friends">
+                        <i class="fas fa-search"></i> Поиск друзей
+                    </button>
+                </div>
+                <button class="modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <!-- Вкладка всех друзей -->
+                <div class="tab-content active" id="all-friends">
+                    <div class="friends-list">
+                        <!-- Друзья будут добавляться динамически -->
                     </div>
                 </div>
 
-                <div class="posts-section">
-                    <div class="posts-header">
-                        <h3>Публикации</h3>
-                        <!-- Кнопка создания поста будет видна только на своей странице -->
-                        <button id="create-post-btn" class="action-btn">
-                            <i class="fas fa-plus"></i> Создать публикацию
+                <!-- Вкладка заявок в друзья -->
+                <div class="tab-content" id="friend-requests">
+                    <div class="requests-list">
+                        <!-- Заявки будут добавляться динамически -->
+                    </div>
+                </div>
+
+                <!-- Вкладка поиска друзей -->
+                <div class="tab-content" id="search-friends">
+                    <div class="search-container">
+                        <input type="text" class="search-input" placeholder="Поиск пользователей...">
+                        <button class="search-btn">
+                            <i class="fas fa-search"></i>
                         </button>
                     </div>
-                    
-                    <!-- Форма создания поста (изначально скрыта) -->
-                    <div id="post-form" class="post-form" style="display: none;">
-                        <textarea id="post-content" placeholder="Что у вас нового?"></textarea>
-                        <div class="post-form-actions">
-                            <div class="post-attachments">
-                                <label for="post-image" class="attachment-btn">
-                                    <i class="fas fa-image"></i>
-                                    <span>Добавить фото</span>
-                                </label>
-                                <input type="file" id="post-image" accept="image/*" style="display: none;">
-                            </div>
-                            <div class="post-preview" id="image-preview"></div>
-                            <button id="publish-post-btn" class="action-btn">
-                                <i class="fas fa-paper-plane"></i> Опубликовать
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Контейнер для постов -->
-                    <div id="posts-container" class="posts-container">
-                        <!-- Посты будут добавляться динамически -->
+                    <div class="search-results">
+                        <!-- Результаты поиска будут добавляться динамически -->
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Уведомления -->
+    <div id="notification" class="notification">
+        <i class="notification-icon"></i>
+        <span class="notification-message"></span>
     </div>
 
     <script src="profile.js"></script>
