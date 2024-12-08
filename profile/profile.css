@@ -1085,167 +1085,76 @@ body {
     transform: translateX(4px);
 }
 
-/* Стили для модального окна с изображением */
-.image-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.9);
+/* Стили для действий с постом (лайки и комментарии) */
+.post-actions {
     display: flex;
     align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    opacity: 0;
-    transition: opacity 0.3s ease;
+    gap: 16px;
+    padding: 8px 0;
+    margin-top: 8px;
+    border-top: 1px solid var(--border-light);
 }
 
-.image-modal.active {
-    opacity: 1;
-}
-
-.modal-content {
-    position: relative;
-    max-width: 90vw;
-    max-height: 90vh;
-    background: var(--surface-color);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-}
-
-.modal-flex-container {
-    display: flex;
-    height: 90vh;
-}
-
-.modal-image-side {
-    flex: 1;
+.post-action {
     display: flex;
     align-items: center;
-    justify-content: center;
-    background: #000;
-    overflow: hidden;
-}
-
-.modal-image-side img {
-    max-width: 100%;
-    max-height: 90vh;
-    object-fit: contain;
-}
-
-.modal-info-side {
-    width: 300px;
-    padding: 20px;
-    background: var(--surface-color);
-    border-left: 1px solid var(--border-color);
-    overflow-y: auto;
-}
-
-.modal-author-info {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.modal-author-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-.modal-author-details {
-    display: flex;
-    flex-direction: column;
-}
-
-.modal-author-name {
-    font-weight: 600;
-    color: var(--text-primary);
-}
-
-.modal-post-date {
-    font-size: 12px;
-    color: var(--text-secondary);
-}
-
-.modal-post-content {
-    margin-top: 16px;
-    color: var(--text-primary);
-    line-height: 1.5;
-    white-space: pre-wrap;
-}
-
-.close-modal {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    background: rgba(0, 0, 0, 0.5);
-    border: none;
-    color: white;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: var(--radius-md);
     cursor: pointer;
     transition: all 0.3s ease;
-    z-index: 1001;
+    color: var(--text-secondary);
+    background: none;
+    border: none;
 }
 
-.close-modal:hover {
-    background: rgba(0, 0, 0, 0.7);
+.post-action:hover {
+    background: var(--hover-color);
+    color: var(--text-primary);
+}
+
+.post-action i {
+    font-size: 18px;
+    transition: transform 0.3s ease;
+}
+
+.post-action:hover i {
     transform: scale(1.1);
 }
 
-/* Стили для превью изображения в посте */
-.post-image-container {
-    position: relative;
-    cursor: pointer;
-    overflow: hidden;
-    border-radius: var(--radius-md);
+/* Специальные стили для кнопки лайка */
+.like-action {
+    color: var(--text-secondary);
 }
 
-.post-image {
-    width: 100%;
-    max-height: 400px;
-    object-fit: cover;
-    transition: transform 0.3s ease;
+.like-action.liked {
+    color: var(--error-color);
 }
 
-.image-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.3s ease;
+.like-action.liked i {
+    color: var(--error-color);
 }
 
-.image-overlay i {
-    color: white;
-    font-size: 24px;
-    transform: scale(0.8);
-    transition: transform 0.3s ease;
+.like-action:hover {
+    background: var(--hover-color);
 }
 
-.post-image-container:hover .image-overlay {
-    opacity: 1;
+.like-action.liked:hover {
+    background: rgba(var(--error-rgb), 0.1);
 }
 
-.post-image-container:hover .image-overlay i {
-    transform: scale(1);
+.likes-count {
+    font-size: 14px;
+    font-weight: 500;
 }
 
-.post-image-container:hover .post-image {
-    transform: scale(1.05);
+/* Анимация для лайка */
+@keyframes likeAnimation {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+.like-action.liked i {
+    animation: likeAnimation 0.3s ease;
 }
