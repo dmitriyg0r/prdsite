@@ -322,6 +322,37 @@ body {
     border-bottom: 1px solid var(--border-light);
 }
 
+.friends-header-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: var(--radius-md);
+    transition: all 0.3s ease;
+}
+
+.friends-header-btn:hover {
+    background: var(--hover-color);
+    transform: translateY(-1px);
+}
+
+.friends-header-btn .friends-count {
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: normal;
+}
+
+.friends-header-btn i {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
 .friends-tabs {
     display: flex;
     gap: 8px;
