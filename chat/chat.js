@@ -459,7 +459,7 @@ async function markMessagesAsRead(friendId) {
 }
 
 function setupEventListeners() {
-    // Удаляем старые обработчики перед добавлением новых
+    // Удаляем старые обработчики перед добавлением ��овых
     const sendButton = document.getElementById('sendMessage');
     const messageInput = document.getElementById('messageInput');
     
@@ -523,6 +523,11 @@ async function loadMessages(friendId) {
 
         if (data.success) {
             const messagesContainer = document.getElementById('messages');
+            if (!messagesContainer) {
+                console.error('Messages container not found');
+                return;
+            }
+
             const isAtBottom = isScrolledToBottom(messagesContainer);
             
             // Получаем существующие сообщения
@@ -554,6 +559,11 @@ async function loadMessages(friendId) {
                     updateMessageStatus(existingMessage, message);
                 }
             });
+
+            // Помечаем сообщения как прочитанные
+            if (newMessages.length > 0) {
+                await markMessagesAsRead(friendId);
+            }
         }
     } catch (error) {
         console.error('Ошибка при загрузке сообщений:', error);
@@ -562,7 +572,6 @@ async function loadMessages(friendId) {
 
 // Функция обновления статуса сообщения
 function updateMessageStatus(messageElement, messageData) {
-    // Обновляем статус прочтения
     const statusElement = messageElement.querySelector('.message-status');
     if (statusElement) {
         statusElement.innerHTML = messageData.is_read 
@@ -574,17 +583,15 @@ function updateMessageStatus(messageElement, messageData) {
 // Функция прокрутки чата вниз
 function scrollToBottom() {
     const messagesContainer = document.getElementById('messages');
-    // Используем плавную прокрутку
-    messagesContainer.scrollTo({
-        top: messagesContainer.scrollHeight,
-        behavior: 'smooth'
-    });
+    if (messagesContainer) {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
 }
 
 // Функция отметки сообщений как прочитанных
 async function markMessagesAsRead(friendId) {
     try {
-        const response = await fetch(`https://adminflow.ru:5003/api/messages/mark-as-read`, {
+        await fetch('https://adminflow.ru:5003/api/messages/mark-as-read', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -594,20 +601,12 @@ async function markMessagesAsRead(friendId) {
                 friendId: friendId
             })
         });
-
-        const data = await response.json();
-        if (data.success) {
-            // Обновляем счетчик непрочитанных сообщений
-            updateUnreadCount(friendId);
-        } else {
-            console.error('Ошибка при обновлении статуса сообщений:', data.error);
-        }
-    } catch (err) {
-        console.error('Error marking messages as read:', err);
+    } catch (error) {
+        console.error('Ошибка при обновлении статуса сообщений:', error);
     }
 }
 
-// Функци�� показа модального окна с изображением
+// Функция показа модального окна с изображением
 function showImageModal(imageUrl) {
     const modal = document.querySelector('.image-modal');
     const modalImage = document.getElementById('modalImage');
@@ -841,4 +840,27 @@ document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && currentChatPartner) {
         loadMessages(currentChatPartner.id);
     }
-}); 
+});
+
+// Функция проверки прокрутки до конца
+function isScrolledToBottom(element) {
+    if (!element) return false;
+    return Math.abs(element.scrollHeight - element.scrollTop - element.clientHeight) < 1;
+}
+
+// Функция обновления сообщений
+function startMessageUpdates() {
+    if (messageUpdateInterval) {
+        clearInterval(messageUpdateInterval);
+    }
+    
+    // Первая загрузка
+    loadMessages(currentChatPartner.id);
+    
+    // Устанавливаем интервал обновления
+    messageUpdateInterval = setInterval(() => {
+        if (currentChatPartner && document.visibilityState === 'visible') {
+            loadMessages(currentChatPartner.id);
+        }
+    }, 3000);
+}
