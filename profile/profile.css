@@ -1351,7 +1351,7 @@ body {
     transform: translateY(-1px);
 }
 
-/* Анимация для модального окна */
+/* Анимаци�� для модального окна */
 .modal .modal-content {
     transform: scale(0.95);
     opacity: 0;
@@ -1361,4 +1361,90 @@ body {
 .modal.active .modal-content {
     transform: scale(1);
     opacity: 1;
+}
+
+/* Добавляем стили для секции смены пароля */
+.password-change-section {
+    margin-bottom: var(--spacing-lg);
+}
+
+.password-change-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: var(--surface-color);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.password-change-btn:hover {
+    background: var(--background-color);
+    border-color: var(--primary-color);
+}
+
+/* Стили для формы верификации */
+.verification-step {
+    text-align: center;
+    padding: var(--spacing-lg) 0;
+}
+
+.info-text {
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-md);
+}
+
+.verification-btn {
+    padding: 10px 24px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.verification-btn:hover {
+    background: var(--primary-dark);
+}
+
+.verification-code-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.resend-code {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.link-btn {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    cursor: pointer;
+    padding: 0;
+    font-size: 12px;
+    text-decoration: underline;
+}
+
+.link-btn:disabled {
+    color: var(--text-tertiary);
+    cursor: not-allowed;
+    text-decoration: none;
+}
+
+#verification-code {
+    letter-spacing: 4px;
+    font-size: 18px;
+    text-align: center;
 }
