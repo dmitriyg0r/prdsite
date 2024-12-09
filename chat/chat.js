@@ -781,7 +781,7 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// Обновляем обработчик контекстного меню
+// Обновляем обработчики контекстного меню
 function setupContextMenu() {
     const contextMenu = document.getElementById('contextMenu');
     const messagesArea = document.getElementById('messages');
@@ -811,23 +811,34 @@ function setupContextMenu() {
                     deleteButton.style.display = isSentMessage ? 'block' : 'none';
                 }
 
-                // Позиционируем меню
-                const rect = messagesArea.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
+                // Позиционируем меню относительно окна браузера
+                const x = e.pageX;
+                const y = e.pageY;
                 
+                // Показываем меню
                 contextMenu.style.display = 'block';
-                contextMenu.style.left = `${x}px`;
-                contextMenu.style.top = `${y}px`;
 
-                // Проверяем границы экрана
+                // Получаем размеры меню и окна
                 const menuRect = contextMenu.getBoundingClientRect();
-                if (menuRect.right > window.innerWidth) {
+                const windowWidth = window.innerWidth;
+                const windowHeight = window.innerHeight;
+
+                // Проверяем и корректируем позицию по горизонтали
+                if (x + menuRect.width > windowWidth) {
                     contextMenu.style.left = `${x - menuRect.width}px`;
+                } else {
+                    contextMenu.style.left = `${x}px`;
                 }
-                if (menuRect.bottom > window.innerHeight) {
+
+                // Проверяем и корректируем позицию по вертикали
+                if (y + menuRect.height > windowHeight) {
                     contextMenu.style.top = `${y - menuRect.height}px`;
+                } else {
+                    contextMenu.style.top = `${y}px`;
                 }
+
+                // Добавляем класс для анимации появления
+                contextMenu.classList.add('context-menu-visible');
             }
         }
     });
@@ -838,7 +849,7 @@ function setupContextMenu() {
         replyButton.addEventListener('click', () => {
             if (selectedMessageId && selectedMessageText) {
                 showReplyPreview(selectedMessageText);
-                contextMenu.style.display = 'none';
+                hideContextMenu();
             }
         });
     }
@@ -849,7 +860,7 @@ function setupContextMenu() {
         deleteButton.addEventListener('click', () => {
             if (selectedMessageId) {
                 deleteMessage(selectedMessageId);
-                contextMenu.style.display = 'none';
+                hideContextMenu();
             }
         });
     }
@@ -857,10 +868,47 @@ function setupContextMenu() {
     // Закрытие меню при клике вне его
     document.addEventListener('click', (e) => {
         if (!contextMenu.contains(e.target)) {
-            contextMenu.style.display = 'none';
+            hideContextMenu();
+        }
+    });
+
+    // Закрытие меню при скролле
+    messagesArea.addEventListener('scroll', () => {
+        hideContextMenu();
+    });
+
+    // Закрытие меню при нажатии Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            hideContextMenu();
         }
     });
 }
+
+// Функция скрытия контекстного меню
+function hideContextMenu() {
+    const contextMenu = document.getElementById('contextMenu');
+    if (contextMenu) {
+        contextMenu.classList.remove('context-menu-visible');
+        contextMenu.style.display = 'none';
+    }
+}
+
+// Добавляем стили для анимации контекстного меню
+const style = document.createElement('style');
+style.textContent = `
+    .context-menu {
+        opacity: 0;
+        transform: scale(0.95);
+        transition: opacity 0.1s ease, transform 0.1s ease;
+    }
+
+    .context-menu-visible {
+        opacity: 1;
+        transform: scale(1);
+    }
+`;
+document.head.appendChild(style);
 
 // Функция показа предпросмотра ответа
 function showReplyPreview(messageText) {
