@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await initializeChat();
     setupEventListeners();
     setupAttachmentHandlers();
+    setupContextMenu();
 });
 
 async function initializeChat() {
@@ -95,7 +96,7 @@ function getLastActivityTime(timestamp) {
     const now = new Date();
     const diff = now - lastActivity;
     
-    if (diff < 60000) return 'был(а) т�� что';
+    if (diff < 60000) return 'был(а) т что';
     if (diff < 3600000) return `был(а) ${Math.floor(diff/60000)} мн. назад`;
     if (diff < 86400000) return `был(а) ${Math.floor(diff/3600000)} ч. назад`;
     return 'был(а) давно';
@@ -458,7 +459,7 @@ async function markMessagesAsRead(friendId) {
 }
 
 function setupEventListeners() {
-    // Удаляем старые обработчики перед добавлением новых
+    // Удаляем старые обработчики перед добавлением ��овых
     const sendButton = document.getElementById('sendMessage');
     const messageInput = document.getElementById('messageInput');
     
@@ -522,6 +523,11 @@ async function loadMessages(friendId) {
 
         if (data.success) {
             const messagesContainer = document.getElementById('messages');
+            if (!messagesContainer) {
+                console.error('Messages container not found');
+                return;
+            }
+
             const isAtBottom = isScrolledToBottom(messagesContainer);
             
             // Получаем существующие сообщения
@@ -553,6 +559,11 @@ async function loadMessages(friendId) {
                     updateMessageStatus(existingMessage, message);
                 }
             });
+
+            // Помечаем сообщения как прочитанные
+            if (newMessages.length > 0) {
+                await markMessagesAsRead(friendId);
+            }
         }
     } catch (error) {
         console.error('Ошибка при загрузке сообщений:', error);
@@ -561,7 +572,6 @@ async function loadMessages(friendId) {
 
 // Функция обновления статуса сообщения
 function updateMessageStatus(messageElement, messageData) {
-    // Обновляем статус прочтения
     const statusElement = messageElement.querySelector('.message-status');
     if (statusElement) {
         statusElement.innerHTML = messageData.is_read 
@@ -573,17 +583,15 @@ function updateMessageStatus(messageElement, messageData) {
 // Функция прокрутки чата вниз
 function scrollToBottom() {
     const messagesContainer = document.getElementById('messages');
-    // Используем плавную прокрутку
-    messagesContainer.scrollTo({
-        top: messagesContainer.scrollHeight,
-        behavior: 'smooth'
-    });
+    if (messagesContainer) {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
 }
 
 // Функция отметки сообщений как прочитанных
 async function markMessagesAsRead(friendId) {
     try {
-        const response = await fetch(`https://adminflow.ru:5003/api/messages/mark-as-read`, {
+        await fetch('https://adminflow.ru:5003/api/messages/mark-as-read', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -593,16 +601,8 @@ async function markMessagesAsRead(friendId) {
                 friendId: friendId
             })
         });
-
-        const data = await response.json();
-        if (data.success) {
-            // Обновляем счетчик непрочитанных сообщений
-            updateUnreadCount(friendId);
-        } else {
-            console.error('Ошибка при обновлении статуса сообщений:', data.error);
-        }
-    } catch (err) {
-        console.error('Error marking messages as read:', err);
+    } catch (error) {
+        console.error('Ошибка при обновлении статуса сообщений:', error);
     }
 }
 
@@ -719,30 +719,94 @@ function removeFilePreview() {
     }
 }
 
-function showContextMenu(event, messageId, messageText) {
-    event.preventDefault();
+function setupContextMenu() {
     const contextMenu = document.getElementById('contextMenu');
+    const messagesArea = document.getElementById('messages');
     
-    // Сохраняем ID и текст выбранного сообщения
-    selectedMessageId = messageId;
-    selectedMessageText = messageText;
-    
-    // Позиционируем меню
-    contextMenu.style.top = `${event.clientY}px`;
-    contextMenu.style.left = `${event.clientX}px`;
-    contextMenu.style.display = 'block';
+    if (!contextMenu || !messagesArea) {
+        console.error('Элементы контекстного меню не найдены');
+        return;
+    }
+
+    // Обработчик правого клика на сообщении
+    messagesArea.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        
+        // Находим ближайший элемент сообщения
+        const messageElement = e.target.closest('.message');
+        if (messageElement) {
+            // Получаем текст сообщения
+            const messageTextElement = messageElement.querySelector('.message-text');
+            if (messageTextElement) {
+                selectedMessageId = messageElement.dataset.messageId;
+                selectedMessageText = messageTextElement.textContent;
+                
+                // Позиционируем меню
+                const rect = messagesArea.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                contextMenu.style.display = 'block';
+                contextMenu.style.left = `${x}px`;
+                contextMenu.style.top = `${y}px`;
+
+                // Проверяем, не выходит ли меню за пределы экрана
+                const menuRect = contextMenu.getBoundingClientRect();
+                if (menuRect.right > window.innerWidth) {
+                    contextMenu.style.left = `${x - menuRect.width}px`;
+                }
+                if (menuRect.bottom > window.innerHeight) {
+                    contextMenu.style.top = `${y - menuRect.height}px`;
+                }
+            }
+        }
+    });
+
+    // Обработчики пунктов меню
+    document.getElementById('replyMessageBtn').addEventListener('click', () => {
+        if (selectedMessageId && selectedMessageText) {
+            showReplyPreview(selectedMessageText);
+            contextMenu.style.display = 'none';
+        }
+    });
+
+    document.getElementById('deleteMessageBtn').addEventListener('click', () => {
+        if (selectedMessageId) {
+            deleteMessage(selectedMessageId);
+            contextMenu.style.display = 'none';
+        }
+    });
+
+    // Закрытие меню при клике вне его
+    document.addEventListener('click', (e) => {
+        if (!contextMenu.contains(e.target)) {
+            contextMenu.style.display = 'none';
+        }
+    });
+
+    // Закрытие меню при скролле
+    messagesArea.addEventListener('scroll', () => {
+        contextMenu.style.display = 'none';
+    });
+
+    // Закрытие меню при нажатии Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            contextMenu.style.display = 'none';
+        }
+    });
 }
 
-document.getElementById('replyMessageBtn').addEventListener('click', () => {
-    if (selectedMessageId) {
-        showReplyPreview(selectedMessageText);
-        document.getElementById('contextMenu').style.display = 'none';
-    }
-});
-
+// Обновляем функцию showReplyPreview
 function showReplyPreview(messageText) {
     const replyPreview = document.getElementById('replyPreview');
+    if (!replyPreview) {
+        console.error('Элемент предпросмотра ответа не найден');
+        return;
+    }
+
     replyPreview.style.display = 'block';
+    replyToMessageId = selectedMessageId;
 
     // Обрезаем текст, если он слишком длинный
     const maxLength = 50;
@@ -750,81 +814,41 @@ function showReplyPreview(messageText) {
         ? messageText.substring(0, maxLength) + '...' 
         : messageText;
 
-    // Добавляем кнопку закрытия
     replyPreview.innerHTML = `
-        <div class="reply-text">Ответ на: ${displayText}</div>
-        <button class="close-reply" onclick="cancelReply()">×</button>
+        <div class="reply-text">
+            <i class="fas fa-reply"></i>
+            Ответ на: ${displayText}
+        </div>
+        <button class="close-reply" onclick="cancelReply()">
+            <i class="fas fa-times"></i>
+        </button>
     `;
-    
-    // Сохраняем ID сообщения, на которое отвечаем
-    replyToMessageId = selectedMessageId;
 }
 
+// Обновляем функцию cancelReply
 function cancelReply() {
     const replyPreview = document.getElementById('replyPreview');
-    replyPreview.style.display = 'none';
+    if (replyPreview) {
+        replyPreview.style.display = 'none';
+        replyPreview.innerHTML = '';
+    }
     replyToMessageId = null;
 }
 
-// Закрытие контекстног меню при клике вне его
-document.addEventListener('click', (event) => {
-    const contextMenu = document.getElementById('contextMenu');
-    if (!contextMenu.contains(event.target)) {
-        contextMenu.style.display = 'none';
+// Добавляем обработчик видимости страницы
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && currentChatPartner) {
+        loadMessages(currentChatPartner.id);
     }
 });
 
-// Обработчик для удаления сообщения
-document.getElementById('deleteMessageBtn').addEventListener('click', () => {
-    if (selectedMessageId) {
-        deleteMessage(selectedMessageId);
-        document.getElementById('contextMenu').style.display = 'none';
-    }
-});
-
-async function deleteMessage(messageId) {
-    if (!messageId) {
-        console.error('Message ID is undefined');
-        return;
-    }
-
-    try {
-        const response = await fetch(`https://adminflow.ru:5003/api/messages/delete/${messageId}`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ userId: currentUser.id })
-        });
-
-        const data = await response.json();
-        if (data.success) {
-            const messageElement = document.querySelector(`.message[data-message-id="${messageId}"]`);
-            if (messageElement) {
-                messageElement.remove();
-            }
-        } else {
-            alert(data.error || 'Ошибка при удалении сообщения');
-        }
-    } catch (err) {
-        console.error('Error deleting message:', err);
-        alert('Ошибка при удалении сообщения');
-    }
+// Функция проверки прокрутки до конца
+function isScrolledToBottom(element) {
+    if (!element) return false;
+    return Math.abs(element.scrollHeight - element.scrollTop - element.clientHeight) < 1;
 }
 
-// Добавляем периодическое обновление счетчиков
-function startUnreadCountUpdates() {
-    const updateInterval = setInterval(() => {
-        const friendsList = document.querySelectorAll('.chat-partner');
-        friendsList.forEach(friend => {
-            const friendId = friend.dataset.friendId;
-            updateUnreadCount(friendId);
-        });
-    }, 5000); // Обновляем каждые 5 секунд
-
-    return updateInterval;
-}
-
+// Функция обновления сообщений
 function startMessageUpdates() {
     if (messageUpdateInterval) {
         clearInterval(messageUpdateInterval);
@@ -840,36 +864,3 @@ function startMessageUpdates() {
         }
     }, 3000);
 }
-
-function isScrolledToBottom(element) {
-    return Math.abs(element.scrollHeight - element.scrollTop - element.clientHeight) < 1;
-}
-
-function setupContextMenu() {
-    const contextMenu = document.getElementById('contextMenu');
-    const messagesArea = document.getElementById('messages');
-    
-    messagesArea.addEventListener('contextmenu', (e) => {
-        e.preventDefault();
-        const messageElement = e.target.closest('.message');
-        if (messageElement) {
-            selectedMessageId = messageElement.dataset.messageId;
-            selectedMessageText = messageElement.querySelector('.message-text').textContent;
-            
-            contextMenu.style.display = 'block';
-            contextMenu.style.left = `${e.pageX}px`;
-            contextMenu.style.top = `${e.pageY}px`;
-        }
-    });
-    
-    document.addEventListener('click', () => {
-        contextMenu.style.display = 'none';
-    });
-}
-
-// Добавляем обработчик видимости страницы
-document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible' && currentChatPartner) {
-        loadMessages(currentChatPartner.id);
-    }
-}); 
