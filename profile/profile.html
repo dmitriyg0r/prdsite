@@ -226,6 +226,61 @@
         </div>
     </div>
 
+    <!-- После существующих модальных окон, перед закрывающим тегом body -->
+    <div id="edit-profile-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Редактировать профиль</h3>
+                <button class="modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-profile-form" class="edit-profile-form">
+                    <div class="form-group">
+                        <label for="edit-username">Имя пользователя</label>
+                        <input type="text" id="edit-username" class="form-input" placeholder="Введите новое имя пользователя">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-email">Email</label>
+                        <input type="email" id="edit-email" class="form-input" placeholder="Введите новый email">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-current-password">Текущий пароль</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" id="edit-current-password" class="form-input" placeholder="Введите текущий пароль">
+                            <button type="button" class="toggle-password">
+                                <i class="far fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-new-password">Новый пароль</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" id="edit-new-password" class="form-input" placeholder="Введите новый пароль">
+                            <button type="button" class="toggle-password">
+                                <i class="far fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-confirm-password">Подтвердите новый пароль</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" id="edit-confirm-password" class="form-input" placeholder="Подтвердите новый пароль">
+                            <button type="button" class="toggle-password">
+                                <i class="far fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="cancel-btn">Отмена</button>
+                        <button type="submit" class="save-btn">Сохранить изменения</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script src="profile.js"></script>
     <script src="../main.js"></script>
 </body>
