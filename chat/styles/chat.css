@@ -530,8 +530,13 @@ body {
 
 /* Адаптивность */
 @media (max-width: 768px) {
+    .sidebar {
+        display: none;
+    }
+
     .chat-container {
         left: 0;
+        width: 100%;
     }
 
     .chat-list {
@@ -557,6 +562,10 @@ body {
     
     .reply-content {
         margin-left: 12px;
+    }
+
+    .chat-container {
+        padding-left: 0;
     }
 }
 
