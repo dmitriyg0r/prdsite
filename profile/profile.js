@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Загружаем список своих друзей
         await loadFriends(currentUser.id);
         
-        // Запускаем о��новление своего статуса
+        // Запускаем обновление своего статуса
         startStatusUpdates();
         
         // Загружаем посты
@@ -302,7 +302,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             modalFriendCount.textContent = friends.length;
         }
 
-        // Обновляем мини-список друзей в профиле
+        // Обновляем мини-списо�� друзей в профиле
         const friendsGrid = document.querySelector('.friends-grid');
         const maxFriendsInGrid = 4;
         
@@ -498,7 +498,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         loadFriendRequests();
     });
 
-    // Обновляем функцию для отображения количества заявок
+    // Обно��ляем функцию для отображения количества заявок
     function updateRequestsCount(count) {
         const requestCount = document.querySelector('.request-count');
         if (requestCount) {
@@ -533,7 +533,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
 
             if (response.ok) {
-                // Перезагружаем список друзей
+                // Перезагружаем ��писок друзей
                 loadFriends();
             } else {
                 const data = await response.json();
@@ -558,7 +558,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const data = await response.json();
             
             if (data.user) {
-                // Сохраняем данные профиля друга во в��еменное хранилище
+                // Сохраняем данные профиля друга во временное хранилище
                 sessionStorage.setItem('viewing_profile', JSON.stringify(data.user));
                 // Перенаправляем на страницу профиля с параметром
                 window.location.href = `/profile/profile.html?id=${userId}`;
@@ -587,7 +587,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             updateUserStatus(true);
         };
         
-        // Отслеживаем действия пользователя
+        // Отслеживаем действия пользова��еля
         ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'].forEach(eventName => {
             document.addEventListener(eventName, updateActivity);
         });
@@ -687,7 +687,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Функция форматирования времени последней активности
+    // Функция форматирования времени последней ак��ивности
     function formatLastSeen(lastActivity) {
         if (!lastActivity) return 'Не в сети';
         
@@ -716,6 +716,65 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     `;
     document.head.appendChild(style);
+
+    // Обработчик для кнопки редактирования профиля
+    const editProfileBtn = document.getElementById('edit-profile-btn');
+    const editProfileModal = document.getElementById('edit-profile-modal');
+    
+    editProfileBtn.addEventListener('click', () => {
+        // Заполняем поля текущими данными
+        document.getElementById('edit-username').value = currentUser.username;
+        document.getElementById('edit-email').value = currentUser.email || '';
+        
+        // Показываем модальное окно
+        editProfileModal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    });
+
+    // Обработчик для закрытия модального окна
+    editProfileModal.querySelector('.modal-close').addEventListener('click', () => {
+        editProfileModal.classList.remove('active');
+        document.body.style.overflow = '';
+    });
+
+    // Закрытие по клику вне модального окна
+    editProfileModal.addEventListener('click', (e) => {
+        if (e.target === editProfileModal) {
+            editProfileModal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    });
+
+    // Обработчик для кнопки отмены
+    editProfileModal.querySelector('.cancel-btn').addEventListener('click', () => {
+        editProfileModal.classList.remove('active');
+        document.body.style.overflow = '';
+    });
+
+    // Обработчики для кнопок показа/скрытия пароля
+    document.querySelectorAll('.toggle-password').forEach(button => {
+        button.addEventListener('click', () => {
+            const input = button.parentElement.querySelector('input');
+            const icon = button.querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+    });
+
+    // Предотвращаем отправку формы (пока нет функционала)
+    document.getElementById('edit-profile-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        // Здесь будет логика сохранения изменений
+        alert('Функционал редактирования профиля находится в разработке');
+    });
 });
 
 function initializePostHandlers() {
@@ -1053,7 +1112,7 @@ async function deletePost(postId) {
     }
 }
 
-// Добавляем функции в глобальную область видимости (window)
+// Добав��яем функции в глобальную область видимости (window)
 window.openImageInFullscreen = function(imageSrc, postData) {
     // Создаем модальное окно
     const modal = document.createElement('div');
@@ -1165,7 +1224,7 @@ function getFileIcon(extension) {
         'pdf': 'fas fa-file-pdf',
         'doc': 'fas fa-file-word',
         'docx': 'fas fa-file-word',
-        'odt': 'fas fa-file-word', // Иконка для ODT файлов
+        'odt': 'fas fa-file-word', // Иконк�� для ODT файлов
         'xls': 'fas fa-file-excel',
         'xlsx': 'fas fa-file-excel',
         'txt': 'fas fa-file-alt'
