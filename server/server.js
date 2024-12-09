@@ -911,7 +911,7 @@ app.post('/api/admin/role', checkAdmin, async (req, res) => {
             });
         }
 
-        // Обновляем рол�� в базе данных
+        // Обновляем роль в базе данных
         await pool.query(
             'UPDATE users SET role = $1 WHERE id = $2',
             [role, userId]
@@ -1126,7 +1126,7 @@ app.post('/api/posts/like', async (req, res) => {
         let liked = false;
         
         if (existingLike.rows.length > 0) {
-            // Ес��и лайк существует - удаляем его
+            // Если лайк существует - удаляем его
             await pool.query(
                 'DELETE FROM posts WHERE parent_id = $1 AND user_id = $2 AND type = $3',
                 [postId, userId, 'like']
@@ -1311,7 +1311,7 @@ app.get('/api/feed', async (req, res) => {
         });
     } catch (err) {
         console.error('Error loading feed:', err);
-        res.status(500).json({ error: 'Ошибка при загрузке ленты' });
+        res.status(500).json({ error: 'Ошибка при загру��ке ленты' });
     }
 });
 
@@ -1427,5 +1427,30 @@ app.post('/api/messages/typing', async (req, res) => {
     } catch (err) {
         console.error('Error updating typing status:', err);
         res.status(500).json({ error: 'Ошибка при обновлении статуса набора' });
+    }
+});
+
+app.delete('/api/messages/delete/:messageId', async (req, res) => {
+    try {
+        const { messageId } = req.params;
+        const { userId } = req.body; // ID текущего пользователя
+
+        // Проверяем, является ли пользователь отправителем сообщения
+        const message = await pool.query(
+            'SELECT * FROM messages WHERE id = $1 AND sender_id = $2',
+            [messageId, userId]
+        );
+
+        if (message.rows.length === 0) {
+            return res.status(403).json({ error: 'У вас нет прав на удаление этого сообщения' });
+        }
+
+        // Удаляем сообщение
+        await pool.query('DELETE FROM messages WHERE id = $1', [messageId]);
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Error deleting message:', err);
+        res.status(500).json({ error: 'Ошибка при удалении сообщения' });
     }
 });

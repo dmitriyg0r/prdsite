@@ -191,7 +191,7 @@ async function loadChatHistory() {
         if (data.success) {
             const messagesContainer = document.getElementById('messages');
             
-            // Оптимизация проверки новых сообщений
+            // Оптимизация проверки новых сооб��ений
             const currentMessageIds = new Set(
                 Array.from(messagesContainer.querySelectorAll('.message'))
                     .map(el => el.dataset.messageId)
@@ -253,6 +253,7 @@ function displayNewMessages(newMessages, shouldScroll) {
 function createMessageElement(message) {
     const messageElement = document.createElement('div');
     messageElement.className = `message ${message.sender_id === currentUser.id ? 'message-sent' : 'message-received'}`;
+    messageElement.dataset.messageId = message.id;
     messageElement.dataset.timestamp = message.created_at;
 
     // Добавляем информацию об отправителе для входящих сообщений
@@ -288,6 +289,12 @@ function createMessageElement(message) {
     timeElement.className = 'message-time';
     timeElement.textContent = new Date(message.created_at).toLocaleTimeString();
     messageElement.appendChild(timeElement);
+
+    // Добавляем обработчик для контекстного меню
+    messageElement.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        showContextMenu(e, message.id);
+    });
 
     return messageElement;
 }
@@ -622,5 +629,46 @@ async function sendMessageWithFile(message) {
     } catch (err) {
         console.error('Error sending file:', err);
         alert('Ошибка при отправке файла');
+    }
+}
+
+function showContextMenu(event, messageId) {
+    const contextMenu = document.getElementById('contextMenu');
+    contextMenu.style.top = `${event.clientY}px`;
+    contextMenu.style.left = `${event.clientX}px`;
+    contextMenu.style.display = 'block';
+
+    // Устанавливаем ID сообщения для удаления
+    contextMenu.dataset.messageId = messageId;
+}
+
+document.addEventListener('click', () => {
+    const contextMenu = document.getElementById('contextMenu');
+    if (contextMenu) {
+        contextMenu.style.display = 'none';
+    }
+});
+
+async function deleteMessage(messageId) {
+    try {
+        const response = await fetch(`https://adminflow.ru:5003/api/messages/delete/${messageId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            const messageElement = document.querySelector(`.message[data-message-id="${messageId}"]`);
+            if (messageElement) {
+                messageElement.remove();
+            }
+        } else {
+            alert('Ошибка при удалении сообщения');
+        }
+    } catch (err) {
+        console.error('Error deleting message:', err);
+        alert('Ошибка при удалении сообщения');
     }
 } 
