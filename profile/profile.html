@@ -8,6 +8,11 @@
     <link rel="stylesheet" href="profile.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="icon" type="image/x-icon" href="../flow.ico">
+    <script>
+        if (!localStorage.getItem('user')) {
+            window.location.href = '../authreg/authreg.html';
+        }
+    </script>
 </head>
 <body>
     <!-- Боковое меню -->
@@ -131,7 +136,7 @@
                     </div>
                 </div>
 
-                <!-- Блок друзей -->
+                <!-- ��лок друзей -->
                 <div class="friends-section">
                     <button class="friends-header-btn">
                         <span>Друзья</span>

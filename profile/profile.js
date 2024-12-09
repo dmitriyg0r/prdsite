@@ -3,9 +3,16 @@ let currentUser = null;
 let editProfileBtn = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
+    const currentUser = JSON.parse(localStorage.getItem('user'));
+    
+    // Проверка авторизации
+    if (!currentUser) {
+        window.location.href = '../authreg/authreg.html';
+        return;
+    }
+
     const urlParams = new URLSearchParams(window.location.search);
     const profileId = urlParams.get('id');
-    currentUser = JSON.parse(localStorage.getItem('user'));
 
     if (!currentUser) {
         window.location.href = '/authreg/authreg.html';
@@ -204,7 +211,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // При открытии модального окна редактирования заполняем поля текущими данными
+    // При открытии модальног�� окна редактирования заполняем поля текущими данными
     editProfileBtn = document.getElementById('edit-profile-btn');
     const editProfileModal = document.getElementById('edit-profile-modal');
     
@@ -628,7 +635,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Обновляем обработчик открытия модального окна
     document.querySelector('.friends-header-btn').addEventListener('click', () => {
-        // Обновляем списки при открытии модального окна
+        // Обновл��ем списки при открытии модального окна
         loadFriends();
         loadFriendRequests();
     });
@@ -1117,7 +1124,7 @@ async function createPost() {
         }
 
         if (!response.ok) {
-            throw new Error(data.error || 'Ошибка при создании публикации');
+            throw new Error(data.error || 'Ошибка при создании публик��ции');
         }
         
         if (data.success) {
@@ -1256,7 +1263,7 @@ async function toggleLike(postId) {
         const data = await response.json();
         
         if (response.ok) {
-            // Находим элементы конкре��ного поста
+            // Находим элементы конкретного поста
             const postElement = document.querySelector(`.post[data-post-id="${postId}"]`);
             const likeButton = postElement.querySelector('.like-action');
             const heartIcon = postElement.querySelector('.like-action i');
@@ -1410,7 +1417,7 @@ window.closeImageModal = function(modal) {
     }, 300);
 };
 
-// Добавляем функцию в г��обальную область видимости
+// Добавляем функцию в глобальную область видимости
 window.openFriendsModal = function() {
     const friendsModal = document.getElementById('friends-modal');
     const friendsTab = document.querySelector('[data-tab="friends-tab"]');
@@ -1447,7 +1454,7 @@ async function downloadFile(fileUrl) {
         const filename = fileUrl.split('/').pop();
         const folder = fileUrl.split('/')[2]; // posts, messages, etc.
 
-        // Делаем запрос к API для скачи��ания
+        // Делаем запр��с к API для скачивания
         const response = await fetch(`/api/download/${folder}/${filename}`);
         
         if (!response.ok) throw new Error('Download failed');
