@@ -276,15 +276,10 @@ function createMessageElement(message) {
         const replyElement = document.createElement('div');
         replyElement.className = 'message-reply';
         
-        // Определяем автора сообщения, на которое отвечают
         const replyAuthor = message.reply_to_message.sender_id === currentUser.id ? 'Вы' : message.reply_to_message.sender_username;
-        
-        // Обрезаем длинный текст ответа
-        const replyText = message.reply_to_message.message;
-        const maxReplyLength = 50;
-        const truncatedReplyText = replyText.length > maxReplyLength 
-            ? replyText.substring(0, maxReplyLength) + '...' 
-            : replyText;
+        const truncatedReplyText = message.reply_to_message.message.length > 50 
+            ? message.reply_to_message.message.substring(0, 50) + '...' 
+            : message.reply_to_message.message;
 
         replyElement.innerHTML = `
             <div class="reply-header">
@@ -294,36 +289,31 @@ function createMessageElement(message) {
             <div class="reply-content">${truncatedReplyText}</div>
         `;
 
-        // Добавляем обработчик клика для прокрутки к исходному сообщению
-        replyElement.addEventListener('click', () => {
-            const originalMessage = document.querySelector(`.message[data-message-id="${message.reply_to_message.id}"]`);
-            if (originalMessage) {
-                originalMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                originalMessage.classList.add('message-highlight');
-                setTimeout(() => {
-                    originalMessage.classList.remove('message-highlight');
-                }, 2000);
-            }
-        });
-
         messageElement.appendChild(replyElement);
     }
 
-    // Основной текст сообщения
+    // Основной контент сообщения
     const messageContent = document.createElement('div');
     messageContent.className = 'message-content';
 
     // Текст сообщения
-    const messageText = document.createElement('div');
-    messageText.className = 'message-text';
-    messageText.textContent = message.message;
-    messageContent.appendChild(messageText);
+    if (message.message) {
+        const messageText = document.createElement('div');
+        messageText.className = 'message-text';
+        messageText.textContent = message.message;
+        messageContent.appendChild(messageText);
+    }
+
+    // Если есть вложение
+    if (message.attachment_url) {
+        const attachmentElement = createAttachmentElement(message.attachment_url);
+        messageContent.appendChild(attachmentElement);
+    }
 
     // Информация о сообщении (время и статус)
     const messageInfo = document.createElement('div');
     messageInfo.className = 'message-info';
 
-    // Время отправки
     const messageTime = document.createElement('span');
     messageTime.className = 'message-time';
     messageTime.textContent = new Date(message.created_at).toLocaleTimeString([], { 
@@ -332,7 +322,6 @@ function createMessageElement(message) {
     });
     messageInfo.appendChild(messageTime);
 
-    // Статус прочтения для отправленных сообщений
     if (message.sender_id === currentUser.id) {
         const readStatus = document.createElement('span');
         readStatus.className = 'message-status';
@@ -344,12 +333,6 @@ function createMessageElement(message) {
 
     messageContent.appendChild(messageInfo);
     messageElement.appendChild(messageContent);
-
-    // Добавляем обработчик для контекстного меню
-    messageElement.addEventListener('contextmenu', (e) => {
-        e.preventDefault();
-        showContextMenu(e, message.id, message.message);
-    });
 
     return messageElement;
 }
@@ -418,9 +401,13 @@ async function sendMessage() {
             const messageElement = createMessageElement(data.message);
             document.getElementById('messages').appendChild(messageElement);
             scrollToBottom();
+        } else {
+            console.error('Ошибка при отправке сообщения:', data.error);
+            alert('Ошибка при отправке сообщения');
         }
     } catch (error) {
         console.error('Ошибка при отправке сообщения:', error);
+        alert('Ошибка при отправке сообщения');
     }
 }
 
@@ -698,34 +685,6 @@ function removeFilePreview() {
     const fileInput = document.getElementById('fileInput');
     if (fileInput) {
         fileInput.value = '';
-    }
-}
-
-// Функция отправки сообщения с файлом
-async function sendMessageWithFile(message) {
-    if (!selectedFile) return;
-
-    const formData = new FormData();
-    formData.append('file', selectedFile);
-    formData.append('senderId', currentUser.id);
-    formData.append('receiverId', currentChatPartner.id);
-    formData.append('message', message);
-
-    try {
-        const response = await fetch('https://adminflow.ru:5003/api/messages/send-with-file', {
-            method: 'POST',
-            body: formData
-        });
-
-        const data = await response.json();
-        if (data.success) {
-            loadMessages(currentChatPartner.id);
-        } else {
-            alert('Ошибка при отправке файла');
-        }
-    } catch (err) {
-        console.error('Error sending file:', err);
-        alert('Ошибка при отправке файла');
     }
 }
 
