@@ -1167,7 +1167,7 @@ app.get('/api/posts/:postId/comments', async (req, res) => {
         
         // Проверяем существование поста
         const postExists = await pool.query(
-            'SELECT id FROM posts WHERE id = $1 AND type = $1',
+            'SELECT id FROM posts WHERE id = $1 AND type = $2',
             [postId, 'post']
         );
 
@@ -1240,10 +1240,8 @@ app.post('/api/posts/comment', async (req, res) => {
         const comment = {
             ...result.rows[0],
             author_name: authorInfo.rows[0].username,
-            author_avatar: authorInfo.rows[0].avatar_url || '/uploads/avatars/default.png'
+            author_avatar: authorInfo.rows[0].avatar_url
         };
-
-        console.log('Created comment:', comment);
 
         res.json({
             success: true,
@@ -1251,10 +1249,6 @@ app.post('/api/posts/comment', async (req, res) => {
         });
     } catch (err) {
         console.error('Error creating comment:', err);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Ошибка при создании комментария',
-            details: err.message 
-        });
+        res.status(500).json({ error: 'Ошибка при создании комментария' });
     }
 });
