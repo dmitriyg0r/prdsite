@@ -177,8 +177,18 @@ body {
 .info-row {
     display: flex;
     justify-content: space-between;
-    padding: 8px 0;
+    align-items: center;
+    padding: var(--spacing-sm) 0;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-label {
     color: var(--text-secondary);
+    font-size: 14px;
 }
 
 .profile-actions {
@@ -210,6 +220,33 @@ body {
 
 .action-btn.danger:hover {
     background: var(--error-color);
+}
+
+/* Стили для поля email в профиле */
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-sm) 0;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+/* Стили для валидации email */
+.form-input:invalid {
+    border-color: var(--error-color);
+}
+
+.form-input:invalid:focus {
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.1);
 }
 
 /* Секция постов */
@@ -1351,7 +1388,7 @@ body {
     transform: translateY(-1px);
 }
 
-/* Анимаци�� для модального окна */
+/* Анимация для модального окна */
 .modal .modal-content {
     transform: scale(0.95);
     opacity: 0;

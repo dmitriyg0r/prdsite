@@ -222,7 +222,7 @@ const storage = multer.diskStorage({
         cb(null, uploadPath);
     },
     filename: function (req, file, cb) {
-        // Определяем префикс на основе типа загрузки
+        // Определяем префикс н основе типа загрузки
         let prefix = 'post-';
         if (req.path.includes('avatar')) {
             prefix = 'avatar-';
@@ -607,7 +607,7 @@ app.post('/api/messages/read', async (req, res) => {
     }
 });
 
-// Получение п��следнего сообщения с пользователем
+// Получение последнего сообщения с пользователем
 app.get('/api/messages/last/:userId/:friendId', async (req, res) => {
     try {
         const { userId, friendId } = req.params;
@@ -794,6 +794,114 @@ messageStorage.filename = function (req, file, cb) {
     file.fileUrl = `/uploads/messages/${filename}`;
     cb(null, filename);
 };
+
+// Получение информации о пользователе
+app.get('/api/users/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        const result = await pool.query(`
+            SELECT id, username, role, created_at, last_login, avatar_url, email
+            FROM users 
+            WHERE id = $1
+        `, [id]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Пользователь не найден' });
+        }
+
+        res.json({ 
+            success: true,
+            user: result.rows[0]
+        });
+    } catch (err) {
+        console.error('Get user error:', err);
+        res.status(500).json({ error: 'Ошибка при получении данных пользователя' });
+    }
+});
+
+// Обновление профиля пользователя
+app.post('/api/users/update-profile', async (req, res) => {
+    try {
+        const { userId, username, email } = req.body;
+
+        // Проверяем, не занят ли email другим пользователем
+        if (email) {
+            const emailCheck = await pool.query(
+                'SELECT id FROM users WHERE email = $1 AND id != $2',
+                [email, userId]
+            );
+            if (emailCheck.rows.length > 0) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Этот email уже используется другим пользователем'
+                });
+            }
+        }
+
+        // Проверяем, не занято ли имя пользователя
+        if (username) {
+            const usernameCheck = await pool.query(
+                'SELECT id FROM users WHERE username = $1 AND id != $2',
+                [username, userId]
+            );
+            if (usernameCheck.rows.length > 0) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Это имя пользователя уже занято'
+                });
+            }
+        }
+
+        // Формируем запрос на обновление
+        let query = 'UPDATE users SET ';
+        const updates = [];
+        const values = [];
+        let paramCount = 1;
+
+        if (username) {
+            updates.push(`username = $${paramCount}`);
+            values.push(username);
+            paramCount++;
+        }
+
+        if (email) {
+            updates.push(`email = $${paramCount}`);
+            values.push(email);
+            paramCount++;
+        }
+
+        if (updates.length === 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'Нет данных для обновления'
+            });
+        }
+
+        query += updates.join(', ');
+        query += ` WHERE id = $${paramCount}`;
+        values.push(userId);
+
+        await pool.query(query, values);
+
+        // Получаем обновленные данные пользователя
+        const result = await pool.query(
+            'SELECT id, username, email, role, created_at, last_login, avatar_url FROM users WHERE id = $1',
+            [userId]
+        );
+
+        res.json({
+            success: true,
+            user: result.rows[0]
+        });
+    } catch (err) {
+        console.error('Update profile error:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при обновлении профиля'
+        });
+    }
+});
 
 // Обновляем эндпоинт отправки сообщения с файлом
 app.post('/api/messages/send-with-file', messageUpload.single('file'), async (req, res) => {
@@ -1009,31 +1117,6 @@ app.get('/api/admin/charts', checkAdmin, async (req, res) => {
     }
 });
 
-// Получение информации о пользователе
-app.get('/api/users/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        
-        const result = await pool.query(`
-            SELECT id, username, role, created_at, last_login, avatar_url
-            FROM users 
-            WHERE id = $1
-        `, [id]);
-
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Пользователь не найден' });
-        }
-
-        res.json({ 
-            success: true,
-            user: result.rows[0]
-        });
-    } catch (err) {
-        console.error('Get user error:', err);
-        res.status(500).json({ error: 'Ошибка при получении данных пользователя' });
-    }
-});
-
 // Настройка хранилища для файлов постов
 const postStorage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -1113,7 +1196,7 @@ app.post('/api/posts/create', uploadPost.single('image'), async (req, res) => {
 app.get('/api/posts/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
-        const currentUserId = req.query.currentUserId; // Д��бавляем параметр текущего пользователя
+        const currentUserId = req.query.currentUserId; // Дбавляем параметр текущего пользователя
 
         const result = await pool.query(`
             SELECT 
@@ -1185,7 +1268,7 @@ app.post('/api/posts/like', async (req, res) => {
         });
     } catch (err) {
         console.error('Error toggling like:', err);
-        res.status(500).json({ error: 'Оши��ка при обработке лайка' });
+        res.status(500).json({ error: 'Ошибка при обработке лайка' });
     }
 });
 
@@ -1534,6 +1617,32 @@ app.post('/api/messages/mark-as-read', async (req, res) => {
         res.status(500).json({ 
             success: false, 
             error: 'Error marking messages as read' 
+        });
+    }
+});
+
+// Проверка доступности email
+app.get('/api/users/check-email', async (req, res) => {
+    try {
+        const { email, userId } = req.query;
+
+        const query = userId 
+            ? 'SELECT id FROM users WHERE email = $1 AND id != $2'
+            : 'SELECT id FROM users WHERE email = $1';
+        
+        const values = userId ? [email, userId] : [email];
+        
+        const result = await pool.query(query, values);
+
+        res.json({
+            success: true,
+            available: result.rows.length === 0
+        });
+    } catch (err) {
+        console.error('Check email error:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при проверке email'
         });
     }
 });

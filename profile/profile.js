@@ -105,6 +105,122 @@ document.addEventListener('DOMContentLoaded', async () => {
         await loadPosts();
     }
 
+    // Обновляем отображение email в профиле
+    if (!profileId) { // Только для своего профиля
+        const emailElement = document.getElementById('email');
+        if (emailElement) {
+            emailElement.textContent = currentUser.email || 'Не указан';
+        }
+    }
+
+    // Обработчик формы редактирования профиля
+    const editProfileForm = document.getElementById('edit-profile-form');
+    editProfileForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const username = document.getElementById('edit-username').value.trim();
+        const email = document.getElementById('edit-email').value.trim();
+
+        // Базовая валидация
+        if (!username) {
+            alert('Имя пользователя не может быть пустым');
+            return;
+        }
+
+        if (email && !isValidEmail(email)) {
+            alert('Введите корректный email');
+            return;
+        }
+
+        try {
+            const response = await fetch('https://adminflow.ru:5003/api/users/update-profile', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    userId: currentUser.id,
+                    username,
+                    email
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // Обновляем данные пользователя в localStorage
+                currentUser = data.user;
+                localStorage.setItem('user', JSON.stringify(currentUser));
+
+                // Обновляем отображение на странице
+                document.getElementById('username').textContent = currentUser.username;
+                const emailElement = document.getElementById('email');
+                if (emailElement) {
+                    emailElement.textContent = currentUser.email || 'Не указан';
+                }
+
+                // Закрываем модальное окно
+                const editProfileModal = document.getElementById('edit-profile-modal');
+                editProfileModal.classList.remove('active');
+                document.body.style.overflow = '';
+
+                alert('Профиль успешно обновлен');
+            } else {
+                throw new Error(data.error || 'Ошибка при обновлении профиля');
+            }
+        } catch (err) {
+            console.error('Update profile error:', err);
+            alert(err.message);
+        }
+    });
+
+    // Функция валидации email
+    function isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+
+    // Обработчик для проверки доступности email при вводе
+    let emailCheckTimeout;
+    const editEmailInput = document.getElementById('edit-email');
+    editEmailInput.addEventListener('input', () => {
+        clearTimeout(emailCheckTimeout);
+        const email = editEmailInput.value.trim();
+        
+        if (email && isValidEmail(email)) {
+            emailCheckTimeout = setTimeout(async () => {
+                try {
+                    const response = await fetch(`https://adminflow.ru:5003/api/users/check-email?email=${encodeURIComponent(email)}&userId=${currentUser.id}`);
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        if (!data.available) {
+                            editEmailInput.setCustomValidity('Этот email уже используется');
+                            editEmailInput.reportValidity();
+                        } else {
+                            editEmailInput.setCustomValidity('');
+                        }
+                    }
+                } catch (err) {
+                    console.error('Check email error:', err);
+                }
+            }, 500);
+        }
+    });
+
+    // При открытии модального окна редактирования заполняем поля текущими данными
+    editProfileBtn = document.getElementById('edit-profile-btn');
+    if (editProfileBtn) {
+        editProfileBtn.addEventListener('click', () => {
+            document.getElementById('edit-username').value = currentUser.username;
+            document.getElementById('edit-email').value = currentUser.email || '';
+            
+            const editProfileModal = document.getElementById('edit-profile-modal');
+            editProfileModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+    }
+
     // Загружаем список друзей
     loadFriends();
     loadFriendRequests();
@@ -567,7 +683,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         } catch (err) {
             console.error('Error loading user profile:', err);
-            alert('Ошибка при загрузке профиля пользователя');
+            alert('Ошибка при загрузке про��иля пользователя');
         }
     }
 
@@ -687,7 +803,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Функция форматирования в��емени последней активности
+    // Функция форматирования времени последней активности
     function formatLastSeen(lastActivity) {
         if (!lastActivity) return 'Не в сети';
         
@@ -1239,7 +1355,7 @@ async function deletePost(postId) {
         }
     } catch (err) {
         console.error('Error deleting post:', err);
-        alert('Ошибка при удалении публикации');
+        alert('О��ибка при удалении публикации');
     }
 }
 
@@ -1290,7 +1406,7 @@ window.openImageInFullscreen = function(imageSrc, postData) {
     // Добавляем модальное окно в DOM
     document.body.appendChild(modal);
     
-    // Добавляем класс active после небольшой задержки для анимации
+    // Доавляем класс active после небольшой задержки для анимации
     requestAnimationFrame(() => {
         modal.classList.add('active');
     });
@@ -1371,7 +1487,7 @@ async function downloadFile(fileUrl) {
         const filename = fileUrl.split('/').pop();
         const folder = fileUrl.split('/')[2]; // posts, messages, etc.
 
-        // Делаем запрос к API для скачивания
+        // Дела��м запрос к API для скачивания
         const response = await fetch(`/api/download/${folder}/${filename}`);
         
         if (!response.ok) throw new Error('Download failed');
