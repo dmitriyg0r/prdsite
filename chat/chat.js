@@ -95,7 +95,7 @@ function getLastActivityTime(timestamp) {
     const now = new Date();
     const diff = now - lastActivity;
     
-    if (diff < 60000) return 'был(а) т��лько что';
+    if (diff < 60000) return 'был(а) только что';
     if (diff < 3600000) return `был(а) ${Math.floor(diff/60000)} мн. назад`;
     if (diff < 86400000) return `был(а) ${Math.floor(diff/3600000)} ч. назад`;
     return 'был(а) давно';
@@ -522,13 +522,23 @@ async function loadMessages(friendId) {
         const response = await fetch(`https://adminflow.ru:5003/api/messages/history/${currentUser.id}/${friendId}`);
         const data = await response.json();
 
-        if (!data.success) {
-            console.error('Error loading messages:', data.error);
-            return;
-        }
+        if (data.success) {
+            const messagesContainer = document.getElementById('messages');
+            messagesContainer.innerHTML = '';
 
-        displayMessages(data.messages);
-        markMessagesAsRead(friendId);
+            data.messages.forEach(message => {
+                const messageElement = createMessageElement(message);
+                messagesContainer.appendChild(messageElement);
+            });
+
+            // Прокручиваем к последнему сообщению
+            scrollToBottom();
+
+            // Помечаем сообщения как прочитанные
+            markMessagesAsRead(friendId);
+        } else {
+            console.error('Ошибка загрузки сообщений:', data.error);
+        }
     } catch (err) {
         console.error('Error loading messages:', err);
     }
@@ -547,7 +557,7 @@ function scrollToBottom() {
 // Функция отметки сообщений как прочитанных
 async function markMessagesAsRead(friendId) {
     try {
-        await fetch('https://adminflow.ru:5003/api/messages/read', {
+        const response = await fetch(`https://adminflow.ru:5003/api/messages/mark-as-read`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -557,6 +567,14 @@ async function markMessagesAsRead(friendId) {
                 friendId: friendId
             })
         });
+
+        const data = await response.json();
+        if (data.success) {
+            // Обновляем счетчик непрочитанных сообщений
+            updateUnreadCount(friendId);
+        } else {
+            console.error('Ошибка при обновлении статуса сообщений:', data.error);
+        }
     } catch (err) {
         console.error('Error marking messages as read:', err);
     }

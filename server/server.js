@@ -341,7 +341,7 @@ app.get('/api/search-users', async (req, res) => {
         res.json({ users: result.rows });
     } catch (err) {
         console.error('Search error:', err);
-        res.status(500).json({ error: 'Ошибка п��и поиске пользователей' });
+        res.status(500).json({ error: 'Ошибка при поиске пользователей' });
     }
 });
 
@@ -607,7 +607,7 @@ app.post('/api/messages/read', async (req, res) => {
     }
 });
 
-// Получение последнего сообщения с пользователем
+// Получение п��следнего сообщения с пользователем
 app.get('/api/messages/last/:userId/:friendId', async (req, res) => {
     try {
         const { userId, friendId } = req.params;
@@ -1113,7 +1113,7 @@ app.post('/api/posts/create', uploadPost.single('image'), async (req, res) => {
 app.get('/api/posts/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
-        const currentUserId = req.query.currentUserId; // Добавляем параметр текущего пользователя
+        const currentUserId = req.query.currentUserId; // Д��бавляем параметр текущего пользователя
 
         const result = await pool.query(`
             SELECT 
@@ -1185,7 +1185,7 @@ app.post('/api/posts/like', async (req, res) => {
         });
     } catch (err) {
         console.error('Error toggling like:', err);
-        res.status(500).json({ error: 'Ошибка при обработке лайка' });
+        res.status(500).json({ error: 'Оши��ка при обработке лайка' });
     }
 });
 
@@ -1388,7 +1388,7 @@ app.get('/api/posts/:postId/comments', async (req, res) => {
         console.error('Error loading comments:', err);
         res.status(500).json({ 
             success: false, 
-            error: 'Ошибка при загрузке ком��ентариев',
+            error: 'Ошибка при загрузке комментариев',
             details: err.message 
         });
     }
@@ -1510,6 +1510,30 @@ app.get('/api/messages/unread/:userId/:friendId', async (req, res) => {
         res.status(500).json({ 
             success: false, 
             error: 'Error getting unread count' 
+        });
+    }
+});
+
+// Endpoint для пометки сообщений как прочитанных
+app.post('/api/messages/mark-as-read', async (req, res) => {
+    try {
+        const { userId, friendId } = req.body;
+
+        await pool.query(
+            `UPDATE messages 
+             SET is_read = true 
+             WHERE sender_id = $1 
+             AND receiver_id = $2 
+             AND is_read = false`,
+            [friendId, userId]
+        );
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Error marking messages as read:', err);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error marking messages as read' 
         });
     }
 });
