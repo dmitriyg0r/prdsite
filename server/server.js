@@ -378,7 +378,45 @@ app.post('/api/friend-request/respond', async (req, res) => {
         res.status(500).json({ error: 'Ошибка при обработке заявки' });
     }
 });
+// Middleware для проверки авторизации
+const checkAuthMiddleware = async (req, res, next) => {
+    const userId = req.query.userId || req.body.userId;
+    
+    if (!userId) {
+        return res.status(401).json({ 
+            success: false, 
+            error: 'Требуется авторизация' 
+        });
+    }
 
+    try {
+        const userExists = await pool.query(
+            'SELECT id FROM users WHERE id = $1',
+            [userId]
+        );
+
+        if (userExists.rows.length === 0) {
+            return res.status(401).json({ 
+                success: false, 
+                error: 'Пользователь не найден' 
+            });
+        }
+
+        next();
+    } catch (err) {
+        console.error('Auth check error:', err);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Ошибка проверки авторизации' 
+        });
+    }
+};
+
+// Применяем middleware ко всем защищенным маршрутам
+app.use('/api/posts', checkAuthMiddleware);
+app.use('/api/messages', checkAuthMiddleware);
+app.use('/api/users', checkAuthMiddleware);
+// ... другие защищенные маршруты
 // Получение списка друзей
 app.get('/api/friends', async (req, res) => {
     try {
