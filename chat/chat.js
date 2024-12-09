@@ -2,6 +2,7 @@ let currentChatPartner = null;
 let currentUser = null;
 let messageUpdateInterval = null;
 let selectedFile = null;
+let typingTimeout = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
     // Проверка авторизации
@@ -54,10 +55,14 @@ function displayFriendsList(friends) {
 
     friendsList.innerHTML = friends.map(friend => `
         <div class="chat-partner" data-friend-id="${friend.id}">
-            <img src="${friend.avatar_url || '../uploads/avatars/default.png'}" alt="${friend.username}" class="chat-avatar">
+            <div class="avatar-container">
+                <img src="${friend.avatar_url || '../uploads/avatars/default.png'}" alt="${friend.username}" class="chat-avatar">
+                <span class="status-indicator ${friend.is_online ? 'online' : 'offline'}"></span>
+            </div>
             <div class="friend-info">
                 <div class="friend-name">${friend.username}</div>
                 <div class="last-message" id="last-message-${friend.id}">...</div>
+                <div class="last-activity">${friend.is_online ? 'онлайн' : getLastActivityTime(friend.last_activity)}</div>
             </div>
             <div class="unread-count" id="unread-${friend.id}"></div>
         </div>
@@ -79,6 +84,18 @@ function displayFriendsList(friends) {
         loadLastMessage(friend.id);
         updateUnreadCount(friend.id);
     });
+}
+
+function getLastActivityTime(timestamp) {
+    if (!timestamp) return 'не в сети';
+    const lastActivity = new Date(timestamp);
+    const now = new Date();
+    const diff = now - lastActivity;
+    
+    if (diff < 60000) return 'был(а) только что';
+    if (diff < 3600000) return `был(а) ${Math.floor(diff/60000)} мин. назад`;
+    if (diff < 86400000) return `был(а) ${Math.floor(diff/3600000)} ч. назад`;
+    return 'был(а) давно';
 }
 
 async function loadLastMessage(friendId) {
@@ -396,6 +413,34 @@ function setupEventListeners() {
     // Добавляем новые обработчики
     sendButton?.addEventListener('click', sendMessage);
     messageInput?.addEventListener('keypress', handleEnterPress);
+
+    messageInput?.addEventListener('input', () => {
+        if (typingTimeout) clearTimeout(typingTimeout);
+        
+        // Отправляем статус "печатает"
+        fetch('https://adminflow.ru:5003/api/messages/typing', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                userId: currentUser.id,
+                friendId: currentChatPartner.id,
+                isTyping: true
+            })
+        });
+        
+        // Сбрасываем статус через 2 секунды
+        typingTimeout = setTimeout(() => {
+            fetch('https://adminflow.ru:5003/api/messages/typing', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: currentUser.id,
+                    friendId: currentChatPartner.id,
+                    isTyping: false
+                })
+            });
+        }, 2000);
+    });
 }
 
 // Выносим обработчик Enter в отдельную функцию

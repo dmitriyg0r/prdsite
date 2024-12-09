@@ -549,4 +549,47 @@ body {
         transform: translateY(0);
     }
 }
+
+.avatar-container {
+    position: relative;
+    margin-right: 12px;
+}
+
+.status-indicator {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid var(--background-color);
+}
+
+.status-indicator.online {
+    background-color: #44b700;
+}
+
+.status-indicator.offline {
+    background-color: #bdbdbd;
+}
+
+.last-activity {
+    font-size: 0.8em;
+    color: var(--text-secondary);
+    margin-top: 2px;
+}
+
+.typing-indicator {
+    font-size: 0.9em;
+    color: var(--primary-color);
+    font-style: italic;
+    margin-bottom: 8px;
+    animation: fadeInOut 1.5s infinite;
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0.5; }
+    50% { opacity: 1; }
+    100% { opacity: 0.5; }
+}
  

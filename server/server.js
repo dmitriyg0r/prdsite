@@ -911,7 +911,7 @@ app.post('/api/admin/role', checkAdmin, async (req, res) => {
             });
         }
 
-        // Обновляем роль в базе данных
+        // Обновляем рол�� в базе данных
         await pool.query(
             'UPDATE users SET role = $1 WHERE id = $2',
             [role, userId]
@@ -1126,7 +1126,7 @@ app.post('/api/posts/like', async (req, res) => {
         let liked = false;
         
         if (existingLike.rows.length > 0) {
-            // Если лайк существует - удаляем его
+            // Ес��и лайк существует - удаляем его
             await pool.query(
                 'DELETE FROM posts WHERE parent_id = $1 AND user_id = $2 AND type = $3',
                 [postId, userId, 'like']
@@ -1407,5 +1407,25 @@ app.post('/api/posts/comment', async (req, res) => {
     } catch (err) {
         console.error('Error creating comment:', err);
         res.status(500).json({ error: 'Ошибка при создании комментария' });
+    }
+});
+
+// Обработка статуса набора текста
+app.post('/api/messages/typing', async (req, res) => {
+    try {
+        const { userId, friendId, isTyping } = req.body;
+        
+        // Сохраняем статус в Redis или другом быстром хранилище
+        // Здесь используем глобальную переменную для примера
+        global.typingStatus = global.typingStatus || {};
+        global.typingStatus[`${userId}-${friendId}`] = {
+            isTyping,
+            timestamp: Date.now()
+        };
+        
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Error updating typing status:', err);
+        res.status(500).json({ error: 'Ошибка при обновлении статуса набора' });
     }
 });
