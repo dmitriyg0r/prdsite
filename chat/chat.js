@@ -166,22 +166,37 @@ async function openChat(friend) {
         const data = await response.json();
 
         if (data.success) {
+            // Обновляем текущего собеседника
             currentChatPartner = data.user;
             
-            // Скрываем placeholder и показываем чат
+            // Обновляем заголовок чата
+            const chatHeader = document.getElementById('chat-header');
+            const headerAvatar = document.getElementById('chat-header-avatar');
+            const headerName = document.getElementById('chat-header-name');
+            
+            if (chatHeader && headerAvatar && headerName) {
+                chatHeader.style.display = 'flex';
+                headerAvatar.src = currentChatPartner.avatar_url || '../uploads/avatars/default.png';
+                headerName.textContent = currentChatPartner.username;
+            }
+            
+            // Скрываем placeholder и показываем область сообщений
             document.getElementById('chat-placeholder').style.display = 'none';
-            document.getElementById('chat-header').style.display = 'flex';
             document.getElementById('messages').style.display = 'flex';
             
-            // Обновляем UI
+            // Очищаем предыдущие сообщения
+            const messagesContainer = document.getElementById('messages');
+            if (messagesContainer) {
+                messagesContainer.innerHTML = '';
+            }
+            
+            // Обновляем активный чат в списке
             document.querySelectorAll('.chat-partner').forEach(el => {
                 el.classList.remove('active');
+                if (el.dataset.friendId === friendId.toString()) {
+                    el.classList.add('active');
+                }
             });
-            
-            const chatPartnerElement = document.querySelector(`.chat-partner[data-friend-id="${friendId}"]`);
-            if (chatPartnerElement) {
-                chatPartnerElement.classList.add('active');
-            }
 
             // Загружаем сообщения
             await loadMessages(friendId);
@@ -191,6 +206,14 @@ async function openChat(friend) {
             
             // Включаем обновление сообщений
             startMessageUpdates();
+            
+            // Фокусируем поле ввода
+            const messageInput = document.getElementById('messageInput');
+            if (messageInput) {
+                messageInput.focus();
+            }
+        } else {
+            console.error('Ошибка получения данных пользователя:', data.error);
         }
     } catch (err) {
         console.error('Error opening chat:', err);
