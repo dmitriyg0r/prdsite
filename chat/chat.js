@@ -93,7 +93,7 @@ function getLastActivityTime(timestamp) {
     const diff = now - lastActivity;
     
     if (diff < 60000) return 'был(а) только что';
-    if (diff < 3600000) return `был(а) ${Math.floor(diff/60000)} мин. назад`;
+    if (diff < 3600000) return `был(а) ${Math.floor(diff/60000)} м��н. назад`;
     if (diff < 86400000) return `был(а) ${Math.floor(diff/3600000)} ч. назад`;
     return 'был(а) давно';
 }
@@ -650,12 +650,19 @@ document.addEventListener('click', () => {
 });
 
 async function deleteMessage(messageId) {
+    if (!messageId) {
+        console.error('Message ID is undefined');
+        return;
+    }
+
     try {
         const response = await fetch(`https://adminflow.ru:5003/api/messages/delete/${messageId}`, {
             method: 'DELETE',
             headers: {
-                'Content-Type': 'application/json'
-            }
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${currentUser.token}` // если требуется аутентификация
+            },
+            body: JSON.stringify({ userId: currentUser.id }) // передаем userId
         });
 
         const data = await response.json();

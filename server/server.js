@@ -1073,7 +1073,7 @@ app.post('/api/posts/create', uploadPost.single('image'), async (req, res) => {
         });
     } catch (err) {
         console.error('Error creating post:', err);
-        res.status(500).json({ error: 'Ошибка при создании поста' });
+        res.status(500).json({ error: 'Оши��ка при создании поста' });
     }
 });
 
@@ -1311,7 +1311,7 @@ app.get('/api/feed', async (req, res) => {
         });
     } catch (err) {
         console.error('Error loading feed:', err);
-        res.status(500).json({ error: 'Ошибка при загру��ке ленты' });
+        res.status(500).json({ error: 'Ошибка при загрузке ленты' });
     }
 });
 
