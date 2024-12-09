@@ -330,7 +330,7 @@ app.get('/api/search-users', async (req, res) => {
         res.json({ users: result.rows });
     } catch (err) {
         console.error('Search error:', err);
-        res.status(500).json({ error: 'Ошибка при поис��е пользователей' });
+        res.status(500).json({ error: 'Ошибка при поиске пользователей' });
     }
 });
 
@@ -346,7 +346,7 @@ app.post('/api/friend-request', async (req, res) => {
         );
 
         if (existingRequest.rows.length > 0) {
-            return res.status(400).json({ error: '��аявка уже существует' });
+            return res.status(400).json({ error: 'Заявка уже существует' });
         }
 
         // Создаем новую заявку
@@ -384,7 +384,7 @@ app.get('/api/friends', async (req, res) => {
     try {
         const userId = parseInt(req.query.userId);
 
-        // Проверяем, что userId является числом
+        // Проверяем, ч��о userId является числом
         if (!userId || isNaN(userId)) {
             return res.status(400).json({ 
                 success: false, 
@@ -536,7 +536,7 @@ app.post('/api/messages/send-with-file', upload.single('file'), async (req, res)
     }
 });
 
-// Обновляем endpoint для загрузки истории сообщений
+// Обн��вляем endpoint для загрузки истории сообщений
 app.get('/api/messages/history/:userId/:friendId', async (req, res) => {
     try {
         const { userId, friendId } = req.params;
@@ -576,7 +576,7 @@ app.get('/api/messages/history/:userId/:friendId', async (req, res) => {
     }
 });
 
-// Отметить сообщения как прочитанные
+// ��тметить сообщения как прочитанные
 app.post('/api/messages/read', async (req, res) => {
     try {
         const { userId, friendId } = req.body;
@@ -1022,7 +1022,7 @@ app.delete('/api/admin/users/:id', checkAdmin, async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         console.error('Admin delete user error:', err);
-        res.status(500).json({ error: 'Ошибка при удалении пользователя' });
+        res.status(500).json({ error: 'Ошибка при удален��и пользователя' });
     }
 });
 
@@ -1520,7 +1520,7 @@ app.post('/api/messages/typing', async (req, res) => {
         const { userId, friendId, isTyping } = req.body;
         
         // Сохраняем статус в Redis или другом быстром хранилище
-        // Здесь испол��зуем глобальную переменную для примера
+        // Здесь используем глобальную переменную для примера
         global.typingStatus = global.typingStatus || {};
         global.typingStatus[`${userId}-${friendId}`] = {
             isTyping,
@@ -1638,35 +1638,39 @@ app.get('/api/users/check-email', async (req, res) => {
 
 // Создаем транспорт для отправки почты
 const transporter = nodemailer.createTransport({
-    host: 'smtp.timeweb.ru',
+    host: 'mail.hosting.reg.ru',  // Альтернативный хост
     port: 465,
     secure: true,
     auth: {
         user: 'adminflow@adminflow.ru',
         pass: 'Gg3985502'
     },
-    // Добавляем таймауты и дополнительные настройки
-    connectionTimeout: 10000, // 10 секунд
-    greetingTimeout: 5000,   // 5 секунд
-    socketTimeout: 10000,    // 10 секунд
-    debug: true,             // Включаем отладку
-    logger: true             // Включаем логирование
+    tls: {
+        rejectUnauthorized: false // Отключаем строгую проверку сертификата
+    },
+    connectionTimeout: 30000, // Увеличиваем таймаут до 30 секунд
+    debug: true,
+    logger: true
 });
 
 // Проверяем соединение при запуске сервера
 transporter.verify(function(error, success) {
     if (error) {
         console.error('Ошибка подключения к SMTP:', error);
-        console.log('Проверьте следующее:');
-        console.log('1. Правильность хоста (smtp.timeweb.ru)');
-        console.log('2. Правильность порта (465)');
-        console.log('3. Правильность учетных данных');
-        console.log('4. Доступность порта 465 на сервере');
-        console.log('5. Настройки файрвола');
+        // Пробуем альтернативные настройки
+        transporter.options.host = 'smtp.timeweb.ru';
+        transporter.verify(function(error2, success2) {
+            if (error2) {
+                console.error('Ошибка подключения к альтернативному SMTP:', error2);
+            } else {
+                console.log('Подключение к альтернативному SMTP успешно');
+            }
+        });
     } else {
         console.log('SMTP сервер готов к отправке сообщений');
     }
 });
+
 // Альтернативная конфигурация с TLS
 const alternativeTransporter = nodemailer.createTransport({
     host: 'smtp.timeweb.ru',
