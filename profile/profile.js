@@ -302,7 +302,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Обновляем селектор для кнопки открытия модального окна
     const friendsHeaderBtn = document.querySelector('.friends-header-btn');
     
-    // Отк��ытие модального окна при клике на заголовок "Дузья"
+    // Открытие модального окна при клике на заголовок "Дузья"
     friendsHeaderBtn.addEventListener('click', (e) => {
         e.preventDefault();
         friendsModal.classList.add('active');
@@ -399,13 +399,26 @@ document.addEventListener('DOMContentLoaded', async () => {
             userId = userId || currentUser.id;
             console.log('loadFriends: userId is', userId);
             
-            const response = await fetch(`https://adminflow.ru:5003/api/friends/${userId}`);
+            const response = await fetch(`https://adminflow.ru:5003/api/friends/${userId}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${currentUser.token}`
+                },
+                credentials: 'include'
+            });
+
+            if (response.status === 401) {
+                localStorage.removeItem('user');
+                window.location.href = '../authreg/authreg.html';
+                return;
+            }
+
             if (!response.ok) {
-                throw new Error('Failed to load friends');
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
 
             const data = await response.json();
-            
             if (data.success) {
                 displayFriends(data.friends, userId === currentUser?.id);
                 updateFriendsCount(data.friends.length);
@@ -414,6 +427,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         } catch (err) {
             console.error('Error loading friends:', err);
+            if (err.message.includes('401')) {
+                localStorage.removeItem('user');
+                window.location.href = '../authreg/authreg.html';
+            }
         }
     }
 
@@ -473,7 +490,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                    </div>`;
         }
 
-        // Обновляем полный список друзей в модальном окне
+        // ��бновляем полный список друзей в модальном окне
         const friendsList = document.querySelector('.friends-list');
         if (friendsList) {
             friendsList.innerHTML = friends.map(friend => `
@@ -529,7 +546,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             </div>
         `).join('');
 
-        // Добавляем обработчики для кнопок
+        // Добавля��м обработчики для кнопок
         document.querySelectorAll('.accept-friend-btn').forEach(btn => {
             btn.addEventListener('click', () => respondToFriendRequest(btn.dataset.userId, 'accepted'));
         });
@@ -564,7 +581,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Обновляем функцию поиска
+    // Обновляем функ��ию поиска
     async function searchUsers(query) {
         try {
             const response = await fetch(`https://adminflow.ru:5003/api/search-users?q=${query}&userId=${currentUser.id}`);
@@ -728,7 +745,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     function startStatusUpdates() {
         let lastActivity = new Date();
         
-        // Функция обновления активности
+        // Функция обновления активност��
         const updateActivity = () => {
             lastActivity = new Date();
             updateUserStatus(true);
@@ -1163,10 +1180,23 @@ async function loadPosts() {
         const profileId = urlParams.get('id') || currentUser.id;
 
         console.log('Loading posts for userId:', profileId);
-        const response = await fetch(`https://adminflow.ru:5003/api/posts/${profileId}?currentUserId=${currentUser.id}`);
+        const response = await fetch(`https://adminflow.ru:5003/api/posts/${profileId}?currentUserId=${currentUser.id}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${currentUser.token}`
+            },
+            credentials: 'include'
+        });
         
+        if (response.status === 401) {
+            localStorage.removeItem('user');
+            window.location.href = '../authreg/authreg.html';
+            return;
+        }
+
         if (!response.ok) {
-            throw new Error('Failed to load posts');
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const data = await response.json();
@@ -1177,6 +1207,10 @@ async function loadPosts() {
         }
     } catch (err) {
         console.error('Error loading posts:', err);
+        if (err.message.includes('401')) {
+            localStorage.removeItem('user');
+            window.location.href = '../authreg/authreg.html';
+        }
     }
 }
 
@@ -1438,7 +1472,7 @@ window.openFriendsModal = function() {
     const friendsModal = document.getElementById('friends-modal');
     const friendsTab = document.querySelector('[data-tab="friends-tab"]');
     
-    // Открываем модально�� окно
+    // Открываем модальное окно
     friendsModal.classList.add('active');
     document.body.style.overflow = 'hidden';
     
