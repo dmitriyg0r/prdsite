@@ -3,6 +3,7 @@ let currentUser = null;
 let messageUpdateInterval = null;
 let selectedFile = null;
 let typingTimeout = null;
+let selectedMessageId = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
     // Проверка авторизации
@@ -93,7 +94,7 @@ function getLastActivityTime(timestamp) {
     const diff = now - lastActivity;
     
     if (diff < 60000) return 'был(а) только что';
-    if (diff < 3600000) return `был(а) ${Math.floor(diff/60000)} м��н. назад`;
+    if (diff < 3600000) return `был(а) ${Math.floor(diff/60000)} мн. назад`;
     if (diff < 86400000) return `был(а) ${Math.floor(diff/3600000)} ч. назад`;
     return 'был(а) давно';
 }
@@ -191,7 +192,7 @@ async function loadChatHistory() {
         if (data.success) {
             const messagesContainer = document.getElementById('messages');
             
-            // Оптимизация проверки новых сооб��ений
+            // Оптимизация проверки новых сообщений
             const currentMessageIds = new Set(
                 Array.from(messagesContainer.querySelectorAll('.message'))
                     .map(el => el.dataset.messageId)
@@ -633,18 +634,29 @@ async function sendMessageWithFile(message) {
 }
 
 function showContextMenu(event, messageId) {
+    event.preventDefault();
     const contextMenu = document.getElementById('contextMenu');
+    
+    // Сохраняем ID выбранного сообщения
+    selectedMessageId = messageId;
+    
+    // Позиционируем меню
     contextMenu.style.top = `${event.clientY}px`;
     contextMenu.style.left = `${event.clientX}px`;
     contextMenu.style.display = 'block';
-
-    // Устанавливаем ID сообщения для удаления
-    contextMenu.dataset.messageId = messageId;
 }
 
-document.addEventListener('click', () => {
+document.getElementById('deleteMessageBtn').addEventListener('click', () => {
+    if (selectedMessageId) {
+        deleteMessage(selectedMessageId);
+        document.getElementById('contextMenu').style.display = 'none';
+    }
+});
+
+// Закрытие контекстного меню при клике вне его
+document.addEventListener('click', (event) => {
     const contextMenu = document.getElementById('contextMenu');
-    if (contextMenu) {
+    if (!contextMenu.contains(event.target)) {
         contextMenu.style.display = 'none';
     }
 });
@@ -659,10 +671,9 @@ async function deleteMessage(messageId) {
         const response = await fetch(`https://adminflow.ru:5003/api/messages/delete/${messageId}`, {
             method: 'DELETE',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${currentUser.token}` // если требуется аутентификация
+                'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ userId: currentUser.id }) // передаем userId
+            body: JSON.stringify({ userId: currentUser.id })
         });
 
         const data = await response.json();
@@ -672,7 +683,7 @@ async function deleteMessage(messageId) {
                 messageElement.remove();
             }
         } else {
-            alert('Ошибка при удалении сообщения');
+            alert(data.error || 'Ошибка при удалении сообщения');
         }
     } catch (err) {
         console.error('Error deleting message:', err);
