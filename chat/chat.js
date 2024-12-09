@@ -95,7 +95,7 @@ function getLastActivityTime(timestamp) {
     const now = new Date();
     const diff = now - lastActivity;
     
-    if (diff < 60000) return 'был(а) то что';
+    if (diff < 60000) return 'был(а) т�� что';
     if (diff < 3600000) return `был(а) ${Math.floor(diff/60000)} мн. назад`;
     if (diff < 86400000) return `был(а) ${Math.floor(diff/3600000)} ч. назад`;
     return 'был(а) давно';
@@ -341,12 +341,21 @@ function createAttachmentElement(attachmentUrl) {
     const attachmentElement = document.createElement('div');
     attachmentElement.className = 'message-attachment';
     
-    const fullUrl = `https://adminflow.ru:5003${attachmentUrl}`;
+    // Проверяем, начинается ли URL с http
+    const fullUrl = attachmentUrl.startsWith('http') 
+        ? attachmentUrl 
+        : `https://adminflow.ru:5003/uploads/messages/${attachmentUrl}`;
 
-    if (attachmentUrl.match(/\.(jpg|jpeg|png|gif)$/i)) {
+    console.log('Attachment URL:', fullUrl); // Для отладки
+
+    if (isImageFile(attachmentUrl)) {
         const img = document.createElement('img');
         img.src = fullUrl;
-        img.alt = 'Attachment';
+        img.alt = 'Изображение';
+        img.onerror = () => {
+            console.error('Ошибка загрузки изображения:', fullUrl);
+            img.src = '../uploads/avatars/default.png'; // Заглушка при ошибке
+        };
         img.onclick = () => showImageModal(fullUrl);
         attachmentElement.appendChild(img);
     } else {
@@ -355,12 +364,17 @@ function createAttachmentElement(attachmentUrl) {
         const fileName = attachmentUrl.split('/').pop();
         fileInfo.innerHTML = `
             <i class="fas fa-file file-icon"></i>
-            <a href="${fullUrl}" target="_blank" class="file-name">${fileName}</a>
+            <a href="${fullUrl}" target="_blank" class="file-name" download>${fileName}</a>
         `;
         attachmentElement.appendChild(fileInfo);
     }
 
     return attachmentElement;
+}
+
+// Вспомогательная функция для проверки типа файла
+function isImageFile(url) {
+    return /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
 }
 
 let isMessageSending = false;
@@ -378,6 +392,7 @@ async function sendMessage() {
         
         if (selectedFile) {
             formData.append('file', selectedFile);
+            console.log('Отправка файла:', selectedFile.name); // Для отладки
         }
 
         if (replyToMessageId) {
@@ -390,6 +405,7 @@ async function sendMessage() {
         });
 
         const data = await response.json();
+        console.log('Ответ сервера:', data); // Для отладки
         
         if (data.success) {
             messageInput.value = '';
@@ -594,8 +610,23 @@ async function markMessagesAsRead(friendId) {
 function showImageModal(imageUrl) {
     const modal = document.querySelector('.image-modal');
     const modalImage = document.getElementById('modalImage');
-    modalImage.src = imageUrl; // спользуем полный URL
+    
+    // Показываем индикатор загрузки
+    modalImage.style.opacity = '0.5';
     modal.style.display = 'flex';
+    
+    // Загружаем изображение
+    modalImage.onload = () => {
+        modalImage.style.opacity = '1';
+    };
+    
+    modalImage.onerror = () => {
+        console.error('Ошибка загрузки изображения в модальном окне:', imageUrl);
+        modal.style.display = 'none';
+        alert('Ошибка при загрузке изображения');
+    };
+    
+    modalImage.src = imageUrl;
 }
 
 // Закрытие модального окна
@@ -735,7 +766,7 @@ function cancelReply() {
     replyToMessageId = null;
 }
 
-// Закрытие контекстног�� меню при клике вне его
+// Закрытие контекстног меню при клике вне его
 document.addEventListener('click', (event) => {
     const contextMenu = document.getElementById('contextMenu');
     if (!contextMenu.contains(event.target)) {
