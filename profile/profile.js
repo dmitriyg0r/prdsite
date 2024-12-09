@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Загружаем список своих друзей
         await loadFriends(currentUser.id);
         
-        // Запускаем обновление своего статуса
+        // Запускаем о��новление своего статуса
         startStatusUpdates();
         
         // Загружаем посты
@@ -302,7 +302,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             modalFriendCount.textContent = friends.length;
         }
 
-        // Обновляем мини-списо�� друзей в профиле
+        // Обновляем мини-список друзей в профиле
         const friendsGrid = document.querySelector('.friends-grid');
         const maxFriendsInGrid = 4;
         
@@ -498,7 +498,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         loadFriendRequests();
     });
 
-    // Обно��ляем функцию для отображения количества заявок
+    // Обноляем функцию для отображения количества заявок
     function updateRequestsCount(count) {
         const requestCount = document.querySelector('.request-count');
         if (requestCount) {
@@ -533,7 +533,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
 
             if (response.ok) {
-                // Перезагружаем ��писок друзей
+                // Перезагружаем список друзей
                 loadFriends();
             } else {
                 const data = await response.json();
@@ -587,7 +587,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             updateUserStatus(true);
         };
         
-        // Отслеживаем действия пользова��еля
+        // Отслеживаем действия пользователя
         ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'].forEach(eventName => {
             document.addEventListener(eventName, updateActivity);
         });
@@ -687,7 +687,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Функция форматирования времени последней ак��ивности
+    // Функция форматирования в��емени последней активности
     function formatLastSeen(lastActivity) {
         if (!lastActivity) return 'Не в сети';
         
@@ -774,6 +774,137 @@ document.addEventListener('DOMContentLoaded', async () => {
         e.preventDefault();
         // Здесь будет логика сохранения изменений
         alert('Функционал редактирования профиля находится в разработке');
+    });
+
+    // Обработчики для смены пароля
+    const requestPasswordChangeBtn = document.getElementById('request-password-change');
+    const passwordChangeModal = document.getElementById('password-change-modal');
+    const sendVerificationCodeBtn = document.getElementById('send-verification-code');
+    const resendCodeBtn = document.getElementById('resend-code');
+    const verificationStep = document.querySelector('.verification-step');
+    const codeVerificationStep = document.querySelector('.code-verification-step');
+    const passwordChangeForm = document.getElementById('password-change-form');
+
+    // Открытие модального окна смены пароля
+    requestPasswordChangeBtn.addEventListener('click', () => {
+        passwordChangeModal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    });
+
+    // Закрытие модального окна смены пароля
+    passwordChangeModal.querySelector('.modal-close').addEventListener('click', () => {
+        passwordChangeModal.classList.remove('active');
+        document.body.style.overflow = '';
+        resetPasswordChangeForm();
+    });
+
+    // Закрытие по клику вне модального окна
+    passwordChangeModal.addEventListener('click', (e) => {
+        if (e.target === passwordChangeModal) {
+            passwordChangeModal.classList.remove('active');
+            document.body.style.overflow = '';
+            resetPasswordChangeForm();
+        }
+    });
+
+    // Отправка кода подтверждения
+    sendVerificationCodeBtn.addEventListener('click', async () => {
+        try {
+            sendVerificationCodeBtn.disabled = true;
+            sendVerificationCodeBtn.textContent = 'Отправка...';
+
+            const response = await fetch('https://adminflow.ru:5003/api/send-verification-code', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    userId: currentUser.id,
+                    email: currentUser.email
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                verificationStep.style.display = 'none';
+                codeVerificationStep.style.display = 'block';
+                startResendTimer();
+            } else {
+                throw new Error(data.error || 'Ошибка при отправке кода');
+            }
+        } catch (err) {
+            alert(err.message);
+        } finally {
+            sendVerificationCodeBtn.disabled = false;
+            sendVerificationCodeBtn.textContent = 'Отправить код';
+        }
+    });
+
+    // Таймер для повторной отправки кода
+    function startResendTimer() {
+        let timeLeft = 60;
+        resendCodeBtn.disabled = true;
+        const timerElement = document.getElementById('resend-timer');
+        
+        const timer = setInterval(() => {
+            timeLeft--;
+            timerElement.textContent = `(${timeLeft}с)`;
+            
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                timerElement.textContent = '';
+                resendCodeBtn.disabled = false;
+            }
+        }, 1000);
+    }
+
+    // Повторная отправка кода
+    resendCodeBtn.addEventListener('click', async () => {
+        resendCodeBtn.disabled = true;
+        await sendVerificationCode();
+        startResendTimer();
+    });
+
+    // Обработка формы смены пароля
+    passwordChangeForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const code = document.getElementById('verification-code').value;
+        const newPassword = document.getElementById('new-password').value;
+        const confirmPassword = document.getElementById('confirm-password').value;
+
+        if (newPassword !== confirmPassword) {
+            alert('Пароли не совпадают');
+            return;
+        }
+
+        try {
+            const response = await fetch('https://adminflow.ru:5003/api/change-password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    userId: currentUser.id,
+                    code,
+                    newPassword
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                alert('Пароль успешно изменен');
+                passwordChangeModal.classList.remove('active');
+                document.body.style.overflow = '';
+                resetPasswordChangeForm();
+            } else {
+                throw new Error(data.error || 'Ошибка при изменении пароля');
+            }
+        } catch (err) {
+            alert(err.message);
+        }
     });
 });
 
@@ -1112,7 +1243,7 @@ async function deletePost(postId) {
     }
 }
 
-// Добав��яем функции в глобальную область видимости (window)
+// Добавляем функции в глобальную область видимости (window)
 window.openImageInFullscreen = function(imageSrc, postData) {
     // Создаем модальное окно
     const modal = document.createElement('div');
@@ -1224,7 +1355,7 @@ function getFileIcon(extension) {
         'pdf': 'fas fa-file-pdf',
         'doc': 'fas fa-file-word',
         'docx': 'fas fa-file-word',
-        'odt': 'fas fa-file-word', // Иконк�� для ODT файлов
+        'odt': 'fas fa-file-word', // Иконка для ODT файлов
         'xls': 'fas fa-file-excel',
         'xlsx': 'fas fa-file-excel',
         'txt': 'fas fa-file-alt'
