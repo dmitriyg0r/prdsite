@@ -95,7 +95,7 @@ function getLastActivityTime(timestamp) {
     const now = new Date();
     const diff = now - lastActivity;
     
-    if (diff < 60000) return 'был(а) т��лько что';
+    if (diff < 60000) return 'был(а) тлько что';
     if (diff < 3600000) return `был(а) ${Math.floor(diff/60000)} мн. назад`;
     if (diff < 86400000) return `был(а) ${Math.floor(diff/3600000)} ч. назад`;
     return 'был(а) давно';
@@ -153,7 +153,7 @@ async function openChat(friend) {
         return;
     }
 
-    const friendId = parseInt(friend.id); // Преобразуем ID в число
+    const friendId = parseInt(friend.id);
     if (isNaN(friendId)) {
         console.error('Invalid friend ID:', friend.id);
         return;
@@ -166,6 +166,11 @@ async function openChat(friend) {
 
         if (data.success) {
             currentChatPartner = data.user;
+            
+            // Скрываем placeholder и показываем чат
+            document.getElementById('chat-placeholder').style.display = 'none';
+            document.getElementById('chat-header').style.display = 'flex';
+            document.getElementById('messages').style.display = 'flex';
             
             // Обновляем UI
             document.querySelectorAll('.chat-partner').forEach(el => {
@@ -314,7 +319,7 @@ function createMessageElement(message) {
     messageText.textContent = message.message;
     messageContent.appendChild(messageText);
 
-    // Информация о сообщении (вр��мя и статус)
+    // Информация о сообщении (время и статус)
     const messageInfo = document.createElement('div');
     messageInfo.className = 'message-info';
 
@@ -464,7 +469,7 @@ async function markMessagesAsRead(friendId) {
             // Обновляем счетчик только если успешно обновили статус
             await updateUnreadCount(friendId);
         } else {
-            console.error('Ошибка при об��овлении статуса сообщений:', data.error);
+            console.error('Ошибка при обновлении статуса сообщений:', data.error);
         }
     } catch (err) {
         console.error('Error marking messages as read:', err);
