@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Загружаем список своих друзей
         await loadFriends(currentUser.id);
         
-        // Запускаем обновление своего статуса
+        // Запускаем о��новление своего статуса
         startStatusUpdates();
         
         // Загружаем посты
@@ -558,7 +558,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const data = await response.json();
             
             if (data.user) {
-                // Сохраняем данные профиля друга во временное хранилище
+                // Сохраняем данные профиля друга во в��еменное хранилище
                 sessionStorage.setItem('viewing_profile', JSON.stringify(data.user));
                 // Перенаправляем на страницу профиля с параметром
                 window.location.href = `/profile/profile.html?id=${userId}`;
@@ -753,7 +753,7 @@ function initializePostHandlers() {
             return;
         }
 
-        // Проверяем, является ли фа��л изображением
+        // Проверяем, является ли файл изображением
         if (file.type.startsWith('image/')) {
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -855,7 +855,7 @@ async function createPost() {
         }
         
         if (data.success) {
-            // Очищаем ф��рму
+            // Очищаем фрму
             document.getElementById('post-content').value = '';
             document.getElementById('image-preview').innerHTML = '';
             document.getElementById('post-form').style.display = 'none';
@@ -1175,18 +1175,37 @@ function getFileIcon(extension) {
 }
 
 // Функция для скачивания файла
-function downloadFile(fileUrl) {
-    // Получаем имя файла из URL
-    const filename = fileUrl.split('/').pop();
-    const folder = fileUrl.split('/')[2]; // posts, messages, etc.
+async function downloadFile(fileUrl) {
+    try {
+        // Получаем имя файла из URL
+        const filename = fileUrl.split('/').pop();
+        const folder = fileUrl.split('/')[2]; // posts, messages, etc.
 
-    // Создаём временную ссылку
-    const link = document.createElement('a');
-    link.href = `/api/download/${folder}/${filename}`;
-    link.setAttribute('download', filename); // Важно для принудительного скачивания
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+        // Делаем запрос к API для скачивания
+        const response = await fetch(`/api/download/${folder}/${filename}`);
+        
+        if (!response.ok) throw new Error('Download failed');
+
+        // Получаем blob из ответа
+        const blob = await response.blob();
+        
+        // Создаем ссылку для скачивания
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        
+        // Добавляем ссылку в DOM и эмулируем клик
+        document.body.appendChild(link);
+        link.click();
+        
+        // Очищаем
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(link);
+    } catch (err) {
+        console.error('Error downloading file:', err);
+        alert('Ошибка при скачивании файла');
+    }
 }
 
 // Обновляем отображение файла в посте
