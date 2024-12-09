@@ -95,7 +95,7 @@ function getLastActivityTime(timestamp) {
     const now = new Date();
     const diff = now - lastActivity;
     
-    if (diff < 60000) return 'был(а) только что';
+    if (diff < 60000) return 'был(а) т��лько что';
     if (diff < 3600000) return `был(а) ${Math.floor(diff/60000)} мн. назад`;
     if (diff < 86400000) return `был(а) ${Math.floor(diff/3600000)} ч. назад`;
     return 'был(а) давно';
@@ -153,9 +153,15 @@ async function openChat(friend) {
         return;
     }
 
+    const friendId = parseInt(friend.id); // Преобразуем ID в число
+    if (isNaN(friendId)) {
+        console.error('Invalid friend ID:', friend.id);
+        return;
+    }
+
     try {
-        // Получаем информацию о друге, используя числовой ID
-        const response = await fetch(`https://adminflow.ru:5003/api/users/${friend.id}`);
+        // Получаем информацию о друге
+        const response = await fetch(`https://adminflow.ru:5003/api/users/${friendId}`);
         const data = await response.json();
 
         if (data.success) {
@@ -166,16 +172,16 @@ async function openChat(friend) {
                 el.classList.remove('active');
             });
             
-            const chatPartnerElement = document.querySelector(`.chat-partner[data-friend-id="${friend.id}"]`);
+            const chatPartnerElement = document.querySelector(`.chat-partner[data-friend-id="${friendId}"]`);
             if (chatPartnerElement) {
                 chatPartnerElement.classList.add('active');
             }
 
             // Загружаем сообщения
-            await loadMessages(friend.id);
+            await loadMessages(friendId);
             
             // Помечаем сообщения как прочитанные
-            await markMessagesAsRead(friend.id);
+            await markMessagesAsRead(friendId);
             
             // Включаем обновление сообщений
             startMessageUpdates();
@@ -308,7 +314,7 @@ function createMessageElement(message) {
     messageText.textContent = message.message;
     messageContent.appendChild(messageText);
 
-    // Информация о сообщении (время и статус)
+    // Информация о сообщении (вр��мя и статус)
     const messageInfo = document.createElement('div');
     messageInfo.className = 'message-info';
 
@@ -458,7 +464,7 @@ async function markMessagesAsRead(friendId) {
             // Обновляем счетчик только если успешно обновили статус
             await updateUnreadCount(friendId);
         } else {
-            console.error('Ошибка при обновлении статуса сообщений:', data.error);
+            console.error('Ошибка при об��овлении статуса сообщений:', data.error);
         }
     } catch (err) {
         console.error('Error marking messages as read:', err);
@@ -550,7 +556,7 @@ async function loadMessages(friendId) {
     }
 }
 
-// Функция прокрутк�� чата вниз
+// Функция прокрутки чата вниз
 function scrollToBottom() {
     const messagesContainer = document.getElementById('messages');
     // Используем плавную прокрутку
@@ -811,4 +817,20 @@ function startUnreadCountUpdates() {
     }, 5000); // Обновляем каждые 5 секунд
 
     return updateInterval;
+}
+
+function startMessageUpdates() {
+    if (messageUpdateInterval) {
+        clearInterval(messageUpdateInterval);
+    }
+    
+    // Немедленно загружаем сообщения
+    loadChatHistory();
+    
+    // Устанавливаем интервал обновления
+    messageUpdateInterval = setInterval(() => {
+        if (currentChatPartner) {
+            loadChatHistory();
+        }
+    }, 3000); // Обновление каждые 3 секунды
 } 
