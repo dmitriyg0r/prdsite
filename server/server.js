@@ -6,6 +6,7 @@ const https = require('https');
 const fs = require('fs');
 const multer = require('multer');
 const path = require('path');
+const nodemailer = require('nodemailer');
 
 const app = express();
 const PORT = 5003;
@@ -48,47 +49,35 @@ app.get('/api/test', async (req, res) => {
 app.post('/api/login', async (req, res) => {
     try {
         const { username, password } = req.body;
-        
-        // Поиск пользователя
-        const userResult = await pool.query(
-            'SELECT * FROM users WHERE username = $1',
-            [username]
-        );
 
-        if (userResult.rows.length === 0) {
-            return res.status(401).json({ error: 'Пользователь не найден' });
+        // Изменяем запрос, используя правильное имя колонки password_hash
+        const result = await pool.query(`
+            SELECT id, username, password_hash, role, avatar_url, email, created_at, last_login 
+            FROM users 
+            WHERE username = $1
+        `, [username]);
+
+        if (result.rows.length === 0) {
+            return res.status(401).json({ error: 'Неверное имя пользователя или пароль' });
         }
 
-        const user = userResult.rows[0];
-
-        // Проверка пароля
+        const user = result.rows[0];
         const validPassword = await bcrypt.compare(password, user.password_hash);
 
         if (!validPassword) {
-            return res.status(401).json({ error: 'Неверный пароль' });
+            return res.status(401).json({ error: 'Неверное имя пользователя или пароль' });
         }
 
-        try {
-            // Обновляем время последнего входа и статус
-            await pool.query(
-                'UPDATE users SET last_login = CURRENT_TIMESTAMP, is_online = true, last_activity = CURRENT_TIMESTAMP WHERE id = $1',
-                [user.id]
-            );
-        } catch (updateErr) {
-            console.error('Error updating user status:', updateErr);
-        }
+        // Обновляем last_login
+        await pool.query(`
+            UPDATE users 
+            SET last_login = NOW() 
+            WHERE id = $1
+        `, [user.id]);
 
-        // Отправляем успешный ответ с добавленным avatar_url
-        res.json({
-            success: true,
-            user: {
-                id: user.id,
-                username: user.username,
-                role: user.role,
-                created_at: user.created_at,
-                avatar_url: user.avatar_url || '/uploads/avatars/default.png' // Добавляем URL аватарки
-            }
-        });
+        // Отправляем данные пользователя, исключая хеш пароля
+        const { password_hash: _, ...userWithoutPassword } = user;
+        res.json({ user: userWithoutPassword });
 
     } catch (err) {
         console.error('Login error:', err);
@@ -222,7 +211,7 @@ const storage = multer.diskStorage({
         cb(null, uploadPath);
     },
     filename: function (req, file, cb) {
-        // Определяем префикс на основе типа загрузки
+        // Определяем префикс н основе типа загрузки
         let prefix = 'post-';
         if (req.path.includes('avatar')) {
             prefix = 'avatar-';
@@ -267,7 +256,7 @@ const upload = multer({
     }
 });
 
-// Обновляем роуты для загрузки файлов
+// Обновляем руты для загрузки файлов
 app.post('/api/upload-avatar', upload.single('avatar'), (req, res) => {
     try {
         if (!req.file) {
@@ -607,7 +596,7 @@ app.post('/api/messages/read', async (req, res) => {
     }
 });
 
-// Получение п��следнего сообщения с пользователем
+// Получение последнего сообщ��ния с пользователем
 app.get('/api/messages/last/:userId/:friendId', async (req, res) => {
     try {
         const { userId, friendId } = req.params;
@@ -795,6 +784,114 @@ messageStorage.filename = function (req, file, cb) {
     cb(null, filename);
 };
 
+// Получение информации о пользователе
+app.get('/api/users/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        const result = await pool.query(`
+            SELECT id, username, role, created_at, last_login, avatar_url, email
+            FROM users 
+            WHERE id = $1
+        `, [id]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Пользователь не найден' });
+        }
+
+        res.json({ 
+            success: true,
+            user: result.rows[0]
+        });
+    } catch (err) {
+        console.error('Get user error:', err);
+        res.status(500).json({ error: 'Ошибка при получении данных пользователя' });
+    }
+});
+
+// Обновление профиля пользователя
+app.post('/api/users/update-profile', async (req, res) => {
+    try {
+        const { userId, username, email } = req.body;
+
+        // Проверяем, не занят ли email другим пользователем
+        if (email) {
+            const emailCheck = await pool.query(
+                'SELECT id FROM users WHERE email = $1 AND id != $2',
+                [email, userId]
+            );
+            if (emailCheck.rows.length > 0) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Этот email уже используется другим пользователем'
+                });
+            }
+        }
+
+        // Проверяем, не занято ли имя пользователя
+        if (username) {
+            const usernameCheck = await pool.query(
+                'SELECT id FROM users WHERE username = $1 AND id != $2',
+                [username, userId]
+            );
+            if (usernameCheck.rows.length > 0) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Это имя пользователя уже занято'
+                });
+            }
+        }
+
+        // Формируем запрос на обновление
+        let query = 'UPDATE users SET ';
+        const updates = [];
+        const values = [];
+        let paramCount = 1;
+
+        if (username) {
+            updates.push(`username = $${paramCount}`);
+            values.push(username);
+            paramCount++;
+        }
+
+        if (email) {
+            updates.push(`email = $${paramCount}`);
+            values.push(email);
+            paramCount++;
+        }
+
+        if (updates.length === 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'Нет данных для обновления'
+            });
+        }
+
+        query += updates.join(', ');
+        query += ` WHERE id = $${paramCount}`;
+        values.push(userId);
+
+        await pool.query(query, values);
+
+        // Получаем обновленные данные пользователя
+        const result = await pool.query(
+            'SELECT id, username, email, role, created_at, last_login, avatar_url FROM users WHERE id = $1',
+            [userId]
+        );
+
+        res.json({
+            success: true,
+            user: result.rows[0]
+        });
+    } catch (err) {
+        console.error('Update profile error:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при обновлении профиля'
+        });
+    }
+});
+
 // Обновляем эндпоинт отправки сообщения с файлом
 app.post('/api/messages/send-with-file', messageUpload.single('file'), async (req, res) => {
     try {
@@ -846,7 +943,7 @@ const checkAdmin = async (req, res, next) => {
         if (userResult.rows.length === 0 || userResult.rows[0].role !== 'admin') {
             return res.status(403).json({ 
                 success: false,
-                error: 'Доступ запрещен' 
+                error: 'Доступ запр��щен' 
             });
         }
 
@@ -1009,31 +1106,6 @@ app.get('/api/admin/charts', checkAdmin, async (req, res) => {
     }
 });
 
-// Получение информации о пользователе
-app.get('/api/users/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        
-        const result = await pool.query(`
-            SELECT id, username, role, created_at, last_login, avatar_url
-            FROM users 
-            WHERE id = $1
-        `, [id]);
-
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Пользователь не найден' });
-        }
-
-        res.json({ 
-            success: true,
-            user: result.rows[0]
-        });
-    } catch (err) {
-        console.error('Get user error:', err);
-        res.status(500).json({ error: 'Ошибка при получении данных пользователя' });
-    }
-});
-
 // Настройка хранилища для файлов постов
 const postStorage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -1113,7 +1185,7 @@ app.post('/api/posts/create', uploadPost.single('image'), async (req, res) => {
 app.get('/api/posts/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
-        const currentUserId = req.query.currentUserId; // Д��бавляем параметр текущего пользователя
+        const currentUserId = req.query.currentUserId; // Дбавляем параметр текущего пользователя
 
         const result = await pool.query(`
             SELECT 
@@ -1185,7 +1257,7 @@ app.post('/api/posts/like', async (req, res) => {
         });
     } catch (err) {
         console.error('Error toggling like:', err);
-        res.status(500).json({ error: 'Оши��ка при обработке лайка' });
+        res.status(500).json({ error: 'Ошибка при обработке лайка' });
     }
 });
 
@@ -1534,6 +1606,196 @@ app.post('/api/messages/mark-as-read', async (req, res) => {
         res.status(500).json({ 
             success: false, 
             error: 'Error marking messages as read' 
+        });
+    }
+});
+
+// Проверка доступности email
+app.get('/api/users/check-email', async (req, res) => {
+    try {
+        const { email, userId } = req.query;
+
+        const query = userId 
+            ? 'SELECT id FROM users WHERE email = $1 AND id != $2'
+            : 'SELECT id FROM users WHERE email = $1';
+        
+        const values = userId ? [email, userId] : [email];
+        
+        const result = await pool.query(query, values);
+
+        res.json({
+            success: true,
+            available: result.rows.length === 0
+        });
+    } catch (err) {
+        console.error('Check email error:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при проверке email'
+        });
+    }
+});
+
+// Создаем транспорт для отправки почты
+const transporter = nodemailer.createTransport({
+    host: 'smtp.timeweb.ru',
+    port: 2525,        // Альтернативный порт для SMTP
+    secure: false,     // Для порта 2525 используем false
+    auth: {
+        user: 'adminflow@adminflow.ru',
+        pass: 'Gg3985502'
+    },
+    tls: {
+        rejectUnauthorized: false // В случае проблем с сертификатом
+    },
+    connectionTimeout: 30000,
+    debug: true,
+    logger: true
+});
+
+// Проверяем соединение при запуске сервера
+transporter.verify(function(error, success) {
+    if (error) {
+        console.error('Ошибка подключения к SMTP:', error);
+        console.log('Детали ошибки:', {
+            host: transporter.options.host,
+            port: transporter.options.port,
+            error: error.message
+        });
+    } else {
+        console.log('SMTP сервер готов к отправке сообщений');
+    }
+});
+
+// Альтернативная конфигурация с TLS
+const alternativeTransporter = nodemailer.createTransport({
+    host: 'smtp.timeweb.ru',
+    port: 587,              // Альтернативный порт
+    secure: false,          // Для порта 587
+    requireTLS: true,       // Требуем TLS
+    auth: {
+        user: 'adminflow@adminflow.ru',
+        pass: 'ваш_пароль'
+    },
+    tls: {
+        rejectUnauthorized: false // В случае проблем с сертификатом
+    }
+});
+
+// Проверяем альтернативное соединение
+alternativeTransporter.verify(function(error, success) {
+    if (error) {
+        console.error('Ошибка подключения к альтернативному SMTP:', error);
+    } else {
+        console.log('Альтернативный SMTP сервер готов к отправке сообщений');
+        // Если альтернативное соединение работает, используем его
+        transporter = alternativeTransporter;
+    }
+});
+
+// Функция для генерации кода подтверждения
+function generateVerificationCode() {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+// Эндпоинт для отправки кода подтверждения
+app.post('/api/send-verification-code', async (req, res) => {
+    try {
+        const { userId, email } = req.body;
+
+        if (!userId || !email) {
+            return res.status(400).json({
+                success: false,
+                error: 'Отсутствуют необходимые данные'
+            });
+        }
+
+        // Генерируем код
+        const verificationCode = generateVerificationCode();
+
+        // Сохраняем код в базу данных с временем жизни
+        await pool.query(`
+            INSERT INTO verification_codes (user_id, code, expires_at)
+            VALUES ($1, $2, NOW() + INTERVAL '5 minutes')
+            ON CONFLICT (user_id) 
+            DO UPDATE SET 
+                code = EXCLUDED.code,
+                expires_at = EXCLUDED.expires_at,
+                created_at = NOW()
+        `, [userId, verificationCode]);
+
+        // Отправляем email
+        await transporter.sendMail({
+            from: '"AdminFlow" <adminflow@adminflow.ru>',
+            to: email,
+            subject: 'Код подтверждения AdminFlow',
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h2 style="color: #333;">Код подтверждения</h2>
+                    <p>Ваш код подтверждения для смены пароля:</p>
+                    <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; text-align: center; font-size: 24px; letter-spacing: 5px;">
+                        <strong>${verificationCode}</strong>
+                    </div>
+                    <p style="color: #666; font-size: 14px; margin-top: 20px;">
+                        Код действителен в течение 5 минут.<br>
+                        Если вы не запрашивали код подтверждения, проигнорируйте это письмо.
+                    </p>
+                </div>
+            `
+        });
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Error sending verification code:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при отправке кода подтверждения'
+        });
+    }
+});
+
+// Эндпоинт для проверки кода и смены пароля
+app.post('/api/change-password', async (req, res) => {
+    try {
+        const { userId, code, newPassword } = req.body;
+
+        // Проверяем код
+        const result = await pool.query(`
+            SELECT * FROM verification_codes 
+            WHERE user_id = $1 
+            AND code = $2 
+            AND expires_at > NOW()
+        `, [userId, code]);
+
+        if (result.rows.length === 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'Неверный или устаревший код подтверждения'
+            });
+        }
+
+        // Хешируем новый пароль
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        // Обновляем пароль
+        await pool.query(`
+            UPDATE users 
+            SET password = $1 
+            WHERE id = $2
+        `, [hashedPassword, userId]);
+
+        // Удаляем использованный код
+        await pool.query(`
+            DELETE FROM verification_codes 
+            WHERE user_id = $1
+        `, [userId]);
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Error changing password:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при смене пароля'
         });
     }
 });
