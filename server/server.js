@@ -330,7 +330,7 @@ app.get('/api/search-users', async (req, res) => {
         res.json({ users: result.rows });
     } catch (err) {
         console.error('Search error:', err);
-        res.status(500).json({ error: 'Ошибка при поиске пользователей' });
+        res.status(500).json({ error: 'Ошибка при поис��е пользователей' });
     }
 });
 
@@ -346,7 +346,7 @@ app.post('/api/friend-request', async (req, res) => {
         );
 
         if (existingRequest.rows.length > 0) {
-            return res.status(400).json({ error: 'Заявка уже существует' });
+            return res.status(400).json({ error: 'Зая��ка уже существует' });
         }
 
         // Создаем новую заявку
@@ -596,7 +596,7 @@ app.post('/api/messages/read', async (req, res) => {
     }
 });
 
-// Получение последнего сообщ��ния с пользователем
+// Получение последнего сообщения с пользователем
 app.get('/api/messages/last/:userId/:friendId', async (req, res) => {
     try {
         const { userId, friendId } = req.params;
@@ -665,7 +665,7 @@ app.get('/api/chat/search-users', async (req, res) => {
         res.json({ users: result.rows });
     } catch (err) {
         console.error('Chat search error:', err);
-        res.status(500).json({ error: 'Ошибка при поиске пользователей' });
+        res.status(500).json({ error: 'Ошибка при поис��е пользователей' });
     }
 });
 
@@ -943,7 +943,7 @@ const checkAdmin = async (req, res, next) => {
         if (userResult.rows.length === 0 || userResult.rows[0].role !== 'admin') {
             return res.status(403).json({ 
                 success: false,
-                error: 'Доступ запр��щен' 
+                error: 'Доступ запрещен' 
             });
         }
 
@@ -1040,7 +1040,7 @@ app.post('/api/admin/role', checkAdmin, async (req, res) => {
             });
         }
 
-        // Обновляем роль в базе данных
+        // Обновляем роль в базе д��нных
         await pool.query(
             'UPDATE users SET role = $1 WHERE id = $2',
             [role, userId]
@@ -1156,7 +1156,7 @@ const uploadPost = multer({
             return cb(null, true);
         }
 
-        cb(new Error('Неподдерживаемый тип файла. Разрешены: изображения, PDF, Word, Excel, ODT и текстовые файлы'));
+        cb(new Error('Неподдерживаемый тип файла. Разрешены: изображения, PDF, Word, Excel, ODT и текстов��е файлы'));
     }
 });
 
@@ -1519,7 +1519,7 @@ app.post('/api/messages/typing', async (req, res) => {
     try {
         const { userId, friendId, isTyping } = req.body;
         
-        // Сохраняем статус в Redis или другом быстром хранилище
+        // Сохраняем статус в Redis или другом б��стром хранилище
         // Здесь используем глобальную переменную для примера
         global.typingStatus = global.typingStatus || {};
         global.typingStatus[`${userId}-${friendId}`] = {
@@ -1537,7 +1537,7 @@ app.post('/api/messages/typing', async (req, res) => {
 app.delete('/api/messages/delete/:messageId', async (req, res) => {
     try {
         const { messageId } = req.params;
-        const { userId } = req.body; // ID текущего пользователя
+        const { userId, attachmentUrl } = req.body;
 
         // Проверяем, является ли пользователь отправителем сообщения
         const message = await pool.query(
@@ -1549,7 +1549,25 @@ app.delete('/api/messages/delete/:messageId', async (req, res) => {
             return res.status(403).json({ error: 'У вас нет прав на удаление этого сообщения' });
         }
 
-        // Удаляем сообщение
+        // Если есть вложение, удаляем файл
+        if (attachmentUrl) {
+            try {
+                // Извлекаем путь к файлу из URL
+                const fileUrl = new URL(attachmentUrl);
+                const filePath = path.join(UPLOAD_PATH, 'messages', path.basename(fileUrl.pathname));
+                
+                // Проверяем существование файла и удаляем его
+                if (fs.existsSync(filePath)) {
+                    fs.unlinkSync(filePath);
+                    console.log('Файл успешно удален:', filePath);
+                }
+            } catch (fileError) {
+                console.error('Ошибка при удалении файла:', fileError);
+                // Продолжаем удаление сообщения даже если не удалось удалить файл
+            }
+        }
+
+        // Удаляем сообщение из базы данных
         await pool.query('DELETE FROM messages WHERE id = $1', [messageId]);
 
         res.json({ success: true });
@@ -1671,7 +1689,7 @@ transporter.verify(function(error, success) {
 const alternativeTransporter = nodemailer.createTransport({
     host: 'smtp.timeweb.ru',
     port: 587,              // Альтернативный порт
-    secure: false,          // Для порта 587
+    secure: false,          // Для порт�� 587
     requireTLS: true,       // Требуем TLS
     auth: {
         user: 'adminflow@adminflow.ru',

@@ -378,7 +378,7 @@ function createAttachmentElement(attachmentUrl) {
     // Удаляем возможные двойные слеши
     fullUrl = fullUrl.replace(/([^:]\/)\/+/g, '$1');
 
-    console.log('Обработанный URL вложения:', fullUrl); // Для отладки
+    console.log('О��работанный URL вложения:', fullUrl); // Для отладки
 
     if (isImageFile(attachmentUrl)) {
         const img = document.createElement('img');
@@ -451,11 +451,11 @@ async function sendMessage() {
             scrollToBottom();
         } else {
             console.error('Ошибка при отправке сообщения:', data.error);
-            alert('Ошибка при отправке сообщения');
+            alert('Ошибка при отправке с��общения');
         }
     } catch (error) {
         console.error('Ошибка при отправке сообщения:', error);
-        alert('Ошибка при отправке сообщени��');
+        alert('Ошибка при отправке сообщений');
     }
 }
 
@@ -758,26 +758,41 @@ async function deleteMessage(messageId) {
     }
 
     try {
+        // Находим сообщение в DOM до его удаления
+        const messageElement = document.querySelector(`.message[data-message-id="${messageId}"]`);
+        if (!messageElement) {
+            console.error('Сообщение не найдено в DOM');
+            return;
+        }
+
+        // Проверяем, есть ли вложение
+        const attachmentElement = messageElement.querySelector('.message-attachment');
+        let attachmentUrl = null;
+        if (attachmentElement) {
+            const imgElement = attachmentElement.querySelector('img');
+            const fileLink = attachmentElement.querySelector('.file-name');
+            attachmentUrl = imgElement ? imgElement.src : (fileLink ? fileLink.href : null);
+        }
+
         const response = await fetch(`https://adminflow.ru:5003/api/messages/delete/${messageId}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ userId: currentUser.id })
+            body: JSON.stringify({ 
+                userId: currentUser.id,
+                attachmentUrl: attachmentUrl // Передаем URL вложения, если оно есть
+            })
         });
 
         const data = await response.json();
         
         if (data.success) {
-            // Находим и удаляем сообщение из DOM
-            const messageElement = document.querySelector(`.message[data-message-id="${messageId}"]`);
-            if (messageElement) {
-                // Добавляем анимацию удаления
-                messageElement.style.animation = 'fadeOut 0.3s ease-out';
-                messageElement.addEventListener('animationend', () => {
-                    messageElement.remove();
-                });
-            }
+            // Добавляем анимацию удаления
+            messageElement.style.animation = 'fadeOut 0.3s ease-out';
+            messageElement.addEventListener('animationend', () => {
+                messageElement.remove();
+            });
         } else {
             console.error('Ошибка при удалении сообщения:', data.error);
             alert(data.error || 'Не удалось удалить сообщение');
