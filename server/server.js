@@ -341,7 +341,7 @@ app.get('/api/search-users', async (req, res) => {
         res.json({ users: result.rows });
     } catch (err) {
         console.error('Search error:', err);
-        res.status(500).json({ error: 'Ошибка при поиске пользователей' });
+        res.status(500).json({ error: 'Ошибка п��и поиске пользователей' });
     }
 });
 
@@ -498,27 +498,61 @@ const messageUpload = multer({
 });
 
 // Эндпоинт для отправки сообщения с файлом
-app.post('/api/messages/send-with-file', messageUpload.single('file'), async (req, res) => {
+app.post('/api/messages/send-with-file', upload.single('file'), async (req, res) => {
     try {
-        const { senderId, receiverId, message, replyTo } = req.body;
-        let attachmentUrl = null;
-
-        if (req.file) {
-            attachmentUrl = req.file.fileUrl;
+        const { senderId, receiverId, message, replyToMessageId } = req.body;
+        const file = req.file;
+        
+        let replyToMessage = null;
+        if (replyToMessageId) {
+            // Получаем информацию о сообщении, на которое отвечают
+            const replyResult = await pool.query(
+                `SELECT m.*, u.username as sender_username 
+                 FROM messages m 
+                 JOIN users u ON m.sender_id = u.id 
+                 WHERE m.id = $1`,
+                [replyToMessageId]
+            );
+            if (replyResult.rows.length > 0) {
+                replyToMessage = replyResult.rows[0];
+            }
         }
 
+        // Создаем новое сообщение
         const result = await pool.query(
-            'INSERT INTO messages (sender_id, receiver_id, message, attachment_url, reply_to) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-            [senderId, receiverId, message, attachmentUrl, replyTo]
+            `INSERT INTO messages 
+            (sender_id, receiver_id, message, file_path, reply_to_id) 
+            VALUES ($1, $2, $3, $4, $5) 
+            RETURNING id, created_at`,
+            [senderId, receiverId, message, file?.filename, replyToMessageId]
         );
 
-        res.json({ 
-            success: true, 
-            message: result.rows[0] 
+        // Получаем полную информацию о созданном сообщении
+        const newMessageResult = await pool.query(
+            `SELECT m.*, u.username as sender_username,
+            (SELECT json_build_object(
+                'id', rm.id,
+                'message', rm.message,
+                'sender_id', rm.sender_id,
+                'sender_username', ru.username
+            )
+            FROM messages rm
+            JOIN users ru ON rm.sender_id = ru.id
+            WHERE rm.id = m.reply_to_id) as reply_to_message
+            FROM messages m
+            JOIN users u ON m.sender_id = u.id
+            WHERE m.id = $1`,
+            [result.rows[0].id]
+        );
+
+        res.json({
+            success: true,
+            message: newMessageResult.rows[0]
         });
+
     } catch (err) {
-        console.error('Error sending message with file:', err);
-        res.status(500).json({ error: 'Ошибка при отправке сообщения с файлом' });
+        console.error('Error sending message:', err);
+        res.status(500).json({ error: 'Error sending message' });
     }
 });
 
@@ -527,31 +561,32 @@ app.get('/api/messages/history/:userId/:friendId', async (req, res) => {
     try {
         const { userId, friendId } = req.params;
 
-        const messages = await pool.query(`
-            SELECT m.*, 
-                   u_sender.username as sender_username,
-                   u_sender.avatar_url as sender_avatar,
-                   u_receiver.username as receiver_username,
-                   u_receiver.avatar_url as receiver_avatar,
-                   CASE WHEN m.reply_to IS NOT NULL THEN 
-                       (SELECT json_build_object(
-                           'id', id, 
-                           'message', message, 
-                           'sender_id', sender_id
-                       ) FROM messages WHERE id = m.reply_to)
-                   END as reply_data
+        const result = await pool.query(
+            `SELECT m.*, u.username as sender_username,
+            (SELECT json_build_object(
+                'id', rm.id,
+                'message', rm.message,
+                'sender_id', rm.sender_id,
+                'sender_username', ru.username
+            )
+            FROM messages rm
+            JOIN users ru ON rm.sender_id = ru.id
+            WHERE rm.id = m.reply_to_id) as reply_to_message
             FROM messages m
-            JOIN users u_sender ON m.sender_id = u_sender.id
-            JOIN users u_receiver ON m.receiver_id = u_receiver.id
+            JOIN users u ON m.sender_id = u.id
             WHERE (m.sender_id = $1 AND m.receiver_id = $2)
-               OR (m.sender_id = $2 AND m.receiver_id = $1)
-            ORDER BY m.created_at ASC
-        `, [userId, friendId]);
+            OR (m.sender_id = $2 AND m.receiver_id = $1)
+            ORDER BY m.created_at ASC`,
+            [userId, friendId]
+        );
 
-        res.json({ success: true, messages: messages.rows });
+        res.json({
+            success: true,
+            messages: result.rows
+        });
     } catch (err) {
-        console.error('Error getting message history:', err);
-        res.status(500).json({ error: 'Ошибка при получении истории сообщений' });
+        console.error('Error loading messages:', err);
+        res.status(500).json({ error: 'Error loading messages' });
     }
 });
 
@@ -800,7 +835,7 @@ const checkAdmin = async (req, res, next) => {
         if (!adminId) {
             return res.status(401).json({ 
                 success: false,
-                error: 'Требуется авторизация' 
+                error: 'Требуется авторизац��я' 
             });
         }
 
@@ -1073,7 +1108,7 @@ app.post('/api/posts/create', uploadPost.single('image'), async (req, res) => {
         });
     } catch (err) {
         console.error('Error creating post:', err);
-        res.status(500).json({ error: 'Оши��ка при создании поста' });
+        res.status(500).json({ error: 'Ошибка при создании поста' });
     }
 });
 
