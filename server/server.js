@@ -341,7 +341,7 @@ app.get('/api/search-users', async (req, res) => {
         res.json({ users: result.rows });
     } catch (err) {
         console.error('Search error:', err);
-        res.status(500).json({ error: 'Ошибка п��и поиске пользователей' });
+        res.status(500).json({ error: 'Ошибка при поиске пользователей' });
     }
 });
 
@@ -503,25 +503,10 @@ app.post('/api/messages/send-with-file', upload.single('file'), async (req, res)
         const { senderId, receiverId, message, replyToMessageId } = req.body;
         const file = req.file;
         
-        let replyToMessage = null;
-        if (replyToMessageId) {
-            // Получаем информацию о сообщении, на которое отвечают
-            const replyResult = await pool.query(
-                `SELECT m.*, u.username as sender_username 
-                 FROM messages m 
-                 JOIN users u ON m.sender_id = u.id 
-                 WHERE m.id = $1`,
-                [replyToMessageId]
-            );
-            if (replyResult.rows.length > 0) {
-                replyToMessage = replyResult.rows[0];
-            }
-        }
-
-        // Создаем новое сообщение
+        // Создаем новое сообщение с правильными именами колонок
         const result = await pool.query(
             `INSERT INTO messages 
-            (sender_id, receiver_id, message, file_path, reply_to_id) 
+            (sender_id, receiver_id, message, attachment_url, reply_to) 
             VALUES ($1, $2, $3, $4, $5) 
             RETURNING id, created_at`,
             [senderId, receiverId, message, file?.filename, replyToMessageId]
@@ -529,16 +514,18 @@ app.post('/api/messages/send-with-file', upload.single('file'), async (req, res)
 
         // Получаем полную информацию о созданном сообщении
         const newMessageResult = await pool.query(
-            `SELECT m.*, u.username as sender_username,
-            (SELECT json_build_object(
-                'id', rm.id,
-                'message', rm.message,
-                'sender_id', rm.sender_id,
-                'sender_username', ru.username
-            )
-            FROM messages rm
-            JOIN users ru ON rm.sender_id = ru.id
-            WHERE rm.id = m.reply_to_id) as reply_to_message
+            `SELECT 
+                m.*,
+                u.username as sender_username,
+                (SELECT json_build_object(
+                    'id', rm.id,
+                    'message', rm.message,
+                    'sender_id', rm.sender_id,
+                    'sender_username', ru.username
+                )
+                FROM messages rm
+                JOIN users ru ON rm.sender_id = ru.id
+                WHERE rm.id = m.reply_to) as reply_to_message
             FROM messages m
             JOIN users u ON m.sender_id = u.id
             WHERE m.id = $1`,
@@ -552,30 +539,36 @@ app.post('/api/messages/send-with-file', upload.single('file'), async (req, res)
 
     } catch (err) {
         console.error('Error sending message:', err);
-        res.status(500).json({ error: 'Error sending message' });
+        res.status(500).json({ 
+            success: false,
+            error: 'Error sending message',
+            details: err.message 
+        });
     }
 });
 
-// Получение истории сообщений с пользователем
+// Обновляем endpoint для загрузки истории сообщений
 app.get('/api/messages/history/:userId/:friendId', async (req, res) => {
     try {
         const { userId, friendId } = req.params;
 
         const result = await pool.query(
-            `SELECT m.*, u.username as sender_username,
-            (SELECT json_build_object(
-                'id', rm.id,
-                'message', rm.message,
-                'sender_id', rm.sender_id,
-                'sender_username', ru.username
-            )
-            FROM messages rm
-            JOIN users ru ON rm.sender_id = ru.id
-            WHERE rm.id = m.reply_to_id) as reply_to_message
+            `SELECT 
+                m.*,
+                u.username as sender_username,
+                (SELECT json_build_object(
+                    'id', rm.id,
+                    'message', rm.message,
+                    'sender_id', rm.sender_id,
+                    'sender_username', ru.username
+                )
+                FROM messages rm
+                JOIN users ru ON rm.sender_id = ru.id
+                WHERE rm.id = m.reply_to) as reply_to_message
             FROM messages m
             JOIN users u ON m.sender_id = u.id
             WHERE (m.sender_id = $1 AND m.receiver_id = $2)
-            OR (m.sender_id = $2 AND m.receiver_id = $1)
+                OR (m.sender_id = $2 AND m.receiver_id = $1)
             ORDER BY m.created_at ASC`,
             [userId, friendId]
         );
@@ -586,7 +579,11 @@ app.get('/api/messages/history/:userId/:friendId', async (req, res) => {
         });
     } catch (err) {
         console.error('Error loading messages:', err);
-        res.status(500).json({ error: 'Error loading messages' });
+        res.status(500).json({ 
+            success: false,
+            error: 'Error loading messages',
+            details: err.message 
+        });
     }
 });
 
@@ -835,7 +832,7 @@ const checkAdmin = async (req, res, next) => {
         if (!adminId) {
             return res.status(401).json({ 
                 success: false,
-                error: 'Требуется авторизац��я' 
+                error: 'Требуется авторизация' 
             });
         }
 
@@ -1058,7 +1055,7 @@ const uploadPost = multer({
         fileSize: 10 * 1024 * 1024 // 10MB макс размер
     },
     fileFilter: (req, file, cb) => {
-        // Разрешенные типы файлов
+        // Разрешенные тип�� файлов
         const allowedTypes = {
             // Изображения
             'image/jpeg': true,
@@ -1445,7 +1442,7 @@ app.post('/api/posts/comment', async (req, res) => {
     }
 });
 
-// Обработка статуса набора текста
+// Обработка ста��уса набора текста
 app.post('/api/messages/typing', async (req, res) => {
     try {
         const { userId, friendId, isTyping } = req.body;
