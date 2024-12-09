@@ -330,7 +330,7 @@ app.get('/api/search-users', async (req, res) => {
         res.json({ users: result.rows });
     } catch (err) {
         console.error('Search error:', err);
-        res.status(500).json({ error: 'Ошибка при поиске пользователей' });
+        res.status(500).json({ error: 'Ошибка при поис��е пользователей' });
     }
 });
 
@@ -346,7 +346,7 @@ app.post('/api/friend-request', async (req, res) => {
         );
 
         if (existingRequest.rows.length > 0) {
-            return res.status(400).json({ error: 'Заявка уже существует' });
+            return res.status(400).json({ error: '��аявка уже существует' });
         }
 
         // Создаем новую заявку
@@ -748,7 +748,7 @@ app.use('/uploads/posts', express.static('/var/www/html/uploads/posts'));
 app.use('/uploads/avatars', express.static('/var/www/html/uploads/avatars'));
 app.use('/uploads/messages', express.static('/var/www/html/uploads/messages'));
 
-// Добавляем обработку ош��бок для статических файлов
+// Добавляем обработку ошибок для статических файлов
 app.use('/uploads', (err, req, res, next) => {
     if (err) {
         console.error('Static file error:', err);
@@ -1129,7 +1129,7 @@ const uploadPost = multer({
     fileFilter: (req, file, cb) => {
         // Разрешенные тип файлов
         const allowedTypes = {
-            // Изображе��ия
+            // Изображения
             'image/jpeg': true,
             'image/png': true,
             'image/gif': true,
@@ -1325,7 +1325,7 @@ app.get('/api/users/status/:userId', async (req, res) => {
         console.error('Error getting user status:', err);
         res.status(500).json({ 
             success: false, 
-            error: 'Ошибка при получении ст��туса пользователя' 
+            error: 'Ошибка при получении статуса пользователя' 
         });
     }
 });
@@ -1486,7 +1486,7 @@ app.post('/api/posts/comment', async (req, res) => {
             });
         }
 
-        // Соз��аем комментарий
+        // Создаем комментарий
         const result = await pool.query(
             'INSERT INTO posts (user_id, parent_id, type, content) VALUES ($1, $2, $3, $4) RETURNING *',
             [userId, postId, 'comment', content]
@@ -1520,7 +1520,7 @@ app.post('/api/messages/typing', async (req, res) => {
         const { userId, friendId, isTyping } = req.body;
         
         // Сохраняем статус в Redis или другом быстром хранилище
-        // Здесь используем глобальную переменную для примера
+        // Здесь испол��зуем глобальную переменную для примера
         global.typingStatus = global.typingStatus || {};
         global.typingStatus[`${userId}-${friendId}`] = {
             isTyping,
