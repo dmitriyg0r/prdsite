@@ -95,7 +95,7 @@ function getLastActivityTime(timestamp) {
     const now = new Date();
     const diff = now - lastActivity;
     
-    if (diff < 60000) return 'был(а) только что';
+    if (diff < 60000) return 'был(а) т��лько что';
     if (diff < 3600000) return `был(а) ${Math.floor(diff/60000)} мн. назад`;
     if (diff < 86400000) return `был(а) ${Math.floor(diff/3600000)} ч. назад`;
     return 'был(а) давно';
@@ -124,6 +124,11 @@ async function loadLastMessage(friendId) {
 }
 
 async function updateUnreadCount(friendId) {
+    if (!friendId) {
+        console.error('FriendId is undefined');
+        return;
+    }
+
     try {
         const response = await fetch(`https://adminflow.ru:5003/api/messages/unread/${currentUser.id}/${friendId}`);
         const data = await response.json();
@@ -142,49 +147,42 @@ async function updateUnreadCount(friendId) {
     }
 }
 
-async function openChat(friend) {
-    // Очищаем предыдущий чат и сбрасываем интервал
-    if (messageUpdateInterval) {
-        clearInterval(messageUpdateInterval);
-        messageUpdateInterval = null;
+async function openChat(friendId) {
+    if (!friendId) {
+        console.error('FriendId is undefined');
+        return;
     }
-    
-    const messagesContainer = document.getElementById('messages');
-    messagesContainer.innerHTML = ''; // Очищаем контейнер сообщений
-    
-    currentChatPartner = friend;
-    
-    // Обновляем UI
-    document.querySelectorAll('.chat-partner').forEach(el => 
-        el.classList.remove('active')
-    );
-    document.querySelector(`[data-friend-id="${friend.id}"]`)?.classList.add('active');
 
-    // Показываем заголовок чата
-    const chatHeader = document.getElementById('chat-header');
-    const chatPlaceholder = document.getElementById('chat-placeholder');
-    
-    chatHeader.style.display = 'block';
-    chatPlaceholder.style.display = 'none';
-    
-    document.getElementById('chat-header-avatar').src = friend.avatar_url || '../uploads/avatars/default.png';
-    document.getElementById('chat-header-name').textContent = friend.username;
+    try {
+        // Получаем информацию о друге
+        const response = await fetch(`https://adminflow.ru:5003/api/users/${friendId}`);
+        const data = await response.json();
 
-    // Очищаем поле ввода и превью файла
-    const messageInput = document.getElementById('messageInput');
-    const fileInput = document.getElementById('fileInput');
-    messageInput.value = '';
-    fileInput.value = '';
-    removeFilePreview();
+        if (data.success) {
+            currentChatPartner = data.user;
+            
+            // Обновляем UI
+            document.querySelectorAll('.chat-partner').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            const chatPartnerElement = document.querySelector(`.chat-partner[data-friend-id="${friendId}"]`);
+            if (chatPartnerElement) {
+                chatPartnerElement.classList.add('active');
+            }
 
-    // Загружаем историю сообщений
-    await loadChatHistory();
-    
-    // Отмечаем сообщения как прочитанные
-    await markMessagesAsRead();
-
-    // Устанавливаем новый интервал обновления
-    messageUpdateInterval = setInterval(loadChatHistory, 1000);
+            // Загружаем сообщения
+            await loadMessages(friendId);
+            
+            // Помечаем сообщения как прочитанные
+            await markMessagesAsRead(friendId);
+            
+            // Включаем обновление сообщений
+            startMessageUpdates();
+        }
+    } catch (err) {
+        console.error('Error opening chat:', err);
+    }
 }
 
 async function loadChatHistory() {
@@ -437,23 +435,31 @@ async function sendMessage() {
     }
 }
 
-async function markMessagesAsRead() {
-    if (!currentChatPartner) return;
+async function markMessagesAsRead(friendId) {
+    if (!friendId) {
+        console.error('FriendId is undefined');
+        return;
+    }
 
     try {
-        await fetch('https://adminflow.ru:5003/api/messages/read', {
+        const response = await fetch(`https://adminflow.ru:5003/api/messages/mark-as-read`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 userId: currentUser.id,
-                friendId: currentChatPartner.id
+                friendId: friendId
             })
         });
 
-        // Обновлем сетчик непрочитанных сообщений
-        await updateUnreadCount(currentChatPartner.id);
+        const data = await response.json();
+        if (data.success) {
+            // Обновляем счетчик только если успешно обновили статус
+            await updateUnreadCount(friendId);
+        } else {
+            console.error('Ошибка при обновлении статуса сообщений:', data.error);
+        }
     } catch (err) {
         console.error('Error marking messages as read:', err);
     }
