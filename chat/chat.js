@@ -342,12 +342,20 @@ function createAttachmentElement(attachmentUrl) {
     const attachmentElement = document.createElement('div');
     attachmentElement.className = 'message-attachment';
     
-    // Проверяем, начинается ли URL с http
-    const fullUrl = attachmentUrl.startsWith('http') 
-        ? attachmentUrl 
-        : `https://adminflow.ru:5003/uploads/messages/${attachmentUrl}`;
+    // Очищаем и нормализуем путь к файлу
+    let fullUrl = attachmentUrl;
+    
+    // Убираем дублирование пути
+    if (attachmentUrl.includes('/uploads/messages')) {
+        fullUrl = `https://adminflow.ru:5003${attachmentUrl}`;
+    } else {
+        fullUrl = `https://adminflow.ru:5003/uploads/messages/${attachmentUrl}`;
+    }
+    
+    // Удаляем возможные двойные слеши
+    fullUrl = fullUrl.replace(/([^:]\/)\/+/g, '$1');
 
-    console.log('Attachment URL:', fullUrl); // Для отладки
+    console.log('Обработанный URL вложения:', fullUrl); // Для отладки
 
     if (isImageFile(attachmentUrl)) {
         const img = document.createElement('img');
@@ -356,6 +364,9 @@ function createAttachmentElement(attachmentUrl) {
         img.onerror = () => {
             console.error('Ошибка загрузки изображения:', fullUrl);
             img.src = '../uploads/avatars/default.png'; // Заглушка при ошибке
+        };
+        img.onload = () => {
+            console.log('Изображение успешно загружено:', fullUrl);
         };
         img.onclick = () => showImageModal(fullUrl);
         attachmentElement.appendChild(img);
@@ -393,7 +404,6 @@ async function sendMessage() {
         
         if (selectedFile) {
             formData.append('file', selectedFile);
-            console.log('Отправка файла:', selectedFile.name); // Для отладки
         }
 
         if (replyToMessageId) {
@@ -406,7 +416,6 @@ async function sendMessage() {
         });
 
         const data = await response.json();
-        console.log('Ответ сервера:', data); // Для отладки
         
         if (data.success) {
             messageInput.value = '';
@@ -414,7 +423,6 @@ async function sendMessage() {
             removeFilePreview();
             cancelReply();
             
-            // Добавляем новое сообщение в чат
             const messageElement = createMessageElement(data.message);
             document.getElementById('messages').appendChild(messageElement);
             scrollToBottom();
@@ -459,7 +467,7 @@ async function markMessagesAsRead(friendId) {
 }
 
 function setupEventListeners() {
-    // Удаляем старые обработчики перед добавлением ��овых
+    // Удаляем старые обработчики перед добавлением новых
     const sendButton = document.getElementById('sendMessage');
     const messageInput = document.getElementById('messageInput');
     
@@ -719,6 +727,61 @@ function removeFilePreview() {
     }
 }
 
+// Функция удаления сообщения
+async function deleteMessage(messageId) {
+    if (!messageId) {
+        console.error('ID сообщения не указан');
+        return;
+    }
+
+    try {
+        const response = await fetch(`https://adminflow.ru:5003/api/messages/delete/${messageId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ userId: currentUser.id })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+            // Находим и удаляем сообщение из DOM
+            const messageElement = document.querySelector(`.message[data-message-id="${messageId}"]`);
+            if (messageElement) {
+                // Добавляем анимацию удаления
+                messageElement.style.animation = 'fadeOut 0.3s ease-out';
+                messageElement.addEventListener('animationend', () => {
+                    messageElement.remove();
+                });
+            }
+        } else {
+            console.error('Ошибка при удалении сообщения:', data.error);
+            alert(data.error || 'Не удалось удалить сообщение');
+        }
+    } catch (error) {
+        console.error('Ошибка при удалении сообщения:', error);
+        alert('Произошла ошибка при удалении сообщения');
+    }
+}
+
+// Добавляем стили для анимации удаления
+const style = document.createElement('style');
+style.textContent = `
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+}
+`;
+document.head.appendChild(style);
+
+// Обновляем обработчик контекстного меню
 function setupContextMenu() {
     const contextMenu = document.getElementById('contextMenu');
     const messagesArea = document.getElementById('messages');
@@ -732,15 +795,22 @@ function setupContextMenu() {
     messagesArea.addEventListener('contextmenu', (e) => {
         e.preventDefault();
         
-        // Находим ближайший элемент сообщения
         const messageElement = e.target.closest('.message');
         if (messageElement) {
-            // Получаем текст сообщения
             const messageTextElement = messageElement.querySelector('.message-text');
             if (messageTextElement) {
                 selectedMessageId = messageElement.dataset.messageId;
                 selectedMessageText = messageTextElement.textContent;
                 
+                // Проверяем, является ли сообщение нашим
+                const isSentMessage = messageElement.classList.contains('message-sent');
+                const deleteButton = document.getElementById('deleteMessageBtn');
+                
+                // Показываем кнопку удаления только для наших сообщений
+                if (deleteButton) {
+                    deleteButton.style.display = isSentMessage ? 'block' : 'none';
+                }
+
                 // Позиционируем меню
                 const rect = messagesArea.getBoundingClientRect();
                 const x = e.clientX - rect.left;
@@ -750,7 +820,7 @@ function setupContextMenu() {
                 contextMenu.style.left = `${x}px`;
                 contextMenu.style.top = `${y}px`;
 
-                // Проверяем, не выходит ли меню за пределы экрана
+                // Проверяем границы экрана
                 const menuRect = contextMenu.getBoundingClientRect();
                 if (menuRect.right > window.innerWidth) {
                     contextMenu.style.left = `${x - menuRect.width}px`;
@@ -762,20 +832,27 @@ function setupContextMenu() {
         }
     });
 
-    // Обработчики пунктов меню
-    document.getElementById('replyMessageBtn').addEventListener('click', () => {
-        if (selectedMessageId && selectedMessageText) {
-            showReplyPreview(selectedMessageText);
-            contextMenu.style.display = 'none';
-        }
-    });
+    // Обработчик для кнопки ответа
+    const replyButton = document.getElementById('replyMessageBtn');
+    if (replyButton) {
+        replyButton.addEventListener('click', () => {
+            if (selectedMessageId && selectedMessageText) {
+                showReplyPreview(selectedMessageText);
+                contextMenu.style.display = 'none';
+            }
+        });
+    }
 
-    document.getElementById('deleteMessageBtn').addEventListener('click', () => {
-        if (selectedMessageId) {
-            deleteMessage(selectedMessageId);
-            contextMenu.style.display = 'none';
-        }
-    });
+    // Обработчик для кнопки удаления
+    const deleteButton = document.getElementById('deleteMessageBtn');
+    if (deleteButton) {
+        deleteButton.addEventListener('click', () => {
+            if (selectedMessageId) {
+                deleteMessage(selectedMessageId);
+                contextMenu.style.display = 'none';
+            }
+        });
+    }
 
     // Закрытие меню при клике вне его
     document.addEventListener('click', (e) => {
@@ -783,21 +860,9 @@ function setupContextMenu() {
             contextMenu.style.display = 'none';
         }
     });
-
-    // Закрытие меню при скролле
-    messagesArea.addEventListener('scroll', () => {
-        contextMenu.style.display = 'none';
-    });
-
-    // Закрытие меню при нажатии Escape
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            contextMenu.style.display = 'none';
-        }
-    });
 }
 
-// Обновляем функцию showReplyPreview
+// Функция показа предпросмотра ответа
 function showReplyPreview(messageText) {
     const replyPreview = document.getElementById('replyPreview');
     if (!replyPreview) {
@@ -805,7 +870,7 @@ function showReplyPreview(messageText) {
         return;
     }
 
-    replyPreview.style.display = 'block';
+    // Сохраняем ID сообщения, на которое отвечаем
     replyToMessageId = selectedMessageId;
 
     // Обрезаем текст, если он слишком длинный
@@ -814,18 +879,32 @@ function showReplyPreview(messageText) {
         ? messageText.substring(0, maxLength) + '...' 
         : messageText;
 
-    replyPreview.innerHTML = `
+    // Создаем элемент предпросмотра
+    const previewContent = document.createElement('div');
+    previewContent.className = 'reply-preview-content';
+    previewContent.innerHTML = `
         <div class="reply-text">
             <i class="fas fa-reply"></i>
-            Ответ на: ${displayText}
+            <span>Ответ на: ${displayText}</span>
         </div>
         <button class="close-reply" onclick="cancelReply()">
             <i class="fas fa-times"></i>
         </button>
     `;
+
+    // Очищаем и показываем предпросмотр
+    replyPreview.innerHTML = '';
+    replyPreview.appendChild(previewContent);
+    replyPreview.style.display = 'block';
+
+    // Фокусируем поле ввода
+    const messageInput = document.getElementById('messageInput');
+    if (messageInput) {
+        messageInput.focus();
+    }
 }
 
-// Обновляем функцию cancelReply
+// Функция отмены ответа
 function cancelReply() {
     const replyPreview = document.getElementById('replyPreview');
     if (replyPreview) {
