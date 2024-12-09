@@ -137,61 +137,162 @@ app.post('/api/register', async (req, res) => {
     }
 });
 
-// Настройка хранилища для загрузки файлов
+// Обновляем путь к файлам
+const UPLOAD_PATH = '/var/www/html/uploads';
+
+// Роут для скачивания файлов
+app.get('/api/download/:folder/:filename', (req, res) => {
+    try {
+        const { folder, filename } = req.params;
+        const filePath = path.join(UPLOAD_PATH, folder, filename);
+
+        console.log('Downloading file:', filePath); // Для отладки
+
+        // Проверяем существование файла
+        if (!fs.existsSync(filePath)) {
+            console.error('File not found:', filePath);
+            return res.status(404).json({ error: 'Файл не найден' });
+        }
+
+        // Определяем MIME-тип файла
+        const ext = path.extname(filename).toLowerCase();
+        const mimeTypes = {
+            '.pdf': 'application/pdf',
+            '.doc': 'application/msword',
+            '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            '.xls': 'application/vnd.ms-excel',
+            '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            '.odt': 'application/vnd.oasis.opendocument.text',
+            '.txt': 'text/plain',
+            '.jpg': 'image/jpeg',
+            '.jpeg': 'image/jpeg',
+            '.png': 'image/png',
+            '.gif': 'image/gif',
+            '.webp': 'image/webp'
+        };
+
+        const mimeType = mimeTypes[ext] || 'application/octet-stream';
+        const isImage = mimeType.startsWith('image/');
+
+        // Устанавливаем заголовки в зависимости от типа файла
+        if (!isImage) {
+            res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(filename)}"`);
+        }
+        res.setHeader('Content-Type', mimeType);
+
+        // Отправляем файл как поток
+        const fileStream = fs.createReadStream(filePath);
+        fileStream.pipe(res);
+
+        // Обработка ошибок потока
+        fileStream.on('error', (error) => {
+            console.error('Error streaming file:', error);
+            if (!res.headersSent) {
+                res.status(500).json({ error: 'Ошибка при скачивании файла' });
+            }
+        });
+
+    } catch (err) {
+        console.error('Download error:', err);
+        if (!res.headersSent) {
+            res.status(500).json({ error: 'Ошибка при скачивании файла' });
+        }
+    }
+});
+
+// Обновляем конфигурацию multer для загрузки файлов
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, '/var/www/html/uploads/avatars')
+        let folder = 'posts'; // По умолчанию папка posts
+
+        // Определяем папку на основе маршрута
+        if (req.path.includes('avatar')) {
+            folder = 'avatars';
+        } else if (req.path.includes('message')) {
+            folder = 'messages';
+        }
+
+        const uploadPath = path.join(UPLOAD_PATH, folder);
+        
+        // Создаем директорию, если она не существует
+        if (!fs.existsSync(uploadPath)) {
+            fs.mkdirSync(uploadPath, { recursive: true });
+        }
+        
+        cb(null, uploadPath);
     },
     filename: function (req, file, cb) {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-        cb(null, 'avatar-' + uniqueSuffix + path.extname(file.originalname))
+        // Определяем префикс на основе типа загрузки
+        let prefix = 'post-';
+        if (req.path.includes('avatar')) {
+            prefix = 'avatar-';
+        } else if (req.path.includes('message')) {
+            prefix = 'message-';
+        }
+
+        // Генерируем уникальное имя файла
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const ext = path.extname(file.originalname);
+        cb(null, `${prefix}${uniqueSuffix}${ext}`);
     }
 });
 
-const upload = multer({ 
+// Создаем middleware для загрузки файлов
+const upload = multer({
     storage: storage,
     limits: {
-        fileSize: 5 * 1024 * 1024 // 5MB макс размер
+        fileSize: 10 * 1024 * 1024, // 10MB максимальный размер файла
     },
-    fileFilter: (req, file, cb) => {
-        const filetypes = /jpeg|jpg|png|gif/;
-        const mimetype = filetypes.test(file.mimetype);
-        const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+    fileFilter: function (req, file, cb) {
+        // Разрешенные типы файлов
+        const allowedTypes = [
+            'image/jpeg',
+            'image/png',
+            'image/gif',
+            'image/webp',
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/vnd.ms-excel',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'application/vnd.oasis.opendocument.text',
+            'text/plain'
+        ];
 
-        if (mimetype && extname) {
-            return cb(null, true);
+        if (allowedTypes.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Неподдерживаемый тип файла'));
         }
-        cb(new Error('Разрешены только изображения!'));
     }
 });
 
-// Endpoint для загрузки аватара
-app.post('/api/upload-avatar', upload.single('avatar'), async (req, res) => {
+// Обновляем роуты для загрузки файлов
+app.post('/api/upload-avatar', upload.single('avatar'), (req, res) => {
     try {
         if (!req.file) {
-            return res.status(400).json({ error: 'Файл не загружен' });
+            return res.status(400).json({ error: 'Файл не был загружен' });
         }
 
-        // Получаем ID пользователя из тела запроса
-        const userId = req.body.userId;
-        if (!userId) {
-            return res.status(400).json({ error: 'ID пользователя не указан' });
-        }
+        // Формируем URL для доступа к файлу
+        const fileUrl = `/uploads/avatars/${req.file.filename}`;
+        res.json({ success: true, avatarUrl: fileUrl });
 
-        // Обновляем путь к аватару в базе данных
-        await pool.query(
-            'UPDATE users SET avatar_url = $1 WHERE id = $2',
-            [`/uploads/avatars/${req.file.filename}`, userId]
-        );
-
-        res.json({ 
-            success: true,
-            avatarUrl: `/uploads/avatars/${req.file.filename}`
-        });
     } catch (err) {
-        console.error('Avatar upload error:', err);
+        console.error('Error uploading avatar:', err);
         res.status(500).json({ error: 'Ошибка при загрузке аватара' });
     }
+});
+
+// Обработка ошибок multer
+app.use((err, req, res, next) => {
+    if (err instanceof multer.MulterError) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+            return res.status(400).json({ error: 'Файл слишком большой. Максимальный размер: 10MB' });
+        }
+        return res.status(400).json({ error: err.message });
+    }
+    next(err);
 });
 
 // SSL configuration
@@ -645,7 +746,7 @@ app.use('/uploads', (req, res, next) => {
     next();
 });
 
-// Обновляем конфигурацию хранилища для файлов сообще��ий
+// Обновляем конфигурацию хранилища для файлов сообщений
 messageStorage.destination = function (req, file, cb) {
     const uploadDir = path.join(__dirname, '../public/uploads/messages');
     if (!fs.existsSync(uploadDir)){
@@ -727,7 +828,7 @@ const checkAdmin = async (req, res, next) => {
     }
 };
 
-// Обновленные адм��н роуты с middleware
+// Обновленные админ роуты с middleware
 app.get('/api/admin/stats', checkAdmin, async (req, res) => {
     try {
         const stats = await pool.query(`
@@ -1306,53 +1407,5 @@ app.post('/api/posts/comment', async (req, res) => {
     } catch (err) {
         console.error('Error creating comment:', err);
         res.status(500).json({ error: 'Ошибка при создании комментария' });
-    }
-});
-
-// Роут для скачивания файлов
-app.get('/api/download/:folder/:filename', (req, res) => {
-    try {
-        const { folder, filename } = req.params;
-        const filePath = path.join('/var/www/adminflow.ru/uploads', folder, filename);
-
-        // Проверяем существование файла
-        if (!fs.existsSync(filePath)) {
-            console.error('File not found:', filePath);
-            return res.status(404).json({ error: 'Файл не найден' });
-        }
-
-        // Определяем MIME-тип файла
-        const ext = path.extname(filename).toLowerCase();
-        const mimeTypes = {
-            '.pdf': 'application/pdf',
-            '.doc': 'application/msword',
-            '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            '.xls': 'application/vnd.ms-excel',
-            '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            '.odt': 'application/vnd.oasis.opendocument.text',
-            '.txt': 'text/plain'
-        };
-
-        // Устанавливаем правильные заголовки
-        res.setHeader('Content-Type', mimeTypes[ext] || 'application/octet-stream');
-        res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(filename)}"`);
-        
-        // Отправляем файл как поток
-        const fileStream = fs.createReadStream(filePath);
-        fileStream.pipe(res);
-
-        // Обработка ошибок потока
-        fileStream.on('error', (error) => {
-            console.error('Error streaming file:', error);
-            if (!res.headersSent) {
-                res.status(500).json({ error: 'Ошибка при скачивании файла' });
-            }
-        });
-
-    } catch (err) {
-        console.error('Download error:', err);
-        if (!res.headersSent) {
-            res.status(500).json({ error: 'Ошибка при скачивании файла' });
-        }
     }
 });
