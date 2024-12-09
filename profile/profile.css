@@ -797,7 +797,7 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(128, 128, 128, 0.5) !important; /* Серый полупрозрачный фон */
+    background: rgba(128, 128, 128, 0.5) !important; /* Серый полупрозрачный ф��н */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1156,7 +1156,7 @@ body {
     font-size: 16px;
 }
 
-/* Показываем кнопку удаления только при наведении на пост */
+/* ��оказываем кнопку удаления только при наведении на пост */
 .post:not(:hover) .delete-post-btn {
     opacity: 0;
 }
@@ -1484,4 +1484,150 @@ body {
     letter-spacing: 4px;
     font-size: 18px;
     text-align: center;
+}
+
+/* Стили для комментариев */
+.comments-section {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-light);
+}
+
+.comments-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.comment {
+    background: var(--background-color);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 8px;
+}
+
+.comment-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.comment-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.comment-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.comment-author {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 14px;
+}
+
+.comment-date {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.comment-content {
+    color: var(--text-primary);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.comment-form {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    margin-top: 16px;
+}
+
+.comment-input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    background: var(--background-color);
+    color: var(--text-primary);
+    resize: vertical;
+    min-height: 44px;
+    font-family: inherit;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.comment-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+}
+
+.comment-submit {
+    padding: 10px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.comment-submit:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+}
+
+/* Стили для кнопки комментариев в действиях поста */
+.post-action.comment-action:hover {
+    background: var(--background-color);
+    color: var(--primary-color);
+}
+
+.post-action.comment-action i {
+    font-size: 18px;
+}
+
+.comments-count {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+/* Адаптивность для комментариев */
+@media (max-width: 768px) {
+    .comment {
+        padding: 10px;
+    }
+
+    .comment-avatar {
+        width: 28px;
+        height: 28px;
+    }
+
+    .comment-author {
+        font-size: 13px;
+    }
+
+    .comment-content {
+        font-size: 13px;
+    }
+
+    .comment-input {
+        font-size: 13px;
+        padding: 8px;
+    }
+
+    .comment-submit {
+        padding: 8px;
+    }
 }
