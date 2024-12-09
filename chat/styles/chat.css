@@ -194,9 +194,9 @@ body {
 /* Время сообщения */
 .message-time {
     font-size: 0.75em;
-    margin-top: 5px;
-    opacity: 0.7;
-    text-align: right;
+    color: var(--text-secondary);
+    margin-top: 2px;
+    align-self: flex-end;
 }
 
 /* Вложения в сообщениях */
@@ -241,12 +241,11 @@ body {
 
 /* Ответ на сообщение */
 .message-reply {
+    padding: 6px 10px;
     background-color: rgba(var(--button-background-rgb), 0.1);
-    padding: 8px 12px;
-    border-radius: 8px;
-    margin-bottom: 8px;
-    font-size: 0.9em;
     border-left: 3px solid var(--primary-color);
+    border-radius: 4px;
+    margin-bottom: 6px;
     cursor: pointer;
     transition: background-color 0.2s;
 }
@@ -258,10 +257,10 @@ body {
 .reply-header {
     display: flex;
     align-items: center;
-    gap: 5px;
-    margin-bottom: 4px;
+    gap: 6px;
     color: var(--primary-color);
     font-size: 0.9em;
+    margin-bottom: 2px;
 }
 
 .reply-author {
@@ -271,9 +270,7 @@ body {
 .reply-content {
     color: var(--text-secondary);
     font-size: 0.9em;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    margin-left: 18px;
 }
 
 .message-highlight {
@@ -553,6 +550,14 @@ body {
     .chat-area {
         width: 100%;
     }
+
+    .message-content {
+        max-width: 80%;
+    }
+    
+    .reply-content {
+        margin-left: 12px;
+    }
 }
 
 /* Превью прикрепленного файла */
@@ -706,5 +711,21 @@ body {
 
 .context-menu li:hover {
     background-color: var(--table-hover);
+}
+
+.message-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.message-status {
+    font-size: 0.8em;
+    color: var(--text-secondary);
+    margin-left: 4px;
+}
+
+.message-sent .message-status {
+    color: var(--primary-color);
 }
  

@@ -95,7 +95,7 @@ function getLastActivityTime(timestamp) {
     const now = new Date();
     const diff = now - lastActivity;
     
-    if (diff < 60000) return 'был(а) т��лько что';
+    if (diff < 60000) return 'был(а) только что';
     if (diff < 3600000) return `был(а) ${Math.floor(diff/60000)} мн. назад`;
     if (diff < 86400000) return `был(а) ${Math.floor(diff/3600000)} ч. назад`;
     return 'был(а) давно';
@@ -157,7 +157,7 @@ async function openChat(friend) {
     );
     document.querySelector(`[data-friend-id="${friend.id}"]`)?.classList.add('active');
 
-    // Показываем заголовок чата
+    // Показываем заголо��ок чата
     const chatHeader = document.getElementById('chat-header');
     const chatPlaceholder = document.getElementById('chat-placeholder');
     
@@ -264,7 +264,7 @@ function createMessageElement(message) {
         const replyElement = document.createElement('div');
         replyElement.className = 'message-reply';
         
-        // Добавляем информацию об авторе сообщения, на которое отвечаем
+        // Определяем автора сообщения, на которое отвечают
         const replyAuthor = message.reply_to_message.sender_id === currentUser.id ? 'Вы' : message.reply_to_message.sender_username;
         
         // Обрезаем длинный текст ответа
@@ -277,7 +277,7 @@ function createMessageElement(message) {
         replyElement.innerHTML = `
             <div class="reply-header">
                 <i class="fas fa-reply"></i>
-                <span class="reply-author">${replyAuthor}:</span>
+                <span class="reply-author">${replyAuthor}</span>
             </div>
             <div class="reply-content">${truncatedReplyText}</div>
         `;
@@ -297,19 +297,33 @@ function createMessageElement(message) {
         messageElement.appendChild(replyElement);
     }
 
-    // Добавляем информацию об отправителе для входящих сообщений
-    if (message.sender_id !== currentUser.id) {
-        const senderInfo = document.createElement('div');
-        senderInfo.className = 'message-sender';
-        senderInfo.textContent = message.sender_username;
-        messageElement.appendChild(senderInfo);
-    }
-
     // Основной текст сообщения
+    const messageContent = document.createElement('div');
+    messageContent.className = 'message-content';
+
+    // Текст сообщения
     const messageText = document.createElement('div');
     messageText.className = 'message-text';
     messageText.textContent = message.message;
-    messageElement.appendChild(messageText);
+    messageContent.appendChild(messageText);
+
+    // Время отправки
+    const messageTime = document.createElement('div');
+    messageTime.className = 'message-time';
+    messageTime.textContent = new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    messageContent.appendChild(messageTime);
+
+    // Статус прочтения для отправленных сообщений
+    if (message.sender_id === currentUser.id) {
+        const readStatus = document.createElement('span');
+        readStatus.className = 'message-status';
+        readStatus.innerHTML = message.is_read 
+            ? '<i class="fas fa-check-double"></i>' 
+            : '<i class="fas fa-check"></i>';
+        messageContent.appendChild(readStatus);
+    }
+
+    messageElement.appendChild(messageContent);
 
     // Добавляем обработчик для контекстного меню
     messageElement.addEventListener('contextmenu', (e) => {
@@ -427,7 +441,7 @@ async function markMessagesAsRead() {
             })
         });
 
-        // Обновл��ем сетчик непрочитанных сообщений
+        // Обновлем сетчик непрочитанных сообщений
         await updateUnreadCount(currentChatPartner.id);
     } catch (err) {
         console.error('Error marking messages as read:', err);
@@ -654,7 +668,7 @@ async function sendMessageWithFile(message) {
         }
     } catch (err) {
         console.error('Error sending file:', err);
-        alert('Ошибка при отправке файла');
+        alert('Ошибка при отправ��е файла');
     }
 }
 
