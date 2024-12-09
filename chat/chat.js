@@ -4,6 +4,7 @@ let messageUpdateInterval = null;
 let selectedFile = null;
 let typingTimeout = null;
 let selectedMessageId = null;
+let selectedMessageText = '';
 
 document.addEventListener('DOMContentLoaded', async () => {
     // Проверка авторизации
@@ -294,7 +295,7 @@ function createMessageElement(message) {
     // Добавляем обработчик для контекстного меню
     messageElement.addEventListener('contextmenu', (e) => {
         e.preventDefault();
-        showContextMenu(e, message.id);
+        showContextMenu(e, message.id, message.message);
     });
 
     return messageElement;
@@ -451,7 +452,7 @@ function setupEventListeners() {
     });
 }
 
-// Выносим обработчик Enter в отдельную функцию
+// Выносим обработчик Enter в отдельную ф��нкцию
 function handleEnterPress(e) {
     if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
@@ -633,12 +634,13 @@ async function sendMessageWithFile(message) {
     }
 }
 
-function showContextMenu(event, messageId) {
+function showContextMenu(event, messageId, messageText) {
     event.preventDefault();
     const contextMenu = document.getElementById('contextMenu');
     
-    // Сохраняем ID выбранного сообщения
+    // Сохраняем ID и текст выбранного сообщения
     selectedMessageId = messageId;
+    selectedMessageText = messageText;
     
     // Позиционируем меню
     contextMenu.style.top = `${event.clientY}px`;
@@ -646,18 +648,32 @@ function showContextMenu(event, messageId) {
     contextMenu.style.display = 'block';
 }
 
-document.getElementById('deleteMessageBtn').addEventListener('click', () => {
+document.getElementById('replyMessageBtn').addEventListener('click', () => {
     if (selectedMessageId) {
-        deleteMessage(selectedMessageId);
+        showReplyPreview(selectedMessageText);
         document.getElementById('contextMenu').style.display = 'none';
     }
 });
+
+function showReplyPreview(messageText) {
+    const replyPreview = document.getElementById('replyPreview');
+    replyPreview.style.display = 'block';
+    replyPreview.textContent = `Ответ на: ${messageText}`;
+}
 
 // Закрытие контекстного меню при клике вне его
 document.addEventListener('click', (event) => {
     const contextMenu = document.getElementById('contextMenu');
     if (!contextMenu.contains(event.target)) {
         contextMenu.style.display = 'none';
+    }
+});
+
+// Обработчик для удаления сообщения
+document.getElementById('deleteMessageBtn').addEventListener('click', () => {
+    if (selectedMessageId) {
+        deleteMessage(selectedMessageId);
+        document.getElementById('contextMenu').style.display = 'none';
     }
 });
 
