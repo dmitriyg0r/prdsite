@@ -533,7 +533,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
 
             if (response.ok) {
-                // Перезагру��аем список друзей
+                // Перезагружаем список друзей
                 loadFriends();
             } else {
                 const data = await response.json();
@@ -753,7 +753,7 @@ function initializePostHandlers() {
             return;
         }
 
-        // Проверяе��, является ли файл изображением
+        // Проверяем, является ли фа��л изображением
         if (file.type.startsWith('image/')) {
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -803,7 +803,7 @@ async function createPost() {
         formData.append('content', content);
         
         if (file) {
-            // Проверяем размер файла
+            // Проверяем размер файла (например, 10MB максимум)
             const maxSize = 10 * 1024 * 1024; // 10MB в байтах
             if (file.size > maxSize) {
                 alert('Файл слишком большой. Максимальный размер: 10MB');
@@ -817,40 +817,20 @@ async function createPost() {
                 'image/gif',
                 'image/webp',
                 'application/pdf',
-                // Word форматы
-                'application/msword',                     // .doc
-                'application/vnd.ms-word',               // .doc
-                'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
-                'application/x-msword',                  // Альтернативный MIME тип для .doc
-                'application/doc',                       // Альтернативный MIME тип для .doc
-                'application/docx',                      // Альтернативный MIME тип для .docx
-                // Excel форматы
-                'application/vnd.ms-excel',              // .xls
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
-                // LibreOffice форматы
-                'application/vnd.oasis.opendocument.text', // .odt
-                'text/plain'                             // .txt
+                'application/msword',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'application/vnd.ms-excel',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'application/vnd.oasis.opendocument.text',
+                'text/plain'
             ];
 
-            // Также добавим проверку по расширению файла
-            function isAllowedFile(file) {
-                // Проверка по MIME типу
-                if (allowedTypes.includes(file.type)) {
-                    return true;
-                }
-
-                // Проверка по расширению файла
-                const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'odt', 'txt'];
-                const extension = file.name.split('.').pop().toLowerCase();
-                return allowedExtensions.includes(extension);
-            }
-
-            // Используем новую функцию проверки файла
-            if (!isAllowedFile(file)) {
+            if (!allowedTypes.includes(file.type)) {
                 alert('Неподдерживаемый тип файла. Разрешены: изображения, PDF, Word, Excel и текстовые файлы');
                 return;
             }
 
+            // Изменяем имя поля на 'image' для соответствия серверу
             formData.append('image', file);
         }
 
@@ -875,7 +855,7 @@ async function createPost() {
         }
         
         if (data.success) {
-            // Очищаем форму
+            // Очищаем ф��рму
             document.getElementById('post-content').value = '';
             document.getElementById('image-preview').innerHTML = '';
             document.getElementById('post-form').style.display = 'none';
@@ -885,7 +865,7 @@ async function createPost() {
             // Перезагружаем посты
             loadPosts();
         } else {
-            throw new Error(data.error || 'Ошибка при созд��нии публикации');
+            throw new Error(data.error || 'Ошибка при создании публикации');
         }
     } catch (err) {
         console.error('Error creating post:', err);
@@ -1193,3 +1173,85 @@ function getFileIcon(extension) {
     
     return iconMap[extension] || 'fas fa-file';
 }
+
+// Функция для скачивания файла
+function downloadFile(fileUrl) {
+    // Получаем имя файла из URL
+    const filename = fileUrl.split('/').pop();
+    const folder = fileUrl.split('/')[2]; // posts, messages, etc.
+
+    // Создаём временную ссылку
+    const link = document.createElement('a');
+    link.href = `/api/download/${folder}/${filename}`;
+    link.setAttribute('download', filename); // Важно для принудительного скачивания
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+// Обновляем отображение файла в посте
+function getFilePreview(file) {
+    const extension = file.split('.').pop().toLowerCase();
+    const filename = file.split('/').pop();
+    
+    // Если это изображение
+    if(['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension)) {
+        return `<img src="${file}" alt="Post image" class="post-image">`;
+    } else {
+        // Для документов показываем кнопку скачивания
+        const fileIcon = getFileIcon(extension);
+        return `
+            <div class="file-preview">
+                <i class="${fileIcon}"></i>
+                <span>${filename}</span>
+                <button class="download-button" onclick="downloadFile('${file}')">
+                    <i class="fas fa-download"></i> Скачать
+                </button>
+            </div>
+        `;
+    }
+}
+
+// Обновляем CSS для кнопки скачивания
+const style = document.createElement('style');
+style.textContent = `
+    .file-preview {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        background: var(--surface-color);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        margin: 10px 0;
+    }
+
+    .download-button {
+        padding: 8px 16px;
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-left: auto;
+    }
+
+    .download-button:hover {
+        background: var(--primary-color-dark);
+    }
+
+    .file-preview i {
+        font-size: 24px;
+        color: var(--text-secondary);
+    }
+
+    .file-preview span {
+        color: var(--text-primary);
+        font-size: 14px;
+        word-break: break-all;
+    }
+`;
+document.head.appendChild(style);
