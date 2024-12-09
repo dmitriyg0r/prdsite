@@ -533,7 +533,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
 
             if (response.ok) {
-                // Перезагружаем список друзей
+                // Перезагру��аем список друзей
                 loadFriends();
             } else {
                 const data = await response.json();
@@ -753,7 +753,7 @@ function initializePostHandlers() {
             return;
         }
 
-        // Проверяем, является ли файл изображением
+        // Проверяе��, является ли файл изображением
         if (file.type.startsWith('image/')) {
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -803,7 +803,7 @@ async function createPost() {
         formData.append('content', content);
         
         if (file) {
-            // Проверяем размер файла (например, 10MB максимум)
+            // Проверяем размер файла
             const maxSize = 10 * 1024 * 1024; // 10MB в байтах
             if (file.size > maxSize) {
                 alert('Файл слишком большой. Максимальный размер: 10MB');
@@ -817,20 +817,41 @@ async function createPost() {
                 'image/gif',
                 'image/webp',
                 'application/pdf',
-                'application/msword',
-                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                'application/vnd.ms-excel',
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                'application/vnd.oasis.opendocument.text', // Формат ODT (LibreOffice Writer)
-                'text/plain'
+                // Word форматы
+                'application/msword',                     // .doc
+                'application/vnd.ms-word',               // .doc
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
+                'application/x-msword',                  // Альтернативный MIME тип для .doc
+                'application/doc',                       // Альтернативный MIME тип для .doc
+                'application/docx',                      // Альтернативный MIME тип для .docx
+                // Excel форматы
+                'application/vnd.ms-excel',              // .xls
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
+                // LibreOffice форматы
+                'application/vnd.oasis.opendocument.text', // .odt
+                'text/plain'                             // .txt
             ];
 
-            if (!allowedTypes.includes(file.type)) {
+            // Также добавим проверку по расширению файла
+            function isAllowedFile(file) {
+                // Проверка по MIME типу
+                if (allowedTypes.includes(file.type)) {
+                    return true;
+                }
+
+                // Проверка по расширению файла
+                const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'odt', 'txt'];
+                const extension = file.name.split('.').pop().toLowerCase();
+                return allowedExtensions.includes(extension);
+            }
+
+            // Используем новую функцию проверки файла
+            if (!isAllowedFile(file)) {
                 alert('Неподдерживаемый тип файла. Разрешены: изображения, PDF, Word, Excel и текстовые файлы');
                 return;
             }
 
-            formData.append('file', file); // Изменено с 'image' на 'file'
+            formData.append('image', file);
         }
 
         const response = await fetch('https://adminflow.ru:5003/api/posts/create', {
@@ -838,12 +859,20 @@ async function createPost() {
             body: formData
         });
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(errorText || 'Ошибка при создании публикации');
+        // Проверяем тип контента ответа
+        const contentType = response.headers.get('content-type');
+        let data;
+        
+        if (contentType && contentType.includes('application/json')) {
+            data = await response.json();
+        } else {
+            const textResponse = await response.text();
+            throw new Error(textResponse);
         }
 
-        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error || 'Ошибка при создании публикации');
+        }
         
         if (data.success) {
             // Очищаем форму
@@ -856,11 +885,11 @@ async function createPost() {
             // Перезагружаем посты
             loadPosts();
         } else {
-            throw new Error(data.error || 'Ошибка при создании пуб��икации');
+            throw new Error(data.error || 'Ошибка при созд��нии публикации');
         }
     } catch (err) {
         console.error('Error creating post:', err);
-        alert('Ошибка при создании публикации: ' + err.message);
+        alert('Ошибка при создании публикации: ' + (err.message || 'Неизвестная ошибка'));
     }
 }
 
