@@ -607,8 +607,32 @@ app.get('/api/chat/friends', async (req, res) => {
     }
 });
 
-// Добавляем статическую раздачу файлов
-app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
+// Настройка статических путей для всех типов файлов
+app.use('/uploads', express.static('/var/www/html/uploads'));
+
+// Или более детально для каждой папки
+app.use('/uploads/posts', express.static('/var/www/html/uploads/posts'));
+app.use('/uploads/avatars', express.static('/var/www/html/uploads/avatars'));
+app.use('/uploads/messages', express.static('/var/www/html/uploads/messages'));
+
+// Добавляем обработку ошибок для статических файлов
+app.use('/uploads', (err, req, res, next) => {
+    if (err) {
+        console.error('Static file error:', err);
+        res.status(404).json({ 
+            error: 'Файл не найден',
+            details: err.message 
+        });
+    } else {
+        next();
+    }
+});
+
+// Добавляем middleware для логирования запросов к файлам
+app.use('/uploads', (req, res, next) => {
+    console.log('File request:', req.url);
+    next();
+});
 
 // Обновляем конфигурацию хранилища для файлов сообщений
 messageStorage.destination = function (req, file, cb) {
@@ -862,7 +886,7 @@ app.get('/api/users/:id', async (req, res) => {
         });
     } catch (err) {
         console.error('Get user error:', err);
-        res.status(500).json({ error: 'Ошибка при получении данных пользователя' });
+        res.status(500).json({ error: 'Ошибк�� при получении данных пользователя' });
     }
 });
 
@@ -990,7 +1014,7 @@ app.post('/api/posts/like', async (req, res) => {
         let liked = false;
         
         if (existingLike.rows.length > 0) {
-            // Если лайк сущес��вует - удаляем его
+            // Если лайк существует - удаляем его
             await pool.query(
                 'DELETE FROM posts WHERE parent_id = $1 AND user_id = $2 AND type = $3',
                 [postId, userId, 'like']
@@ -1027,7 +1051,7 @@ app.delete('/api/posts/delete/:postId', async (req, res) => {
         const { postId } = req.params;
         const { userId } = req.body;
 
-        // Проверяем, является ли пользователь авторо�� поста
+        // Проверяем, является ли пользователь автором поста
         const post = await pool.query(
             'SELECT * FROM posts WHERE id = $1 AND user_id = $2 AND type = $3',
             [postId, userId, 'post']
@@ -1179,7 +1203,7 @@ app.get('/api/feed', async (req, res) => {
     }
 });
 
-// Получение ��омментариев к посту
+// Получение комментариев к посту
 app.get('/api/posts/:postId/comments', async (req, res) => {
     try {
         console.log('Loading comments for post:', req.params.postId);
