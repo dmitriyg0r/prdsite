@@ -645,7 +645,7 @@ app.use('/uploads', (req, res, next) => {
     next();
 });
 
-// Обновляем конфигурацию хранилища для файлов сообщений
+// Обновляем конфигурацию хранилища для файлов сообще��ий
 messageStorage.destination = function (req, file, cb) {
     const uploadDir = path.join(__dirname, '../public/uploads/messages');
     if (!fs.existsSync(uploadDir)){
@@ -684,7 +684,7 @@ app.post('/api/messages/send-with-file', messageUpload.single('file'), async (re
         });
     } catch (err) {
         console.error('Error sending message with file:', err);
-        res.status(500).json({ error: 'Ошибка при отправке сообщения �� файлом' });
+        res.status(500).json({ error: 'Ошибка при отправке сообщения с файлом' });
     }
 });
 
@@ -727,7 +727,7 @@ const checkAdmin = async (req, res, next) => {
     }
 };
 
-// Обновленные админ роуты с middleware
+// Обновленные адм��н роуты с middleware
 app.get('/api/admin/stats', checkAdmin, async (req, res) => {
     try {
         const stats = await pool.query(`
@@ -748,7 +748,7 @@ app.get('/api/admin/stats', checkAdmin, async (req, res) => {
         res.json({ success: true, stats: stats.rows[0] });
     } catch (err) {
         console.error('Admin stats error:', err);
-        res.status(500).json({ error: '��шибка при получении статистики' });
+        res.status(500).json({ error: 'Ошибка при получении статистики' });
     }
 });
 
@@ -1153,7 +1153,7 @@ app.post('/api/users/update-status', async (req, res) => {
     }
 });
 
-// Добавляем автоматическое обновление статуса ��аждые 5 минут
+// Добавляем автоматическое обновление статуса каждые 5 минут
 setInterval(async () => {
     try {
         // Помечаем пользователей как оффлайн, если их последняя активность была более 5 минут назад
@@ -1313,7 +1313,7 @@ app.post('/api/posts/comment', async (req, res) => {
 app.get('/api/download/:folder/:filename', (req, res) => {
     try {
         const { folder, filename } = req.params;
-        const filePath = path.join('/var/www/html/uploads', folder, filename);
+        const filePath = path.join('/var/www/adminflow.ru/uploads', folder, filename);
 
         // Проверяем существование файла
         if (!fs.existsSync(filePath)) {
@@ -1321,7 +1321,7 @@ app.get('/api/download/:folder/:filename', (req, res) => {
             return res.status(404).json({ error: 'Файл не найден' });
         }
 
-        // Получаем MIME-тип файла
+        // Определяем MIME-тип файла
         const ext = path.extname(filename).toLowerCase();
         const mimeTypes = {
             '.pdf': 'application/pdf',
@@ -1330,28 +1330,29 @@ app.get('/api/download/:folder/:filename', (req, res) => {
             '.xls': 'application/vnd.ms-excel',
             '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             '.odt': 'application/vnd.oasis.opendocument.text',
-            '.txt': 'text/plain',
-            '.jpg': 'image/jpeg',
-            '.jpeg': 'image/jpeg',
-            '.png': 'image/png',
-            '.gif': 'image/gif'
+            '.txt': 'text/plain'
         };
 
         // Устанавливаем правильные заголовки
         res.setHeader('Content-Type', mimeTypes[ext] || 'application/octet-stream');
-        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-
-        // Отправляем файл
+        res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(filename)}"`);
+        
+        // Отправляем файл как поток
         const fileStream = fs.createReadStream(filePath);
         fileStream.pipe(res);
 
         // Обработка ошибок потока
         fileStream.on('error', (error) => {
             console.error('Error streaming file:', error);
-            res.status(500).json({ error: 'Ошибка при скачивании файла' });
+            if (!res.headersSent) {
+                res.status(500).json({ error: 'Ошибка при скачивании файла' });
+            }
         });
+
     } catch (err) {
         console.error('Download error:', err);
-        res.status(500).json({ error: 'Ошибка при скачивании файла' });
+        if (!res.headersSent) {
+            res.status(500).json({ error: 'Ошибка при скачивании файла' });
+        }
     }
 });
