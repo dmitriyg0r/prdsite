@@ -6,6 +6,7 @@ const https = require('https');
 const fs = require('fs');
 const multer = require('multer');
 const path = require('path');
+const nodemailer = require('nodemailer');
 
 const app = express();
 const PORT = 5003;
@@ -425,7 +426,7 @@ app.get('/api/friends', async (req, res) => {
     }
 });
 
-// Получение входящих заявок в друзья
+// Получение входящих з��явок в друзья
 app.get('/api/friend-requests', async (req, res) => {
     try {
         const userId = req.query.userId;
@@ -740,7 +741,7 @@ app.get('/api/chat/friends', async (req, res) => {
     }
 });
 
-// Обновленная настройка статических путей
+// Обновленная настройка статич��ских путей
 app.use('/uploads', (req, res, next) => {
     const ext = path.extname(req.path).toLowerCase();
     // Если это изображение - показываем, иначе отправляем через download API
@@ -807,7 +808,7 @@ app.get('/api/users/:id', async (req, res) => {
         `, [id]);
 
         if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Пользователь не найден' });
+            return res.status(404).json({ error: 'Пол��зователь не найден' });
         }
 
         res.json({ 
@@ -1484,7 +1485,7 @@ app.post('/api/posts/comment', async (req, res) => {
         
         const { userId, postId, content } = req.body;
 
-        // Проверяем существование поста
+        // Проверяем существование пос��а
         const postExists = await pool.query(
             'SELECT id FROM posts WHERE id = $1 AND type = $2',
             [postId, 'post']
@@ -1597,7 +1598,7 @@ app.get('/api/messages/unread/:userId/:friendId', async (req, res) => {
     }
 });
 
-// Endpoint для пометки сообщений как прочитанных
+// Endpoint для пометки сообщ��ний как прочитанных
 app.post('/api/messages/mark-as-read', async (req, res) => {
     try {
         const { userId, friendId } = req.body;
@@ -1643,6 +1644,133 @@ app.get('/api/users/check-email', async (req, res) => {
         res.status(500).json({
             success: false,
             error: 'Ошибка при проверке email'
+        });
+    }
+});
+
+// Создаем транспорт для отправки почты
+const transporter = nodemailer.createTransport({
+    host: 'smtp.timeweb.ru',  // SMTP сервер Timeweb
+    port: 465,
+    secure: true,
+    auth: {
+        user: 'adminflow@adminflow.ru',
+        pass: 'Gg3985502'  // Используйте обычный пароль от почты
+    }
+});
+
+// Проверяем соединение при запуске сервера
+transporter.verify(function(error, success) {
+    if (error) {
+        console.error('Ошибка подключения к SMTP:', error);
+    } else {
+        console.log('SMTP сервер готов к отправке сообщений');
+    }
+});
+
+// Функция для генерации кода подтверждения
+function generateVerificationCode() {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+// Эндпоинт для отправки кода подтверждения
+app.post('/api/send-verification-code', async (req, res) => {
+    try {
+        const { userId, email } = req.body;
+
+        if (!userId || !email) {
+            return res.status(400).json({
+                success: false,
+                error: 'Отсутствуют необходимые данные'
+            });
+        }
+
+        // Генерируем код
+        const verificationCode = generateVerificationCode();
+
+        // Сохраняем код в базу данных с временем жизни
+        await pool.query(`
+            INSERT INTO verification_codes (user_id, code, expires_at)
+            VALUES ($1, $2, NOW() + INTERVAL '5 minutes')
+            ON CONFLICT (user_id) 
+            DO UPDATE SET 
+                code = EXCLUDED.code,
+                expires_at = EXCLUDED.expires_at,
+                created_at = NOW()
+        `, [userId, verificationCode]);
+
+        // Отправляем email
+        await transporter.sendMail({
+            from: '"AdminFlow" <adminflow@adminflow.ru>',
+            to: email,
+            subject: 'Код подтверждения AdminFlow',
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h2 style="color: #333;">Код подтверждения</h2>
+                    <p>Ваш код подтверждения для смены пароля:</p>
+                    <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; text-align: center; font-size: 24px; letter-spacing: 5px;">
+                        <strong>${verificationCode}</strong>
+                    </div>
+                    <p style="color: #666; font-size: 14px; margin-top: 20px;">
+                        Код действителен в течение 5 минут.<br>
+                        Если вы не запрашивали код подтверждения, проигнорируйте это письмо.
+                    </p>
+                </div>
+            `
+        });
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Error sending verification code:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при отправке кода подтверждения'
+        });
+    }
+});
+
+// Эндпоинт для проверки кода и смены пароля
+app.post('/api/change-password', async (req, res) => {
+    try {
+        const { userId, code, newPassword } = req.body;
+
+        // Проверяем код
+        const result = await pool.query(`
+            SELECT * FROM verification_codes 
+            WHERE user_id = $1 
+            AND code = $2 
+            AND expires_at > NOW()
+        `, [userId, code]);
+
+        if (result.rows.length === 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'Неверный или устаревший код подтверждения'
+            });
+        }
+
+        // Хешируем новый пароль
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        // Обновляем пароль
+        await pool.query(`
+            UPDATE users 
+            SET password = $1 
+            WHERE id = $2
+        `, [hashedPassword, userId]);
+
+        // Удаляем использованный код
+        await pool.query(`
+            DELETE FROM verification_codes 
+            WHERE user_id = $1
+        `, [userId]);
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Error changing password:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при смене пароля'
         });
     }
 });
