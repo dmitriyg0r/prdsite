@@ -432,7 +432,7 @@ async function sendMessage() {
         }
     } catch (error) {
         console.error('Ошибка при отправке сообщения:', error);
-        alert('Ошибка при отправке сообщения');
+        alert('Ошибка при отправке сообщени��');
     }
 }
 
@@ -765,21 +765,56 @@ async function deleteMessage(messageId) {
     }
 }
 
-// Добавляем стили для анимации удаления
-const style = document.createElement('style');
-style.textContent = `
-@keyframes fadeOut {
-    from {
-        opacity: 1;
-        transform: translateX(0);
+// Добавляем все необходимые стили
+const chatStyles = document.createElement('style');
+chatStyles.textContent = `
+    /* Анимация удаления сообщения */
+    @keyframes fadeOut {
+        from {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        to {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
     }
-    to {
+
+    /* Стили контекстного меню */
+    .context-menu {
         opacity: 0;
-        transform: translateX(-20px);
+        transform: scale(0.95);
+        transition: opacity 0.1s ease, transform 0.1s ease;
+        position: fixed;
+        z-index: 1000;
+        background-color: var(--text-container-background);
+        border: 1px solid var(--border-color);
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     }
-}
+
+    .context-menu-visible {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    /* Анимация появления предпросмотра ответа */
+    .reply-preview {
+        animation: slideDown 0.2s ease-out;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
 `;
-document.head.appendChild(style);
+document.head.appendChild(chatStyles);
 
 // Обновляем обработчики контекстного меню
 function setupContextMenu() {
@@ -893,22 +928,6 @@ function hideContextMenu() {
         contextMenu.style.display = 'none';
     }
 }
-
-// Добавляем стили для анимации контекстного меню
-const style = document.createElement('style');
-style.textContent = `
-    .context-menu {
-        opacity: 0;
-        transform: scale(0.95);
-        transition: opacity 0.1s ease, transform 0.1s ease;
-    }
-
-    .context-menu-visible {
-        opacity: 1;
-        transform: scale(1);
-    }
-`;
-document.head.appendChild(style);
 
 // Функция показа предпросмотра ответа
 function showReplyPreview(messageText) {
