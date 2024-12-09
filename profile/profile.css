@@ -1182,3 +1182,74 @@ body {
 .modal-body > div {
     background: var(--surface-color);
 }
+
+/* Мобильное меню */
+.mobile-nav {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    background: var(--surface-color);
+    border-top: 1px solid var(--border-light);
+    z-index: 1000;
+    padding: 0;
+}
+
+.mobile-nav ul {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.mobile-nav ul li {
+    flex: 1;
+}
+
+.mobile-nav ul li a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    padding: 8px 0;
+    transition: all 0.3s ease;
+}
+
+.mobile-nav ul li a i {
+    font-size: 1.4rem;
+    margin-bottom: 4px;
+}
+
+.mobile-nav ul li a.active {
+    color: var(--primary-color);
+}
+
+.mobile-nav ul li a:hover {
+    color: var(--primary-color);
+}
+
+/* Адаптивность */
+@media screen and (max-width: 768px) {
+    .mobile-nav {
+        display: block;
+    }
+
+    .sidebar {
+        display: none;
+    }
+
+    body {
+        padding-bottom: 60px;
+    }
+
+    .profile-layout {
+        padding: 16px;
+    }
+}
