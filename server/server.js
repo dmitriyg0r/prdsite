@@ -330,7 +330,7 @@ app.get('/api/search-users', async (req, res) => {
         res.json({ users: result.rows });
     } catch (err) {
         console.error('Search error:', err);
-        res.status(500).json({ error: 'Ошибка при поис��е пользователей' });
+        res.status(500).json({ error: 'Ошибка при поиске пользователей' });
     }
 });
 
@@ -346,7 +346,7 @@ app.post('/api/friend-request', async (req, res) => {
         );
 
         if (existingRequest.rows.length > 0) {
-            return res.status(400).json({ error: 'Зая��ка уже существует' });
+            return res.status(400).json({ error: 'Заявка уже существует' });
         }
 
         // Создаем новую заявку
@@ -378,45 +378,7 @@ app.post('/api/friend-request/respond', async (req, res) => {
         res.status(500).json({ error: 'Ошибка при обработке заявки' });
     }
 });
-// Middleware для проверки авторизации
-const checkAuthMiddleware = async (req, res, next) => {
-    const userId = req.query.userId || req.body.userId;
-    
-    if (!userId) {
-        return res.status(401).json({ 
-            success: false, 
-            error: 'Требуется авторизация' 
-        });
-    }
 
-    try {
-        const userExists = await pool.query(
-            'SELECT id FROM users WHERE id = $1',
-            [userId]
-        );
-
-        if (userExists.rows.length === 0) {
-            return res.status(401).json({ 
-                success: false, 
-                error: 'Пользователь не найден' 
-            });
-        }
-
-        next();
-    } catch (err) {
-        console.error('Auth check error:', err);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Ошибка проверки авторизации' 
-        });
-    }
-};
-
-// Применяем middleware ко всем защищенным маршрутам
-app.use('/api/posts', checkAuthMiddleware);
-app.use('/api/messages', checkAuthMiddleware);
-app.use('/api/users', checkAuthMiddleware);
-// ... другие защищенные маршруты
 // Получение списка друзей
 app.get('/api/friends', async (req, res) => {
     try {
@@ -634,7 +596,7 @@ app.post('/api/messages/read', async (req, res) => {
     }
 });
 
-// Получение последнего сообщения с пользователем
+// Получение последнего сообщ��ния с пользователем
 app.get('/api/messages/last/:userId/:friendId', async (req, res) => {
     try {
         const { userId, friendId } = req.params;
@@ -703,7 +665,7 @@ app.get('/api/chat/search-users', async (req, res) => {
         res.json({ users: result.rows });
     } catch (err) {
         console.error('Chat search error:', err);
-        res.status(500).json({ error: 'Ошибка при поис��е пользователей' });
+        res.status(500).json({ error: 'Ошибка при поиске пользователей' });
     }
 });
 
@@ -981,7 +943,7 @@ const checkAdmin = async (req, res, next) => {
         if (userResult.rows.length === 0 || userResult.rows[0].role !== 'admin') {
             return res.status(403).json({ 
                 success: false,
-                error: 'Доступ запрещен' 
+                error: 'Доступ запр��щен' 
             });
         }
 
@@ -1078,7 +1040,7 @@ app.post('/api/admin/role', checkAdmin, async (req, res) => {
             });
         }
 
-        // Обновляем роль в базе д��нных
+        // Обновляем роль в базе данных
         await pool.query(
             'UPDATE users SET role = $1 WHERE id = $2',
             [role, userId]
@@ -1194,7 +1156,7 @@ const uploadPost = multer({
             return cb(null, true);
         }
 
-        cb(new Error('Неподдерживаемый тип файла. Разрешены: изображения, PDF, Word, Excel, ODT и текстов��е файлы'));
+        cb(new Error('Неподдерживаемый тип файла. Разрешены: изображения, PDF, Word, Excel, ODT и текстовые файлы'));
     }
 });
 
@@ -1557,7 +1519,7 @@ app.post('/api/messages/typing', async (req, res) => {
     try {
         const { userId, friendId, isTyping } = req.body;
         
-        // Сохраняем статус в Redis или другом б��стром хранилище
+        // Сохраняем статус в Redis или другом быстром хранилище
         // Здесь используем глобальную переменную для примера
         global.typingStatus = global.typingStatus || {};
         global.typingStatus[`${userId}-${friendId}`] = {
@@ -1575,7 +1537,7 @@ app.post('/api/messages/typing', async (req, res) => {
 app.delete('/api/messages/delete/:messageId', async (req, res) => {
     try {
         const { messageId } = req.params;
-        const { userId, attachmentUrl } = req.body;
+        const { userId } = req.body; // ID текущего пользователя
 
         // Проверяем, является ли пользователь отправителем сообщения
         const message = await pool.query(
@@ -1587,25 +1549,7 @@ app.delete('/api/messages/delete/:messageId', async (req, res) => {
             return res.status(403).json({ error: 'У вас нет прав на удаление этого сообщения' });
         }
 
-        // Если есть вложение, удаляем файл
-        if (attachmentUrl) {
-            try {
-                // Извлекаем путь к файлу из URL
-                const fileUrl = new URL(attachmentUrl);
-                const filePath = path.join(UPLOAD_PATH, 'messages', path.basename(fileUrl.pathname));
-                
-                // Проверяем существование файла и удаляем его
-                if (fs.existsSync(filePath)) {
-                    fs.unlinkSync(filePath);
-                    console.log('Файл успешно удален:', filePath);
-                }
-            } catch (fileError) {
-                console.error('Ошибка при удалении файла:', fileError);
-                // Продолжаем удаление сообщения даже если не удалось удалить файл
-            }
-        }
-
-        // Удаляем сообщение из базы данных
+        // Удаляем сообщение
         await pool.query('DELETE FROM messages WHERE id = $1', [messageId]);
 
         res.json({ success: true });
@@ -1727,7 +1671,7 @@ transporter.verify(function(error, success) {
 const alternativeTransporter = nodemailer.createTransport({
     host: 'smtp.timeweb.ru',
     port: 587,              // Альтернативный порт
-    secure: false,          // Для порт�� 587
+    secure: false,          // Для порта 587
     requireTLS: true,       // Требуем TLS
     auth: {
         user: 'adminflow@adminflow.ru',

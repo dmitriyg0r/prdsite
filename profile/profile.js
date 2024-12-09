@@ -3,16 +3,9 @@ let currentUser = null;
 let editProfileBtn = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
-    const currentUser = JSON.parse(localStorage.getItem('user'));
-    
-    // Проверка авторизации
-    if (!currentUser) {
-        window.location.href = '../authreg/authreg.html';
-        return;
-    }
-
     const urlParams = new URLSearchParams(window.location.search);
     const profileId = urlParams.get('id');
+    currentUser = JSON.parse(localStorage.getItem('user'));
 
     if (!currentUser) {
         window.location.href = '/authreg/authreg.html';
@@ -389,36 +382,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Функции для работы с друзьями
     async function loadFriends(userId) {
+        if (!userId) {
+            console.warn('loadFriends: userId is undefined');
+            return;
+        }
+
         try {
-            const currentUser = JSON.parse(localStorage.getItem('user'));
-            if (!currentUser || !currentUser.id) {
-                window.location.href = '../authreg/authreg.html';
-                return;
-            }
-
-            userId = userId || currentUser.id;
-            console.log('loadFriends: userId is', userId);
-            
-            const response = await fetch(`https://adminflow.ru:5003/api/friends/${userId}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${currentUser.token}`
-                },
-                credentials: 'include'
-            });
-
-            if (response.status === 401) {
-                localStorage.removeItem('user');
-                window.location.href = '../authreg/authreg.html';
-                return;
-            }
-
+            const response = await fetch(`https://adminflow.ru:5003/api/friends?userId=${userId}`);
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                throw new Error(`Failed to load friends: ${response.status}`);
             }
-
             const data = await response.json();
+            
             if (data.success) {
                 displayFriends(data.friends, userId === currentUser?.id);
                 updateFriendsCount(data.friends.length);
@@ -427,10 +402,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         } catch (err) {
             console.error('Error loading friends:', err);
-            if (err.message.includes('401')) {
-                localStorage.removeItem('user');
-                window.location.href = '../authreg/authreg.html';
-            }
         }
     }
 
@@ -490,7 +461,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                    </div>`;
         }
 
-        // ��бновляем полный список друзей в модальном окне
+        // Обновляем полный список друзей в модальном окне
         const friendsList = document.querySelector('.friends-list');
         if (friendsList) {
             friendsList.innerHTML = friends.map(friend => `
@@ -546,7 +517,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             </div>
         `).join('');
 
-        // Добавля��м обработчики для кнопок
+        // Добавляем обработчики для кнопок
         document.querySelectorAll('.accept-friend-btn').forEach(btn => {
             btn.addEventListener('click', () => respondToFriendRequest(btn.dataset.userId, 'accepted'));
         });
@@ -581,7 +552,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Обновляем функ��ию поиска
+    // Обновляем функцию поиска
     async function searchUsers(query) {
         try {
             const response = await fetch(`https://adminflow.ru:5003/api/search-users?q=${query}&userId=${currentUser.id}`);
@@ -745,7 +716,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     function startStatusUpdates() {
         let lastActivity = new Date();
         
-        // Функция обновления активност��
+        // Функция обновления активности
         const updateActivity = () => {
             lastActivity = new Date();
             updateUserStatus(true);
@@ -1170,47 +1141,19 @@ async function createPost() {
 
 async function loadPosts() {
     try {
-        const currentUser = JSON.parse(localStorage.getItem('user'));
-        if (!currentUser || !currentUser.id) {
-            window.location.href = '../authreg/authreg.html';
-            return;
-        }
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const profileId = urlParams.get('id') || currentUser.id;
-
-        console.log('Loading posts for userId:', profileId);
-        const response = await fetch(`https://adminflow.ru:5003/api/posts/${profileId}?currentUserId=${currentUser.id}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${currentUser.token}`
-            },
-            credentials: 'include'
-        });
+        const userId = new URLSearchParams(window.location.search).get('id') || currentUser.id;
+        console.log('Loading posts for userId:', userId); // Отладочная информация
         
-        if (response.status === 401) {
-            localStorage.removeItem('user');
-            window.location.href = '../authreg/authreg.html';
-            return;
-        }
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
+        const response = await fetch(`https://adminflow.ru:5003/api/posts/${userId}?currentUserId=${currentUser.id}`);
         const data = await response.json();
-        console.log('Posts response:', data);
         
+        console.log('Posts response:', data); // Отладочная информация
+
         if (data.success) {
             displayPosts(data.posts);
         }
     } catch (err) {
         console.error('Error loading posts:', err);
-        if (err.message.includes('401')) {
-            localStorage.removeItem('user');
-            window.location.href = '../authreg/authreg.html';
-        }
     }
 }
 
@@ -1313,7 +1256,7 @@ async function toggleLike(postId) {
         const data = await response.json();
         
         if (response.ok) {
-            // Находим элементы конкретного поста
+            // Находим элементы конкре��ного поста
             const postElement = document.querySelector(`.post[data-post-id="${postId}"]`);
             const likeButton = postElement.querySelector('.like-action');
             const heartIcon = postElement.querySelector('.like-action i');
@@ -1467,7 +1410,7 @@ window.closeImageModal = function(modal) {
     }, 300);
 };
 
-// Добавляем функцию в глобальную область видимости
+// Добавляем функцию в г��обальную область видимости
 window.openFriendsModal = function() {
     const friendsModal = document.getElementById('friends-modal');
     const friendsTab = document.querySelector('[data-tab="friends-tab"]');
@@ -1504,7 +1447,7 @@ async function downloadFile(fileUrl) {
         const filename = fileUrl.split('/').pop();
         const folder = fileUrl.split('/')[2]; // posts, messages, etc.
 
-        // Делаем запрос к API для скачивания
+        // Делаем запрос к API для скачи��ания
         const response = await fetch(`/api/download/${folder}/${filename}`);
         
         if (!response.ok) throw new Error('Download failed');
