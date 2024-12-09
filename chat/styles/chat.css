@@ -247,11 +247,60 @@ body {
     margin-bottom: 8px;
     font-size: 0.9em;
     border-left: 3px solid var(--primary-color);
+    cursor: pointer;
+    transition: background-color 0.2s;
 }
 
+.message-reply:hover {
+    background-color: rgba(var(--button-background-rgb), 0.2);
+}
+
+.reply-header {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 4px;
+    color: var(--primary-color);
+    font-size: 0.9em;
+}
+
+.reply-author {
+    font-weight: 500;
+}
+
+.reply-content {
+    color: var(--text-secondary);
+    font-size: 0.9em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.message-highlight {
+    animation: highlight 2s ease-out;
+}
+
+@keyframes highlight {
+    0% {
+        background-color: rgba(var(--primary-color-rgb), 0.2);
+    }
+    100% {
+        background-color: transparent;
+    }
+}
+
+/* Стили для сообщений с ответами */
 .message-sent .message-reply {
     background-color: rgba(255, 255, 255, 0.1);
     border-left-color: rgba(255, 255, 255, 0.5);
+}
+
+.message-sent .reply-header {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.message-sent .reply-content {
+    color: rgba(255, 255, 255, 0.7);
 }
 
 /* Группировка сообщений */

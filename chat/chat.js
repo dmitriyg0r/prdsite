@@ -95,7 +95,7 @@ function getLastActivityTime(timestamp) {
     const now = new Date();
     const diff = now - lastActivity;
     
-    if (diff < 60000) return 'был(а) только что';
+    if (diff < 60000) return 'был(а) т��лько что';
     if (diff < 3600000) return `был(а) ${Math.floor(diff/60000)} мн. назад`;
     if (diff < 86400000) return `был(а) ${Math.floor(diff/3600000)} ч. назад`;
     return 'был(а) давно';
@@ -259,12 +259,50 @@ function createMessageElement(message) {
     messageElement.dataset.messageId = message.id;
     messageElement.dataset.timestamp = message.created_at;
 
-    // Если есть reply_data, показываем его
-    if (message.reply_to_id) {
+    // Если есть информация об ответе, показываем её
+    if (message.reply_to_message) {
         const replyElement = document.createElement('div');
         replyElement.className = 'message-reply';
-        replyElement.textContent = `↳ ${message.reply_text || 'Ответ на сообщение'}`;
+        
+        // Добавляем информацию об авторе сообщения, на которое отвечаем
+        const replyAuthor = message.reply_to_message.sender_id === currentUser.id ? 'Вы' : message.reply_to_message.sender_username;
+        
+        // Обрезаем длинный текст ответа
+        const replyText = message.reply_to_message.message;
+        const maxReplyLength = 50;
+        const truncatedReplyText = replyText.length > maxReplyLength 
+            ? replyText.substring(0, maxReplyLength) + '...' 
+            : replyText;
+
+        replyElement.innerHTML = `
+            <div class="reply-header">
+                <i class="fas fa-reply"></i>
+                <span class="reply-author">${replyAuthor}:</span>
+            </div>
+            <div class="reply-content">${truncatedReplyText}</div>
+        `;
+
+        // Добавляем обработчик клика для прокрутки к исходному сообщению
+        replyElement.addEventListener('click', () => {
+            const originalMessage = document.querySelector(`.message[data-message-id="${message.reply_to_message.id}"]`);
+            if (originalMessage) {
+                originalMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                originalMessage.classList.add('message-highlight');
+                setTimeout(() => {
+                    originalMessage.classList.remove('message-highlight');
+                }, 2000);
+            }
+        });
+
         messageElement.appendChild(replyElement);
+    }
+
+    // Добавляем информацию об отправителе для входящих сообщений
+    if (message.sender_id !== currentUser.id) {
+        const senderInfo = document.createElement('div');
+        senderInfo.className = 'message-sender';
+        senderInfo.textContent = message.sender_username;
+        messageElement.appendChild(senderInfo);
     }
 
     // Основной текст сообщения
@@ -272,18 +310,6 @@ function createMessageElement(message) {
     messageText.className = 'message-text';
     messageText.textContent = message.message;
     messageElement.appendChild(messageText);
-
-    // Добавляем вложения, если есть
-    if (message.attachment_url) {
-        const attachmentElement = createAttachmentElement(message.attachment_url);
-        messageElement.appendChild(attachmentElement);
-    }
-
-    // Время сообщения
-    const timeElement = document.createElement('div');
-    timeElement.className = 'message-time';
-    timeElement.textContent = new Date(message.created_at).toLocaleTimeString();
-    messageElement.appendChild(timeElement);
 
     // Добавляем обработчик для контекстного меню
     messageElement.addEventListener('contextmenu', (e) => {
@@ -401,7 +427,7 @@ async function markMessagesAsRead() {
             })
         });
 
-        // Обновляем сетчик непрочитанных сообщений
+        // Обновл��ем сетчик непрочитанных сообщений
         await updateUnreadCount(currentChatPartner.id);
     } catch (err) {
         console.error('Error marking messages as read:', err);
