@@ -50,9 +50,9 @@ app.post('/api/login', async (req, res) => {
     try {
         const { username, password } = req.body;
 
-        // Изменяем запрос, чтобы получить все необходимые поля, включая email
+        // Изменяем запрос, используя правильное имя колонки password_hash
         const result = await pool.query(`
-            SELECT id, username, password, role, avatar_url, email, created_at, last_login 
+            SELECT id, username, password_hash, role, avatar_url, email, created_at, last_login 
             FROM users 
             WHERE username = $1
         `, [username]);
@@ -62,7 +62,7 @@ app.post('/api/login', async (req, res) => {
         }
 
         const user = result.rows[0];
-        const validPassword = await bcrypt.compare(password, user.password);
+        const validPassword = await bcrypt.compare(password, user.password_hash);
 
         if (!validPassword) {
             return res.status(401).json({ error: 'Неверное имя пользователя или пароль' });
@@ -75,8 +75,8 @@ app.post('/api/login', async (req, res) => {
             WHERE id = $1
         `, [user.id]);
 
-        // Отправляем все данные пользователя, кроме пароля
-        const { password: _, ...userWithoutPassword } = user;
+        // Отправляем данные пользователя, исключая хеш пароля
+        const { password_hash: _, ...userWithoutPassword } = user;
         res.json({ user: userWithoutPassword });
 
     } catch (err) {
@@ -256,7 +256,7 @@ const upload = multer({
     }
 });
 
-// Обновляем роуты для загрузки файлов
+// Обновляем р��уты для загрузки файлов
 app.post('/api/upload-avatar', upload.single('avatar'), (req, res) => {
     try {
         if (!req.file) {
@@ -451,7 +451,7 @@ app.post('/api/friend/remove', async (req, res) => {
     }
 });
 
-// Нас��ройка хранилища для файлов сообщений
+// Настройка хранилища для файлов сообщений
 const messageStorage = multer.diskStorage({
     destination: function (req, file, cb) {
         const uploadDir = path.join(__dirname, '../public/uploads/messages');
@@ -873,7 +873,7 @@ app.post('/api/users/update-profile', async (req, res) => {
 
         await pool.query(query, values);
 
-        // Получаем обновленные данные пользователя
+        // Получаем об��овленные данные пользователя
         const result = await pool.query(
             'SELECT id, username, email, role, created_at, last_login, avatar_url FROM users WHERE id = $1',
             [userId]
@@ -952,7 +952,7 @@ const checkAdmin = async (req, res, next) => {
         console.error('Auth error:', err);
         res.status(500).json({ 
             success: false,
-            error: 'Ош��бка сервера' 
+            error: 'Ошибка сервера' 
         });
     }
 };
@@ -1011,7 +1011,7 @@ app.get('/api/admin/users', checkAdmin, async (req, res) => {
         });
     } catch (err) {
         console.error('Admin users error:', err);
-        res.status(500).json({ error: 'Ошибка при пол��чении списка пользователей' });
+        res.status(500).json({ error: 'Ошибка при получении списка пользователей' });
     }
 });
 
