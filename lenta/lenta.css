@@ -7,7 +7,7 @@
 .feed-container {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 16px;
 }
 
 .create-post-card {
@@ -110,7 +110,13 @@
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--border-light);
     position: relative;
-    margin-bottom: 16px;
+    border-bottom: 2px solid var(--border-light);
+    background: linear-gradient(
+        to bottom,
+        var(--surface-color) 0%,
+        var(--surface-color) 98%,
+        var(--background-color) 100%
+    );
 }
 
 .post:hover {
@@ -608,4 +614,8 @@
 .comment-submit:hover {
     background: var(--primary-dark);
     transform: translateY(-2px);
+}
+
+#posts-container {
+    padding-bottom: 32px;
 }
