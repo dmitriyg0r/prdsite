@@ -391,16 +391,51 @@ body {
 
 /* Предпросмотр ответа */
 .reply-preview {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     background-color: var(--background-color);
     padding: 8px 12px;
     border-radius: 8px;
     margin-bottom: 8px;
     font-size: 0.9em;
     color: var(--text-secondary);
-    max-width: 100%;
+    border-left: 3px solid var(--primary-color);
+}
+
+.reply-text {
+    flex: 1;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    margin-right: 10px;
+}
+
+.close-reply {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.2em;
+    cursor: pointer;
+    padding: 0 5px;
+}
+
+.close-reply:hover {
+    color: var(--text-color);
+}
+
+.message-reply {
+    background-color: rgba(var(--button-background-rgb), 0.1);
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    font-size: 0.9em;
+    border-left: 3px solid var(--primary-color);
+    cursor: pointer;
+}
+
+.message-reply:hover {
+    background-color: rgba(var(--button-background-rgb), 0.2);
 }
 
 /* Заглушка */

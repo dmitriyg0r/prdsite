@@ -5,6 +5,7 @@ let selectedFile = null;
 let typingTimeout = null;
 let selectedMessageId = null;
 let selectedMessageText = '';
+let replyToMessageId = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
     // Проверка авторизации
@@ -258,19 +259,11 @@ function createMessageElement(message) {
     messageElement.dataset.messageId = message.id;
     messageElement.dataset.timestamp = message.created_at;
 
-    // Добавляем информацию об отправителе для входящих сообщений
-    if (message.sender_id !== currentUser.id) {
-        const senderInfo = document.createElement('div');
-        senderInfo.className = 'message-sender';
-        senderInfo.textContent = message.sender_username;
-        messageElement.appendChild(senderInfo);
-    }
-
     // Если есть reply_data, показываем его
-    if (message.reply_data) {
+    if (message.reply_to_id) {
         const replyElement = document.createElement('div');
         replyElement.className = 'message-reply';
-        replyElement.textContent = `↳ ${message.reply_data.message}`;
+        replyElement.textContent = `↳ ${message.reply_text || 'Ответ на сообщение'}`;
         messageElement.appendChild(replyElement);
     }
 
@@ -348,8 +341,12 @@ async function sendMessage() {
         formData.append('receiverId', currentChatPartner.id);
         formData.append('message', message);
         
+        // Добавляем ID сообщения, на которое отвечаем, если есть
+        if (replyToMessageId) {
+            formData.append('replyToMessageId', replyToMessageId);
+        }
+        
         if (file) {
-            // Проверка размера файла
             if (file.size > 5 * 1024 * 1024) {
                 throw new Error('Файл слишком большой (максимум 5MB)');
             }
@@ -367,6 +364,7 @@ async function sendMessage() {
             messageInput.value = '';
             fileInput.value = '';
             removeFilePreview();
+            cancelReply(); // Очищаем предпросмотр ответа
             
             if (data.message) {
                 const messagesContainer = document.getElementById('messages');
@@ -495,7 +493,7 @@ function scrollToBottom() {
     });
 }
 
-// Функция отметки сообщений к��к прочитанных
+// Функция отметки сообщений как прочитанных
 async function markMessagesAsRead(friendId) {
     try {
         await fetch('https://adminflow.ru:5003/api/messages/read', {
@@ -660,12 +658,25 @@ function showReplyPreview(messageText) {
     replyPreview.style.display = 'block';
 
     // Обрезаем текст, если он слишком длинный
-    const maxLength = 50; // Максимальная длина текста в предпросмотре
+    const maxLength = 50;
     const displayText = messageText.length > maxLength 
         ? messageText.substring(0, maxLength) + '...' 
         : messageText;
 
-    replyPreview.textContent = `Ответ на: ${displayText}`;
+    // Добавляем кнопку закрытия
+    replyPreview.innerHTML = `
+        <div class="reply-text">Ответ на: ${displayText}</div>
+        <button class="close-reply" onclick="cancelReply()">×</button>
+    `;
+    
+    // Сохраняем ID сообщения, на которое отвечаем
+    replyToMessageId = selectedMessageId;
+}
+
+function cancelReply() {
+    const replyPreview = document.getElementById('replyPreview');
+    replyPreview.style.display = 'none';
+    replyToMessageId = null;
 }
 
 // Закрытие контекстного меню при клике вне его
