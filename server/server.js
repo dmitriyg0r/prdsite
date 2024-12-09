@@ -256,7 +256,7 @@ const upload = multer({
     }
 });
 
-// Обновляем р��уты для загрузки файлов
+// Обновляем руты для загрузки файлов
 app.post('/api/upload-avatar', upload.single('avatar'), (req, res) => {
     try {
         if (!req.file) {
@@ -748,7 +748,7 @@ app.use('/uploads/posts', express.static('/var/www/html/uploads/posts'));
 app.use('/uploads/avatars', express.static('/var/www/html/uploads/avatars'));
 app.use('/uploads/messages', express.static('/var/www/html/uploads/messages'));
 
-// Добавляем обработку ошибок для статических файлов
+// Добавляем обработку ош��бок для статических файлов
 app.use('/uploads', (err, req, res, next) => {
     if (err) {
         console.error('Static file error:', err);
@@ -873,7 +873,7 @@ app.post('/api/users/update-profile', async (req, res) => {
 
         await pool.query(query, values);
 
-        // Получаем об��овленные данные пользователя
+        // Получаем обновленные данные пользователя
         const result = await pool.query(
             'SELECT id, username, email, role, created_at, last_login, avatar_url FROM users WHERE id = $1',
             [userId]
@@ -1129,7 +1129,7 @@ const uploadPost = multer({
     fileFilter: (req, file, cb) => {
         // Разрешенные тип файлов
         const allowedTypes = {
-            // Изображения
+            // Изображе��ия
             'image/jpeg': true,
             'image/png': true,
             'image/gif': true,
@@ -1325,7 +1325,7 @@ app.get('/api/users/status/:userId', async (req, res) => {
         console.error('Error getting user status:', err);
         res.status(500).json({ 
             success: false, 
-            error: 'Ошибка при получении статуса пользователя' 
+            error: 'Ошибка при получении ст��туса пользователя' 
         });
     }
 });
@@ -1486,7 +1486,7 @@ app.post('/api/posts/comment', async (req, res) => {
             });
         }
 
-        // Создаем комментарий
+        // Соз��аем комментарий
         const result = await pool.query(
             'INSERT INTO posts (user_id, parent_id, type, content) VALUES ($1, $2, $3, $4) RETURNING *',
             [userId, postId, 'comment', content]
@@ -1638,21 +1638,59 @@ app.get('/api/users/check-email', async (req, res) => {
 
 // Создаем транспорт для отправки почты
 const transporter = nodemailer.createTransport({
-    host: 'smtp.timeweb.ru',  // SMTP сервер Timeweb
+    host: 'smtp.timeweb.ru',
     port: 465,
     secure: true,
     auth: {
         user: 'adminflow@adminflow.ru',
-        pass: 'Gg3985502'  // Используйте обычный пароль от почты
-    }
+        pass: 'Gg3985502'
+    },
+    // Добавляем таймауты и дополнительные настройки
+    connectionTimeout: 10000, // 10 секунд
+    greetingTimeout: 5000,   // 5 секунд
+    socketTimeout: 10000,    // 10 секунд
+    debug: true,             // Включаем отладку
+    logger: true             // Включаем логирование
 });
 
 // Проверяем соединение при запуске сервера
 transporter.verify(function(error, success) {
     if (error) {
         console.error('Ошибка подключения к SMTP:', error);
+        console.log('Проверьте следующее:');
+        console.log('1. Правильность хоста (smtp.timeweb.ru)');
+        console.log('2. Правильность порта (465)');
+        console.log('3. Правильность учетных данных');
+        console.log('4. Доступность порта 465 на сервере');
+        console.log('5. Настройки файрвола');
     } else {
         console.log('SMTP сервер готов к отправке сообщений');
+    }
+});
+
+// Альтернативная конфигурация с TLS
+const alternativeTransporter = nodemailer.createTransport({
+    host: 'smtp.timeweb.ru',
+    port: 587,              // Альтернативный порт
+    secure: false,          // Для порта 587
+    requireTLS: true,       // Требуем TLS
+    auth: {
+        user: 'adminflow@adminflow.ru',
+        pass: 'ваш_пароль'
+    },
+    tls: {
+        rejectUnauthorized: false // В случае проблем с сертификатом
+    }
+});
+
+// Проверяем альтернативное соединение
+alternativeTransporter.verify(function(error, success) {
+    if (error) {
+        console.error('Ошибка подключения к альтернативному SMTP:', error);
+    } else {
+        console.log('Альтернативный SMTP сервер готов к отправке сообщений');
+        // Если альтернативное соединение работает, используем его
+        transporter = alternativeTransporter;
     }
 });
 
