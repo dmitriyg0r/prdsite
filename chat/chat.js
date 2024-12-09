@@ -95,7 +95,7 @@ function getLastActivityTime(timestamp) {
     const now = new Date();
     const diff = now - lastActivity;
     
-    if (diff < 60000) return 'был(а) т��лько что';
+    if (diff < 60000) return 'был(а) только что';
     if (diff < 3600000) return `был(а) ${Math.floor(diff/60000)} мн. назад`;
     if (diff < 86400000) return `был(а) ${Math.floor(diff/3600000)} ч. назад`;
     return 'был(а) давно';
@@ -147,15 +147,15 @@ async function updateUnreadCount(friendId) {
     }
 }
 
-async function openChat(friendId) {
-    if (!friendId) {
-        console.error('FriendId is undefined');
+async function openChat(friend) {
+    if (!friend || !friend.id) {
+        console.error('Invalid friend object:', friend);
         return;
     }
 
     try {
-        // Получаем информацию о друге
-        const response = await fetch(`https://adminflow.ru:5003/api/users/${friendId}`);
+        // Получаем информацию о друге, используя числовой ID
+        const response = await fetch(`https://adminflow.ru:5003/api/users/${friend.id}`);
         const data = await response.json();
 
         if (data.success) {
@@ -166,16 +166,16 @@ async function openChat(friendId) {
                 el.classList.remove('active');
             });
             
-            const chatPartnerElement = document.querySelector(`.chat-partner[data-friend-id="${friendId}"]`);
+            const chatPartnerElement = document.querySelector(`.chat-partner[data-friend-id="${friend.id}"]`);
             if (chatPartnerElement) {
                 chatPartnerElement.classList.add('active');
             }
 
             // Загружаем сообщения
-            await loadMessages(friendId);
+            await loadMessages(friend.id);
             
             // Помечаем сообщения как прочитанные
-            await markMessagesAsRead(friendId);
+            await markMessagesAsRead(friend.id);
             
             // Включаем обновление сообщений
             startMessageUpdates();
@@ -550,7 +550,7 @@ async function loadMessages(friendId) {
     }
 }
 
-// Функция прокрутки чата вниз
+// Функция прокрутк�� чата вниз
 function scrollToBottom() {
     const messagesContainer = document.getElementById('messages');
     // Используем плавную прокрутку
