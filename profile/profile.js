@@ -211,7 +211,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // При открытии модальног�� окна редактирования заполняем поля текущими данными
+    // При открытии модального окна редактирования заполняем поля текущими данными
     editProfileBtn = document.getElementById('edit-profile-btn');
     const editProfileModal = document.getElementById('edit-profile-modal');
     
@@ -302,7 +302,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Обновляем селектор для кнопки открытия модального окна
     const friendsHeaderBtn = document.querySelector('.friends-header-btn');
     
-    // Открытие модального окна при клике на заголовок "Дузья"
+    // Отк��ытие модального окна при клике на заголовок "Дузья"
     friendsHeaderBtn.addEventListener('click', (e) => {
         e.preventDefault();
         friendsModal.classList.add('active');
@@ -389,16 +389,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Функции для работы с друзьями
     async function loadFriends(userId) {
-        if (!userId) {
-            console.warn('loadFriends: userId is undefined');
-            return;
-        }
-
         try {
-            const response = await fetch(`https://adminflow.ru:5003/api/friends?userId=${userId}`);
-            if (!response.ok) {
-                throw new Error(`Failed to load friends: ${response.status}`);
+            const currentUser = JSON.parse(localStorage.getItem('user'));
+            if (!currentUser || !currentUser.id) {
+                window.location.href = '../authreg/authreg.html';
+                return;
             }
+
+            userId = userId || currentUser.id;
+            console.log('loadFriends: userId is', userId);
+            
+            const response = await fetch(`https://adminflow.ru:5003/api/friends/${userId}`);
+            if (!response.ok) {
+                throw new Error('Failed to load friends');
+            }
+
             const data = await response.json();
             
             if (data.success) {
@@ -635,7 +640,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Обновляем обработчик открытия модального окна
     document.querySelector('.friends-header-btn').addEventListener('click', () => {
-        // Обновл��ем списки при открытии модального окна
+        // Обновляем списки при открытии модального окна
         loadFriends();
         loadFriendRequests();
     });
@@ -1124,7 +1129,7 @@ async function createPost() {
         }
 
         if (!response.ok) {
-            throw new Error(data.error || 'Ошибка при создании публик��ции');
+            throw new Error(data.error || 'Ошибка при создании публикации');
         }
         
         if (data.success) {
@@ -1148,14 +1153,25 @@ async function createPost() {
 
 async function loadPosts() {
     try {
-        const userId = new URLSearchParams(window.location.search).get('id') || currentUser.id;
-        console.log('Loading posts for userId:', userId); // Отладочная информация
-        
-        const response = await fetch(`https://adminflow.ru:5003/api/posts/${userId}?currentUserId=${currentUser.id}`);
-        const data = await response.json();
-        
-        console.log('Posts response:', data); // Отладочная информация
+        const currentUser = JSON.parse(localStorage.getItem('user'));
+        if (!currentUser || !currentUser.id) {
+            window.location.href = '../authreg/authreg.html';
+            return;
+        }
 
+        const urlParams = new URLSearchParams(window.location.search);
+        const profileId = urlParams.get('id') || currentUser.id;
+
+        console.log('Loading posts for userId:', profileId);
+        const response = await fetch(`https://adminflow.ru:5003/api/posts/${profileId}?currentUserId=${currentUser.id}`);
+        
+        if (!response.ok) {
+            throw new Error('Failed to load posts');
+        }
+
+        const data = await response.json();
+        console.log('Posts response:', data);
+        
         if (data.success) {
             displayPosts(data.posts);
         }
@@ -1422,7 +1438,7 @@ window.openFriendsModal = function() {
     const friendsModal = document.getElementById('friends-modal');
     const friendsTab = document.querySelector('[data-tab="friends-tab"]');
     
-    // Открываем модальное окно
+    // Открываем модально�� окно
     friendsModal.classList.add('active');
     document.body.style.overflow = 'hidden';
     
@@ -1454,7 +1470,7 @@ async function downloadFile(fileUrl) {
         const filename = fileUrl.split('/').pop();
         const folder = fileUrl.split('/')[2]; // posts, messages, etc.
 
-        // Делаем запр��с к API для скачивания
+        // Делаем запрос к API для скачивания
         const response = await fetch(`/api/download/${folder}/${filename}`);
         
         if (!response.ok) throw new Error('Download failed');
