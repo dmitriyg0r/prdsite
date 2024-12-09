@@ -9,6 +9,11 @@
     <link rel="stylesheet" href="memes.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="../mobile.css">
+    <script>
+        if (!localStorage.getItem('user')) {
+            window.location.href = '../authreg/authreg.html';
+        }
+    </script>
 </head>
 <body>
     <!-- Боковое меню -->

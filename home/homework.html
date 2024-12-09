@@ -127,6 +127,11 @@
             <!-- Здесь будут отображаться задания -->
         </div>
     </main>
+    <script>
+        if (!localStorage.getItem('user')) {
+            window.location.href = '../authreg/authreg.html';
+        }
+    </script>
     <script src="../main.js"></script>
     <script src="home.js"></script>
     
