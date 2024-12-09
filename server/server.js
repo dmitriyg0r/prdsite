@@ -866,11 +866,10 @@ app.get('/api/users/:id', async (req, res) => {
     }
 });
 
-// Настройка хранилища для изображений постов
+// Настройка хранилища для файлов постов
 const postStorage = multer.diskStorage({
     destination: function (req, file, cb) {
         const uploadDir = '/var/www/html/uploads/posts';
-        // Создаем директорию, если она не существует
         if (!fs.existsSync(uploadDir)){
             fs.mkdirSync(uploadDir, { recursive: true });
         }
@@ -885,17 +884,39 @@ const postStorage = multer.diskStorage({
 const uploadPost = multer({ 
     storage: postStorage,
     limits: {
-        fileSize: 5 * 1024 * 1024 // 5MB макс размер
+        fileSize: 10 * 1024 * 1024 // 10MB макс размер
     },
     fileFilter: (req, file, cb) => {
-        const filetypes = /jpeg|jpg|png|gif/;
-        const mimetype = filetypes.test(file.mimetype);
-        const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+        // Разрешенные типы файлов
+        const allowedTypes = {
+            // Изображения
+            'image/jpeg': true,
+            'image/png': true,
+            'image/gif': true,
+            'image/webp': true,
+            // Документы
+            'application/pdf': true,
+            'application/msword': true,
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document': true,
+            'application/vnd.ms-excel': true,
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': true,
+            'application/vnd.oasis.opendocument.text': true,
+            'text/plain': true
+        };
 
-        if (mimetype && extname) {
+        if (allowedTypes[file.mimetype]) {
             return cb(null, true);
         }
-        cb(new Error('Разрешены только изображения!'));
+
+        // Проверка по расширению для документов
+        const ext = path.extname(file.originalname).toLowerCase();
+        const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.odt', '.txt'];
+        
+        if (allowedExtensions.includes(ext)) {
+            return cb(null, true);
+        }
+
+        cb(new Error('Неподдерживаемый тип файла. Разрешены: изображения, PDF, Word, Excel, ODT и текстовые файлы'));
     }
 });
 
@@ -969,7 +990,7 @@ app.post('/api/posts/like', async (req, res) => {
         let liked = false;
         
         if (existingLike.rows.length > 0) {
-            // Если лайк существует - удаляем его
+            // Если лайк сущес��вует - удаляем его
             await pool.query(
                 'DELETE FROM posts WHERE parent_id = $1 AND user_id = $2 AND type = $3',
                 [postId, userId, 'like']
@@ -1006,7 +1027,7 @@ app.delete('/api/posts/delete/:postId', async (req, res) => {
         const { postId } = req.params;
         const { userId } = req.body;
 
-        // Проверяем, является ли пользователь автором поста
+        // Проверяем, является ли пользователь авторо�� поста
         const post = await pool.query(
             'SELECT * FROM posts WHERE id = $1 AND user_id = $2 AND type = $3',
             [postId, userId, 'post']
@@ -1158,7 +1179,7 @@ app.get('/api/feed', async (req, res) => {
     }
 });
 
-// Получение комментариев к посту
+// Получение ��омментариев к посту
 app.get('/api/posts/:postId/comments', async (req, res) => {
     try {
         console.log('Loading comments for post:', req.params.postId);
