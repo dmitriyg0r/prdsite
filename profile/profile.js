@@ -1,5 +1,6 @@
 let selectedPostImage = null;
 let currentUser = null;
+let editProfileBtn = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -47,7 +48,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('logout-btn').style.display = 'none';
             document.querySelector('.avatar-overlay').style.display = 'none';
             
-            // Скрываем вкладку запросов в друзья в модальном окне
+            // Скрываем вкладку запросов в модальном окне
             const requestsTab = document.querySelector('[data-tab="requests-tab"]');
             if (requestsTab) {
                 requestsTab.style.display = 'none';
@@ -71,7 +72,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 profileActions.appendChild(messageButton);
             }
 
-            // Загружаем посты друга
+            // Загружаем п��сты друга
             await loadPosts();
 
         } catch (err) {
@@ -98,7 +99,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Загружаем список своих друзей
         await loadFriends(currentUser.id);
         
-        // Запускаем о��новление своего статуса
+        // Запускаем обновление своего статуса
         startStatusUpdates();
         
         // Загружаем посты
@@ -210,14 +211,37 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // При открытии модального окна редактирования заполняем поля текущими данными
     editProfileBtn = document.getElementById('edit-profile-btn');
-    if (editProfileBtn) {
+    const editProfileModal = document.getElementById('edit-profile-modal');
+    
+    if (editProfileBtn && editProfileModal) {
         editProfileBtn.addEventListener('click', () => {
+            // Заполняем поля текущими данными
             document.getElementById('edit-username').value = currentUser.username;
             document.getElementById('edit-email').value = currentUser.email || '';
             
-            const editProfileModal = document.getElementById('edit-profile-modal');
+            // Показываем модальное окно
             editProfileModal.classList.add('active');
             document.body.style.overflow = 'hidden';
+        });
+
+        // Обработчик для закрытия модального окна
+        editProfileModal.querySelector('.modal-close')?.addEventListener('click', () => {
+            editProfileModal.classList.remove('active');
+            document.body.style.overflow = '';
+        });
+
+        // Закрытие по клику вне модального окна
+        editProfileModal.addEventListener('click', (e) => {
+            if (e.target === editProfileModal) {
+                editProfileModal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+
+        // Обработчик для кнопки отмены
+        editProfileModal.querySelector('.cancel-btn')?.addEventListener('click', () => {
+            editProfileModal.classList.remove('active');
+            document.body.style.overflow = '';
         });
     }
 
@@ -683,7 +707,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         } catch (err) {
             console.error('Error loading user profile:', err);
-            alert('Ошибка при загрузке про��иля пользователя');
+            alert('Ошибка при загрузке профиля пользователя');
         }
     }
 
@@ -832,65 +856,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     `;
     document.head.appendChild(style);
-
-    // Обработчик для кнопки редактирования профиля
-    const editProfileBtn = document.getElementById('edit-profile-btn');
-    const editProfileModal = document.getElementById('edit-profile-modal');
-    
-    editProfileBtn.addEventListener('click', () => {
-        // Заполняем поля текущими данными
-        document.getElementById('edit-username').value = currentUser.username;
-        document.getElementById('edit-email').value = currentUser.email || '';
-        
-        // Показываем модальное окно
-        editProfileModal.classList.add('active');
-        document.body.style.overflow = 'hidden';
-    });
-
-    // Обработчик для закрытия модального окна
-    editProfileModal.querySelector('.modal-close').addEventListener('click', () => {
-        editProfileModal.classList.remove('active');
-        document.body.style.overflow = '';
-    });
-
-    // Закрытие по клику вне модального окна
-    editProfileModal.addEventListener('click', (e) => {
-        if (e.target === editProfileModal) {
-            editProfileModal.classList.remove('active');
-            document.body.style.overflow = '';
-        }
-    });
-
-    // Обработчик для кнопки отмены
-    editProfileModal.querySelector('.cancel-btn').addEventListener('click', () => {
-        editProfileModal.classList.remove('active');
-        document.body.style.overflow = '';
-    });
-
-    // Обработчики для кнопок показа/скрытия пароля
-    document.querySelectorAll('.toggle-password').forEach(button => {
-        button.addEventListener('click', () => {
-            const input = button.parentElement.querySelector('input');
-            const icon = button.querySelector('i');
-            
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.classList.remove('fa-eye');
-                icon.classList.add('fa-eye-slash');
-            } else {
-                input.type = 'password';
-                icon.classList.remove('fa-eye-slash');
-                icon.classList.add('fa-eye');
-            }
-        });
-    });
-
-    // Предотвращаем отправку формы (пока нет функционала)
-    document.getElementById('edit-profile-form').addEventListener('submit', (e) => {
-        e.preventDefault();
-        // Здесь будет логика сохранения изменений
-        alert('Функционал редактирования профиля находится в разработке');
-    });
 
     // Обработчики для смены пароля
     const requestPasswordChangeBtn = document.getElementById('request-password-change');
@@ -1073,7 +1038,7 @@ function initializePostHandlers() {
             };
             reader.readAsDataURL(file);
         } else {
-            // Для не-изображений показываем иконку файла
+            // Для не-изо��ражений показываем иконку файла
             const preview = document.getElementById('image-preview');
             const fileIcon = getFileIcon(file.name.split('.').pop().toLowerCase());
             preview.innerHTML = `
@@ -1355,7 +1320,7 @@ async function deletePost(postId) {
         }
     } catch (err) {
         console.error('Error deleting post:', err);
-        alert('О��ибка при удалении публикации');
+        alert('Ошибка при удалении публикации');
     }
 }
 
@@ -1487,7 +1452,7 @@ async function downloadFile(fileUrl) {
         const filename = fileUrl.split('/').pop();
         const folder = fileUrl.split('/')[2]; // posts, messages, etc.
 
-        // Дела��м запрос к API для скачивания
+        // Делаем запрос к API для скачивания
         const response = await fetch(`/api/download/${folder}/${filename}`);
         
         if (!response.ok) throw new Error('Download failed');
