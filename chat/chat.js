@@ -452,7 +452,7 @@ function setupEventListeners() {
     });
 }
 
-// Выносим обработчик Enter в отдельную ф��нкцию
+// Выносим обработчик Enter в отдельную функцию
 function handleEnterPress(e) {
     if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
@@ -495,7 +495,7 @@ function scrollToBottom() {
     });
 }
 
-// Функция отметки сообщений как прочитанных
+// Функция отметки сообщений к��к прочитанных
 async function markMessagesAsRead(friendId) {
     try {
         await fetch('https://adminflow.ru:5003/api/messages/read', {
@@ -658,7 +658,14 @@ document.getElementById('replyMessageBtn').addEventListener('click', () => {
 function showReplyPreview(messageText) {
     const replyPreview = document.getElementById('replyPreview');
     replyPreview.style.display = 'block';
-    replyPreview.textContent = `Ответ на: ${messageText}`;
+
+    // Обрезаем текст, если он слишком длинный
+    const maxLength = 50; // Максимальная длина текста в предпросмотре
+    const displayText = messageText.length > maxLength 
+        ? messageText.substring(0, maxLength) + '...' 
+        : messageText;
+
+    replyPreview.textContent = `Ответ на: ${displayText}`;
 }
 
 // Закрытие контекстного меню при клике вне его

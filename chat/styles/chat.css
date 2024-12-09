@@ -397,6 +397,10 @@ body {
     margin-bottom: 8px;
     font-size: 0.9em;
     color: var(--text-secondary);
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* Заглушка */
