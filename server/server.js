@@ -330,7 +330,7 @@ app.get('/api/search-users', async (req, res) => {
         res.json({ users: result.rows });
     } catch (err) {
         console.error('Search error:', err);
-        res.status(500).json({ error: 'Ошибка при поиске пользователей' });
+        res.status(500).json({ error: 'Ошибка при поис��е пользователей' });
     }
 });
 
@@ -384,7 +384,7 @@ app.get('/api/friends', async (req, res) => {
     try {
         const userId = parseInt(req.query.userId);
 
-        // Проверяем, ч��о userId является числом
+        // Проверяем, что userId является числом
         if (!userId || isNaN(userId)) {
             return res.status(400).json({ 
                 success: false, 
@@ -536,7 +536,7 @@ app.post('/api/messages/send-with-file', upload.single('file'), async (req, res)
     }
 });
 
-// Обн��вляем endpoint для загрузки истории сообщений
+// Обновляем endpoint для загрузки истории сообщений
 app.get('/api/messages/history/:userId/:friendId', async (req, res) => {
     try {
         const { userId, friendId } = req.params;
@@ -576,7 +576,7 @@ app.get('/api/messages/history/:userId/:friendId', async (req, res) => {
     }
 });
 
-// ��тметить сообщения как прочитанные
+// Отметить сообщения как прочитанные
 app.post('/api/messages/read', async (req, res) => {
     try {
         const { userId, friendId } = req.body;
@@ -1011,7 +1011,7 @@ app.get('/api/admin/users', checkAdmin, async (req, res) => {
         });
     } catch (err) {
         console.error('Admin users error:', err);
-        res.status(500).json({ error: 'Ошибка при получении списка пользователей' });
+        res.status(500).json({ error: 'Ошибка при получении списка пользов��телей' });
     }
 });
 
@@ -1022,7 +1022,7 @@ app.delete('/api/admin/users/:id', checkAdmin, async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         console.error('Admin delete user error:', err);
-        res.status(500).json({ error: 'Ошибка при удален��и пользователя' });
+        res.status(500).json({ error: 'Ошибка при удалении пользователя' });
     }
 });
 
@@ -1177,7 +1177,7 @@ app.post('/api/posts/create', uploadPost.single('image'), async (req, res) => {
         });
     } catch (err) {
         console.error('Error creating post:', err);
-        res.status(500).json({ error: 'Ошибка при создании поста' });
+        res.status(500).json({ error: 'О��ибка при создании поста' });
     }
 });
 
@@ -1559,7 +1559,7 @@ app.delete('/api/messages/delete/:messageId', async (req, res) => {
     }
 });
 
-// Endpoint для получения количества непрочитанных сообщений
+// Endpoint для получения количества непрочитанны�� сообщений
 app.get('/api/messages/unread/:userId/:friendId', async (req, res) => {
     try {
         const { userId, friendId } = req.params;
@@ -1638,17 +1638,17 @@ app.get('/api/users/check-email', async (req, res) => {
 
 // Создаем транспорт для отправки почты
 const transporter = nodemailer.createTransport({
-    host: 'mail.hosting.reg.ru',  // Альтернативный хост
-    port: 465,
+    host: 'mail.hosting.reg.ru',
+    port: 2078,        // Используем альтернативный порт
     secure: true,
     auth: {
         user: 'adminflow@adminflow.ru',
         pass: 'Gg3985502'
     },
     tls: {
-        rejectUnauthorized: false // Отключаем строгую проверку сертификата
+        rejectUnauthorized: false
     },
-    connectionTimeout: 30000, // Увеличиваем таймаут до 30 секунд
+    connectionTimeout: 30000,
     debug: true,
     logger: true
 });
@@ -1657,15 +1657,6 @@ const transporter = nodemailer.createTransport({
 transporter.verify(function(error, success) {
     if (error) {
         console.error('Ошибка подключения к SMTP:', error);
-        // Пробуем альтернативные настройки
-        transporter.options.host = 'smtp.timeweb.ru';
-        transporter.verify(function(error2, success2) {
-            if (error2) {
-                console.error('Ошибка подключения к альтернативному SMTP:', error2);
-            } else {
-                console.log('Подключение к альтернативному SMTP успешно');
-            }
-        });
     } else {
         console.log('SMTP сервер готов к отправке сообщений');
     }
