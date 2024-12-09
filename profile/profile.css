@@ -722,7 +722,7 @@ body {
     transform: scale(1.1);
 }
 
-/* Медиа-запросы для адаптивности */
+/* Медиа-за��росы для адаптивности */
 @media (max-width: 768px) {
     .image-modal .modal-flex-container {
         flex-direction: column;
@@ -797,7 +797,7 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(128, 128, 128, 0.5) !important; /* Серый полупрозрачный ф��н */
+    background: rgba(128, 128, 128, 0.5) !important; /* Серый полупрозрачный фон */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1012,31 +1012,66 @@ body {
 .post-action {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     padding: 6px 12px;
-    border-radius: var(--radius-md);
+    border-radius: 8px;
     cursor: pointer;
     transition: all 0.3s ease;
     color: var(--text-secondary);
     background: none;
     border: none;
+    font-weight: 500;
+    font-size: 14px;
 }
 
 .post-action:hover {
-    background: var(--hover-color);
-    color: var(--text-primary);
+    background: var(--background-color);
+    color: var(--primary-color);
+    transform: translateY(-2px);
+}
+
+.like-action {
+    position: relative;
+    overflow: hidden;
+}
+
+.like-action.liked {
+    color: #FF4B6E !important;
+}
+
+.like-action.liked i {
+    color: #FF4B6E !important;
+    animation: likeAnimation 0.5s cubic-bezier(0.17, 0.89, 0.32, 1.49);
+}
+
+.like-action:hover {
+    background: rgba(255, 75, 110, 0.1);
+}
+
+.like-action.liked:hover {
+    background: rgba(255, 75, 110, 0.15);
+}
+
+@keyframes likeAnimation {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.4); }
+    100% { transform: scale(1); }
 }
 
 .post-action i {
-    font-size: 18px;
+    font-size: 20px;
     transition: transform 0.3s ease;
 }
 
-.post-action:hover i {
-    transform: scale(1.1);
+.likes-count {
+    transition: color 0.3s ease;
 }
 
-/* Специальные стили для кнопки лайка */
+.like-action.liked .likes-count {
+    color: #FF4B6E !important;
+}
+
+/* Стили для кнопки лайка */
 .like-action {
     color: var(--text-secondary);
 }
@@ -1156,7 +1191,7 @@ body {
     font-size: 16px;
 }
 
-/* ��оказываем кнопку удаления только при наведении на пост */
+/* Показываем кнопку удаления только при наведении на пост */
 .post:not(:hover) .delete-post-btn {
     opacity: 0;
 }
