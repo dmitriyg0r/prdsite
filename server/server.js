@@ -330,7 +330,7 @@ app.get('/api/search-users', async (req, res) => {
         res.json({ users: result.rows });
     } catch (err) {
         console.error('Search error:', err);
-        res.status(500).json({ error: 'Ошибка при поис��е пользователей' });
+        res.status(500).json({ error: 'Ошибка при поиске пользователей' });
     }
 });
 
@@ -596,7 +596,7 @@ app.post('/api/messages/read', async (req, res) => {
     }
 });
 
-// Получение последнего сообщения с пользователем
+// Получение последнего сообщ��ния с пользователем
 app.get('/api/messages/last/:userId/:friendId', async (req, res) => {
     try {
         const { userId, friendId } = req.params;
@@ -943,7 +943,7 @@ const checkAdmin = async (req, res, next) => {
         if (userResult.rows.length === 0 || userResult.rows[0].role !== 'admin') {
             return res.status(403).json({ 
                 success: false,
-                error: 'Доступ запрещен' 
+                error: 'Доступ запр��щен' 
             });
         }
 
@@ -1011,7 +1011,7 @@ app.get('/api/admin/users', checkAdmin, async (req, res) => {
         });
     } catch (err) {
         console.error('Admin users error:', err);
-        res.status(500).json({ error: 'Ошибка при получении списка пользов��телей' });
+        res.status(500).json({ error: 'Ошибка при получении списка пользователей' });
     }
 });
 
@@ -1177,7 +1177,7 @@ app.post('/api/posts/create', uploadPost.single('image'), async (req, res) => {
         });
     } catch (err) {
         console.error('Error creating post:', err);
-        res.status(500).json({ error: 'О��ибка при создании поста' });
+        res.status(500).json({ error: 'Ошибка при создании поста' });
     }
 });
 
@@ -1559,7 +1559,7 @@ app.delete('/api/messages/delete/:messageId', async (req, res) => {
     }
 });
 
-// Endpoint для получения количества непрочитанны�� сообщений
+// Endpoint для получения количества непрочитанных сообщений
 app.get('/api/messages/unread/:userId/:friendId', async (req, res) => {
     try {
         const { userId, friendId } = req.params;
@@ -1638,15 +1638,15 @@ app.get('/api/users/check-email', async (req, res) => {
 
 // Создаем транспорт для отправки почты
 const transporter = nodemailer.createTransport({
-    host: 'mail.hosting.reg.ru',
-    port: 2078,        // Используем альтернативный порт
-    secure: true,
+    host: 'smtp.timeweb.ru',
+    port: 2525,        // Альтернативный порт для SMTP
+    secure: false,     // Для порта 2525 используем false
     auth: {
         user: 'adminflow@adminflow.ru',
         pass: 'Gg3985502'
     },
     tls: {
-        rejectUnauthorized: false
+        rejectUnauthorized: false // В случае проблем с сертификатом
     },
     connectionTimeout: 30000,
     debug: true,
@@ -1657,6 +1657,11 @@ const transporter = nodemailer.createTransport({
 transporter.verify(function(error, success) {
     if (error) {
         console.error('Ошибка подключения к SMTP:', error);
+        console.log('Детали ошибки:', {
+            host: transporter.options.host,
+            port: transporter.options.port,
+            error: error.message
+        });
     } else {
         console.log('SMTP сервер готов к отправке сообщений');
     }
