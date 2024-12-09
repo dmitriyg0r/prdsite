@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 profileActions.appendChild(messageButton);
             }
 
-            // Загружаем п��сты друга
+            // Загружаем посты друга
             await loadPosts();
 
         } catch (err) {
@@ -116,64 +116,59 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Обработчик формы редактирования профиля
     const editProfileForm = document.getElementById('edit-profile-form');
-    editProfileForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
+    if (editProfileForm) {
+        editProfileForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
 
-        const username = document.getElementById('edit-username').value.trim();
-        const email = document.getElementById('edit-email').value.trim();
+            const username = document.getElementById('edit-username').value.trim();
+            const email = document.getElementById('edit-email').value.trim();
 
-        // Базовая валидация
-        if (!username) {
-            alert('Имя пользователя не может быть пустым');
-            return;
-        }
+            try {
+                const response = await fetch('https://adminflow.ru:5003/api/users/update-profile', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        userId: currentUser.id,
+                        username,
+                        email
+                    })
+                });
 
-        if (email && !isValidEmail(email)) {
-            alert('Введите корректный email');
-            return;
-        }
+                const data = await response.json();
 
-        try {
-            const response = await fetch('https://adminflow.ru:5003/api/users/update-profile', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    userId: currentUser.id,
-                    username,
-                    email
-                })
-            });
+                if (response.ok) {
+                    // Обновляем данные пользователя в localStorage
+                    currentUser = {
+                        ...currentUser,
+                        username: data.user.username,
+                        email: data.user.email
+                    };
+                    localStorage.setItem('user', JSON.stringify(currentUser));
 
-            const data = await response.json();
+                    // Обновляем отображение на странице
+                    document.getElementById('username').textContent = currentUser.username;
+                    const emailElement = document.getElementById('email');
+                    if (emailElement) {
+                        emailElement.textContent = currentUser.email || 'Не указан';
+                    }
 
-            if (response.ok) {
-                // Обновляем данные пользователя в localStorage
-                currentUser = data.user;
-                localStorage.setItem('user', JSON.stringify(currentUser));
+                    // Закрываем модальное окно
+                    const editProfileModal = document.getElementById('edit-profile-modal');
+                    editProfileModal.classList.remove('active');
+                    document.body.style.overflow = '';
 
-                // Обновляем отображение на странице
-                document.getElementById('username').textContent = currentUser.username;
-                const emailElement = document.getElementById('email');
-                if (emailElement) {
-                    emailElement.textContent = currentUser.email || 'Не указан';
+                    alert('Профиль успешно обновлен');
+                } else {
+                    throw new Error(data.error || 'Ошибка при обновлении профиля');
                 }
-
-                // Закрываем модальное окно
-                const editProfileModal = document.getElementById('edit-profile-modal');
-                editProfileModal.classList.remove('active');
-                document.body.style.overflow = '';
-
-                alert('Профиль успешно обновлен');
-            } else {
-                throw new Error(data.error || 'Ошибка при обновлении профиля');
+            } catch (err) {
+                console.error('Update profile error:', err);
+                alert(err.message);
             }
-        } catch (err) {
-            console.error('Update profile error:', err);
-            alert(err.message);
-        }
-    });
+        });
+    }
 
     // Функция валидации email
     function isValidEmail(email) {
@@ -1038,7 +1033,7 @@ function initializePostHandlers() {
             };
             reader.readAsDataURL(file);
         } else {
-            // Для не-изо��ражений показываем иконку файла
+            // Для не-изображений показываем иконку файла
             const preview = document.getElementById('image-preview');
             const fileIcon = getFileIcon(file.name.split('.').pop().toLowerCase());
             preview.innerHTML = `
@@ -1261,7 +1256,7 @@ async function toggleLike(postId) {
         const data = await response.json();
         
         if (response.ok) {
-            // Находим элементы конкретного поста
+            // Находим элементы конкре��ного поста
             const postElement = document.querySelector(`.post[data-post-id="${postId}"]`);
             const likeButton = postElement.querySelector('.like-action');
             const heartIcon = postElement.querySelector('.like-action i');
@@ -1415,7 +1410,7 @@ window.closeImageModal = function(modal) {
     }, 300);
 };
 
-// Добавляем функцию в глобальную область видимости
+// Добавляем функцию в г��обальную область видимости
 window.openFriendsModal = function() {
     const friendsModal = document.getElementById('friends-modal');
     const friendsTab = document.querySelector('[data-tab="friends-tab"]');
@@ -1452,7 +1447,7 @@ async function downloadFile(fileUrl) {
         const filename = fileUrl.split('/').pop();
         const folder = fileUrl.split('/')[2]; // posts, messages, etc.
 
-        // Делаем запрос к API для скачивания
+        // Делаем запрос к API для скачи��ания
         const response = await fetch(`/api/download/${folder}/${filename}`);
         
         if (!response.ok) throw new Error('Download failed');
