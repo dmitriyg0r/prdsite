@@ -62,16 +62,25 @@ function displayPosts(posts) {
                         <i class="${post.is_liked ? 'fas' : 'far'} fa-heart"></i>
                         <span class="likes-count">${post.likes_count || 0}</span>
                     </button>
-                    <div class="post-action">
+                    <button class="post-action comment-action" onclick="toggleComments(${post.id})">
                         <i class="far fa-comment"></i>
-                        <span>${post.comments_count || 0}</span>
+                        <span class="comments-count">${post.comments_count || 0}</span>
+                    </button>
+                </div>
+                <div class="comments-section" id="comments-${post.id}" style="display: none;">
+                    <div class="comments-container" id="comments-container-${post.id}"></div>
+                    <div class="comment-form">
+                        <textarea class="comment-input" placeholder="Написать комментарий..." rows="1"></textarea>
+                        <button class="comment-submit" onclick="submitComment(${post.id}, this)">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
                     </div>
                 </div>
             </div>
         `;
     }).join('') : '<div class="no-posts">Нет публикаций от ваших друзей</div>';
 
-    // Добавляем обработчики для лайков
+    // Добавляем обработчики
     document.querySelectorAll('.like-action').forEach(btn => {
         btn.addEventListener('click', () => toggleLike(btn.dataset.postId));
     });
@@ -107,6 +116,104 @@ async function toggleLike(postId) {
     } catch (err) {
         console.error('Error toggling like:', err);
         alert('Ошибка при обработке лайка');
+    }
+}
+
+async function toggleComments(postId) {
+    const commentsSection = document.getElementById(`comments-${postId}`);
+    const isHidden = commentsSection.style.display === 'none';
+    
+    if (isHidden) {
+        commentsSection.style.display = 'block';
+        await loadComments(postId);
+    } else {
+        commentsSection.style.display = 'none';
+    }
+}
+
+async function loadComments(postId) {
+    try {
+        const response = await fetch(`https://adminflow.ru:5003/api/posts/${postId}/comments`);
+        if (!response.ok) throw new Error('Ошибка при загрузке комментариев');
+        
+        const data = await response.json();
+        displayComments(postId, data.comments);
+    } catch (err) {
+        console.error('Error loading comments:', err);
+        alert('Ошибка при загрузке комментариев');
+    }
+}
+
+function displayComments(postId, comments) {
+    const container = document.getElementById(`comments-container-${postId}`);
+    
+    container.innerHTML = comments.map(comment => `
+        <div class="comment">
+            <div class="comment-header">
+                <img src="${comment.author_avatar || '/uploads/avatars/default.png'}" 
+                     alt="${comment.author_name}" 
+                     class="comment-avatar">
+                <div class="comment-info">
+                    <span class="comment-author">${comment.author_name}</span>
+                    <span class="comment-date">${new Date(comment.created_at).toLocaleString()}</span>
+                </div>
+            </div>
+            <div class="comment-content">${comment.content}</div>
+        </div>
+    `).join('');
+}
+
+async function submitComment(postId, button) {
+    const form = button.closest('.comment-form');
+    const input = form.querySelector('.comment-input');
+    const content = input.value.trim();
+    
+    if (!content) return;
+    
+    try {
+        const response = await fetch('https://adminflow.ru:5003/api/posts/comment', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                userId: currentUser.id,
+                postId: postId,
+                content: content
+            })
+        });
+
+        if (!response.ok) throw new Error('Ошибка при создании комментария');
+        
+        const data = await response.json();
+        
+        // Обновляем счетчик комментариев
+        const countElement = document.querySelector(`.post[data-post-id="${postId}"] .comments-count`);
+        countElement.textContent = parseInt(countElement.textContent) + 1;
+        
+        // Добавляем новый комментарий в начало списка
+        const container = document.getElementById(`comments-container-${postId}`);
+        const commentHtml = `
+            <div class="comment">
+                <div class="comment-header">
+                    <img src="${data.comment.author_avatar || '/uploads/avatars/default.png'}" 
+                         alt="${data.comment.author_name}" 
+                         class="comment-avatar">
+                    <div class="comment-info">
+                        <span class="comment-author">${data.comment.author_name}</span>
+                        <span class="comment-date">${new Date(data.comment.created_at).toLocaleString()}</span>
+                    </div>
+                </div>
+                <div class="comment-content">${data.comment.content}</div>
+            </div>
+        `;
+        container.insertAdjacentHTML('afterbegin', commentHtml);
+        
+        // Очищаем поле ввода
+        input.value = '';
+    } catch (err) {
+        console.error('Error submitting comment:', err);
+        alert('Ошибка при отправке комментария');
     }
 }
 
