@@ -341,7 +341,7 @@ app.get('/api/search-users', async (req, res) => {
         res.json({ users: result.rows });
     } catch (err) {
         console.error('Search error:', err);
-        res.status(500).json({ error: 'Ошибка при поиске пользователей' });
+        res.status(500).json({ error: 'Ошибка п��и поиске пользователей' });
     }
 });
 
@@ -1055,7 +1055,7 @@ const uploadPost = multer({
         fileSize: 10 * 1024 * 1024 // 10MB макс размер
     },
     fileFilter: (req, file, cb) => {
-        // Разрешенные тип�� файлов
+        // Разрешенные тип файлов
         const allowedTypes = {
             // Изображения
             'image/jpeg': true,
@@ -1388,7 +1388,7 @@ app.get('/api/posts/:postId/comments', async (req, res) => {
         console.error('Error loading comments:', err);
         res.status(500).json({ 
             success: false, 
-            error: 'Ошибка при загрузке комментариев',
+            error: 'Ошибка при загрузке ком��ентариев',
             details: err.message 
         });
     }
@@ -1442,7 +1442,7 @@ app.post('/api/posts/comment', async (req, res) => {
     }
 });
 
-// Обработка ста��уса набора текста
+// Обработка статуса набора текста
 app.post('/api/messages/typing', async (req, res) => {
     try {
         const { userId, friendId, isTyping } = req.body;
@@ -1484,5 +1484,32 @@ app.delete('/api/messages/delete/:messageId', async (req, res) => {
     } catch (err) {
         console.error('Error deleting message:', err);
         res.status(500).json({ error: 'Ошибка при удалении сообщения' });
+    }
+});
+
+// Endpoint для получения количества непрочитанных сообщений
+app.get('/api/messages/unread/:userId/:friendId', async (req, res) => {
+    try {
+        const { userId, friendId } = req.params;
+        
+        const result = await pool.query(
+            `SELECT COUNT(*) as count 
+             FROM messages 
+             WHERE sender_id = $1 
+             AND receiver_id = $2 
+             AND is_read = false`,
+            [friendId, userId]
+        );
+
+        res.json({
+            success: true,
+            count: parseInt(result.rows[0].count)
+        });
+    } catch (err) {
+        console.error('Error getting unread count:', err);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Error getting unread count' 
+        });
     }
 });

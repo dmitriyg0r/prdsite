@@ -95,7 +95,7 @@ function getLastActivityTime(timestamp) {
     const now = new Date();
     const diff = now - lastActivity;
     
-    if (diff < 60000) return 'был(а) только что';
+    if (diff < 60000) return 'был(а) т��лько что';
     if (diff < 3600000) return `был(а) ${Math.floor(diff/60000)} мн. назад`;
     if (diff < 86400000) return `был(а) ${Math.floor(diff/3600000)} ч. назад`;
     return 'был(а) давно';
@@ -125,14 +125,17 @@ async function loadLastMessage(friendId) {
 
 async function updateUnreadCount(friendId) {
     try {
-        const response = await fetch(`https://adminflow.ru:5003/api/messages/unread/${currentUser.id}`);
+        const response = await fetch(`https://adminflow.ru:5003/api/messages/unread/${currentUser.id}/${friendId}`);
         const data = await response.json();
-
+        
         const unreadElement = document.getElementById(`unread-${friendId}`);
-        if (unreadElement && data.success) {
-            const unreadCount = data.unreadCounts.find(count => count.sender_id === friendId);
-            unreadElement.textContent = unreadCount ? unreadCount.count : '';
-            unreadElement.style.display = unreadCount && unreadCount.count > 0 ? 'block' : 'none';
+        if (unreadElement) {
+            if (data.count > 0) {
+                unreadElement.textContent = data.count;
+                unreadElement.style.display = 'flex';
+            } else {
+                unreadElement.style.display = 'none';
+            }
         }
     } catch (err) {
         console.error('Error updating unread count:', err);
@@ -595,7 +598,7 @@ function setupAttachmentHandlers() {
         }
 
         if (!allowedTypes.includes(file.type)) {
-            alert('Неподдерживае��ый тип файла. Разрешены: JPG, PNG, GIF, PDF');
+            alert('Неподдерживаемый тип файла. Разрешены: JPG, PNG, GIF, PDF');
             fileInput.value = '';
             return;
         }
@@ -676,7 +679,7 @@ async function sendMessageWithFile(message) {
         }
     } catch (err) {
         console.error('Error sending file:', err);
-        alert('Ошибка п��и отправке файла');
+        alert('Ошибка при отправке файла');
     }
 }
 
@@ -771,4 +774,17 @@ async function deleteMessage(messageId) {
         console.error('Error deleting message:', err);
         alert('Ошибка при удалении сообщения');
     }
+}
+
+// Добавляем периодическое обновление счетчиков
+function startUnreadCountUpdates() {
+    const updateInterval = setInterval(() => {
+        const friendsList = document.querySelectorAll('.chat-partner');
+        friendsList.forEach(friend => {
+            const friendId = friend.dataset.friendId;
+            updateUnreadCount(friendId);
+        });
+    }, 5000); // Обновляем каждые 5 секунд
+
+    return updateInterval;
 } 
