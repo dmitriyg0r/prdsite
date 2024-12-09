@@ -160,7 +160,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Обновляем селектор для кнопки открытия модального окна
     const friendsHeaderBtn = document.querySelector('.friends-header-btn');
     
-    // Открытие модального окна при клике на заголовок "Д��узья"
+    // Открытие модального окна при клике на заголовок "Дузья"
     friendsHeaderBtn.addEventListener('click', (e) => {
         e.preventDefault();
         friendsModal.classList.add('active');
@@ -428,7 +428,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         } catch (err) {
             console.error('Search error:', err);
-            alert('Ошибка при поиске пользоват��лей');
+            alert('Ошибка при поиске пользователей');
         }
     }
 
@@ -560,7 +560,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (data.user) {
                 // Сохраняем данные профиля друга во временное хранилище
                 sessionStorage.setItem('viewing_profile', JSON.stringify(data.user));
-                // Перенаправляем на страницу профиля с ��араметром
+                // Перенаправляем на страницу профиля с параметром
                 window.location.href = `/profile/profile.html?id=${userId}`;
             } else {
                 alert('Пользователь не найден');
@@ -744,13 +744,17 @@ function initializePostHandlers() {
     // Обработк загрузки изображения
     postImage?.addEventListener('change', (e) => {
         const file = e.target.files[0];
-        if (file) {
-            if (file.size > 5 * 1024 * 1024) { // 5MB
-                alert('Файл слишком большой. Максимальный размер: 5MB');
-                postImage.value = '';
-                return;
-            }
+        if (!file) return;
 
+        // Проверяем размер файла
+        if (file.size > 10 * 1024 * 1024) { // 10MB
+            alert('Файл слишком большой. Максимальный размер: 10MB');
+            e.target.value = '';
+            return;
+        }
+
+        // Проверяем, является ли файл изображением
+        if (file.type.startsWith('image/')) {
             const reader = new FileReader();
             reader.onload = (e) => {
                 const preview = document.getElementById('image-preview');
@@ -762,8 +766,21 @@ function initializePostHandlers() {
                 `;
             };
             reader.readAsDataURL(file);
-            selectedPostImage = file;
+        } else {
+            // Для не-изображений показываем иконку файла
+            const preview = document.getElementById('image-preview');
+            const fileIcon = getFileIcon(file.name.split('.').pop().toLowerCase());
+            preview.innerHTML = `
+                <div class="file-preview">
+                    <i class="${fileIcon}"></i>
+                    <span>${file.name}</span>
+                    <button class="remove-image" onclick="removePostImage()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
         }
+        selectedPostImage = file;
     });
 
     // Публикация поста
@@ -772,8 +789,11 @@ function initializePostHandlers() {
 
 async function createPost() {
     const content = document.getElementById('post-content').value.trim();
-    if (!content && !selectedPostImage) {
-        alert('Добавьте текст или изображение');
+    const fileInput = document.getElementById('post-image');
+    const file = fileInput.files[0];
+
+    if (!content && !file) {
+        alert('Добавьте текст или файл');
         return;
     }
 
@@ -781,8 +801,36 @@ async function createPost() {
         const formData = new FormData();
         formData.append('userId', currentUser.id);
         formData.append('content', content);
-        if (selectedPostImage) {
-            formData.append('image', selectedPostImage);
+        
+        if (file) {
+            // Проверяем размер файла (например, 10MB максимум)
+            const maxSize = 10 * 1024 * 1024; // 10MB в байтах
+            if (file.size > maxSize) {
+                alert('Файл слишком большой. Максимальный размер: 10MB');
+                return;
+            }
+
+            // Разрешенные типы файлов
+            const allowedTypes = [
+                'image/jpeg',
+                'image/png',
+                'image/gif',
+                'image/webp',
+                'application/pdf',
+                'application/msword',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'application/vnd.ms-excel',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'application/vnd.oasis.opendocument.text', // Формат ODT (LibreOffice Writer)
+                'text/plain'
+            ];
+
+            if (!allowedTypes.includes(file.type)) {
+                alert('Неподдерживаемый тип файла. Разрешены: изображения, PDF, Word, Excel и текстовые файлы');
+                return;
+            }
+
+            formData.append('file', file); // Изменено с 'image' на 'file'
         }
 
         const response = await fetch('https://adminflow.ru:5003/api/posts/create', {
@@ -790,22 +838,29 @@ async function createPost() {
             body: formData
         });
 
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(errorText || 'Ошибка при создании публикации');
+        }
+
         const data = await response.json();
+        
         if (data.success) {
             // Очищаем форму
             document.getElementById('post-content').value = '';
             document.getElementById('image-preview').innerHTML = '';
             document.getElementById('post-form').style.display = 'none';
+            fileInput.value = '';
             selectedPostImage = null;
 
             // Перезагружаем посты
             loadPosts();
         } else {
-            throw new Error(data.error);
+            throw new Error(data.error || 'Ошибка при создании пуб��икации');
         }
     } catch (err) {
         console.error('Error creating post:', err);
-        alert('Ошибка при создании публикации');
+        alert('Ошибка при создании публикации: ' + err.message);
     }
 }
 
@@ -948,7 +1003,7 @@ async function toggleLike(postId) {
         }
     } catch (err) {
         console.error('Error toggling like:', err);
-        alert('Оши��ка при обработке лайка');
+        alert('Ошибка при обработке лайка');
     }
 }
 
@@ -1101,10 +1156,10 @@ function getFileIcon(extension) {
         'pdf': 'fas fa-file-pdf',
         'doc': 'fas fa-file-word',
         'docx': 'fas fa-file-word',
+        'odt': 'fas fa-file-word', // Иконка для ODT файлов
         'xls': 'fas fa-file-excel',
         'xlsx': 'fas fa-file-excel',
-        'txt': 'fas fa-file-alt',
-        // Добавьте другие типы файлов по необходимости
+        'txt': 'fas fa-file-alt'
     };
     
     return iconMap[extension] || 'fas fa-file';
