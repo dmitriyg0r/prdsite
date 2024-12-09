@@ -95,7 +95,7 @@ function getLastActivityTime(timestamp) {
     const now = new Date();
     const diff = now - lastActivity;
     
-    if (diff < 60000) return 'был(а) тко что';
+    if (diff < 60000) return 'был(а) т��о что';
     if (diff < 3600000) return `был(а) ${Math.floor(diff/60000)} мн. назад`;
     if (diff < 86400000) return `был(а) ${Math.floor(diff/3600000)} ч. назад`;
     return 'был(а) давно';
@@ -332,7 +332,7 @@ function createMessageElement(message) {
     });
     messageInfo.appendChild(messageTime);
 
-    // Статус прочтения для отправленных соо��щений
+    // Статус прочтения для отправленных сообщений
     if (message.sender_id === currentUser.id) {
         const readStatus = document.createElement('span');
         readStatus.className = 'message-status';
@@ -504,7 +504,7 @@ function handleEnterPress(e) {
     }
 }
 
-// Очистка при ��ходе со страницы
+// Очистка при ходе со страницы
 window.addEventListener('beforeunload', () => {
     if (messageUpdateInterval) {
         clearInterval(messageUpdateInterval);
@@ -519,26 +519,51 @@ async function loadMessages(friendId) {
 
         if (data.success) {
             const messagesContainer = document.getElementById('messages');
-            const scrolledToBottom = isScrolledToBottom(messagesContainer);
+            const isAtBottom = isScrolledToBottom(messagesContainer);
             
-            // Сохраняем ID последнего сообщения
-            const lastMessageId = messagesContainer.lastElementChild?.dataset.messageId;
+            // Получаем существующие сообщения
+            const existingMessages = new Set(
+                Array.from(messagesContainer.children).map(el => el.dataset.messageId)
+            );
             
-            // Обновляем сообщения только если есть новые
-            if (data.messages.length > 0 && data.messages[data.messages.length - 1].id !== lastMessageId) {
-                messagesContainer.innerHTML = '';
-                data.messages.forEach(message => {
+            // Находим только новые сообщения
+            const newMessages = data.messages.filter(msg => !existingMessages.has(msg.id.toString()));
+            
+            // Если есть новые сообщения
+            if (newMessages.length > 0) {
+                // Добавляем только новые сообщения
+                newMessages.forEach(message => {
                     const messageElement = createMessageElement(message);
                     messagesContainer.appendChild(messageElement);
                 });
                 
-                if (scrolledToBottom) {
+                // Прокручиваем вниз только если были в нижней позиции
+                if (isAtBottom) {
                     scrollToBottom();
                 }
             }
+            
+            // Обновляем статусы существующих сообщений
+            data.messages.forEach(message => {
+                const existingMessage = messagesContainer.querySelector(`[data-message-id="${message.id}"]`);
+                if (existingMessage) {
+                    updateMessageStatus(existingMessage, message);
+                }
+            });
         }
     } catch (error) {
         console.error('Ошибка при загрузке сообщений:', error);
+    }
+}
+
+// Функция обновления статуса сообщения
+function updateMessageStatus(messageElement, messageData) {
+    // Обновляем статус прочтения
+    const statusElement = messageElement.querySelector('.message-status');
+    if (statusElement) {
+        statusElement.innerHTML = messageData.is_read 
+            ? '<i class="fas fa-check-double"></i>' 
+            : '<i class="fas fa-check"></i>';
     }
 }
 
@@ -578,7 +603,7 @@ async function markMessagesAsRead(friendId) {
     }
 }
 
-// Функция показа модального окна с изображением
+// Функция показа мо��ального окна с изображением
 function showImageModal(imageUrl) {
     const modal = document.querySelector('.image-modal');
     const modalImage = document.getElementById('modalImage');
@@ -726,7 +751,7 @@ document.addEventListener('click', (event) => {
     }
 });
 
-// Обработчик для удаления сооб��ения
+// Обработчик для удаления сообщения
 document.getElementById('deleteMessageBtn').addEventListener('click', () => {
     if (selectedMessageId) {
         deleteMessage(selectedMessageId);
@@ -764,7 +789,7 @@ async function deleteMessage(messageId) {
     }
 }
 
-// Добавляем периодическое обновление счетчиков
+// Добавляем периодическое об��овление счетчиков
 function startUnreadCountUpdates() {
     const updateInterval = setInterval(() => {
         const friendsList = document.querySelectorAll('.chat-partner');
@@ -782,10 +807,12 @@ function startMessageUpdates() {
         clearInterval(messageUpdateInterval);
     }
     
+    // Первая загрузка
     loadMessages(currentChatPartner.id);
     
+    // Устанавливаем интервал обновления
     messageUpdateInterval = setInterval(() => {
-        if (currentChatPartner) {
+        if (currentChatPartner && document.visibilityState === 'visible') {
             loadMessages(currentChatPartner.id);
         }
     }, 3000);
@@ -815,4 +842,11 @@ function setupContextMenu() {
     document.addEventListener('click', () => {
         contextMenu.style.display = 'none';
     });
-} 
+}
+
+// Добавляем обработчик видимости страницы
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && currentChatPartner) {
+        loadMessages(currentChatPartner.id);
+    }
+}); 
