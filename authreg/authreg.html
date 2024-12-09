@@ -8,6 +8,12 @@
     <link rel="stylesheet" href="authreg.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="icon" type="image/x-icon" href="../flow.ico">
+    <script>
+        // Проверяем, авторизован ли пользователь
+        if (localStorage.getItem('user')) {
+            window.location.href = '/profile/profile.html';
+        }
+    </script>
 </head>
 <body>
     <div id="error-message" style="display: none;"></div>
@@ -79,5 +85,29 @@
     </div>
 
     <script src="authreg.js"></script>
+    <script>
+        // Функция проверки авторизации
+        function checkAuth() {
+            const user = localStorage.getItem('user');
+            if (!user) {
+                window.location.href = '/authreg/authreg.html';
+                return false;
+            }
+            return true;
+        }
+
+        // Проверяем авторизацию при загрузке страницы
+        document.addEventListener('DOMContentLoaded', () => {
+            // Исключаем страницу авторизации из проверки
+            if (!window.location.pathname.includes('/authreg/')) {
+                checkAuth();
+            }
+        });
+
+        function logout() {
+            localStorage.removeItem('user');
+            window.location.href = '/authreg/authreg.html';
+        }
+    </script>
 </body>
 </html> 
