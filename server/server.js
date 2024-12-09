@@ -49,47 +49,35 @@ app.get('/api/test', async (req, res) => {
 app.post('/api/login', async (req, res) => {
     try {
         const { username, password } = req.body;
-        
-        // Поиск пользователя
-        const userResult = await pool.query(
-            'SELECT * FROM users WHERE username = $1',
-            [username]
-        );
 
-        if (userResult.rows.length === 0) {
-            return res.status(401).json({ error: 'Пользователь не найден' });
+        // Изменяем запрос, чтобы получить все необходимые поля, включая email
+        const result = await pool.query(`
+            SELECT id, username, password, role, avatar_url, email, created_at, last_login 
+            FROM users 
+            WHERE username = $1
+        `, [username]);
+
+        if (result.rows.length === 0) {
+            return res.status(401).json({ error: 'Неверное имя пользователя или пароль' });
         }
 
-        const user = userResult.rows[0];
-
-        // Проверка пароля
-        const validPassword = await bcrypt.compare(password, user.password_hash);
+        const user = result.rows[0];
+        const validPassword = await bcrypt.compare(password, user.password);
 
         if (!validPassword) {
-            return res.status(401).json({ error: 'Неверный пароль' });
+            return res.status(401).json({ error: 'Неверное имя пользователя или пароль' });
         }
 
-        try {
-            // Обновляем время последнего входа и статус
-            await pool.query(
-                'UPDATE users SET last_login = CURRENT_TIMESTAMP, is_online = true, last_activity = CURRENT_TIMESTAMP WHERE id = $1',
-                [user.id]
-            );
-        } catch (updateErr) {
-            console.error('Error updating user status:', updateErr);
-        }
+        // Обновляем last_login
+        await pool.query(`
+            UPDATE users 
+            SET last_login = NOW() 
+            WHERE id = $1
+        `, [user.id]);
 
-        // Отправляем успешный ответ с добавленным avatar_url
-        res.json({
-            success: true,
-            user: {
-                id: user.id,
-                username: user.username,
-                role: user.role,
-                created_at: user.created_at,
-                avatar_url: user.avatar_url || '/uploads/avatars/default.png' // Добавляем URL аватарки
-            }
-        });
+        // Отправляем все данные пользователя, кроме пароля
+        const { password: _, ...userWithoutPassword } = user;
+        res.json({ user: userWithoutPassword });
 
     } catch (err) {
         console.error('Login error:', err);
@@ -426,7 +414,7 @@ app.get('/api/friends', async (req, res) => {
     }
 });
 
-// Получение входящих з��явок в друзья
+// Получение входящих заявок в друзья
 app.get('/api/friend-requests', async (req, res) => {
     try {
         const userId = req.query.userId;
@@ -463,7 +451,7 @@ app.post('/api/friend/remove', async (req, res) => {
     }
 });
 
-// Настройка хранилища для файлов сообщений
+// Нас��ройка хранилища для файлов сообщений
 const messageStorage = multer.diskStorage({
     destination: function (req, file, cb) {
         const uploadDir = path.join(__dirname, '../public/uploads/messages');
@@ -741,7 +729,7 @@ app.get('/api/chat/friends', async (req, res) => {
     }
 });
 
-// Обновленная настройка статич��ских путей
+// Обновленная настройка статических путей
 app.use('/uploads', (req, res, next) => {
     const ext = path.extname(req.path).toLowerCase();
     // Если это изображение - показываем, иначе отправляем через download API
@@ -808,7 +796,7 @@ app.get('/api/users/:id', async (req, res) => {
         `, [id]);
 
         if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Пол��зователь не найден' });
+            return res.status(404).json({ error: 'Пользователь не найден' });
         }
 
         res.json({ 
@@ -964,7 +952,7 @@ const checkAdmin = async (req, res, next) => {
         console.error('Auth error:', err);
         res.status(500).json({ 
             success: false,
-            error: 'Ошибка сервера' 
+            error: 'Ош��бка сервера' 
         });
     }
 };
@@ -1023,7 +1011,7 @@ app.get('/api/admin/users', checkAdmin, async (req, res) => {
         });
     } catch (err) {
         console.error('Admin users error:', err);
-        res.status(500).json({ error: 'Ошибка при получении списка пользователей' });
+        res.status(500).json({ error: 'Ошибка при пол��чении списка пользователей' });
     }
 });
 
@@ -1485,7 +1473,7 @@ app.post('/api/posts/comment', async (req, res) => {
         
         const { userId, postId, content } = req.body;
 
-        // Проверяем существование пос��а
+        // Проверяем существование поста
         const postExists = await pool.query(
             'SELECT id FROM posts WHERE id = $1 AND type = $2',
             [postId, 'post']
@@ -1598,7 +1586,7 @@ app.get('/api/messages/unread/:userId/:friendId', async (req, res) => {
     }
 });
 
-// Endpoint для пометки сообщ��ний как прочитанных
+// Endpoint для пометки сообщений как прочитанных
 app.post('/api/messages/mark-as-read', async (req, res) => {
     try {
         const { userId, friendId } = req.body;
