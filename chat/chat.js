@@ -342,12 +342,20 @@ function createAttachmentElement(attachmentUrl) {
     const attachmentElement = document.createElement('div');
     attachmentElement.className = 'message-attachment';
     
-    // Проверяем, начинается ли URL с http
-    const fullUrl = attachmentUrl.startsWith('http') 
-        ? attachmentUrl 
-        : `https://adminflow.ru:5003/uploads/messages/${attachmentUrl}`;
+    // Очищаем и нормализуем путь к файлу
+    let fullUrl = attachmentUrl;
+    
+    // Убираем дублирование пути
+    if (attachmentUrl.includes('/uploads/messages')) {
+        fullUrl = `https://adminflow.ru:5003${attachmentUrl}`;
+    } else {
+        fullUrl = `https://adminflow.ru:5003/uploads/messages/${attachmentUrl}`;
+    }
+    
+    // Удаляем возможные двойные слеши
+    fullUrl = fullUrl.replace(/([^:]\/)\/+/g, '$1');
 
-    console.log('Attachment URL:', fullUrl); // Для отладки
+    console.log('Обработанный URL вложения:', fullUrl); // Для отладки
 
     if (isImageFile(attachmentUrl)) {
         const img = document.createElement('img');
@@ -356,6 +364,9 @@ function createAttachmentElement(attachmentUrl) {
         img.onerror = () => {
             console.error('Ошибка загрузки изображения:', fullUrl);
             img.src = '../uploads/avatars/default.png'; // Заглушка при ошибке
+        };
+        img.onload = () => {
+            console.log('Изображение успешно загружено:', fullUrl);
         };
         img.onclick = () => showImageModal(fullUrl);
         attachmentElement.appendChild(img);
