@@ -157,7 +157,7 @@ async function openChat(friend) {
     );
     document.querySelector(`[data-friend-id="${friend.id}"]`)?.classList.add('active');
 
-    // Показываем заголо��ок чата
+    // Показываем заголовок чата
     const chatHeader = document.getElementById('chat-header');
     const chatPlaceholder = document.getElementById('chat-placeholder');
     
@@ -307,11 +307,18 @@ function createMessageElement(message) {
     messageText.textContent = message.message;
     messageContent.appendChild(messageText);
 
+    // Информация о сообщении (время и статус)
+    const messageInfo = document.createElement('div');
+    messageInfo.className = 'message-info';
+
     // Время отправки
-    const messageTime = document.createElement('div');
+    const messageTime = document.createElement('span');
     messageTime.className = 'message-time';
-    messageTime.textContent = new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    messageContent.appendChild(messageTime);
+    messageTime.textContent = new Date(message.created_at).toLocaleTimeString([], { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+    });
+    messageInfo.appendChild(messageTime);
 
     // Статус прочтения для отправленных сообщений
     if (message.sender_id === currentUser.id) {
@@ -320,9 +327,10 @@ function createMessageElement(message) {
         readStatus.innerHTML = message.is_read 
             ? '<i class="fas fa-check-double"></i>' 
             : '<i class="fas fa-check"></i>';
-        messageContent.appendChild(readStatus);
+        messageInfo.appendChild(readStatus);
     }
 
+    messageContent.appendChild(messageInfo);
     messageElement.appendChild(messageContent);
 
     // Добавляем обработчик для контекстного меню
@@ -587,7 +595,7 @@ function setupAttachmentHandlers() {
         }
 
         if (!allowedTypes.includes(file.type)) {
-            alert('Неподдерживаемый тип файла. Разрешены: JPG, PNG, GIF, PDF');
+            alert('Неподдерживае��ый тип файла. Разрешены: JPG, PNG, GIF, PDF');
             fileInput.value = '';
             return;
         }
@@ -668,7 +676,7 @@ async function sendMessageWithFile(message) {
         }
     } catch (err) {
         console.error('Error sending file:', err);
-        alert('Ошибка при отправ��е файла');
+        alert('Ошибка п��и отправке файла');
     }
 }
 
