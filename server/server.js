@@ -357,7 +357,7 @@ app.post('/api/friend/remove', async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         console.error('Remove friend error:', err);
-        res.status(500).json({ error: 'Ошибка при удалении из ��рузей' });
+        res.status(500).json({ error: 'Ошибка при удалении из друзей' });
     }
 });
 
@@ -699,9 +699,15 @@ app.get('/api/admin/stats', checkAdmin, async (req, res) => {
             SELECT 
                 (SELECT COUNT(*) FROM users) as total_users,
                 (SELECT COUNT(*) FROM users WHERE created_at > NOW() - INTERVAL '24 HOURS') as new_users_24h,
+                (SELECT COUNT(*) FROM users WHERE created_at > NOW() - INTERVAL '7 DAYS') as new_users_7d,
+                (SELECT COUNT(*) FROM users WHERE role = 'admin') as admin_count,
+                (SELECT COUNT(*) FROM users WHERE role = 'moderator') as moderator_count,
                 (SELECT COUNT(*) FROM messages) as total_messages,
                 (SELECT COUNT(*) FROM messages WHERE created_at > NOW() - INTERVAL '24 HOURS') as new_messages_24h,
-                (SELECT COUNT(*) FROM friendships WHERE status = 'accepted') as total_friendships
+                (SELECT COUNT(*) FROM messages WHERE created_at > NOW() - INTERVAL '7 DAYS') as new_messages_7d,
+                (SELECT COUNT(*) FROM friendships WHERE status = 'accepted') as total_friendships,
+                (SELECT COUNT(*) FROM users WHERE is_online = true) as online_users,
+                (SELECT COUNT(*) FROM users WHERE last_activity > NOW() - INTERVAL '24 HOURS') as active_users_24h
         `);
         
         res.json({ success: true, stats: stats.rows[0] });
@@ -945,7 +951,7 @@ app.get('/api/posts/:userId', async (req, res) => {
         });
     } catch (err) {
         console.error('Error loading posts:', err);
-        res.status(500).json({ error: 'Ошибка при загрузке постов' });
+        res.status(500).json({ error: 'Ошиб��а при загрузке постов' });
     }
 });
 
@@ -1058,7 +1064,7 @@ app.get('/api/users/status/:userId', async (req, res) => {
         console.error('Error getting user status:', err);
         res.status(500).json({ 
             success: false, 
-            error: 'Ошибка при получении статуса пользователя' 
+            error: 'Ошибка при п��лучении статуса пользователя' 
         });
     }
 });
@@ -1105,3 +1111,49 @@ setInterval(async () => {
         console.error('Error in auto-update status:', err);
     }
 }, 5 * 60 * 1000); // Каждые 5 минут
+
+// Получение ленты постов
+app.get('/api/feed', async (req, res) => {
+    try {
+        const userId = req.query.userId;
+
+        const result = await pool.query(`
+            SELECT 
+                p.*,
+                u.username as author_name,
+                u.avatar_url as author_avatar,
+                (SELECT COUNT(*) FROM posts WHERE parent_id = p.id AND type = 'like') as likes_count,
+                (SELECT COUNT(*) FROM posts WHERE parent_id = p.id AND type = 'comment') as comments_count,
+                EXISTS(
+                    SELECT 1 FROM posts 
+                    WHERE parent_id = p.id 
+                    AND type = 'like' 
+                    AND user_id = $1
+                ) as is_liked
+            FROM posts p
+            JOIN users u ON p.user_id = u.id
+            WHERE p.type = 'post' AND (
+                p.user_id IN (
+                    SELECT CASE 
+                        WHEN user_id = $1 THEN friend_id
+                        WHEN friend_id = $1 THEN user_id
+                    END
+                    FROM friendships
+                    WHERE (user_id = $1 OR friend_id = $1)
+                    AND status = 'accepted'
+                )
+                OR p.user_id = $1
+            )
+            ORDER BY p.created_at DESC
+            LIMIT 50
+        `, [userId]);
+
+        res.json({ 
+            success: true, 
+            posts: result.rows 
+        });
+    } catch (err) {
+        console.error('Error loading feed:', err);
+        res.status(500).json({ error: 'Ошибка при загрузке ленты' });
+    }
+});

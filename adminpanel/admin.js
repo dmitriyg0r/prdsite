@@ -17,17 +17,111 @@ async function loadStats() {
         const data = await response.json();
         
         if (data.success) {
+            // Обновляем статистику пользователей
             document.getElementById('totalUsers').textContent = data.stats.total_users;
-            document.getElementById('newUsers').textContent = data.stats.new_users_24h;
+            document.getElementById('newUsers24h').textContent = data.stats.new_users_24h;
+            document.getElementById('newUsers7d').textContent = data.stats.new_users_7d;
+            
+            // Обновляем статистику ролей
+            document.getElementById('adminCount').textContent = data.stats.admin_count;
+            document.getElementById('moderatorCount').textContent = data.stats.moderator_count;
+            
+            // Обновляем статистику сообщений
             document.getElementById('totalMessages').textContent = data.stats.total_messages;
-            document.getElementById('newMessages').textContent = data.stats.new_messages_24h;
+            document.getElementById('newMessages24h').textContent = data.stats.new_messages_24h;
+            document.getElementById('newMessages7d').textContent = data.stats.new_messages_7d;
+            
+            // Обновляем статистику активности
+            document.getElementById('onlineUsers').textContent = data.stats.online_users;
+            document.getElementById('activeUsers24h').textContent = data.stats.active_users_24h;
+            document.getElementById('totalFriendships').textContent = data.stats.total_friendships;
+
+            // Создаем графики после загрузки данных
+            createCharts(data.stats);
         } else {
-            alert(data.error || 'Ошибка загрузки статистики');
+            console.error('Ошибка загрузки статистики:', data.error);
         }
     } catch (err) {
         console.error('Ошибка загрузки статистики:', err);
-        alert('Ошибка загрузки статистики');
     }
+}
+
+// Функция для создания графиков
+function createCharts(stats) {
+    // График активности пользователей
+    new Chart(document.getElementById('userActivityChart'), {
+        type: 'line',
+        data: {
+            labels: ['7 дней назад', '6 дней', '5 дней', '4 дня', '3 дня', '2 дня', 'Вчера', 'Сегодня'],
+            datasets: [{
+                label: 'Новые пользователи',
+                data: [0, 0, 0, 0, 0, 0, stats.new_users_24h, stats.new_users_7d],
+                borderColor: '#3498db',
+                tension: 0.4,
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+
+    // График ролей
+    new Chart(document.getElementById('rolesChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Пользователи', 'Модераторы', 'Админы'],
+            datasets: [{
+                data: [
+                    stats.total_users - stats.admin_count - stats.moderator_count,
+                    stats.moderator_count,
+                    stats.admin_count
+                ],
+                backgroundColor: ['#3498db', '#e74c3c', '#2ecc71']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+
+    // График сообщений
+    new Chart(document.getElementById('messageChart'), {
+        type: 'bar',
+        data: {
+            labels: ['За 24ч', 'За 7 дней', 'Всего'],
+            datasets: [{
+                label: 'Сообщения',
+                data: [stats.new_messages_24h, stats.new_messages_7d, stats.total_messages],
+                backgroundColor: '#2ecc71'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+
+    // График активности
+    new Chart(document.getElementById('activityChart'), {
+        type: 'line',
+        data: {
+            labels: ['Онлайн', 'Активны 24ч'],
+            datasets: [{
+                label: 'Активность',
+                data: [stats.online_users, stats.active_users_24h],
+                borderColor: '#f1c40f',
+                tension: 0.4,
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
 }
 
 async function loadUsers(page = 1, search = '') {
