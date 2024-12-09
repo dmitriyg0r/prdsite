@@ -41,10 +41,9 @@
 /* Темная тема - улучшенная тёмная тема */
 [data-theme="dark"] {
     /* Основные цвета - более тёмные */
-    --primary-color: #8B44C4;           /* Темнее фиолетовый */
-    --primary-color-rgb: 139, 68, 196;
+    --primary-color: #818CF8;      /* Темнее фиолетовый */
     --text-color: #E0E2E5;              /* Чуть приглушенный белый */
-    --background-color: #121214;         /* Более тёмный фон */
+    --background-color: #111827;         /* Более тёмный фон */
     --sidebar-background: #8B44C4;
     --sidebar-hover: #9D4EDA;
     
@@ -77,8 +76,8 @@
     --table-border: #2A2B2F;             /* Темнее */
     
     /* Дополнительные оттенки */
-    --primary-dark: #733BA3;             /* Темнее */
-    --primary-light: #9D4EDA;
+    --primary-dark: #6366F1;            /* Темнее */
+    --primary-light: #A5B4FC;
     
     /* Новые цвета фона */
     --background: #121214;               /* Самый тёмный фон */
