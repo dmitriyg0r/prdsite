@@ -1667,7 +1667,6 @@ transporter.verify(function(error, success) {
         console.log('SMTP сервер готов к отправке сообщений');
     }
 });
-
 // Альтернативная конфигурация с TLS
 const alternativeTransporter = nodemailer.createTransport({
     host: 'smtp.timeweb.ru',
