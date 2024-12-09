@@ -95,7 +95,7 @@ function getLastActivityTime(timestamp) {
     const now = new Date();
     const diff = now - lastActivity;
     
-    if (diff < 60000) return 'был(а) т��о что';
+    if (diff < 60000) return 'был(а) то что';
     if (diff < 3600000) return `был(а) ${Math.floor(diff/60000)} мн. назад`;
     if (diff < 86400000) return `был(а) ${Math.floor(diff/3600000)} ч. назад`;
     return 'был(а) давно';
@@ -603,7 +603,7 @@ async function markMessagesAsRead(friendId) {
     }
 }
 
-// Функция показа мо��ального окна с изображением
+// Функция показа модального окна с изображением
 function showImageModal(imageUrl) {
     const modal = document.querySelector('.image-modal');
     const modalImage = document.getElementById('modalImage');
@@ -620,6 +620,11 @@ document.querySelector('.close-modal').onclick = function() {
 function setupAttachmentHandlers() {
     const attachButton = document.getElementById('attachButton');
     const fileInput = document.getElementById('fileInput');
+    
+    if (!attachButton || !fileInput) {
+        console.error('Элементы прикрепления файлов не найдены');
+        return;
+    }
     
     attachButton.addEventListener('click', () => {
         fileInput.click();
@@ -640,32 +645,60 @@ function setupAttachmentHandlers() {
 }
 
 function showFilePreview(file) {
-    const previewContainer = document.getElementById('filePreview');
+    let previewContainer = document.getElementById('filePreview');
+    
+    // Если контейнер не существует, создаем его
+    if (!previewContainer) {
+        previewContainer = document.createElement('div');
+        previewContainer.id = 'filePreview';
+        const inputArea = document.querySelector('.input-area');
+        if (inputArea) {
+            inputArea.insertBefore(previewContainer, inputArea.firstChild);
+        } else {
+            console.error('Элемент input-area не найден');
+            return;
+        }
+    }
+    
     const isImage = file.type.startsWith('image/');
     
-    previewContainer.innerHTML = `
-        <div class="file-preview">
-            ${isImage ? `<img src="${URL.createObjectURL(file)}" class="file-preview-image">` : ''}
-            <div class="file-preview-info">
-                <i class="fas ${isImage ? 'fa-image' : 'fa-file'}"></i>
-                <span class="file-name">${file.name}</span>
-                <button class="remove-file">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
+    // Создаем превью
+    const previewContent = document.createElement('div');
+    previewContent.className = 'file-preview';
+    previewContent.innerHTML = `
+        ${isImage ? `<img src="${URL.createObjectURL(file)}" class="file-preview-image" alt="Preview">` : ''}
+        <div class="file-preview-info">
+            <i class="fas ${isImage ? 'fa-image' : 'fa-file'}"></i>
+            <span class="file-name">${file.name}</span>
+            <button class="remove-file" type="button">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
     `;
     
-    previewContainer.querySelector('.remove-file').addEventListener('click', removeFilePreview);
+    // Очищаем предыдущее превью
+    previewContainer.innerHTML = '';
+    previewContainer.appendChild(previewContent);
+    
+    // Добавляем обработчик для кнопки удаления
+    const removeButton = previewContent.querySelector('.remove-file');
+    if (removeButton) {
+        removeButton.addEventListener('click', removeFilePreview);
+    }
 }
 
-// Функция удаления превью файла
 function removeFilePreview() {
-    const preview = document.getElementById('filePreview');
-    if (preview) {
-        preview.remove();
+    const previewContainer = document.getElementById('filePreview');
+    if (previewContainer) {
+        previewContainer.innerHTML = '';
     }
     selectedFile = null;
+    
+    // Очищаем input файла
+    const fileInput = document.getElementById('fileInput');
+    if (fileInput) {
+        fileInput.value = '';
+    }
 }
 
 // Функция отправки сообщения с файлом
@@ -743,7 +776,7 @@ function cancelReply() {
     replyToMessageId = null;
 }
 
-// Закрытие контекстного меню при клике вне его
+// Закрытие контекстног�� меню при клике вне его
 document.addEventListener('click', (event) => {
     const contextMenu = document.getElementById('contextMenu');
     if (!contextMenu.contains(event.target)) {
@@ -789,7 +822,7 @@ async function deleteMessage(messageId) {
     }
 }
 
-// Добавляем периодическое об��овление счетчиков
+// Добавляем периодическое обновление счетчиков
 function startUnreadCountUpdates() {
     const updateInterval = setInterval(() => {
         const friendsList = document.querySelectorAll('.chat-partner');
