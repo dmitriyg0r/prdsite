@@ -95,7 +95,7 @@ function getLastActivityTime(timestamp) {
     const now = new Date();
     const diff = now - lastActivity;
     
-    if (diff < 60000) return 'был(а) тлько что';
+    if (diff < 60000) return 'был(а) тко что';
     if (diff < 3600000) return `был(а) ${Math.floor(diff/60000)} мн. назад`;
     if (diff < 86400000) return `был(а) ${Math.floor(diff/3600000)} ч. назад`;
     return 'был(а) давно';
@@ -332,7 +332,7 @@ function createMessageElement(message) {
     });
     messageInfo.appendChild(messageTime);
 
-    // Статус прочтения для отправленных сообщений
+    // Статус прочтения для отправленных соо��щений
     if (message.sender_id === currentUser.id) {
         const readStatus = document.createElement('span');
         readStatus.className = 'message-status';
@@ -383,34 +383,22 @@ function createAttachmentElement(attachmentUrl) {
 let isMessageSending = false;
 
 async function sendMessage() {
-    if (isMessageSending) return;
-    
-    const messageInput = document.getElementById('messageInput');
-    const fileInput = document.getElementById('fileInput');
-    const message = messageInput.value.trim();
-    const file = fileInput.files[0];
-
-    if (!message && !file || !currentChatPartner) return;
+    if (!currentChatPartner || (!messageInput.value.trim() && !selectedFile)) {
+        return;
+    }
 
     try {
-        isMessageSending = true;
-        messageInput.disabled = true;
-
         const formData = new FormData();
         formData.append('senderId', currentUser.id);
         formData.append('receiverId', currentChatPartner.id);
-        formData.append('message', message);
+        formData.append('message', messageInput.value.trim());
         
-        // Добавляем ID сообщения, на которое отвечаем, если есть
+        if (selectedFile) {
+            formData.append('file', selectedFile);
+        }
+
         if (replyToMessageId) {
             formData.append('replyToMessageId', replyToMessageId);
-        }
-        
-        if (file) {
-            if (file.size > 5 * 1024 * 1024) {
-                throw new Error('Файл слишком большой (максимум 5MB)');
-            }
-            formData.append('file', file);
         }
 
         const response = await fetch('https://adminflow.ru:5003/api/messages/send-with-file', {
@@ -422,27 +410,17 @@ async function sendMessage() {
         
         if (data.success) {
             messageInput.value = '';
-            fileInput.value = '';
+            selectedFile = null;
             removeFilePreview();
-            cancelReply(); // Очищаем предпросмотр ответа
+            cancelReply();
             
-            if (data.message) {
-                const messagesContainer = document.getElementById('messages');
-                const messageElement = createMessageElement(data.message);
-                messageElement.dataset.messageId = data.message.id;
-                messagesContainer.appendChild(messageElement);
-                scrollToBottom();
-            }
-        } else {
-            throw new Error(data.error || 'Ошибка отправки сообщения');
+            // Добавляем новое сообщение в чат
+            const messageElement = createMessageElement(data.message);
+            document.getElementById('messages').appendChild(messageElement);
+            scrollToBottom();
         }
-    } catch (err) {
-        console.error('Ошибка:', err);
-        alert(err.message || 'Произошла ошибка при отправке сообщения');
-    } finally {
-        isMessageSending = false;
-        messageInput.disabled = false;
-        messageInput.focus();
+    } catch (error) {
+        console.error('Ошибка при отправке сообщения:', error);
     }
 }
 
@@ -526,7 +504,7 @@ function handleEnterPress(e) {
     }
 }
 
-// Очистка при уходе со страницы
+// Очистка при ��ходе со страницы
 window.addEventListener('beforeunload', () => {
     if (messageUpdateInterval) {
         clearInterval(messageUpdateInterval);
@@ -541,23 +519,26 @@ async function loadMessages(friendId) {
 
         if (data.success) {
             const messagesContainer = document.getElementById('messages');
-            messagesContainer.innerHTML = '';
-
-            data.messages.forEach(message => {
-                const messageElement = createMessageElement(message);
-                messagesContainer.appendChild(messageElement);
-            });
-
-            // Прокручиваем к последнему сообщению
-            scrollToBottom();
-
-            // Помечаем сообщения как прочитанные
-            markMessagesAsRead(friendId);
-        } else {
-            console.error('Ошибка загрузки сообщений:', data.error);
+            const scrolledToBottom = isScrolledToBottom(messagesContainer);
+            
+            // Сохраняем ID последнего сообщения
+            const lastMessageId = messagesContainer.lastElementChild?.dataset.messageId;
+            
+            // Обновляем сообщения только если есть новые
+            if (data.messages.length > 0 && data.messages[data.messages.length - 1].id !== lastMessageId) {
+                messagesContainer.innerHTML = '';
+                data.messages.forEach(message => {
+                    const messageElement = createMessageElement(message);
+                    messagesContainer.appendChild(messageElement);
+                });
+                
+                if (scrolledToBottom) {
+                    scrollToBottom();
+                }
+            }
         }
-    } catch (err) {
-        console.error('Error loading messages:', err);
+    } catch (error) {
+        console.error('Ошибка при загрузке сообщений:', error);
     }
 }
 
@@ -614,71 +595,43 @@ document.querySelector('.close-modal').onclick = function() {
 function setupAttachmentHandlers() {
     const attachButton = document.getElementById('attachButton');
     const fileInput = document.getElementById('fileInput');
-    const messageInput = document.getElementById('messageInput');
-
-    attachButton?.addEventListener('click', () => fileInput.click());
-
-    fileInput?.addEventListener('change', (e) => {
+    
+    attachButton.addEventListener('click', () => {
+        fileInput.click();
+    });
+    
+    fileInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
-        if (!file) return;
-
-        // Проверка размера и типа файла
-        const maxSize = 5 * 1024 * 1024;
-        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf'];
-
-        if (file.size > maxSize) {
-            alert('Файл слишком большой. Максимальный размер: 5MB');
-            fileInput.value = '';
-            return;
+        if (file) {
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Файл слишком большой (максимум 5MB)');
+                fileInput.value = '';
+                return;
+            }
+            selectedFile = file;
+            showFilePreview(file);
         }
-
-        if (!allowedTypes.includes(file.type)) {
-            alert('Неподдерживаемый тип файла. Разрешены: JPG, PNG, GIF, PDF');
-            fileInput.value = '';
-            return;
-        }
-
-        selectedFile = file;
-        showFilePreview(file);
     });
 }
 
-// Функция отображения превью файла
 function showFilePreview(file) {
-    const previewContainer = document.createElement('div');
-    previewContainer.id = 'filePreview';
-    previewContainer.className = 'file-preview';
-
+    const previewContainer = document.getElementById('filePreview');
     const isImage = file.type.startsWith('image/');
     
-    if (isImage) {
-        const img = document.createElement('img');
-        img.className = 'file-preview-image';
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-        previewContainer.appendChild(img);
-    }
-
-    const fileInfo = document.createElement('div');
-    fileInfo.className = 'file-preview-info';
-    fileInfo.innerHTML = `
-        <i class="fas ${isImage ? 'fa-image' : 'fa-file'}"></i>
-        <span class="file-name">${file.name}</span>
-        <button class="remove-file" onclick="removeFilePreview()">
-            <i class="fas fa-times"></i>
-        </button>
+    previewContainer.innerHTML = `
+        <div class="file-preview">
+            ${isImage ? `<img src="${URL.createObjectURL(file)}" class="file-preview-image">` : ''}
+            <div class="file-preview-info">
+                <i class="fas ${isImage ? 'fa-image' : 'fa-file'}"></i>
+                <span class="file-name">${file.name}</span>
+                <button class="remove-file">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
     `;
-    previewContainer.appendChild(fileInfo);
-
-    // Удаляем старый превью если есть
-    removeFilePreview();
     
-    // Добавляем новый превью перед полем ввода
-    const inputArea = document.querySelector('.input-area');
-    inputArea.insertBefore(previewContainer, inputArea.firstChild);
+    previewContainer.querySelector('.remove-file').addEventListener('click', removeFilePreview);
 }
 
 // Функция удаления превью файла
@@ -773,7 +726,7 @@ document.addEventListener('click', (event) => {
     }
 });
 
-// Обработчик для удаления сообщения
+// Обработчик для удаления сооб��ения
 document.getElementById('deleteMessageBtn').addEventListener('click', () => {
     if (selectedMessageId) {
         deleteMessage(selectedMessageId);
@@ -829,13 +782,37 @@ function startMessageUpdates() {
         clearInterval(messageUpdateInterval);
     }
     
-    // Немедленно загружаем сообщения
-    loadChatHistory();
+    loadMessages(currentChatPartner.id);
     
-    // Устанавливаем интервал обновления
     messageUpdateInterval = setInterval(() => {
         if (currentChatPartner) {
-            loadChatHistory();
+            loadMessages(currentChatPartner.id);
         }
-    }, 3000); // Обновление каждые 3 секунды
+    }, 3000);
+}
+
+function isScrolledToBottom(element) {
+    return Math.abs(element.scrollHeight - element.scrollTop - element.clientHeight) < 1;
+}
+
+function setupContextMenu() {
+    const contextMenu = document.getElementById('contextMenu');
+    const messagesArea = document.getElementById('messages');
+    
+    messagesArea.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        const messageElement = e.target.closest('.message');
+        if (messageElement) {
+            selectedMessageId = messageElement.dataset.messageId;
+            selectedMessageText = messageElement.querySelector('.message-text').textContent;
+            
+            contextMenu.style.display = 'block';
+            contextMenu.style.left = `${e.pageX}px`;
+            contextMenu.style.top = `${e.pageY}px`;
+        }
+    });
+    
+    document.addEventListener('click', () => {
+        contextMenu.style.display = 'none';
+    });
 } 
