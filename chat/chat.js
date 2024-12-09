@@ -459,7 +459,7 @@ async function markMessagesAsRead(friendId) {
 }
 
 function setupEventListeners() {
-    // Удаляем старые обработчики перед добавлением ��овых
+    // Удаляем старые обработчики перед добавлением новых
     const sendButton = document.getElementById('sendMessage');
     const messageInput = document.getElementById('messageInput');
     
@@ -530,7 +530,7 @@ async function loadMessages(friendId) {
 
             const isAtBottom = isScrolledToBottom(messagesContainer);
             
-            // Получаем существующие сообщения
+            // Получаем существующие сообще��ия
             const existingMessages = new Set(
                 Array.from(messagesContainer.children).map(el => el.dataset.messageId)
             );
@@ -719,6 +719,61 @@ function removeFilePreview() {
     }
 }
 
+// Функция удаления сообщения
+async function deleteMessage(messageId) {
+    if (!messageId) {
+        console.error('ID сообщения не указан');
+        return;
+    }
+
+    try {
+        const response = await fetch(`https://adminflow.ru:5003/api/messages/delete/${messageId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ userId: currentUser.id })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+            // Находим и удаляем сообщение из DOM
+            const messageElement = document.querySelector(`.message[data-message-id="${messageId}"]`);
+            if (messageElement) {
+                // Добавляем анимацию удаления
+                messageElement.style.animation = 'fadeOut 0.3s ease-out';
+                messageElement.addEventListener('animationend', () => {
+                    messageElement.remove();
+                });
+            }
+        } else {
+            console.error('Ошибка при удалении сообщения:', data.error);
+            alert(data.error || 'Не удалось удалить сообщение');
+        }
+    } catch (error) {
+        console.error('Ошибка при удалении сообщения:', error);
+        alert('Произошла ошибка при удалении сообщения');
+    }
+}
+
+// Добавляем стили для анимации удаления
+const style = document.createElement('style');
+style.textContent = `
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+}
+`;
+document.head.appendChild(style);
+
+// Обновляем обработчик контекстного меню
 function setupContextMenu() {
     const contextMenu = document.getElementById('contextMenu');
     const messagesArea = document.getElementById('messages');
@@ -732,15 +787,22 @@ function setupContextMenu() {
     messagesArea.addEventListener('contextmenu', (e) => {
         e.preventDefault();
         
-        // Находим ближайший элемент сообщения
         const messageElement = e.target.closest('.message');
         if (messageElement) {
-            // Получаем текст сообщения
             const messageTextElement = messageElement.querySelector('.message-text');
             if (messageTextElement) {
                 selectedMessageId = messageElement.dataset.messageId;
                 selectedMessageText = messageTextElement.textContent;
                 
+                // Проверяем, является ли сообщение нашим
+                const isSentMessage = messageElement.classList.contains('message-sent');
+                const deleteButton = document.getElementById('deleteMessageBtn');
+                
+                // Показываем кнопку удаления только для наших сообщений
+                if (deleteButton) {
+                    deleteButton.style.display = isSentMessage ? 'block' : 'none';
+                }
+
                 // Позиционируем меню
                 const rect = messagesArea.getBoundingClientRect();
                 const x = e.clientX - rect.left;
@@ -750,7 +812,7 @@ function setupContextMenu() {
                 contextMenu.style.left = `${x}px`;
                 contextMenu.style.top = `${y}px`;
 
-                // Проверяем, не выходит ли меню за пределы экрана
+                // Проверяем границы экрана
                 const menuRect = contextMenu.getBoundingClientRect();
                 if (menuRect.right > window.innerWidth) {
                     contextMenu.style.left = `${x - menuRect.width}px`;
@@ -763,14 +825,7 @@ function setupContextMenu() {
     });
 
     // Обработчики пунктов меню
-    document.getElementById('replyMessageBtn').addEventListener('click', () => {
-        if (selectedMessageId && selectedMessageText) {
-            showReplyPreview(selectedMessageText);
-            contextMenu.style.display = 'none';
-        }
-    });
-
-    document.getElementById('deleteMessageBtn').addEventListener('click', () => {
+    document.getElementById('deleteMessageBtn')?.addEventListener('click', () => {
         if (selectedMessageId) {
             deleteMessage(selectedMessageId);
             contextMenu.style.display = 'none';
