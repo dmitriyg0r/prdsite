@@ -8,6 +8,7 @@ const multer = require('multer');
 const path = require('path');
 const nodemailer = require('nodemailer');
 const http = require('http');
+const sgMail = require('@sendgrid/mail');
 
 const app = express();
 const PORT = 5003;
@@ -231,7 +232,7 @@ const storage = multer.diskStorage({
             prefix = 'message-';
         }
 
-        // Генерируем уникальное имя файла
+        // Генерируем уникальное ��м�� файла
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
         const ext = path.extname(file.originalname);
         cb(null, `${prefix}${uniqueSuffix}${ext}`);
@@ -604,7 +605,7 @@ app.post('/api/messages/read', async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         console.error('Error marking messages as read:', err);
-        res.status(500).json({ error: 'Ошибка при отметке сообщений как прочитанных' });
+        res.status(500).json({ error: 'Ошибка при отметке сообщений к��к прочитанных' });
     }
 });
 
@@ -795,6 +796,85 @@ messageStorage.filename = function (req, file, cb) {
     file.fileUrl = `/uploads/messages/${filename}`;
     cb(null, filename);
 };
+
+// Устанавливаем пакет
+// npm install @sendgrid/mail
+
+sgMail.setApiKey('YOUR_SENDGRID_API_KEY');
+
+// Заменяем отправку через nodemailer на SendGrid API
+async function sendEmail(to, subject, html) {
+    try {
+        const msg = {
+            to,
+            from: 'adminflow@adminflow.ru',
+            subject,
+            html,
+        };
+        await sgMail.send(msg);
+        return true;
+    } catch (error) {
+        console.error('SendGrid Error:', error);
+        return false;
+    }
+}
+
+// Обновляем эндпоинт отправки кода
+app.post('/api/send-verification-code', async (req, res) => {
+    try {
+        const { userId, email } = req.body;
+
+        if (!userId || !email) {
+            return res.status(400).json({
+                success: false,
+                error: 'Отсутствуют необходимые данные'
+            });
+        }
+
+        const verificationCode = generateVerificationCode();
+
+        await pool.query(`
+            INSERT INTO verification_codes (user_id, code, expires_at)
+            VALUES ($1, $2, NOW() + INTERVAL '5 minutes')
+            ON CONFLICT (user_id) 
+            DO UPDATE SET 
+                code = EXCLUDED.code,
+                expires_at = EXCLUDED.expires_at,
+                created_at = NOW()
+        `, [userId, verificationCode]);
+
+        // Используем новую функцию отправки
+        const emailSent = await sendEmail(
+            email,
+            'Код подтверждения AdminFlow',
+            `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h2 style="color: #333;">Код подтверждения</h2>
+                    <p>Ваш код подтверждения для смены пароля:</p>
+                    <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; text-align: center; font-size: 24px; letter-spacing: 5px;">
+                        <strong>${verificationCode}</strong>
+                    </div>
+                    <p style="color: #666; font-size: 14px; margin-top: 20px;">
+                        Код действителен в течение 5 минут.<br>
+                        Если вы не запрашивали код подтверждения, проигнорируйте это письмо.
+                    </p>
+                </div>
+            `
+        );
+
+        if (!emailSent) {
+            throw new Error('Failed to send email');
+        }
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Error sending verification code:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при отправке кода подтверждения'
+        });
+    }
+});
 
 // Получение информации о пользователе
 app.get('/api/users/:id', async (req, res) => {
@@ -1644,170 +1724,6 @@ app.get('/api/users/check-email', async (req, res) => {
         res.status(500).json({
             success: false,
             error: 'Ошибка при проверке email'
-        });
-    }
-});
-
-// Создаем тр��нспорт для отправки почты
-const transporter = nodemailer.createTransport({
-    host: 'smtp.timeweb.ru',
-    port: 110,
-    secure: false,
-    requireTLS: true,  // Требуем STARTTLS
-    auth: {
-        user: 'adminflow@adminflow.ru',
-        pass: 'Gg3985502'
-    },
-    tls: {
-        rejectUnauthorized: false,
-        ciphers: 'SSLv3'
-    },
-    debug: true
-});
-
-// Проверяем соединение при запуске сервера
-transporter.verify(function(error, success) {
-    if (error) {
-        console.error('Ошибка подключения к SMTP:', error);
-        console.log('Детали ошибки:', {
-            host: transporter.options.host,
-            port: transporter.options.port,
-            error: error.message
-        });
-    } else {
-        console.log('SMTP сервер готов к отправке сообщений');
-    }
-});
-
-// Альтернативная конфигурация с TLS
-const alternativeTransporter = nodemailer.createTransport({
-    host: 'smtp.timeweb.ru',
-    port: 587,              // Альтернативный порт
-    secure: false,          // Для порта 587
-    requireTLS: true,       // Требуем TLS
-    auth: {
-        user: 'adminflow@adminflow.ru',
-        pass: 'Gg3985502'
-    },
-    tls: {
-        rejectUnauthorized: false // В случае проблем с сертификатом
-    }
-});
-
-// Проверяем альтернативное соединение
-alternativeTransporter.verify(function(error, success) {
-    if (error) {
-        console.error('Ошибка подключения к альтернативному SMTP:', error);
-    } else {
-        console.log('Альтернативный SMTP сервер готов к отправке сообщений');
-        // Если альтернативное соединение работает, используем его
-        transporter = alternativeTransporter;
-    }
-});
-
-// Функция для генерации кода подтверждения
-function generateVerificationCode() {
-    return Math.floor(100000 + Math.random() * 900000).toString();
-}
-
-// Эндпоинт для отправки кода подтверждения
-app.post('/api/send-verification-code', async (req, res) => {
-    try {
-        const { userId, email } = req.body;
-
-        if (!userId || !email) {
-            return res.status(400).json({
-                success: false,
-                error: 'Отсутствуют необходимые данные'
-            });
-        }
-
-        // Генерируем код
-        const verificationCode = generateVerificationCode();
-
-        // Сохраняем код в базу данных с временем жизни
-        await pool.query(`
-            INSERT INTO verification_codes (user_id, code, expires_at)
-            VALUES ($1, $2, NOW() + INTERVAL '5 minutes')
-            ON CONFLICT (user_id) 
-            DO UPDATE SET 
-                code = EXCLUDED.code,
-                expires_at = EXCLUDED.expires_at,
-                created_at = NOW()
-        `, [userId, verificationCode]);
-
-        // Отправляем email
-        await transporter.sendMail({
-            from: '"AdminFlow" <adminflow@adminflow.ru>',
-            to: email,
-            subject: 'Код подтверждения AdminFlow',
-            html: `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                    <h2 style="color: #333;">Код подтверждения</h2>
-                    <p>Ваш код подтверждения для смены пароля:</p>
-                    <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; text-align: center; font-size: 24px; letter-spacing: 5px;">
-                        <strong>${verificationCode}</strong>
-                    </div>
-                    <p style="color: #666; font-size: 14px; margin-top: 20px;">
-                        Код действителен в течение 5 минут.<br>
-                        Если вы не запрашивали код подтверждения, проигнорируйте это письмо.
-                    </p>
-                </div>
-            `
-        });
-
-        res.json({ success: true });
-    } catch (err) {
-        console.error('Error sending verification code:', err);
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка при отправке кода подтверждения'
-        });
-    }
-});
-
-// Эндпоинт для проверки кода и смены пароля
-app.post('/api/change-password', async (req, res) => {
-    try {
-        const { userId, code, newPassword } = req.body;
-
-        // Проверяем код
-        const result = await pool.query(`
-            SELECT * FROM verification_codes 
-            WHERE user_id = $1 
-            AND code = $2 
-            AND expires_at > NOW()
-        `, [userId, code]);
-
-        if (result.rows.length === 0) {
-            return res.status(400).json({
-                success: false,
-                error: 'Неверный или устаревший код подтверждения'
-            });
-        }
-
-        // Хешируем новый пароль
-        const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-        // Обновляем пароль
-        await pool.query(`
-            UPDATE users 
-            SET password = $1 
-            WHERE id = $2
-        `, [hashedPassword, userId]);
-
-        // Удаляем использованный код
-        await pool.query(`
-            DELETE FROM verification_codes 
-            WHERE user_id = $1
-        `, [userId]);
-
-        res.json({ success: true });
-    } catch (err) {
-        console.error('Error changing password:', err);
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка при смене пароля'
         });
     }
 });
