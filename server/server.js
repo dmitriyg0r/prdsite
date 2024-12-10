@@ -15,35 +15,27 @@ const PORT = 5003;
 // Middleware
 app.use(cors({
     origin: function(origin, callback) {
-        // Разрешаем все корпоративные домены и прокси
+        // Разрешаем запросы без origin (например, от мобильных приложений)
         if (!origin) return callback(null, true);
         
         const allowedOrigins = [
             'http://adminflow.ru',
             'https://adminflow.ru',
             'http://www.adminflow.ru',
-            'https://www.adminflow.ru',
-            /^https?:\/\/.*\.corp\.local$/,  // Корпоративные домены
-            /^https?:\/\/.*\.internal$/      // Внутренние домены
+            'https://www.adminflow.ru'
         ];
         
-        const allowed = allowedOrigins.some(allowed => {
-            if (allowed instanceof RegExp) {
-                return allowed.test(origin);
-            }
-            return allowed === origin;
-        });
-        
-        callback(null, allowed);
+        if (allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Forwarded-For', 'X-Real-IP'],
-    exposedHeaders: ['Content-Length', 'X-Requested-With']
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
-
-// Добавляем обработку прокси-заголовков
-app.set('trust proxy', true);
+app.use(express.json());
 
 // Test database connection on startup
 testConnection().then(connected => {
@@ -56,25 +48,12 @@ testConnection().then(connected => {
 // Test route
 app.get('/api/test', async (req, res) => {
     try {
-        console.log('Test connection request:', {
-            ip: req.ip,
-            realIP: req.headers['x-real-ip'],
-            forwardedFor: req.headers['x-forwarded-for'],
-            origin: req.get('origin'),
-            host: req.get('host')
-        });
-
         const result = await pool.query('SELECT NOW()');
         res.header('Content-Type', 'application/json');
         res.json({ 
             success: true, 
             message: 'Database connection successful',
-            timestamp: result.rows[0].now,
-            clientInfo: {
-                ip: req.ip,
-                protocol: req.protocol,
-                secure: req.secure
-            }
+            timestamp: result.rows[0].now
         });
     } catch (err) {
         console.error('Database connection error:', err);
@@ -93,10 +72,17 @@ app.post('/api/login', async (req, res) => {
         console.log('Получен запрос на вход:', {
             headers: req.headers,
             body: req.body,
-            ip: req.ip
+            ip: req.ip,
+            origin: req.get('origin')
         });
         
         const { username, password } = req.body;
+
+        if (!username || !password) {
+            return res.status(400).json({ 
+                error: 'Необходимо указать имя пользователя и пароль' 
+            });
+        }
 
         // Изменяем запрос, используя правильное имя колонки password_hash
         const result = await pool.query(`
@@ -130,7 +116,8 @@ app.post('/api/login', async (req, res) => {
     } catch (err) {
         console.error('Детальная ошибка входа:', {
             message: err.message,
-            stack: err.stack
+            stack: err.stack,
+            headers: req.headers
         });
         res.status(500).json({ error: 'Ошибка сервера: ' + err.message });
     }
@@ -151,7 +138,7 @@ app.post('/api/register', async (req, res) => {
             return res.status(400).json({ error: 'Пользователь уже существует' });
         }
 
-        // Хешируем па��оль
+        // Хешируем пароль
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -254,7 +241,7 @@ const storage = multer.diskStorage({
 
         const uploadPath = path.join(UPLOAD_PATH, folder);
         
-        // Создаем директорию, если она не сущ��ствует
+        // Создаем директорию, если она не существует
         if (!fs.existsSync(uploadPath)) {
             fs.mkdirSync(uploadPath, { recursive: true });
         }
@@ -537,7 +524,7 @@ const messageUpload = multer({
     }
 });
 
-// Эндпоинт для отправки сообщения с файлом
+// Эндпоинт для отп��авки сообщения с файлом
 app.post('/api/messages/send-with-file', upload.single('file'), async (req, res) => {
     try {
         const { senderId, receiverId, message, replyToMessageId } = req.body;
@@ -835,94 +822,6 @@ messageStorage.filename = function (req, file, cb) {
     cb(null, filename);
 };
 
-// Создаем транспорт для отправки почты
-const transporter = nodemailer.createTransport({
-    host: 'smtp.timeweb.ru',
-    port: 110,
-    secure: false,
-    requireTLS: true,  // Требуем STARTTLS
-    auth: {
-        user: 'adminflow@adminflow.ru',
-        pass: 'Gg3985502'
-    },
-    tls: {
-        rejectUnauthorized: false,
-        ciphers: 'SSLv3'
-    },
-    debug: true
-});
-
-// Проверяем соединение при запуске сервера
-transporter.verify(function(error, success) {
-    if (error) {
-        console.error('Ошибка подключения к SMTP:', error);
-        console.log('Детали ошибки:', {
-            host: transporter.options.host,
-            port: transporter.options.port,
-            error: error.message
-        });
-    } else {
-        console.log('SMTP сервер готов к отправке сообщений');
-    }
-});
-
-// Обновляем эндпоинт отправки кода
-app.post('/api/send-verification-code', async (req, res) => {
-    try {
-        const { userId, email } = req.body;
-
-        if (!userId || !email) {
-            return res.status(400).json({
-                success: false,
-                error: 'Отсутствуют необходимые данные'
-            });
-        }
-
-        const verificationCode = generateVerificationCode();
-
-        await pool.query(`
-            INSERT INTO verification_codes (user_id, code, expires_at)
-            VALUES ($1, $2, NOW() + INTERVAL '5 minutes')
-            ON CONFLICT (user_id) 
-            DO UPDATE SET 
-                code = EXCLUDED.code,
-                expires_at = EXCLUDED.expires_at,
-                created_at = NOW()
-        `, [userId, verificationCode]);
-
-        // Используем новую функцию отправки
-        const emailSent = await sendEmail(
-            email,
-            'Код подтверждения AdminFlow',
-            `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                    <h2 style="color: #333;">Код подтверждения</h2>
-                    <p>Ваш код подтверждения дл смены пароля:</p>
-                    <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; text-align: center; font-size: 24px; letter-spacing: 5px;">
-                        <strong>${verificationCode}</strong>
-                    </div>
-                    <p style="color: #666; font-size: 14px; margin-top: 20px;">
-                        Код действителен в течение 5 минут.<br>
-                        Если вы не запрашивали код подтверждения, проигнорируйте это письмо.
-                    </p>
-                </div>
-            `
-        );
-
-        if (!emailSent) {
-            throw new Error('Failed to send email');
-        }
-
-        res.json({ success: true });
-    } catch (err) {
-        console.error('Error sending verification code:', err);
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка при отправке кода подтверждения'
-        });
-    }
-});
-
 // Получение информации о пользователе
 app.get('/api/users/:id', async (req, res) => {
     try {
@@ -967,7 +866,7 @@ app.post('/api/users/update-profile', async (req, res) => {
             }
         }
 
-        // Проверяем, не занято ли ия пользователя
+        // Проверяем, не занято ли имя пользователя
         if (username) {
             const usernameCheck = await pool.query(
                 'SELECT id FROM users WHERE username = $1 AND id != $2',
@@ -1416,7 +1315,7 @@ app.delete('/api/posts/delete/:postId', async (req, res) => {
             return res.status(403).json({ error: 'У вас нет прав на удаление этого поста' });
         }
 
-        // Удаляем все связанные записи (лайк��, комментарии)
+        // Удаляем все связанные записи (лайки, комментарии)
         await pool.query('DELETE FROM posts WHERE parent_id = $1', [postId]);
         // Удаляем сам пост
         await pool.query('DELETE FROM posts WHERE id = $1', [postId]);
@@ -1678,7 +1577,7 @@ app.delete('/api/messages/delete/:messageId', async (req, res) => {
         const { messageId } = req.params;
         const { userId } = req.body; // ID текущего пользователя
 
-        // Проверяем, является ли пользователь отправителем сообщения
+        // Проверяем, являет��я ли пользователь отправителем сообщения
         const message = await pool.query(
             'SELECT * FROM messages WHERE id = $1 AND sender_id = $2',
             [messageId, userId]
@@ -1775,6 +1674,170 @@ app.get('/api/users/check-email', async (req, res) => {
     }
 });
 
+// Создаем трнспорт для отправки почты
+const transporter = nodemailer.createTransport({
+    host: 'smtp.timeweb.ru',
+    port: 110,
+    secure: false,
+    requireTLS: true,  // Требуем STARTTLS
+    auth: {
+        user: 'adminflow@adminflow.ru',
+        pass: 'Gg3985502'
+    },
+    tls: {
+        rejectUnauthorized: false,
+        ciphers: 'SSLv3'
+    },
+    debug: true
+});
+
+// Проверяем соединение при запуске сервера
+transporter.verify(function(error, success) {
+    if (error) {
+        console.error('Ошибка подключения к SMTP:', error);
+        console.log('Детали ошибки:', {
+            host: transporter.options.host,
+            port: transporter.options.port,
+            error: error.message
+        });
+    } else {
+        console.log('SMTP сервер готов к отправке сообщений');
+    }
+});
+
+// Альтернативная конфигурация с TLS
+const alternativeTransporter = nodemailer.createTransport({
+    host: 'smtp.timeweb.ru',
+    port: 587,              // Альтернативный порт
+    secure: false,          // Для порта 587
+    requireTLS: true,       // Требуем TLS
+    auth: {
+        user: 'adminflow@adminflow.ru',
+        pass: 'Gg3985502'
+    },
+    tls: {
+        rejectUnauthorized: false // В случае проблем с сертификатом
+    }
+});
+
+// Проверяем альтернативное соединение
+alternativeTransporter.verify(function(error, success) {
+    if (error) {
+        console.error('Ошибка подключения к альтернативному SMTP:', error);
+    } else {
+        console.log('Альтернативный SMTP сервер готов к отправке сообщений');
+        // Если альтернативное соединение работает, используем его
+        transporter = alternativeTransporter;
+    }
+});
+
+// Функция для генерации кода подтверждения
+function generateVerificationCode() {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+// Эндпоинт для отправки кода подтверждения
+app.post('/api/send-verification-code', async (req, res) => {
+    try {
+        const { userId, email } = req.body;
+
+        if (!userId || !email) {
+            return res.status(400).json({
+                success: false,
+                error: 'Отсутствуют необходимые данные'
+            });
+        }
+
+        // ��енерируем код
+        const verificationCode = generateVerificationCode();
+
+        // Сохраняем код в базу данных с временем жизни
+        await pool.query(`
+            INSERT INTO verification_codes (user_id, code, expires_at)
+            VALUES ($1, $2, NOW() + INTERVAL '5 minutes')
+            ON CONFLICT (user_id) 
+            DO UPDATE SET 
+                code = EXCLUDED.code,
+                expires_at = EXCLUDED.expires_at,
+                created_at = NOW()
+        `, [userId, verificationCode]);
+
+        // Отправляем email
+        await transporter.sendMail({
+            from: '"AdminFlow" <adminflow@adminflow.ru>',
+            to: email,
+            subject: 'Код подтверждения AdminFlow',
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h2 style="color: #333;">Код подтверждения</h2>
+                    <p>Ваш код подтверждения для смены пароля:</p>
+                    <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; text-align: center; font-size: 24px; letter-spacing: 5px;">
+                        <strong>${verificationCode}</strong>
+                    </div>
+                    <p style="color: #666; font-size: 14px; margin-top: 20px;">
+                        Код действителен в течение 5 минут.<br>
+                        Если вы не запрашивали код подтверждения, проигнорируйте это письмо.
+                    </p>
+                </div>
+            `
+        });
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Error sending verification code:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при отправке кода подтверждения'
+        });
+    }
+});
+
+// Эндпоинт для проверки кода и смены пароля
+app.post('/api/change-password', async (req, res) => {
+    try {
+        const { userId, code, newPassword } = req.body;
+
+        // Проверяем код
+        const result = await pool.query(`
+            SELECT * FROM verification_codes 
+            WHERE user_id = $1 
+            AND code = $2 
+            AND expires_at > NOW()
+        `, [userId, code]);
+
+        if (result.rows.length === 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'Неверный или устаревший код подтвержде��ия'
+            });
+        }
+
+        // Хешируем новый пароль
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        // Обновляем пароль
+        await pool.query(`
+            UPDATE users 
+            SET password = $1 
+            WHERE id = $2
+        `, [hashedPassword, userId]);
+
+        // Удаляем использованный код
+        await pool.query(`
+            DELETE FROM verification_codes 
+            WHERE user_id = $1
+        `, [userId]);
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Error changing password:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при смене пароля'
+        });
+    }
+});
+
 // Обновляем настройки HTTP и HTTPS серверов
 const httpServer = http.createServer((req, res) => {
     // Редирект с HTTP на HTTPS
@@ -1792,20 +1855,3 @@ httpServer.listen(80, () => {
 httpsServer.listen(443, () => {
     console.log('HTTPS Server running on port 443');
 });
-
-// Заменяем функцию отправки email обратно на nodemailer
-async function sendEmail(to, subject, html) {
-    try {
-        const info = await transporter.sendMail({
-            from: 'adminflow@adminflow.ru',
-            to,
-            subject,
-            html,
-        });
-        console.log('Email sent:', info.messageId);
-        return true;
-    } catch (error) {
-        console.error('Email Error:', error);
-        return false;
-    }
-}
