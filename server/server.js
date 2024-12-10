@@ -14,9 +14,7 @@ const PORT = 443;
 
 // Middleware
 app.use(cors({
-    origin: function(origin, callback) {
-        callback(null, true); // Разрешаем все источники
-    },
+    origin: ['http://adminflow.ru', 'https://adminflow.ru'],
     credentials: true
 }));
 app.use(express.json());
@@ -33,6 +31,7 @@ testConnection().then(connected => {
 app.get('/api/test', async (req, res) => {
     try {
         const result = await pool.query('SELECT NOW()');
+        res.header('Content-Type', 'application/json');
         res.json({ 
             success: true, 
             message: 'Database connection successful',
@@ -40,6 +39,7 @@ app.get('/api/test', async (req, res) => {
         });
     } catch (err) {
         console.error('Database connection error:', err);
+        res.header('Content-Type', 'application/json');
         res.status(500).json({ 
             success: false, 
             error: 'Database connection failed',
@@ -445,7 +445,7 @@ app.get('/api/friend-requests', async (req, res) => {
     }
 });
 
-// Добавьте новый endpoint для удаления из друзей
+// Добавьте новый endpoint для у��аления из друзей
 app.post('/api/friend/remove', async (req, res) => {
     try {
         const { userId, friendId } = req.body;
@@ -1812,7 +1812,20 @@ app.post('/api/change-password', async (req, res) => {
     }
 });
 
-// Добавьте HTTP сервер
-http.createServer(app).listen(80, () => {
-    console.log('HTTP Server running on port 80');
+// Обновляем настройки HTTP и HTTPS серверов
+const httpServer = http.createServer((req, res) => {
+    // Редирект с HTTP на HTTPS
+    res.writeHead(301, { Location: `https://${req.headers.host}${req.url}` });
+    res.end();
+});
+
+const httpsServer = https.createServer(sslOptions, app);
+
+// Запускаем серверы
+httpServer.listen(80, () => {
+    console.log('HTTP Server running on port 80 (redirect to HTTPS)');
+});
+
+httpsServer.listen(443, () => {
+    console.log('HTTPS Server running on port 443');
 });
