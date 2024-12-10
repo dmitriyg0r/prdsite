@@ -14,8 +14,26 @@ const PORT = 5003;
 
 // Middleware
 app.use(cors({
-    origin: ['http://adminflow.ru', 'https://adminflow.ru'],
-    credentials: true
+    origin: function(origin, callback) {
+        // Разрешаем запросы без origin (например, от мобильных приложений)
+        if (!origin) return callback(null, true);
+        
+        const allowedOrigins = [
+            'http://adminflow.ru',
+            'https://adminflow.ru',
+            'http://www.adminflow.ru',
+            'https://www.adminflow.ru'
+        ];
+        
+        if (allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 
@@ -54,10 +72,17 @@ app.post('/api/login', async (req, res) => {
         console.log('Получен запрос на вход:', {
             headers: req.headers,
             body: req.body,
-            ip: req.ip
+            ip: req.ip,
+            origin: req.get('origin')
         });
         
         const { username, password } = req.body;
+
+        if (!username || !password) {
+            return res.status(400).json({ 
+                error: 'Необходимо указать имя пользователя и пароль' 
+            });
+        }
 
         // Изменяем запрос, используя правильное имя колонки password_hash
         const result = await pool.query(`
@@ -91,7 +116,8 @@ app.post('/api/login', async (req, res) => {
     } catch (err) {
         console.error('Детальная ошибка входа:', {
             message: err.message,
-            stack: err.stack
+            stack: err.stack,
+            headers: req.headers
         });
         res.status(500).json({ error: 'Ошибка сервера: ' + err.message });
     }
@@ -185,7 +211,7 @@ app.get('/api/download/:folder/:filename', (req, res) => {
         const fileStream = fs.createReadStream(filePath);
         fileStream.pipe(res);
 
-        // Обр��ботка ошибок потока
+        // Обработка ошибок потока
         fileStream.on('error', (error) => {
             console.error('Error streaming file:', error);
             if (!res.headersSent) {
@@ -445,7 +471,7 @@ app.get('/api/friend-requests', async (req, res) => {
     }
 });
 
-// Добавьте новый endpoint для у��аления из друзей
+// Добавьте новый endpoint для удаления из друзей
 app.post('/api/friend/remove', async (req, res) => {
     try {
         const { userId, friendId } = req.body;
@@ -463,7 +489,7 @@ app.post('/api/friend/remove', async (req, res) => {
     }
 });
 
-// Настройка хранилища для файлов сообще��ий
+// Настройка хранилища для файлов сообщений
 const messageStorage = multer.diskStorage({
     destination: function (req, file, cb) {
         const uploadDir = path.join(__dirname, '../public/uploads/messages');
@@ -498,7 +524,7 @@ const messageUpload = multer({
     }
 });
 
-// Эндпоинт для отправки сообщения с файлом
+// Эндпоинт для отп��авки сообщения с файлом
 app.post('/api/messages/send-with-file', upload.single('file'), async (req, res) => {
     try {
         const { senderId, receiverId, message, replyToMessageId } = req.body;
@@ -646,7 +672,7 @@ app.get('/api/messages/unread/:userId', async (req, res) => {
         res.json({ success: true, unreadCounts: result.rows });
     } catch (err) {
         console.error('Error getting unread counts:', err);
-        res.status(500).json({ error: 'Ошибка при получении количества непрочитанных сообщ��ний' });
+        res.status(500).json({ error: 'Ошибка при получении количества непрочитанных сообщений' });
     }
 });
 
@@ -1551,7 +1577,7 @@ app.delete('/api/messages/delete/:messageId', async (req, res) => {
         const { messageId } = req.params;
         const { userId } = req.body; // ID текущего пользователя
 
-        // Проверяем, является ли пользователь отправителем сообщения
+        // Проверяем, являет��я ли пользователь отправителем сообщения
         const message = await pool.query(
             'SELECT * FROM messages WHERE id = $1 AND sender_id = $2',
             [messageId, userId]
@@ -1648,7 +1674,7 @@ app.get('/api/users/check-email', async (req, res) => {
     }
 });
 
-// Создаем тр��нспорт для отправки почты
+// Создаем трнспорт для отправки почты
 const transporter = nodemailer.createTransport({
     host: 'smtp.timeweb.ru',
     port: 110,
@@ -1722,7 +1748,7 @@ app.post('/api/send-verification-code', async (req, res) => {
             });
         }
 
-        // Генерируем код
+        // ��енерируем код
         const verificationCode = generateVerificationCode();
 
         // Сохраняем код в базу данных с временем жизни
@@ -1782,7 +1808,7 @@ app.post('/api/change-password', async (req, res) => {
         if (result.rows.length === 0) {
             return res.status(400).json({
                 success: false,
-                error: 'Неверный или устаревший код подтверждения'
+                error: 'Неверный или устаревший код подтвержде��ия'
             });
         }
 
