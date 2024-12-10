@@ -131,18 +131,27 @@ body {
 .chat-header {
     padding: 15px 20px;
     border-bottom: 1px solid var(--border-color);
-    display: flex;
-    align-items: center;
+    background-color: var(--text-container-background);
+    display: none;
 }
 
 .chat-header-info {
     display: flex;
     align-items: center;
+    gap: 12px;
+}
+
+.chat-header-info img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
 }
 
 .chat-header-info h3 {
     margin: 0;
     color: var(--text-color);
+    font-size: 1.1em;
 }
 
 /* Область сообщений */

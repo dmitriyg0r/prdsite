@@ -166,22 +166,37 @@ async function openChat(friend) {
         const data = await response.json();
 
         if (data.success) {
+            // Обновляем текущего собеседника
             currentChatPartner = data.user;
             
-            // Скрываем placeholder и показываем чат
+            // Обновляем заголовок чата
+            const chatHeader = document.getElementById('chat-header');
+            const headerAvatar = document.getElementById('chat-header-avatar');
+            const headerName = document.getElementById('chat-header-name');
+            
+            if (chatHeader && headerAvatar && headerName) {
+                chatHeader.style.display = 'flex';
+                headerAvatar.src = currentChatPartner.avatar_url || '../uploads/avatars/default.png';
+                headerName.textContent = currentChatPartner.username;
+            }
+            
+            // Скрываем placeholder и показываем область сообщений
             document.getElementById('chat-placeholder').style.display = 'none';
-            document.getElementById('chat-header').style.display = 'flex';
             document.getElementById('messages').style.display = 'flex';
             
-            // Обновляем UI
+            // Очищаем предыдущие сообщения
+            const messagesContainer = document.getElementById('messages');
+            if (messagesContainer) {
+                messagesContainer.innerHTML = '';
+            }
+            
+            // Обновляем активный чат в списке
             document.querySelectorAll('.chat-partner').forEach(el => {
                 el.classList.remove('active');
+                if (el.dataset.friendId === friendId.toString()) {
+                    el.classList.add('active');
+                }
             });
-            
-            const chatPartnerElement = document.querySelector(`.chat-partner[data-friend-id="${friendId}"]`);
-            if (chatPartnerElement) {
-                chatPartnerElement.classList.add('active');
-            }
 
             // Загружаем сообщения
             await loadMessages(friendId);
@@ -191,6 +206,14 @@ async function openChat(friend) {
             
             // Включаем обновление сообщений
             startMessageUpdates();
+            
+            // Фокусируем поле ввода
+            const messageInput = document.getElementById('messageInput');
+            if (messageInput) {
+                messageInput.focus();
+            }
+        } else {
+            console.error('Ошибка получения данных пользователя:', data.error);
         }
     } catch (err) {
         console.error('Error opening chat:', err);
@@ -293,7 +316,7 @@ function createMessageElement(message) {
         messageElement.appendChild(replyElement);
     }
 
-    // Основной контент сообщения
+    // ��сновной контент сообщения
     const messageContent = document.createElement('div');
     messageContent.className = 'message-content';
 
@@ -355,7 +378,7 @@ function createAttachmentElement(attachmentUrl) {
     // Удаляем возможные двойные слеши
     fullUrl = fullUrl.replace(/([^:]\/)\/+/g, '$1');
 
-    console.log('Обработанный URL вложения:', fullUrl); // Для отладки
+    console.log('Оработанный URL вложения:', fullUrl); // Для отладки
 
     if (isImageFile(attachmentUrl)) {
         const img = document.createElement('img');
@@ -432,7 +455,7 @@ async function sendMessage() {
         }
     } catch (error) {
         console.error('Ошибка при отправке сообщения:', error);
-        alert('Ошибка при отправке сообщени��');
+        alert('Ошибка при отправке сообщений');
     }
 }
 
@@ -642,7 +665,7 @@ document.querySelector('.close-modal').onclick = function() {
     document.querySelector('.image-modal').style.display = 'none';
 };
 
-// Добавляем обработчики для прикрепления файлов
+// Добавляем обработчики для прик��епления файлов
 function setupAttachmentHandlers() {
     const attachButton = document.getElementById('attachButton');
     const fileInput = document.getElementById('fileInput');
@@ -735,26 +758,41 @@ async function deleteMessage(messageId) {
     }
 
     try {
+        // Находим сообщение в DOM до его удаления
+        const messageElement = document.querySelector(`.message[data-message-id="${messageId}"]`);
+        if (!messageElement) {
+            console.error('Сообщение не найдено в DOM');
+            return;
+        }
+
+        // Проверяем, есть ли вложение
+        const attachmentElement = messageElement.querySelector('.message-attachment');
+        let attachmentUrl = null;
+        if (attachmentElement) {
+            const imgElement = attachmentElement.querySelector('img');
+            const fileLink = attachmentElement.querySelector('.file-name');
+            attachmentUrl = imgElement ? imgElement.src : (fileLink ? fileLink.href : null);
+        }
+
         const response = await fetch(`https://adminflow.ru:5003/api/messages/delete/${messageId}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ userId: currentUser.id })
+            body: JSON.stringify({ 
+                userId: currentUser.id,
+                attachmentUrl: attachmentUrl // Передаем URL вложения, если оно есть
+            })
         });
 
         const data = await response.json();
         
         if (data.success) {
-            // Находим и удаляем сообщение из DOM
-            const messageElement = document.querySelector(`.message[data-message-id="${messageId}"]`);
-            if (messageElement) {
-                // Добавляем анимацию удаления
-                messageElement.style.animation = 'fadeOut 0.3s ease-out';
-                messageElement.addEventListener('animationend', () => {
-                    messageElement.remove();
-                });
-            }
+            // Добавляем анимацию удаления
+            messageElement.style.animation = 'fadeOut 0.3s ease-out';
+            messageElement.addEventListener('animationend', () => {
+                messageElement.remove();
+            });
         } else {
             console.error('Ошибка при удалении сообщения:', data.error);
             alert(data.error || 'Не удалось удалить сообщение');
@@ -830,51 +868,54 @@ function setupContextMenu() {
     messagesArea.addEventListener('contextmenu', (e) => {
         e.preventDefault();
         
+        // Ищем ближайший элемент сообщения от места клика
         const messageElement = e.target.closest('.message');
         if (messageElement) {
+            // Получаем текст сообщения (может быть в .message-text или в атрибуте alt изображения)
             const messageTextElement = messageElement.querySelector('.message-text');
-            if (messageTextElement) {
-                selectedMessageId = messageElement.dataset.messageId;
-                selectedMessageText = messageTextElement.textContent;
-                
-                // Проверяем, является ли сообщение нашим
-                const isSentMessage = messageElement.classList.contains('message-sent');
-                const deleteButton = document.getElementById('deleteMessageBtn');
-                
-                // Показываем кнопку удаления только для наших сообщений
-                if (deleteButton) {
-                    deleteButton.style.display = isSentMessage ? 'block' : 'none';
-                }
-
-                // Позиционируем меню относительно окна браузера
-                const x = e.pageX;
-                const y = e.pageY;
-                
-                // Показываем меню
-                contextMenu.style.display = 'block';
-
-                // Получаем размеры меню и окна
-                const menuRect = contextMenu.getBoundingClientRect();
-                const windowWidth = window.innerWidth;
-                const windowHeight = window.innerHeight;
-
-                // Проверяем и корректируем позицию по горизонтали
-                if (x + menuRect.width > windowWidth) {
-                    contextMenu.style.left = `${x - menuRect.width}px`;
-                } else {
-                    contextMenu.style.left = `${x}px`;
-                }
-
-                // Проверяем и корректируем позицию по вертикали
-                if (y + menuRect.height > windowHeight) {
-                    contextMenu.style.top = `${y - menuRect.height}px`;
-                } else {
-                    contextMenu.style.top = `${y}px`;
-                }
-
-                // Добавляем класс для анимации появления
-                contextMenu.classList.add('context-menu-visible');
+            const messageImage = messageElement.querySelector('.message-attachment img');
+            
+            selectedMessageId = messageElement.dataset.messageId;
+            selectedMessageText = messageTextElement ? messageTextElement.textContent : 
+                                (messageImage ? 'Изображение' : 'Вложение');
+            
+            // Проверяем, является ли сообщение нашим
+            const isSentMessage = messageElement.classList.contains('message-sent');
+            const deleteButton = document.getElementById('deleteMessageBtn');
+            
+            // Показываем кнопку удаления только для наших сообщений
+            if (deleteButton) {
+                deleteButton.style.display = isSentMessage ? 'block' : 'none';
             }
+
+            // Позиционируем меню
+            const x = e.pageX;
+            const y = e.pageY;
+            
+            // Показываем меню
+            contextMenu.style.display = 'block';
+
+            // Получаем размеры меню и окна
+            const menuRect = contextMenu.getBoundingClientRect();
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+
+            // Проверяем и корректируем позицию по горизонтали
+            if (x + menuRect.width > windowWidth) {
+                contextMenu.style.left = `${x - menuRect.width}px`;
+            } else {
+                contextMenu.style.left = `${x}px`;
+            }
+
+            // Проверяем и корректируем позицию по вертикали
+            if (y + menuRect.height > windowHeight) {
+                contextMenu.style.top = `${y - menuRect.height}px`;
+            } else {
+                contextMenu.style.top = `${y}px`;
+            }
+
+            // Добавляем класс для анимации появления
+            contextMenu.classList.add('context-menu-visible');
         }
     });
 
@@ -994,7 +1035,7 @@ function isScrolledToBottom(element) {
     return Math.abs(element.scrollHeight - element.scrollTop - element.clientHeight) < 1;
 }
 
-// Функция обновления сообщений
+// Функция обновлени�� сообщений
 function startMessageUpdates() {
     if (messageUpdateInterval) {
         clearInterval(messageUpdateInterval);
