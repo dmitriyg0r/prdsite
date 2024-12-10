@@ -14,10 +14,36 @@ const PORT = 5003;
 
 // Middleware
 app.use(cors({
-    origin: ['http://adminflow.ru', 'https://adminflow.ru'],
-    credentials: true
+    origin: function(origin, callback) {
+        // Разрешаем все корпоративные домены и прокси
+        if (!origin) return callback(null, true);
+        
+        const allowedOrigins = [
+            'http://adminflow.ru',
+            'https://adminflow.ru',
+            'http://www.adminflow.ru',
+            'https://www.adminflow.ru',
+            /^https?:\/\/.*\.corp\.local$/,  // Корпоративные домены
+            /^https?:\/\/.*\.internal$/      // Внутренние домены
+        ];
+        
+        const allowed = allowedOrigins.some(allowed => {
+            if (allowed instanceof RegExp) {
+                return allowed.test(origin);
+            }
+            return allowed === origin;
+        });
+        
+        callback(null, allowed);
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Forwarded-For', 'X-Real-IP'],
+    exposedHeaders: ['Content-Length', 'X-Requested-With']
 }));
-app.use(express.json());
+
+// Добавляем обработку прокси-заголовков
+app.set('trust proxy', true);
 
 // Test database connection on startup
 testConnection().then(connected => {
@@ -30,12 +56,25 @@ testConnection().then(connected => {
 // Test route
 app.get('/api/test', async (req, res) => {
     try {
+        console.log('Test connection request:', {
+            ip: req.ip,
+            realIP: req.headers['x-real-ip'],
+            forwardedFor: req.headers['x-forwarded-for'],
+            origin: req.get('origin'),
+            host: req.get('host')
+        });
+
         const result = await pool.query('SELECT NOW()');
         res.header('Content-Type', 'application/json');
         res.json({ 
             success: true, 
             message: 'Database connection successful',
-            timestamp: result.rows[0].now
+            timestamp: result.rows[0].now,
+            clientInfo: {
+                ip: req.ip,
+                protocol: req.protocol,
+                secure: req.secure
+            }
         });
     } catch (err) {
         console.error('Database connection error:', err);
@@ -112,7 +151,7 @@ app.post('/api/register', async (req, res) => {
             return res.status(400).json({ error: 'Пользователь уже существует' });
         }
 
-        // Хешируем пароль
+        // Хешируем па��оль
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -215,7 +254,7 @@ const storage = multer.diskStorage({
 
         const uploadPath = path.join(UPLOAD_PATH, folder);
         
-        // Создаем директорию, если она не существует
+        // Создаем директорию, если она не сущ��ствует
         if (!fs.existsSync(uploadPath)) {
             fs.mkdirSync(uploadPath, { recursive: true });
         }
@@ -498,7 +537,7 @@ const messageUpload = multer({
     }
 });
 
-// Эндпоинт для отп��авки сообщения с файлом
+// Эндпоинт для отправки сообщения с файлом
 app.post('/api/messages/send-with-file', upload.single('file'), async (req, res) => {
     try {
         const { senderId, receiverId, message, replyToMessageId } = req.body;
@@ -858,7 +897,7 @@ app.post('/api/send-verification-code', async (req, res) => {
             `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                     <h2 style="color: #333;">Код подтверждения</h2>
-                    <p>Ваш код подтверждения дл�� смены пароля:</p>
+                    <p>Ваш код подтверждения дл смены пароля:</p>
                     <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; text-align: center; font-size: 24px; letter-spacing: 5px;">
                         <strong>${verificationCode}</strong>
                     </div>
@@ -928,7 +967,7 @@ app.post('/api/users/update-profile', async (req, res) => {
             }
         }
 
-        // Проверяем, не занято ли и��я пользователя
+        // Проверяем, не занято ли ия пользователя
         if (username) {
             const usernameCheck = await pool.query(
                 'SELECT id FROM users WHERE username = $1 AND id != $2',
@@ -1377,7 +1416,7 @@ app.delete('/api/posts/delete/:postId', async (req, res) => {
             return res.status(403).json({ error: 'У вас нет прав на удаление этого поста' });
         }
 
-        // Удаляем все связанные записи (лайки, комментарии)
+        // Удаляем все связанные записи (лайк��, комментарии)
         await pool.query('DELETE FROM posts WHERE parent_id = $1', [postId]);
         // Удаляем сам пост
         await pool.query('DELETE FROM posts WHERE id = $1', [postId]);
@@ -1736,7 +1775,7 @@ app.get('/api/users/check-email', async (req, res) => {
     }
 });
 
-// Обновл��ем настройки HTTP и HTTPS серверов
+// Обновляем настройки HTTP и HTTPS серверов
 const httpServer = http.createServer((req, res) => {
     // Редирект с HTTP на HTTPS
     res.writeHead(301, { Location: `https://${req.headers.host}${req.url}` });

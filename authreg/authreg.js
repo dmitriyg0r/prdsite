@@ -17,8 +17,22 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// Константа с базовым URL API
-const API_URL = window.location.protocol + '//' + window.location.hostname;
+// Обновляем константу API_URL для поддержки прокси
+const API_URL = (() => {
+    const protocol = window.location.protocol;
+    const hostname = window.location.hostname;
+    
+    // Проверяем, находимся ли мы в корпоративной сети
+    const isCorpNetwork = hostname.includes('.corp.local') || 
+                         hostname.includes('.internal');
+    
+    // Если мы в корпоративной сети, используем прямой IP или доменное имя сервера
+    if (isCorpNetwork) {
+        return 'https://adminflow.ru'; // или IP-адрес сервера
+    }
+    
+    return protocol + '//' + hostname;
+})();
 
 // Обработчик входа
 document.getElementById('login-form').addEventListener('submit', async (e) => {
@@ -187,14 +201,71 @@ function showSuccessMessage(message) {
     }, 3000);
 }
 
-// Проверка соединения при загрузке страни��ы
-window.addEventListener('load', async () => {
+// Обновляем функцию проверки соединения
+async function testConnection() {
     try {
-        const response = await fetch(`${API_URL}/api/test`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 секунд таймаут
+
+        const response = await fetch(`${API_URL}/api/test`, {
+            signal: controller.signal,
+            headers: {
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache'
+            },
+            credentials: 'include'
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
         const data = await response.json();
         console.log('Server connection test:', data);
+        return true;
     } catch (err) {
-        console.error('Server connection error:', err);
-        showErrorMessage('Ошибка подключения к серверу');
+        console.error('Server connection error:', {
+            message: err.message,
+            type: err.name,
+            api_url: API_URL
+        });
+        
+        if (err.name === 'AbortError') {
+            showErrorMessage('Превышено время ожидания ответа от сервера');
+        } else {
+            showErrorMessage(`Ошибка подключения к серверу: ${err.message}`);
+        }
+        return false;
+    }
+}
+
+// Обновляем обработчик загрузки страницы
+window.addEventListener('load', async () => {
+    // Показываем индикатор загрузки
+    const loadingMessage = document.createElement('div');
+    loadingMessage.className = 'loading-message';
+    loadingMessage.textContent = 'Проверка подключения...';
+    document.body.appendChild(loadingMessage);
+
+    const isConnected = await testConnection();
+    
+    // Удаляем индикатор загрузки
+    loadingMessage.remove();
+
+    if (!isConnected) {
+        // Показываем кнопку для повторной попытки
+        const retryButton = document.createElement('button');
+        retryButton.textContent = 'Повторить подключение';
+        retryButton.className = 'retry-button';
+        retryButton.onclick = async () => {
+            retryButton.disabled = true;
+            retryButton.textContent = 'Подключение...';
+            await testConnection();
+            retryButton.disabled = false;
+            retryButton.textContent = 'Повторить подключение';
+        };
+        document.querySelector('.auth-box').appendChild(retryButton);
     }
 }); 
