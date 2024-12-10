@@ -8,7 +8,6 @@ const multer = require('multer');
 const path = require('path');
 const nodemailer = require('nodemailer');
 const http = require('http');
-const sgMail = require('@sendgrid/mail');
 
 const app = express();
 const PORT = 5003;
@@ -75,7 +74,7 @@ app.post('/api/login', async (req, res) => {
         const validPassword = await bcrypt.compare(password, user.password_hash);
 
         if (!validPassword) {
-            return res.status(401).json({ error: 'Неверное имя пользователя или п����роль' });
+            return res.status(401).json({ error: 'Неверное имя пользователя или пароль' });
         }
 
         // Обновляем last_login
@@ -186,7 +185,7 @@ app.get('/api/download/:folder/:filename', (req, res) => {
         const fileStream = fs.createReadStream(filePath);
         fileStream.pipe(res);
 
-        // Обр��ботка ошибок потока
+        // Обработка ошибок потока
         fileStream.on('error', (error) => {
             console.error('Error streaming file:', error);
             if (!res.headersSent) {
@@ -232,7 +231,7 @@ const storage = multer.diskStorage({
             prefix = 'message-';
         }
 
-        // Генерируем уникальное ��м�� файла
+        // Генерируем уникальное имя файла
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
         const ext = path.extname(file.originalname);
         cb(null, `${prefix}${uniqueSuffix}${ext}`);
@@ -290,7 +289,7 @@ app.post('/api/upload-avatar', upload.single('avatar'), (req, res) => {
 app.use((err, req, res, next) => {
     if (err instanceof multer.MulterError) {
         if (err.code === 'LIMIT_FILE_SIZE') {
-            return res.status(400).json({ error: 'Файл слишком б��льшой. Максимальный размер: 10MB' });
+            return res.status(400).json({ error: 'Файл слишком большой. Максимальный размер: 10MB' });
         }
         return res.status(400).json({ error: err.message });
     }
@@ -446,7 +445,7 @@ app.get('/api/friend-requests', async (req, res) => {
     }
 });
 
-// Добавьте новый endpoint для у��аления из друзей
+// Добавьте новый endpoint для удаления из друзей
 app.post('/api/friend/remove', async (req, res) => {
     try {
         const { userId, friendId } = req.body;
@@ -464,7 +463,7 @@ app.post('/api/friend/remove', async (req, res) => {
     }
 });
 
-// Настройка хранилища для файлов сообще��ий
+// Настройка хранилища для файлов сообщений
 const messageStorage = multer.diskStorage({
     destination: function (req, file, cb) {
         const uploadDir = path.join(__dirname, '../public/uploads/messages');
@@ -499,7 +498,7 @@ const messageUpload = multer({
     }
 });
 
-// Эндпоинт для отправки сообщения с файлом
+// Эндпоинт для отп��авки сообщения с файлом
 app.post('/api/messages/send-with-file', upload.single('file'), async (req, res) => {
     try {
         const { senderId, receiverId, message, replyToMessageId } = req.body;
@@ -605,7 +604,7 @@ app.post('/api/messages/read', async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         console.error('Error marking messages as read:', err);
-        res.status(500).json({ error: 'Ошибка при отметке сообщений к��к прочитанных' });
+        res.status(500).json({ error: 'Ошибка при отметке сообщений как прочитанных' });
     }
 });
 
@@ -647,7 +646,7 @@ app.get('/api/messages/unread/:userId', async (req, res) => {
         res.json({ success: true, unreadCounts: result.rows });
     } catch (err) {
         console.error('Error getting unread counts:', err);
-        res.status(500).json({ error: 'Ошибка при получении количества непрочитанных сообщ��ний' });
+        res.status(500).json({ error: 'Ошибка при получении количества непрочитанных сообщений' });
     }
 });
 
@@ -828,28 +827,6 @@ transporter.verify(function(error, success) {
     }
 });
 
-// Устанавливаем пакет
-// npm install @sendgrid/mail
-
-sgMail.setApiKey('YOUR_SENDGRID_API_KEY');
-
-// Заменяем отправку через nodemailer на SendGrid API
-async function sendEmail(to, subject, html) {
-    try {
-        const msg = {
-            to,
-            from: 'adminflow@adminflow.ru',
-            subject,
-            html,
-        };
-        await sgMail.send(msg);
-        return true;
-    } catch (error) {
-        console.error('SendGrid Error:', error);
-        return false;
-    }
-}
-
 // Обновляем эндпоинт отправки кода
 app.post('/api/send-verification-code', async (req, res) => {
     try {
@@ -881,7 +858,7 @@ app.post('/api/send-verification-code', async (req, res) => {
             `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                     <h2 style="color: #333;">Код подтверждения</h2>
-                    <p>Ваш код подтверждения для смены пароля:</p>
+                    <p>Ваш код подтверждения дл�� смены пароля:</p>
                     <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; text-align: center; font-size: 24px; letter-spacing: 5px;">
                         <strong>${verificationCode}</strong>
                     </div>
@@ -951,7 +928,7 @@ app.post('/api/users/update-profile', async (req, res) => {
             }
         }
 
-        // Проверяем, не занято ли имя пользователя
+        // Проверяем, не занято ли и��я пользователя
         if (username) {
             const usernameCheck = await pool.query(
                 'SELECT id FROM users WHERE username = $1 AND id != $2',
@@ -1390,7 +1367,7 @@ app.delete('/api/posts/delete/:postId', async (req, res) => {
         const { postId } = req.params;
         const { userId } = req.body;
 
-        // Проверяем, являе��ся ли пользователь автором поста
+        // Проверяем, является ли пользователь автором поста
         const post = await pool.query(
             'SELECT * FROM posts WHERE id = $1 AND user_id = $2 AND type = $3',
             [postId, userId, 'post']
@@ -1759,7 +1736,7 @@ app.get('/api/users/check-email', async (req, res) => {
     }
 });
 
-// Обновляем настройки HTTP и HTTPS серверов
+// Обновл��ем настройки HTTP и HTTPS серверов
 const httpServer = http.createServer((req, res) => {
     // Редирект с HTTP на HTTPS
     res.writeHead(301, { Location: `https://${req.headers.host}${req.url}` });
@@ -1776,3 +1753,20 @@ httpServer.listen(80, () => {
 httpsServer.listen(443, () => {
     console.log('HTTPS Server running on port 443');
 });
+
+// Заменяем функцию отправки email обратно на nodemailer
+async function sendEmail(to, subject, html) {
+    try {
+        const info = await transporter.sendMail({
+            from: 'adminflow@adminflow.ru',
+            to,
+            subject,
+            html,
+        });
+        console.log('Email sent:', info.messageId);
+        return true;
+    } catch (error) {
+        console.error('Email Error:', error);
+        return false;
+    }
+}
