@@ -185,7 +185,7 @@ app.get('/api/download/:folder/:filename', (req, res) => {
         const fileStream = fs.createReadStream(filePath);
         fileStream.pipe(res);
 
-        // Обработка ошибок потока
+        // Обр��ботка ошибок потока
         fileStream.on('error', (error) => {
             console.error('Error streaming file:', error);
             if (!res.headersSent) {
@@ -463,7 +463,7 @@ app.post('/api/friend/remove', async (req, res) => {
     }
 });
 
-// Настройка хранилища для файлов сообщений
+// Настройка хранилища для файлов сообще��ий
 const messageStorage = multer.diskStorage({
     destination: function (req, file, cb) {
         const uploadDir = path.join(__dirname, '../public/uploads/messages');
@@ -646,7 +646,7 @@ app.get('/api/messages/unread/:userId', async (req, res) => {
         res.json({ success: true, unreadCounts: result.rows });
     } catch (err) {
         console.error('Error getting unread counts:', err);
-        res.status(500).json({ error: 'Ошибка при получении количества непрочитанных сообщений' });
+        res.status(500).json({ error: 'Ошибка при получении количества непрочитанных сообщ��ний' });
     }
 });
 
@@ -1279,7 +1279,7 @@ app.delete('/api/posts/delete/:postId', async (req, res) => {
         const { postId } = req.params;
         const { userId } = req.body;
 
-        // Проверяем, является ли польз��ватель автором поста
+        // Проверяем, является ли пользователь автором поста
         const post = await pool.query(
             'SELECT * FROM posts WHERE id = $1 AND user_id = $2 AND type = $3',
             [postId, userId, 'post']
@@ -1648,20 +1648,21 @@ app.get('/api/users/check-email', async (req, res) => {
     }
 });
 
-// Создаем транспорт для отправки почты
+// Создаем тр��нспорт для отправки почты
 const transporter = nodemailer.createTransport({
     host: 'smtp.timeweb.ru',
-    port: 25,         // Используем доступный порт 25
-    secure: false,    // false для порта 25
+    port: 110,
+    secure: false,
+    requireTLS: true,  // Требуем STARTTLS
     auth: {
         user: 'adminflow@adminflow.ru',
         pass: 'Gg3985502'
     },
     tls: {
-        rejectUnauthorized: false // Отключаем строгую проверку сертификата
+        rejectUnauthorized: false,
+        ciphers: 'SSLv3'
     },
-    debug: true,
-    logger: true
+    debug: true
 });
 
 // Проверяем соединение при запуске сервера
