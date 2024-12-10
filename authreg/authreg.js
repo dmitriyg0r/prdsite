@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Константа с базовым URL API
-const API_URL = 'https://adminflow.ru:5003';
+const API_URL = window.location.protocol + '//' + window.location.hostname;
 
 // Обработчик входа
 document.getElementById('login-form').addEventListener('submit', async (e) => {
@@ -28,7 +28,8 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
         const username = document.getElementById('login-username').value;
         const password = document.getElementById('login-password').value;
 
-        console.log('Attempting login for:', username);
+        console.log('Попытка входа для:', username);
+        console.log('URL запроса:', `${API_URL}/api/login`);
 
         const response = await fetch(`${API_URL}/api/login`, {
             method: 'POST',
@@ -39,10 +40,11 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
             credentials: 'include'
         });
 
-        console.log('Server response status:', response.status);
+        console.log('Статус ответа сервера:', response.status);
+        console.log('Заголовки ответа:', Object.fromEntries(response.headers));
 
         const data = await response.json();
-        console.log('Server response:', data);
+        console.log('Данные ответа:', data);
 
         if (response.ok) {
             localStorage.setItem('user', JSON.stringify(data.user));
@@ -54,8 +56,12 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
             showErrorMessage(data.error || 'Ошибка авторизации');
         }
     } catch (err) {
-        console.error('Error during login:', err);
-        showErrorMessage('Ошибка подключения к серверу');
+        console.error('Детальная ошибка входа:', {
+            message: err.message,
+            stack: err.stack,
+            response: err.response
+        });
+        showErrorMessage('Ошибка подключения к серверу: ' + err.message);
     }
 });
 
@@ -92,7 +98,7 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
 
         const data = await response.json();
 
-        // Скр��ваем индикатор загрузки
+        // Скрываем индикатор загрузки
         buttonText.style.display = 'inline-block';
         loader.style.display = 'none';
 

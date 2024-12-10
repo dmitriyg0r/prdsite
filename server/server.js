@@ -7,13 +7,16 @@ const fs = require('fs');
 const multer = require('multer');
 const path = require('path');
 const nodemailer = require('nodemailer');
+const http = require('http');
 
 const app = express();
-const PORT = 5003;
+const PORT = 443;
 
 // Middleware
 app.use(cors({
-    origin: 'https://adminflow.ru',
+    origin: function(origin, callback) {
+        callback(null, true); // Разрешаем все источники
+    },
     credentials: true
 }));
 app.use(express.json());
@@ -48,6 +51,12 @@ app.get('/api/test', async (req, res) => {
 // Login route
 app.post('/api/login', async (req, res) => {
     try {
+        console.log('Получен запрос на вход:', {
+            headers: req.headers,
+            body: req.body,
+            ip: req.ip
+        });
+        
         const { username, password } = req.body;
 
         // Изменяем запрос, используя правильное имя колонки password_hash
@@ -80,8 +89,11 @@ app.post('/api/login', async (req, res) => {
         res.json({ user: userWithoutPassword });
 
     } catch (err) {
-        console.error('Login error:', err);
-        res.status(500).json({ error: 'Ошибка сервера' });
+        console.error('Детальная ошибка входа:', {
+            message: err.message,
+            stack: err.stack
+        });
+        res.status(500).json({ error: 'Ошибка сервера: ' + err.message });
     }
 });
 
@@ -330,7 +342,7 @@ app.get('/api/search-users', async (req, res) => {
         res.json({ users: result.rows });
     } catch (err) {
         console.error('Search error:', err);
-        res.status(500).json({ error: 'Ошибка при поис��е пользователей' });
+        res.status(500).json({ error: 'Ошибка при поиске пользователей' });
     }
 });
 
@@ -536,7 +548,7 @@ app.post('/api/messages/send-with-file', upload.single('file'), async (req, res)
     }
 });
 
-// Обновл��ем endpoint для загрузки истории сообщений
+// Обновляем endpoint для загрузки истории сообщений
 app.get('/api/messages/history/:userId/:friendId', async (req, res) => {
     try {
         const { userId, friendId } = req.params;
@@ -576,7 +588,7 @@ app.get('/api/messages/history/:userId/:friendId', async (req, res) => {
     }
 });
 
-// Отм��тить сообщения как прочитанные
+// Отметить сообщения как прочитанные
 app.post('/api/messages/read', async (req, res) => {
     try {
         const { userId, friendId } = req.body;
@@ -892,7 +904,7 @@ app.post('/api/users/update-profile', async (req, res) => {
     }
 });
 
-// Обновляем ��ндпоинт отправки сообщения с файлом
+// Обновляем эндпоинт отправки сообщения с файлом
 app.post('/api/messages/send-with-file', messageUpload.single('file'), async (req, res) => {
     try {
         const { senderId, receiverId, message, replyTo } = req.body;
@@ -924,7 +936,7 @@ const checkAdmin = async (req, res, next) => {
         // Проверяем adminId в query параметрах или в теле зпроса
         const adminId = req.query.adminId || req.body.adminId;
         
-        console.log('Checking admin rights for:', adminId); // Добавля��м лог
+        console.log('Checking admin rights for:', adminId); // Добавляем лог
 
         if (!adminId) {
             return res.status(401).json({ 
@@ -1040,7 +1052,7 @@ app.post('/api/admin/role', checkAdmin, async (req, res) => {
             });
         }
 
-        // Обновляем роль в базе д��нных
+        // Обновляем роль в базе данных
         await pool.query(
             'UPDATE users SET role = $1 WHERE id = $2',
             [role, userId]
@@ -1156,7 +1168,7 @@ const uploadPost = multer({
             return cb(null, true);
         }
 
-        cb(new Error('Неподдерживаемый тип файла. Разрешены: изображения, PDF, Word, Excel, ODT и текстов��е файлы'));
+        cb(new Error('Неподдерживаемый тип файла. Разрешены: изображения, PDF, Word, Excel, ODT и текстовые файлы'));
     }
 });
 
@@ -1267,7 +1279,7 @@ app.delete('/api/posts/delete/:postId', async (req, res) => {
         const { postId } = req.params;
         const { userId } = req.body;
 
-        // Проверяем, является ли пользователь автором поста
+        // Проверяем, является ли польз��ватель автором поста
         const post = await pool.query(
             'SELECT * FROM posts WHERE id = $1 AND user_id = $2 AND type = $3',
             [postId, userId, 'post']
@@ -1353,7 +1365,7 @@ app.post('/api/users/update-status', async (req, res) => {
         console.error('Error updating user status:', err);
         res.status(500).json({ 
             success: false, 
-            error: 'Ошибк�� при обновлении статуса пользователя' 
+            error: 'Ошибка при обновлении статуса пользователя' 
         });
     }
 });
@@ -1684,7 +1696,7 @@ const alternativeTransporter = nodemailer.createTransport({
 // Проверяем альтернативное соединение
 alternativeTransporter.verify(function(error, success) {
     if (error) {
-        console.error('Ошибка подключе��ия к альтернативному SMTP:', error);
+        console.error('Ошибка подключения к альтернативному SMTP:', error);
     } else {
         console.log('Альтернативный SMTP сервер готов к отправке сообщений');
         // Если альтернативное соединение работает, используем его
@@ -1797,4 +1809,9 @@ app.post('/api/change-password', async (req, res) => {
             error: 'Ошибка при смене пароля'
         });
     }
+});
+
+// Добавьте HTTP сервер
+http.createServer(app).listen(80, () => {
+    console.log('HTTP Server running on port 80');
 });
