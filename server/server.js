@@ -330,7 +330,7 @@ app.get('/api/search-users', async (req, res) => {
         res.json({ users: result.rows });
     } catch (err) {
         console.error('Search error:', err);
-        res.status(500).json({ error: 'Ошибка при поиске пользователей' });
+        res.status(500).json({ error: 'Ошибка при поис��е пользователей' });
     }
 });
 
@@ -536,7 +536,7 @@ app.post('/api/messages/send-with-file', upload.single('file'), async (req, res)
     }
 });
 
-// Обновляем endpoint для загрузки истории сообщений
+// Обновл��ем endpoint для загрузки истории сообщений
 app.get('/api/messages/history/:userId/:friendId', async (req, res) => {
     try {
         const { userId, friendId } = req.params;
@@ -576,7 +576,7 @@ app.get('/api/messages/history/:userId/:friendId', async (req, res) => {
     }
 });
 
-// Отметить сообщения как прочитанные
+// Отм��тить сообщения как прочитанные
 app.post('/api/messages/read', async (req, res) => {
     try {
         const { userId, friendId } = req.body;
@@ -596,7 +596,7 @@ app.post('/api/messages/read', async (req, res) => {
     }
 });
 
-// Получение последнего сообщ��ния с пользователем
+// Получение последнего сообщения с пользователем
 app.get('/api/messages/last/:userId/:friendId', async (req, res) => {
     try {
         const { userId, friendId } = req.params;
@@ -892,7 +892,7 @@ app.post('/api/users/update-profile', async (req, res) => {
     }
 });
 
-// Обновляем эндпоинт отправки сообщения с файлом
+// Обновляем ��ндпоинт отправки сообщения с файлом
 app.post('/api/messages/send-with-file', messageUpload.single('file'), async (req, res) => {
     try {
         const { senderId, receiverId, message, replyTo } = req.body;
@@ -924,7 +924,7 @@ const checkAdmin = async (req, res, next) => {
         // Проверяем adminId в query параметрах или в теле зпроса
         const adminId = req.query.adminId || req.body.adminId;
         
-        console.log('Checking admin rights for:', adminId); // Добавляем лог
+        console.log('Checking admin rights for:', adminId); // Добавля��м лог
 
         if (!adminId) {
             return res.status(401).json({ 
@@ -943,7 +943,7 @@ const checkAdmin = async (req, res, next) => {
         if (userResult.rows.length === 0 || userResult.rows[0].role !== 'admin') {
             return res.status(403).json({ 
                 success: false,
-                error: 'Доступ запр��щен' 
+                error: 'Доступ запрещен' 
             });
         }
 
@@ -1040,7 +1040,7 @@ app.post('/api/admin/role', checkAdmin, async (req, res) => {
             });
         }
 
-        // Обновляем роль в базе данных
+        // Обновляем роль в базе д��нных
         await pool.query(
             'UPDATE users SET role = $1 WHERE id = $2',
             [role, userId]
@@ -1156,7 +1156,7 @@ const uploadPost = multer({
             return cb(null, true);
         }
 
-        cb(new Error('Неподдерживаемый тип файла. Разрешены: изображения, PDF, Word, Excel, ODT и текстовые файлы'));
+        cb(new Error('Неподдерживаемый тип файла. Разрешены: изображения, PDF, Word, Excel, ODT и текстов��е файлы'));
     }
 });
 
@@ -1353,7 +1353,7 @@ app.post('/api/users/update-status', async (req, res) => {
         console.error('Error updating user status:', err);
         res.status(500).json({ 
             success: false, 
-            error: 'Ошибка при обновлении статуса пользователя' 
+            error: 'Ошибк�� при обновлении статуса пользователя' 
         });
     }
 });
@@ -1639,16 +1639,15 @@ app.get('/api/users/check-email', async (req, res) => {
 // Создаем транспорт для отправки почты
 const transporter = nodemailer.createTransport({
     host: 'smtp.timeweb.ru',
-    port: 2525,        // Альтернативный порт для SMTP
-    secure: false,     // Для порта 2525 используем false
+    port: 25,         // Используем доступный порт 25
+    secure: false,    // false для порта 25
     auth: {
         user: 'adminflow@adminflow.ru',
         pass: 'Gg3985502'
     },
     tls: {
-        rejectUnauthorized: false // В случае проблем с сертификатом
+        rejectUnauthorized: false // Отключаем строгую проверку сертификата
     },
-    connectionTimeout: 30000,
     debug: true,
     logger: true
 });
@@ -1675,7 +1674,7 @@ const alternativeTransporter = nodemailer.createTransport({
     requireTLS: true,       // Требуем TLS
     auth: {
         user: 'adminflow@adminflow.ru',
-        pass: 'ваш_пароль'
+        pass: 'Gg3985502'
     },
     tls: {
         rejectUnauthorized: false // В случае проблем с сертификатом
@@ -1685,7 +1684,7 @@ const alternativeTransporter = nodemailer.createTransport({
 // Проверяем альтернативное соединение
 alternativeTransporter.verify(function(error, success) {
     if (error) {
-        console.error('Ошибка подключения к альтернативному SMTP:', error);
+        console.error('Ошибка подключе��ия к альтернативному SMTP:', error);
     } else {
         console.log('Альтернативный SMTP сервер готов к отправке сообщений');
         // Если альтернативное соединение работает, используем его
