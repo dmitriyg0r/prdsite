@@ -75,7 +75,7 @@ app.post('/api/login', async (req, res) => {
         const validPassword = await bcrypt.compare(password, user.password_hash);
 
         if (!validPassword) {
-            return res.status(401).json({ error: 'Неверное имя пользователя или пароль' });
+            return res.status(401).json({ error: 'Неверное имя пользователя или п����роль' });
         }
 
         // Обновляем last_login
@@ -290,7 +290,7 @@ app.post('/api/upload-avatar', upload.single('avatar'), (req, res) => {
 app.use((err, req, res, next) => {
     if (err instanceof multer.MulterError) {
         if (err.code === 'LIMIT_FILE_SIZE') {
-            return res.status(400).json({ error: 'Файл слишком большой. Максимальный размер: 10MB' });
+            return res.status(400).json({ error: 'Файл слишком б��льшой. Максимальный размер: 10MB' });
         }
         return res.status(400).json({ error: err.message });
     }
@@ -796,6 +796,37 @@ messageStorage.filename = function (req, file, cb) {
     file.fileUrl = `/uploads/messages/${filename}`;
     cb(null, filename);
 };
+
+// Создаем транспорт для отправки почты
+const transporter = nodemailer.createTransport({
+    host: 'smtp.timeweb.ru',
+    port: 110,
+    secure: false,
+    requireTLS: true,  // Требуем STARTTLS
+    auth: {
+        user: 'adminflow@adminflow.ru',
+        pass: 'Gg3985502'
+    },
+    tls: {
+        rejectUnauthorized: false,
+        ciphers: 'SSLv3'
+    },
+    debug: true
+});
+
+// Проверяем соединение при запуске сервера
+transporter.verify(function(error, success) {
+    if (error) {
+        console.error('Ошибка подключения к SMTP:', error);
+        console.log('Детали ошибки:', {
+            host: transporter.options.host,
+            port: transporter.options.port,
+            error: error.message
+        });
+    } else {
+        console.log('SMTP сервер готов к отправке сообщений');
+    }
+});
 
 // Устанавливаем пакет
 // npm install @sendgrid/mail
@@ -1359,7 +1390,7 @@ app.delete('/api/posts/delete/:postId', async (req, res) => {
         const { postId } = req.params;
         const { userId } = req.body;
 
-        // Проверяем, является ли пользователь автором поста
+        // Проверяем, являе��ся ли пользователь автором поста
         const post = await pool.query(
             'SELECT * FROM posts WHERE id = $1 AND user_id = $2 AND type = $3',
             [postId, userId, 'post']
