@@ -28,23 +28,44 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
         const username = document.getElementById('login-username').value;
         const password = document.getElementById('login-password').value;
 
-        console.log('Попытка входа для:', username);
-        console.log('URL запроса:', `${API_URL}/api/login`);
+        if (!username || !password) {
+            showErrorMessage('Пожалуйста, заполните все поля');
+            return;
+        }
+
+        // Показываем индикатор загрузки
+        const button = e.target.querySelector('button');
+        const buttonText = button.querySelector('.button-text') || button;
+        const loader = button.querySelector('.loader');
+        
+        if (loader) {
+            buttonText.style.display = 'none';
+            loader.style.display = 'inline-block';
+        }
+        button.disabled = true;
 
         const response = await fetch(`${API_URL}/api/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json'
             },
-            body: JSON.stringify({ username, password }),
-            credentials: 'include'
+            body: JSON.stringify({ 
+                username: username.trim(), 
+                password: password.trim() 
+            }),
+            credentials: 'include',
+            mode: 'cors'
         });
 
-        console.log('Статус ответа сервера:', response.status);
-        console.log('Заголовки ответа:', Object.fromEntries(response.headers));
+        // Восстанавливаем кнопку
+        if (loader) {
+            buttonText.style.display = 'inline-block';
+            loader.style.display = 'none';
+        }
+        button.disabled = false;
 
         const data = await response.json();
-        console.log('Данные ответа:', data);
 
         if (response.ok) {
             localStorage.setItem('user', JSON.stringify(data.user));
@@ -53,15 +74,21 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
                 window.location.href = '/profile/profile.html';
             }, 1000);
         } else {
-            showErrorMessage(data.error || 'Ошибка авторизации');
+            throw new Error(data.error || 'Ошибка авторизации');
         }
     } catch (err) {
-        console.error('Детальная ошибка входа:', {
-            message: err.message,
-            stack: err.stack,
-            response: err.response
-        });
-        showErrorMessage('Ошибка подключения к серверу: ' + err.message);
+        console.error('Ошибка входа:', err);
+        showErrorMessage(err.message || 'Ошибка подключения к серверу');
+        
+        // Восстанавливаем кнопку в случае ошибки
+        const button = e.target.querySelector('button');
+        button.disabled = false;
+        const loader = button.querySelector('.loader');
+        if (loader) {
+            const buttonText = button.querySelector('.button-text') || button;
+            buttonText.style.display = 'inline-block';
+            loader.style.display = 'none';
+        }
     }
 });
 
@@ -160,7 +187,7 @@ function showSuccessMessage(message) {
     }, 3000);
 }
 
-// Проверка соединения при загрузке страницы
+// Проверка соединения при загрузке страни��ы
 window.addEventListener('load', async () => {
     try {
         const response = await fetch(`${API_URL}/api/test`);
