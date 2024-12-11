@@ -257,7 +257,7 @@ const storage = multer.diskStorage({
             prefix = 'message-';
         }
 
-        // Генериру��м уникальное имя файла
+        // Генерируем уникальное имя файла
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
         const ext = path.extname(file.originalname);
         cb(null, `${prefix}${uniqueSuffix}${ext}`);
@@ -672,7 +672,7 @@ app.get('/api/messages/unread/:userId', async (req, res) => {
         res.json({ success: true, unreadCounts: result.rows });
     } catch (err) {
         console.error('Error getting unread counts:', err);
-        res.status(500).json({ error: 'Ошибка при получении количества непрочитанных сообщений' });
+        res.status(500).json({ error: '��шибка при получении количества непрочитанных сообщений' });
     }
 });
 
@@ -852,7 +852,7 @@ app.post('/api/users/update-profile', async (req, res) => {
     try {
         const { userId, username, email } = req.body;
 
-        // Проверяем, не занят ли email другим пользователем
+        // Проверяем, не занят ли email другим пользо��ателем
         if (email) {
             const emailCheck = await pool.query(
                 'SELECT id FROM users WHERE email = $1 AND id != $2',
@@ -967,7 +967,7 @@ const checkAdmin = async (req, res, next) => {
         if (!adminId) {
             return res.status(401).json({ 
                 success: false,
-                error: 'Требуется авторизация' 
+                error: 'Требуется авто��изация' 
             });
         }
 
@@ -1219,7 +1219,7 @@ app.post('/api/posts/create', uploadPost.single('image'), async (req, res) => {
     }
 });
 
-// Получение постов пользователя
+// Получе��ие постов пользователя
 app.get('/api/posts/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
@@ -1330,7 +1330,7 @@ app.delete('/api/posts/delete/:postId', async (req, res) => {
 // Добавляем раздачу статических файлов для постов
 app.use('/uploads/posts', express.static('/var/www/html/uploads/posts')); 
 
-// Получени�� статуса пользователя
+// Получение статуса пользователя
 app.get('/api/users/status/:userId', async (req, res) => {
     try {
         const userId = parseInt(req.params.userId);
@@ -1723,7 +1723,7 @@ alternativeTransporter.verify(function(error, success) {
         console.error('Ошибка подключения к альтернативному SMTP:', error);
     } else {
         console.log('Альтернативный SMTP сервер готов к отправке сообщений');
-        // Если альтернативное соединение работает, используем его
+        // Если альтернативно�� соединение работает, используем его
         transporter = alternativeTransporter;
     }
 });
@@ -1793,6 +1793,8 @@ app.post('/api/change-password', async (req, res) => {
     try {
         const { userId, code, newPassword } = req.body;
 
+        console.log('Получен запрос на смену пароля:', { userId, code }); // Для отладки
+
         // Проверяем код
         const result = await pool.query(`
             SELECT * FROM verification_codes 
@@ -1804,17 +1806,17 @@ app.post('/api/change-password', async (req, res) => {
         if (result.rows.length === 0) {
             return res.status(400).json({
                 success: false,
-                error: 'Неверный или устаревший код подтвержде��ия'
+                error: 'Неверный или устаревший код подтверждения'
             });
         }
 
         // Хешируем новый пароль
         const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-        // Обновляем пароль
+        // Исправляем имя колонки с password на password_hash
         await pool.query(`
             UPDATE users 
-            SET password = $1 
+            SET password_hash = $1 
             WHERE id = $2
         `, [hashedPassword, userId]);
 
@@ -1829,7 +1831,7 @@ app.post('/api/change-password', async (req, res) => {
         console.error('Error changing password:', err);
         res.status(500).json({
             success: false,
-            error: 'Ошибка при смене пароля'
+            error: 'Ошибка при смене пароля: ' + err.message
         });
     }
 });
