@@ -325,7 +325,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             tabButtons.forEach(btn => btn.classList.remove('active'));
             button.classList.add('active');
             
-            // Активация содержимого вкладки
+            // Активация содержимого в��ладки
             tabContents.forEach(content => {
                 content.classList.remove('active');
                 if (content.id === tabName) {
@@ -500,30 +500,58 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function displayFriendRequests(requests) {
         const requestsList = document.querySelector('.requests-list');
-        requestsList.innerHTML = requests.map(request => `
-            <div class="friend-card">
-                <img src="${request.avatar_url || '/uploads/avatars/default.png'}" alt="${request.username}">
-                <div class="friend-info">
-                    <div class="friend-name">${request.username}</div>
-                    <div class="friend-actions">
-                        <button class="accept-friend-btn" data-user-id="${request.id}">
-                            <i class="fas fa-check"></i> Принять
-                        </button>
-                        <button class="reject-friend-btn" data-user-id="${request.id}">
-                            <i class="fas fa-times"></i> Отклонить
-                        </button>
-                    </div>
+        
+        if (!requestsList) return;
+
+        if (!requests.length) {
+            requestsList.innerHTML = `
+                <div class="empty-requests">
+                    <i class="fas fa-user-friends"></i>
+                    <p>У вас нет новых заявок в друзья</p>
+                </div>
+            `;
+            return;
+        }
+
+        requestsList.innerHTML = requests.map((request, index) => `
+            <div class="friend-request-card" style="animation-delay: ${index * 0.1}s">
+                <img src="${request.avatar_url || '/uploads/avatars/default.png'}" 
+                     alt="${request.username}" 
+                     class="request-avatar">
+                <div class="request-info">
+                    <div class="request-name">${request.username}</div>
+                    <div class="request-meta">Хочет добавить вас в друзья</div>
+                </div>
+                <div class="request-actions">
+                    <button class="accept-btn" data-user-id="${request.id}">
+                        <i class="fas fa-check"></i>
+                        Принять
+                    </button>
+                    <button class="reject-btn" data-user-id="${request.id}">
+                        <i class="fas fa-times"></i>
+                        Отклонить
+                    </button>
                 </div>
             </div>
         `).join('');
 
-        // Добавляем обработчики для кнопок
-        document.querySelectorAll('.accept-friend-btn').forEach(btn => {
-            btn.addEventListener('click', () => respondToFriendRequest(btn.dataset.userId, 'accepted'));
+        // Обновляем обработчики событий
+        document.querySelectorAll('.accept-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                respondToFriendRequest(btn.dataset.userId, 'accepted');
+                btn.closest('.friend-request-card').style.opacity = '0.5';
+                btn.disabled = true;
+                btn.nextElementSibling.disabled = true;
+            });
         });
 
-        document.querySelectorAll('.reject-friend-btn').forEach(btn => {
-            btn.addEventListener('click', () => respondToFriendRequest(btn.dataset.userId, 'rejected'));
+        document.querySelectorAll('.reject-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                respondToFriendRequest(btn.dataset.userId, 'rejected');
+                btn.closest('.friend-request-card').style.opacity = '0.5';
+                btn.disabled = true;
+                btn.previousElementSibling.disabled = true;
+            });
         });
     }
 
@@ -852,7 +880,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     `;
     document.head.appendChild(style);
 
-    // Обработчики для ��мены пароля
+    // Обработчики для мены пароля
     const requestPasswordChangeBtn = document.getElementById('request-password-change');
     const passwordChangeModal = document.getElementById('password-change-modal');
     const sendVerificationCodeBtn = document.getElementById('send-verification-code');
@@ -1007,7 +1035,7 @@ function initializePostHandlers() {
         }
     });
 
-    // Обработ�� загрузки изображения
+    // Обработ загрузки изображения
     postImage?.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -1092,7 +1120,7 @@ async function createPost() {
             ];
 
             if (!allowedTypes.includes(file.type)) {
-                alert('Неподдерживаемый тип файла. Разрешены: изображения, PDF, Word, Excel и текстовые фай��ы');
+                alert('Неподдерживаемый тип файла. Разрешены: изображения, PDF, Word, Excel и текстовые файлы');
                 return;
             }
 
