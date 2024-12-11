@@ -48,6 +48,10 @@ async function loadStats() {
 
 // Функция для создания графиков
 function createCharts(stats) {
+    // Общие настройки для всех графиков
+    Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif';
+    Chart.defaults.font.size = 12;
+    
     // График активности пользователей
     new Chart(document.getElementById('userActivityChart'), {
         type: 'line',
@@ -55,15 +59,34 @@ function createCharts(stats) {
             labels: ['7 дней назад', '6 дней', '5 дней', '4 дня', '3 дня', '2 дня', 'Вчера', 'Сегодня'],
             datasets: [{
                 label: 'Новые пользователи',
-                data: [0, 0, 0, 0, 0, 0, stats.new_users_24h, stats.new_users_7d],
+                data: stats.user_activity_data || [0, 0, 0, 0, 0, 0, stats.new_users_24h, stats.new_users_7d],
                 borderColor: '#3498db',
+                backgroundColor: 'rgba(52, 152, 219, 0.1)',
                 tension: 0.4,
-                fill: false
+                fill: true
             }]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: false
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0,0,0,0.05)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
         }
     });
 
@@ -78,12 +101,22 @@ function createCharts(stats) {
                     stats.moderator_count,
                     stats.admin_count
                 ],
-                backgroundColor: ['#3498db', '#e74c3c', '#2ecc71']
+                backgroundColor: [
+                    'rgba(52, 152, 219, 0.8)',
+                    'rgba(231, 76, 60, 0.8)',
+                    'rgba(46, 204, 113, 0.8)'
+                ],
+                borderWidth: 0
             }]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: false
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
         }
     });
 
@@ -95,12 +128,31 @@ function createCharts(stats) {
             datasets: [{
                 label: 'Сообщения',
                 data: [stats.new_messages_24h, stats.new_messages_7d, stats.total_messages],
-                backgroundColor: '#2ecc71'
+                backgroundColor: 'rgba(46, 204, 113, 0.8)',
+                borderRadius: 5
             }]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: false
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0,0,0,0.05)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
         }
     });
 
@@ -113,13 +165,32 @@ function createCharts(stats) {
                 label: 'Активность',
                 data: [stats.online_users, stats.active_users_24h],
                 borderColor: '#f1c40f',
+                backgroundColor: 'rgba(241, 196, 15, 0.1)',
                 tension: 0.4,
-                fill: false
+                fill: true
             }]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: false
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0,0,0,0.05)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
         }
     });
 }
