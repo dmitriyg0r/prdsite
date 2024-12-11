@@ -1677,7 +1677,7 @@ app.get('/api/users/check-email', async (req, res) => {
 // Создаем трнспорт для отправки почты
 const transporter = nodemailer.createTransport({
     host: 'smtp.timeweb.ru',
-    port: 25,  // меняем порт на 25
+    port: 2525,  // меняем порт на 2525
     secure: false,
     auth: {
         user: 'adminflow@adminflow.ru',
