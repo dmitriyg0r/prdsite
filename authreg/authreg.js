@@ -49,22 +49,12 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
 
         // Показываем индикатор загрузки
         const button = e.target.querySelector('button');
+        const buttonText = button.querySelector('.button-text');
+        const loader = button.querySelector('.loader');
+        
         button.disabled = true;
-        if (button.querySelector('.loader')) {
-            button.querySelector('.button-text').style.display = 'none';
-            button.querySelector('.loader').style.display = 'inline-block';
-        }
-
-        // Подготавливаем данные запроса
-        const requestData = {
-            username: username.trim(),
-            password: password.trim()
-        };
-
-        console.log('Отправка запроса:', {
-            url: `${API_URL}/api/login`,
-            data: { ...requestData, password: '***' }
-        });
+        buttonText.style.display = 'none';
+        loader.style.display = 'inline-block';
 
         const response = await fetch(`${API_URL}/api/login`, {
             method: 'POST',
@@ -72,22 +62,14 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
-            body: JSON.stringify(requestData),
-            credentials: 'include',
-            mode: 'cors'
-        });
-
-        console.log('Получен ответ:', {
-            status: response.status,
-            headers: Object.fromEntries(response.headers)
+            body: JSON.stringify({ username, password }),
+            credentials: 'include'
         });
 
         // Восстанавливаем кнопку
         button.disabled = false;
-        if (button.querySelector('.loader')) {
-            button.querySelector('.button-text').style.display = 'inline-block';
-            button.querySelector('.loader').style.display = 'none';
-        }
+        buttonText.style.display = 'inline-block';
+        loader.style.display = 'none';
 
         const data = await response.json();
 
@@ -106,20 +88,17 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
         }
 
     } catch (err) {
-        console.error('Ошибка входа:', {
-            message: err.message,
-            stack: err.stack
-        });
-        
+        console.error('Ошибка входа:', err);
         showErrorMessage(err.message || 'Ошибка подключения к серверу');
         
         // Восстанавливаем кнопку в случае ошибки
         const button = e.target.querySelector('button');
+        const buttonText = button.querySelector('.button-text');
+        const loader = button.querySelector('.loader');
+        
         button.disabled = false;
-        if (button.querySelector('.loader')) {
-            button.querySelector('.button-text').style.display = 'inline-block';
-            button.querySelector('.loader').style.display = 'none';
-        }
+        buttonText.style.display = 'inline-block';
+        loader.style.display = 'none';
     }
 });
 

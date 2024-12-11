@@ -84,6 +84,11 @@ input:focus {
     transition: all 0.3s ease;
     background: var(--button-background);
     color: var(--button-text);
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
 }
 
 .primary-btn {
@@ -169,4 +174,21 @@ input:focus {
     input {
         padding: 10px;
     }
+}
+
+/* Добавляем стили для спиннера и анимации */
+.loader {
+    display: none;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Стили для кнопки в состоянии загрузки */
+.btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
 }
