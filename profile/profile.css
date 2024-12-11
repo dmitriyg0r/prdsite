@@ -1837,7 +1837,7 @@ body {
     transform: translateY(-2px);
 }
 
-/* Стили д��я кнопки комментариев в действиях поста */
+/* Стили для кнопки комментариев в действиях поста */
 .post-action.comment-action:hover {
     background: var(--background-color);
     color: var(--primary-color);
@@ -1879,4 +1879,60 @@ body {
     .comment-submit {
         padding: 8px;
     }
+}
+
+/* Стили для мини-списка друзей в профиле */
+.friend-item {
+    display: flex;
+    flex-direction: column; /* Меняем на колонку для вертикального расположения */
+    align-items: center; /* Центрируем содержимое */
+    text-decoration: none;
+    gap: 8px; /* Отступ между аватаркой и именем */
+    padding: 8px;
+    border-radius: var(--radius-md);
+    transition: all 0.3s ease;
+}
+
+.friend-item:hover {
+    background: var(--hover-color);
+    transform: translateY(-2px);
+}
+
+.friend-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.friend-name {
+    font-size: 13px;
+    color: var(--text-primary);
+    text-align: center; /* Центрируем текст */
+    max-width: 100%; /* Ограничиваем ширину */
+    overflow: hidden;
+    text-overflow: ellipsis; /* Добавляем многоточие при переполнении */
+    white-space: nowrap;
+}
+
+/* Стиль для кнопки "Показать больше друзей" */
+.more-friends {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface-color);
+    border: 1px dashed var(--border-light);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.more-friends span {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.more-friends:hover {
+    background: var(--hover-color);
+    border-style: solid;
 }
