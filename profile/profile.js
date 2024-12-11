@@ -292,7 +292,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const tabButtons = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
 
-    // Обновляем селектор для кнопки открытия модального окна
+    // Обновляем селектор для кнопки открытия модального ��кна
     const friendsHeaderBtn = document.querySelector('.friends-header-btn');
     
     // Открытие модального окна при клике на заголовок "Дузья"
@@ -365,7 +365,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Отображение результатов поиска
+    // Добавляем функцию getFriendStatus
+    function getFriendStatus(userId) {
+        // Получаем статус из атрибута data-friendship-status
+        const userCard = document.querySelector(`.user-card[data-user-id="${userId}"]`);
+        if (userCard) {
+            return userCard.dataset.friendshipStatus;
+        }
+        return 'none';
+    }
+
+    // Обновляем функцию displaySearchResults
     function displaySearchResults(users) {
         const searchResults = document.querySelector('.search-results');
         
@@ -383,16 +393,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         searchResults.innerHTML = users.map(user => {
             const isOnline = user.last_activity && 
-                (new Date() - new Date(user.last_activity)) < 5 * 60 * 1000; // 5 минут
+                (new Date() - new Date(user.last_activity)) < 5 * 60 * 1000;
 
-            const friendStatus = getFriendStatus(user.id); // Функция должна возвращать статус дружбы
+            // Используем статус дружбы из ответа сервера
+            const friendStatus = user.friendship_status || 'none';
             
             let buttonClass = '';
             let buttonText = '';
             let buttonIcon = '';
             
             switch (friendStatus) {
-                case 'friends':
+                case 'accepted':
                     buttonClass = 'friends';
                     buttonText = 'В друзьях';
                     buttonIcon = 'fas fa-check';
@@ -409,7 +420,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             return `
-                <div class="user-card">
+                <div class="user-card" data-user-id="${user.id}" data-friendship-status="${friendStatus}">
                     <img src="${user.avatar_url || '/uploads/avatars/default.png'}" 
                          alt="${user.username}" 
                          class="user-avatar">
@@ -429,7 +440,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </div>
                     </div>
                     <button class="add-friend-btn ${buttonClass}" 
-                            ${friendStatus === 'pending' || friendStatus === 'friends' ? 'disabled' : ''}
+                            ${friendStatus === 'pending' || friendStatus === 'accepted' ? 'disabled' : ''}
                             data-user-id="${user.id}">
                         <i class="${buttonIcon}"></i>
                         ${buttonText}
@@ -695,16 +706,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         searchResults.innerHTML = users.map(user => {
             const isOnline = user.last_activity && 
-                (new Date() - new Date(user.last_activity)) < 5 * 60 * 1000; // 5 минут
+                (new Date() - new Date(user.last_activity)) < 5 * 60 * 1000;
 
-            const friendStatus = getFriendStatus(user.id); // Функция должна возвращать статус дружбы
+            // Используем статус дружбы из ответа сервера
+            const friendStatus = user.friendship_status || 'none';
             
             let buttonClass = '';
             let buttonText = '';
             let buttonIcon = '';
             
             switch (friendStatus) {
-                case 'friends':
+                case 'accepted':
                     buttonClass = 'friends';
                     buttonText = 'В друзьях';
                     buttonIcon = 'fas fa-check';
@@ -721,7 +733,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             return `
-                <div class="user-card">
+                <div class="user-card" data-user-id="${user.id}" data-friendship-status="${friendStatus}">
                     <img src="${user.avatar_url || '/uploads/avatars/default.png'}" 
                          alt="${user.username}" 
                          class="user-avatar">
@@ -741,7 +753,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </div>
                     </div>
                     <button class="add-friend-btn ${buttonClass}" 
-                            ${friendStatus === 'pending' || friendStatus === 'friends' ? 'disabled' : ''}
+                            ${friendStatus === 'pending' || friendStatus === 'accepted' ? 'disabled' : ''}
                             data-user-id="${user.id}">
                         <i class="${buttonIcon}"></i>
                         ${buttonText}
@@ -775,7 +787,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
 
             if (response.ok) {
-                // Обновляем реультаты поиска
+                // Обновляем реул��таты поиска
                 searchUsers(document.querySelector('.search-input').value.trim());
             }
         } catch (err) {
@@ -891,7 +903,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const diffMinutes = Math.floor((now - lastActivity) / (1000 * 60));
             
             if (diffMinutes >= 5) {
-                // Если нет активности 5+ минут, обновляем ста��ус
+                // Если нет активности 5+ минут, обновляем статус
                 updateUserStatus(true); // Всё ещё онлайн, но не активен
             }
         }, 60000);
@@ -961,7 +973,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 
                 if (data.is_online) {
                     if (diffMinutes < 5) {
-                        statusText = '<i class="fas fa-circle"></i> В ��ети';
+                        statusText = '<i class="fas fa-circle"></i> В сети';
                         statusClass = 'online';
                     } else {
                         statusText = '<i class="fas fa-moon"></i> Нет на месте';
@@ -1134,7 +1146,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.body.style.overflow = '';
                 resetPasswordChangeForm();
             } else {
-                throw new Error(data.error || 'Ошибка при и��менении пароля');
+                throw new Error(data.error || 'Ошибка при изменении пароля');
             }
         } catch (err) {
             alert(err.message);
@@ -1234,7 +1246,7 @@ async function createPost() {
                 return;
             }
 
-            // Разрешенные типы файлов
+            // Ра��решенные типы файлов
             const allowedTypes = [
                 'image/jpeg',
                 'image/png',
@@ -1530,7 +1542,7 @@ window.openImageInFullscreen = function(imageSrc, postData) {
         </div>
     `;
     
-    // Добавляем модальное окно в DOM
+    // Д��бавляем модальное окно в DOM
     document.body.appendChild(modal);
     
     // Доавляем класс active после небольшой задержки для анимации
@@ -1628,7 +1640,7 @@ async function downloadFile(fileUrl) {
         link.href = url;
         link.download = filename;
         
-        // Добавляем ссылку в DOM и эму��ируем клик
+        // Добавляем ссылку в DOM и эмуируем клик
         document.body.appendChild(link);
         link.click();
         
@@ -1664,7 +1676,7 @@ function getFilePreview(file) {
     }
 }
 
-// Обновляем CSS для кнопки скачива��ия
+// Обновляем CSS для кнопки скачивания
 const style = document.createElement('style');
 style.textContent = `
     .file-preview {
