@@ -126,16 +126,22 @@ app.post('/api/login', async (req, res) => {
 // Endpoint для регистрации
 app.post('/api/register', async (req, res) => {
     try {
-        const { username, password } = req.body;
+        const { username, email, password } = req.body;
 
-        // Проверяем, существует ли пользователь
+        // Проверяем, существует ли пользователь с таким именем
         const userExists = await pool.query(
-            'SELECT * FROM users WHERE username = $1',
-            [username]
+            'SELECT * FROM users WHERE username = $1 OR email = $2',
+            [username, email]
         );
 
         if (userExists.rows.length > 0) {
-            return res.status(400).json({ error: 'Пользователь уже существует' });
+            const existingUser = userExists.rows[0];
+            if (existingUser.username === username) {
+                return res.status(400).json({ error: 'Пользователь с таким именем уже существует' });
+            }
+            if (existingUser.email === email) {
+                return res.status(400).json({ error: 'Пользователь с таким email уже существует' });
+            }
         }
 
         // Хешируем пароль
@@ -144,8 +150,8 @@ app.post('/api/register', async (req, res) => {
 
         // Создаем нового пользователя
         const newUser = await pool.query(
-            'INSERT INTO users (username, password_hash, role, created_at) VALUES ($1, $2, $3, CURRENT_TIMESTAMP) RETURNING *',
-            [username, hashedPassword, 'user']
+            'INSERT INTO users (username, email, password_hash, role, created_at) VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP) RETURNING id, username, email, role, created_at',
+            [username, email, hashedPassword, 'user']
         );
 
         res.json({
@@ -153,6 +159,7 @@ app.post('/api/register', async (req, res) => {
             user: {
                 id: newUser.rows[0].id,
                 username: newUser.rows[0].username,
+                email: newUser.rows[0].email,
                 role: newUser.rows[0].role,
                 created_at: newUser.rows[0].created_at
             }
@@ -257,7 +264,7 @@ const storage = multer.diskStorage({
             prefix = 'message-';
         }
 
-        // Генерируем уникальное имя файла
+        // Ге��ерируем уникальное имя файла
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
         const ext = path.extname(file.originalname);
         cb(null, `${prefix}${uniqueSuffix}${ext}`);
@@ -294,7 +301,7 @@ const upload = multer({
     }
 });
 
-// Обновл��ем руты для загрузки файлов
+// Обновляем руты для загрузки файлов
 app.post('/api/upload-avatar', upload.single('avatar'), (req, res) => {
     try {
         if (!req.file) {
@@ -786,7 +793,7 @@ app.use('/uploads/posts', express.static('/var/www/html/uploads/posts'));
 app.use('/uploads/avatars', express.static('/var/www/html/uploads/avatars'));
 app.use('/uploads/messages', express.static('/var/www/html/uploads/messages'));
 
-// Добавляем обработку ошибок для статических файло��
+// Добавляем обработку ошибок для статических файлов
 app.use('/uploads', (err, req, res, next) => {
     if (err) {
         console.error('Static file error:', err);
@@ -1399,7 +1406,7 @@ app.post('/api/users/update-status', async (req, res) => {
 // Добавляем автоматическое обновление статуса каждые 5 минут
 setInterval(async () => {
     try {
-        // Помечаем пользователей как оффлайн, если их последняя активность была более 5 минут назад
+        // Помечаем ��ользователей как оффлайн, если их последняя активность была более 5 минут назад
         await pool.query(`
             UPDATE users 
             SET is_online = false 
@@ -1677,7 +1684,7 @@ app.get('/api/users/check-email', async (req, res) => {
 // Создаем трнспорт для отправки почты
 const transporter = nodemailer.createTransport({
     host: 'smtp.timeweb.ru',
-    port: 2525,  // ��еняем порт на 2525
+    port: 2525,  // еняем порт на 2525
     secure: false,
     auth: {
         user: 'adminflow@adminflow.ru',

@@ -108,12 +108,19 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
     
     try {
         const username = document.getElementById('reg-username').value;
+        const email = document.getElementById('reg-email').value;
         const password = document.getElementById('reg-password').value;
         const passwordConfirm = document.getElementById('reg-password-confirm').value;
 
         // Проверка совпадения паролей
         if (password !== passwordConfirm) {
             showErrorMessage('Пароли не совпадают');
+            return;
+        }
+
+        // Валидация email
+        if (!isValidEmail(email)) {
+            showErrorMessage('Введите корректный email адрес');
             return;
         }
 
@@ -130,7 +137,7 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ username, password })
+            body: JSON.stringify({ username, email, password })
         });
 
         const data = await response.json();
@@ -201,7 +208,7 @@ function showSuccessMessage(message) {
 async function testConnection() {
     try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 се��унд таймаут
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 секунд таймаут
 
         const response = await fetch(`${API_URL}/api/test`, {
             signal: controller.signal,
@@ -276,7 +283,7 @@ function isValidJSON(str) {
     }
 }
 
-// Обработчики для восстановления пароля
+// Обработчики для восстановления ��ароля
 document.getElementById('forgot-password-link').addEventListener('click', (e) => {
     e.preventDefault();
     const modal = document.getElementById('password-recovery-modal');
@@ -343,7 +350,7 @@ document.getElementById('send-code-btn').addEventListener('click', async () => {
             document.getElementById('step-verification').style.display = 'block';
             startResendTimer();
         } else {
-            throw new Error('Ошибка при отправке кода');
+            throw new Error('Ошибк�� при отправке кода');
         }
     } catch (err) {
         showErrorMessage(err.message);
@@ -426,4 +433,50 @@ function resetRecoveryForm() {
     
     sessionStorage.removeItem('recovery_email');
     sessionStorage.removeItem('recovery_user_id');
+}
+
+// Добавляем проверку доступности email при вводе
+let emailCheckTimeout;
+const regEmailInput = document.getElementById('reg-email');
+const emailValidationMessage = document.querySelector('.email-validation-message');
+
+regEmailInput.addEventListener('input', () => {
+    clearTimeout(emailCheckTimeout);
+    const email = regEmailInput.value.trim();
+    
+    if (email && isValidEmail(email)) {
+        emailCheckTimeout = setTimeout(async () => {
+            try {
+                const response = await fetch(`${API_URL}/api/users/check-email?email=${encodeURIComponent(email)}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    if (data.available) {
+                        regEmailInput.classList.remove('invalid');
+                        regEmailInput.classList.add('valid');
+                        emailValidationMessage.textContent = '';
+                    } else {
+                        regEmailInput.classList.remove('valid');
+                        regEmailInput.classList.add('invalid');
+                        emailValidationMessage.textContent = 'Этот email уже используется';
+                    }
+                }
+            } catch (err) {
+                console.error('Check email error:', err);
+            }
+        }, 500);
+    } else if (email) {
+        regEmailInput.classList.remove('valid');
+        regEmailInput.classList.add('invalid');
+        emailValidationMessage.textContent = 'Введите корректный email адрес';
+    } else {
+        regEmailInput.classList.remove('valid', 'invalid');
+        emailValidationMessage.textContent = '';
+    }
+});
+
+// Функция валидации email
+function isValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
 } 

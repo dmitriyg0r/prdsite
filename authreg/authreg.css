@@ -282,3 +282,18 @@ input:focus {
     color: var(--text-secondary);
     cursor: not-allowed;
 }
+
+.email-validation-message {
+    display: block;
+    font-size: 12px;
+    margin-top: 5px;
+    color: var(--error-color);
+}
+
+.form-group input.invalid {
+    border-color: var(--error-color);
+}
+
+.form-group input.valid {
+    border-color: var(--success-color);
+}
