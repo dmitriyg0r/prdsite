@@ -201,7 +201,7 @@ function showSuccessMessage(message) {
 async function testConnection() {
     try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 секунд таймаут
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 се��унд таймаут
 
         const response = await fetch(`${API_URL}/api/test`, {
             signal: controller.signal,
@@ -274,4 +274,156 @@ function isValidJSON(str) {
     } catch (e) {
         return false;
     }
+}
+
+// Обработчики для восстановления пароля
+document.getElementById('forgot-password-link').addEventListener('click', (e) => {
+    e.preventDefault();
+    const modal = document.getElementById('password-recovery-modal');
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+});
+
+// Закрытие модального окна
+document.querySelectorAll('.modal-close').forEach(button => {
+    button.addEventListener('click', () => {
+        const modal = button.closest('.modal');
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+        resetRecoveryForm();
+    });
+});
+
+// Проверка имени пользователя
+document.getElementById('check-username-btn').addEventListener('click', async () => {
+    const username = document.getElementById('recovery-username').value.trim();
+    
+    try {
+        const response = await fetch(`${API_URL}/api/users/check-username`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.email) {
+            document.getElementById('step-username').style.display = 'none';
+            document.getElementById('step-email').style.display = 'block';
+            document.getElementById('confirm-email').textContent = maskEmail(data.email);
+            sessionStorage.setItem('recovery_email', data.email);
+            sessionStorage.setItem('recovery_user_id', data.userId);
+        } else {
+            showErrorMessage('Пользователь не найден или email не указан');
+        }
+    } catch (err) {
+        console.error('Error checking username:', err);
+        showErrorMessage('Ошибка при проверке имени пользователя');
+    }
+});
+
+// Отправка кода подтверждения
+document.getElementById('send-code-btn').addEventListener('click', async () => {
+    const userId = sessionStorage.getItem('recovery_user_id');
+    const email = sessionStorage.getItem('recovery_email');
+
+    try {
+        const response = await fetch(`${API_URL}/api/send-verification-code`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ userId, email })
+        });
+
+        if (response.ok) {
+            document.getElementById('step-email').style.display = 'none';
+            document.getElementById('step-verification').style.display = 'block';
+            startResendTimer();
+        } else {
+            throw new Error('Ошибка при отправке кода');
+        }
+    } catch (err) {
+        showErrorMessage(err.message);
+    }
+});
+
+// Сброс пароля
+document.getElementById('reset-password-btn').addEventListener('click', async () => {
+    const code = document.getElementById('verification-code').value;
+    const newPassword = document.getElementById('new-password').value;
+    const confirmPassword = document.getElementById('confirm-password').value;
+    const userId = sessionStorage.getItem('recovery_user_id');
+
+    if (newPassword !== confirmPassword) {
+        showErrorMessage('Пароли не совпадают');
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/api/change-password`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ userId, code, newPassword })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            showSuccessMessage('Пароль успешно изменен');
+            setTimeout(() => {
+                const modal = document.getElementById('password-recovery-modal');
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+                resetRecoveryForm();
+            }, 1500);
+        } else {
+            throw new Error(data.error || 'Ошибка при смене пароля');
+        }
+    } catch (err) {
+        showErrorMessage(err.message);
+    }
+});
+
+// Вспомогательные функции
+function maskEmail(email) {
+    const [username, domain] = email.split('@');
+    const maskedUsername = username.charAt(0) + '*'.repeat(username.length - 2) + username.charAt(username.length - 1);
+    return `${maskedUsername}@${domain}`;
+}
+
+function startResendTimer() {
+    let timeLeft = 60;
+    const resendBtn = document.getElementById('resend-code');
+    const timerElement = document.getElementById('resend-timer');
+    resendBtn.disabled = true;
+
+    const timer = setInterval(() => {
+        timeLeft--;
+        timerElement.textContent = `(${timeLeft}с)`;
+
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            timerElement.textContent = '';
+            resendBtn.disabled = false;
+        }
+    }, 1000);
+}
+
+function resetRecoveryForm() {
+    document.getElementById('recovery-username').value = '';
+    document.getElementById('verification-code').value = '';
+    document.getElementById('new-password').value = '';
+    document.getElementById('confirm-password').value = '';
+    
+    document.getElementById('step-username').style.display = 'block';
+    document.getElementById('step-email').style.display = 'none';
+    document.getElementById('step-verification').style.display = 'none';
+    
+    sessionStorage.removeItem('recovery_email');
+    sessionStorage.removeItem('recovery_user_id');
 } 

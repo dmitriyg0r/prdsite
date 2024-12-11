@@ -257,7 +257,7 @@ const storage = multer.diskStorage({
             prefix = 'message-';
         }
 
-        // Генериру��м уникальное имя файла
+        // Генерируем уникальное имя файла
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
         const ext = path.extname(file.originalname);
         cb(null, `${prefix}${uniqueSuffix}${ext}`);
@@ -294,7 +294,7 @@ const upload = multer({
     }
 });
 
-// Обновляем руты для загрузки файлов
+// Обновл��ем руты для загрузки файлов
 app.post('/api/upload-avatar', upload.single('avatar'), (req, res) => {
     try {
         if (!req.file) {
@@ -786,7 +786,7 @@ app.use('/uploads/posts', express.static('/var/www/html/uploads/posts'));
 app.use('/uploads/avatars', express.static('/var/www/html/uploads/avatars'));
 app.use('/uploads/messages', express.static('/var/www/html/uploads/messages'));
 
-// Добавляем обработку ошибок для статических файлов
+// Добавляем обработку ошибок для статических файло��
 app.use('/uploads', (err, req, res, next) => {
     if (err) {
         console.error('Static file error:', err);
@@ -1558,7 +1558,7 @@ app.post('/api/messages/typing', async (req, res) => {
         const { userId, friendId, isTyping } = req.body;
         
         // Сохраняем статус в Redis или другом быстром хранилище
-        // Здесь используем глобальную пер��менную для примера
+        // Здесь используем глобальную переменную для примера
         global.typingStatus = global.typingStatus || {};
         global.typingStatus[`${userId}-${friendId}`] = {
             isTyping,
@@ -1677,7 +1677,7 @@ app.get('/api/users/check-email', async (req, res) => {
 // Создаем трнспорт для отправки почты
 const transporter = nodemailer.createTransport({
     host: 'smtp.timeweb.ru',
-    port: 2525,  // меняем порт на 2525
+    port: 2525,  // ��еняем порт на 2525
     secure: false,
     auth: {
         user: 'adminflow@adminflow.ru',
@@ -1791,7 +1791,7 @@ app.post('/api/send-verification-code', async (req, res) => {
                         <strong>${verificationCode}</strong>
                     </div>
                     <p style="color: #666; font-size: 14px; margin-top: 20px;">
-                        Код дей��твителен в течение 5 минут.<br>
+                        Код дейтвителен в течение 5 минут.<br>
                         Если вы не запрашивали код подтверждения, проигнорируйте это письмо.
                     </p>
                 </div>
@@ -1872,5 +1872,36 @@ httpServer.listen(80, () => {
 
 httpsServer.listen(443, () => {
     console.log('HTTPS Server running on port 443');
+});
+
+// Проверка имени пользователя для восстановления пароля
+app.post('/api/users/check-username', async (req, res) => {
+    try {
+        const { username } = req.body;
+
+        const result = await pool.query(
+            'SELECT id, email FROM users WHERE username = $1',
+            [username]
+        );
+
+        if (result.rows.length > 0 && result.rows[0].email) {
+            res.json({
+                success: true,
+                userId: result.rows[0].id,
+                email: result.rows[0].email
+            });
+        } else {
+            res.status(404).json({
+                success: false,
+                error: 'Пользователь не найден или email не указан'
+            });
+        }
+    } catch (err) {
+        console.error('Check username error:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при проверке имени пользователя'
+        });
+    }
 });
 
