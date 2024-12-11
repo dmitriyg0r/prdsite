@@ -249,7 +249,7 @@ function updatePagination() {
     const pagination = document.getElementById('pagination');
     pagination.innerHTML = '';
 
-    // Кнопка "Назад"
+    // Кнопк�� "Назад"
     const prevButton = document.createElement('button');
     prevButton.textContent = 'Назад';
     prevButton.disabled = currentPage === 1;
@@ -361,6 +361,11 @@ async function changeUserRole(userId, newRole) {
     }
 }
 
+// Глобальные переменные для хранения экземпляров графиков
+let registrationChart = null;
+let messageChart = null;
+let userActivityChart = null;
+
 async function loadCharts() {
     try {
         const adminId = getAdminId();
@@ -370,6 +375,11 @@ async function loadCharts() {
         const data = await response.json();
         
         if (data.success) {
+            // Уничтожаем существующие графики перед созданием новых
+            if (registrationChart) registrationChart.destroy();
+            if (messageChart) messageChart.destroy();
+            if (userActivityChart) userActivityChart.destroy();
+
             createRegistrationChart(data.data.registrations);
             createMessageChart(data.data.messages);
             createUserActivityChart(data.data.userActivity);
@@ -381,8 +391,12 @@ async function loadCharts() {
 
 function createRegistrationChart(data) {
     const ctx = document.getElementById('registrationChart');
+    if (!ctx) {
+        console.error('Canvas element registrationChart not found');
+        return;
+    }
     
-    new Chart(ctx, {
+    registrationChart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: data.map(item => new Date(item.date).toLocaleDateString()),
@@ -396,6 +410,7 @@ function createRegistrationChart(data) {
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: {
                 title: {
                     display: true,
@@ -416,8 +431,12 @@ function createRegistrationChart(data) {
 
 function createMessageChart(data) {
     const ctx = document.getElementById('messageChart');
+    if (!ctx) {
+        console.error('Canvas element messageChart not found');
+        return;
+    }
     
-    new Chart(ctx, {
+    messageChart = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: data.map(item => new Date(item.date).toLocaleDateString()),
@@ -429,6 +448,7 @@ function createMessageChart(data) {
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: {
                 title: {
                     display: true,
@@ -449,8 +469,12 @@ function createMessageChart(data) {
 
 function createUserActivityChart(data) {
     const ctx = document.getElementById('userActivityChart');
+    if (!ctx) {
+        console.error('Canvas element userActivityChart not found');
+        return;
+    }
     
-    new Chart(ctx, {
+    userActivityChart = new Chart(ctx, {
         type: 'doughnut',
         data: {
             labels: data.map(item => item.role),
@@ -465,6 +489,7 @@ function createUserActivityChart(data) {
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: {
                 title: {
                     display: true,
@@ -485,7 +510,8 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelector('.admin-panel').style.display = 'block';
         loadStats();
         loadUsers();
-        loadCharts();
+        // Добавляем небольшую задержку перед загрузкой графиков
+        setTimeout(loadCharts, 100);
     }
 
     const searchInput = document.getElementById('searchUsers');
