@@ -460,37 +460,236 @@ body {
 }
 
 /* Стили для поиска друзей */
-.friend-search {
-    margin-bottom: var(--spacing-md);
+.search-container {
+    padding: var(--spacing-md);
+    position: sticky;
+    top: 0;
+    background: var(--background-color);
+    z-index: 10;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.search-form {
+    display: flex;
+    gap: 8px;
 }
 
 .search-input-wrapper {
-    display: flex;
-    gap: 8px;
-    margin-bottom: var(--spacing-md);
+    position: relative;
+    flex: 1;
 }
 
 .search-input {
-    flex: 1;
-    padding: 8px 12px;
+    width: 100%;
+    padding: 12px 40px 12px 16px;
     border: 1px solid var(--border-light);
     border-radius: var(--radius-md);
     background: var(--surface-color);
     color: var(--text-primary);
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
 .search-btn {
-    padding: 8px 16px;
+    padding: 12px 24px;
     background: var(--primary-color);
     color: white;
     border: none;
     border-radius: var(--radius-md);
+    font-size: 14px;
     cursor: pointer;
     transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .search-btn:hover {
     background: var(--primary-dark);
+    transform: translateY(-1px);
+}
+
+.search-btn i {
+    font-size: 16px;
+}
+
+/* Результаты поиска */
+.search-results {
+    padding: var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.user-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: var(--surface-color);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-light);
+    transition: all 0.3s ease;
+}
+
+.user-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.user-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.user-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.user-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.user-meta {
+    font-size: 13px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.user-status {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.status-indicator.online {
+    background: var(--success-color);
+}
+
+.status-indicator.offline {
+    background: var(--text-tertiary);
+}
+
+.add-friend-btn {
+    padding: 8px 16px;
+    background: var(--surface-color);
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.add-friend-btn:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+.add-friend-btn.pending {
+    background: var(--background-color);
+    border-color: var(--text-tertiary);
+    color: var(--text-tertiary);
+    cursor: not-allowed;
+}
+
+.add-friend-btn.friends {
+    background: var(--success-color);
+    border-color: var(--success-color);
+    color: white;
+}
+
+/* Состояние загрузки */
+.search-loading {
+    text-align: center;
+    padding: var(--spacing-xl);
+    color: var(--text-secondary);
+}
+
+.search-loading i {
+    font-size: 24px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Пустое состояние */
+.empty-search {
+    text-align: center;
+    padding: var(--spacing-xl);
+    color: var(--text-secondary);
+}
+
+.empty-search i {
+    font-size: 48px;
+    margin-bottom: var(--spacing-md);
+    opacity: 0.5;
+}
+
+.empty-search p {
+    font-size: 16px;
+    margin: 0;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .search-form {
+        flex-direction: column;
+    }
+    
+    .search-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .user-card {
+        padding: 12px;
+    }
+    
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .user-name {
+        font-size: 14px;
+    }
+    
+    .user-meta {
+        font-size: 12px;
+    }
+    
+    .add-friend-btn {
+        padding: 6px 12px;
+        font-size: 13px;
+    }
 }
 
 /* Стили для секции заявок в друзья */
@@ -1638,7 +1837,7 @@ body {
     transform: translateY(-2px);
 }
 
-/* Стили для кнопки комментариев в действиях поста */
+/* Стили д��я кнопки комментариев в действиях поста */
 .post-action.comment-action:hover {
     background: var(--background-color);
     color: var(--primary-color);

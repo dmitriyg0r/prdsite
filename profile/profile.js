@@ -325,7 +325,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             tabButtons.forEach(btn => btn.classList.remove('active'));
             button.classList.add('active');
             
-            // Активация содержимого в��ладки
+            // Активация содержимого вкладки
             tabContents.forEach(content => {
                 content.classList.remove('active');
                 if (content.id === tabName) {
@@ -367,17 +367,99 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Отображение результатов поиска
     function displaySearchResults(users) {
-        searchResults.innerHTML = users.map(user => `
-            <div class="friend-card">
-                <img src="${user.avatar_url || '/uploads/avatars/default.png'}" alt="${user.username}">
-                <div class="friend-info">
-                    <div class="friend-name">${user.username}</div>
-                    <button class="add-friend-btn" data-user-id="${user.id}">
-                        <i class="fas fa-user-plus"></i> Добавить в друзья
+        const searchResults = document.querySelector('.search-results');
+        
+        if (!searchResults) return;
+
+        if (!users.length) {
+            searchResults.innerHTML = `
+                <div class="empty-search">
+                    <i class="fas fa-search"></i>
+                    <p>Пользователи не найдены</p>
+                </div>
+            `;
+            return;
+        }
+
+        searchResults.innerHTML = users.map(user => {
+            const isOnline = user.last_activity && 
+                (new Date() - new Date(user.last_activity)) < 5 * 60 * 1000; // 5 минут
+
+            const friendStatus = getFriendStatus(user.id); // Функция должна возвращать статус дружбы
+            
+            let buttonClass = '';
+            let buttonText = '';
+            let buttonIcon = '';
+            
+            switch (friendStatus) {
+                case 'friends':
+                    buttonClass = 'friends';
+                    buttonText = 'В друзьях';
+                    buttonIcon = 'fas fa-check';
+                    break;
+                case 'pending':
+                    buttonClass = 'pending';
+                    buttonText = 'Заявка отправлена';
+                    buttonIcon = 'fas fa-clock';
+                    break;
+                default:
+                    buttonClass = '';
+                    buttonText = 'Добавить в друзья';
+                    buttonIcon = 'fas fa-user-plus';
+            }
+
+            return `
+                <div class="user-card">
+                    <img src="${user.avatar_url || '/uploads/avatars/default.png'}" 
+                         alt="${user.username}" 
+                         class="user-avatar">
+                    <div class="user-info">
+                        <div class="user-name">${user.username}</div>
+                        <div class="user-meta">
+                            <div class="user-status">
+                                <span class="status-indicator ${isOnline ? 'online' : 'offline'}"></span>
+                                ${isOnline ? 'В сети' : 'Не в сети'}
+                            </div>
+                            ${user.mutual_friends ? `
+                                <span class="mutual-friends">
+                                    <i class="fas fa-user-friends"></i>
+                                    ${user.mutual_friends} общих друзей
+                                </span>
+                            ` : ''}
+                        </div>
+                    </div>
+                    <button class="add-friend-btn ${buttonClass}" 
+                            ${friendStatus === 'pending' || friendStatus === 'friends' ? 'disabled' : ''}
+                            data-user-id="${user.id}">
+                        <i class="${buttonIcon}"></i>
+                        ${buttonText}
                     </button>
                 </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
+
+        // Добавляем обработчики для кнопок
+        document.querySelectorAll('.add-friend-btn:not(.pending):not(.friends)').forEach(btn => {
+            btn.addEventListener('click', () => {
+                sendFriendRequest(btn.dataset.userId);
+                btn.classList.add('pending');
+                btn.innerHTML = '<i class="fas fa-clock"></i> Заявка отправлена';
+                btn.disabled = true;
+            });
+        });
+    }
+
+    // Функция для отображения состояния загрузки
+    function showSearchLoading() {
+        const searchResults = document.querySelector('.search-results');
+        if (searchResults) {
+            searchResults.innerHTML = `
+                <div class="search-loading">
+                    <i class="fas fa-circle-notch"></i>
+                    <p>Поиск пользователей...</p>
+                </div>
+            `;
+        }
     }
 
     // Функции для работы с друзьями
@@ -598,36 +680,84 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Обновляем отображение результатов поиска
     function displaySearchResults(users) {
         const searchResults = document.querySelector('.search-results');
+        
+        if (!searchResults) return;
+
+        if (!users.length) {
+            searchResults.innerHTML = `
+                <div class="empty-search">
+                    <i class="fas fa-search"></i>
+                    <p>Пользователи не найдены</p>
+                </div>
+            `;
+            return;
+        }
+
         searchResults.innerHTML = users.map(user => {
-            let actionButton = '';
-            switch(user.friendship_status) {
-                case 'none':
-                    actionButton = `<button class="add-friend-btn" data-user-id="${user.id}">
-                        <i class="fas fa-user-plus"></i> Добавить в друзья
-                    </button>`;
+            const isOnline = user.last_activity && 
+                (new Date() - new Date(user.last_activity)) < 5 * 60 * 1000; // 5 минут
+
+            const friendStatus = getFriendStatus(user.id); // Функция должна возвращать статус дружбы
+            
+            let buttonClass = '';
+            let buttonText = '';
+            let buttonIcon = '';
+            
+            switch (friendStatus) {
+                case 'friends':
+                    buttonClass = 'friends';
+                    buttonText = 'В друзьях';
+                    buttonIcon = 'fas fa-check';
                     break;
                 case 'pending':
-                    actionButton = '<span class="pending-request">Заявка отправлена</span>';
+                    buttonClass = 'pending';
+                    buttonText = 'Заявка отправлена';
+                    buttonIcon = 'fas fa-clock';
                     break;
-                case 'accepted':
-                    actionButton = '<span class="friend-status">В друзьях</span>';
-                    break;
+                default:
+                    buttonClass = '';
+                    buttonText = 'Добавить в друзья';
+                    buttonIcon = 'fas fa-user-plus';
             }
 
             return `
-                <div class="friend-card">
-                    <img src="${user.avatar_url || '/uploads/avatars/default.png'}" alt="${user.username}">
-                    <div class="friend-info">
-                        <div class="friend-name">${user.username}</div>
-                        ${actionButton}
+                <div class="user-card">
+                    <img src="${user.avatar_url || '/uploads/avatars/default.png'}" 
+                         alt="${user.username}" 
+                         class="user-avatar">
+                    <div class="user-info">
+                        <div class="user-name">${user.username}</div>
+                        <div class="user-meta">
+                            <div class="user-status">
+                                <span class="status-indicator ${isOnline ? 'online' : 'offline'}"></span>
+                                ${isOnline ? 'В сети' : 'Не в сети'}
+                            </div>
+                            ${user.mutual_friends ? `
+                                <span class="mutual-friends">
+                                    <i class="fas fa-user-friends"></i>
+                                    ${user.mutual_friends} общих друзей
+                                </span>
+                            ` : ''}
+                        </div>
                     </div>
+                    <button class="add-friend-btn ${buttonClass}" 
+                            ${friendStatus === 'pending' || friendStatus === 'friends' ? 'disabled' : ''}
+                            data-user-id="${user.id}">
+                        <i class="${buttonIcon}"></i>
+                        ${buttonText}
+                    </button>
                 </div>
             `;
         }).join('');
 
-        // Добавляем обработчики для кнопок добавления в друзья
-        document.querySelectorAll('.add-friend-btn').forEach(btn => {
-            btn.addEventListener('click', () => sendFriendRequest(btn.dataset.userId));
+        // Добавляем обработчики для кнопок
+        document.querySelectorAll('.add-friend-btn:not(.pending):not(.friends)').forEach(btn => {
+            btn.addEventListener('click', () => {
+                sendFriendRequest(btn.dataset.userId);
+                btn.classList.add('pending');
+                btn.innerHTML = '<i class="fas fa-clock"></i> Заявка отправлена';
+                btn.disabled = true;
+            });
         });
     }
 
@@ -761,7 +891,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const diffMinutes = Math.floor((now - lastActivity) / (1000 * 60));
             
             if (diffMinutes >= 5) {
-                // Если нет активности 5+ минут, обновляем статус
+                // Если нет активности 5+ минут, обновляем ста��ус
                 updateUserStatus(true); // Всё ещё онлайн, но не активен
             }
         }, 60000);
@@ -831,7 +961,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 
                 if (data.is_online) {
                     if (diffMinutes < 5) {
-                        statusText = '<i class="fas fa-circle"></i> В сети';
+                        statusText = '<i class="fas fa-circle"></i> В ��ети';
                         statusClass = 'online';
                     } else {
                         statusText = '<i class="fas fa-moon"></i> Нет на месте';
@@ -1004,7 +1134,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.body.style.overflow = '';
                 resetPasswordChangeForm();
             } else {
-                throw new Error(data.error || 'Ошибка при изменении пароля');
+                throw new Error(data.error || 'Ошибка при и��менении пароля');
             }
         } catch (err) {
             alert(err.message);
@@ -1498,7 +1628,7 @@ async function downloadFile(fileUrl) {
         link.href = url;
         link.download = filename;
         
-        // Добавляем ссылку в DOM и эмулируем клик
+        // Добавляем ссылку в DOM и эму��ируем клик
         document.body.appendChild(link);
         link.click();
         
@@ -1534,7 +1664,7 @@ function getFilePreview(file) {
     }
 }
 
-// Обновляем CSS для кнопки скачивания
+// Обновляем CSS для кнопки скачива��ия
 const style = document.createElement('style');
 style.textContent = `
     .file-preview {
