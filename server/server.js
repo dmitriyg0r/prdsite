@@ -257,7 +257,7 @@ const storage = multer.diskStorage({
             prefix = 'message-';
         }
 
-        // Генерируем уникальное имя файла
+        // Генериру��м уникальное имя файла
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
         const ext = path.extname(file.originalname);
         cb(null, `${prefix}${uniqueSuffix}${ext}`);
@@ -524,7 +524,7 @@ const messageUpload = multer({
     }
 });
 
-// Эндпоинт для отп��авки сообщения с файлом
+// Эндпоинт для отправки сообщения с файлом
 app.post('/api/messages/send-with-file', upload.single('file'), async (req, res) => {
     try {
         const { senderId, receiverId, message, replyToMessageId } = req.body;
@@ -1330,7 +1330,7 @@ app.delete('/api/posts/delete/:postId', async (req, res) => {
 // Добавляем раздачу статических файлов для постов
 app.use('/uploads/posts', express.static('/var/www/html/uploads/posts')); 
 
-// Получение статуса пользователя
+// Получени�� статуса пользователя
 app.get('/api/users/status/:userId', async (req, res) => {
     try {
         const userId = parseInt(req.params.userId);
@@ -1577,7 +1577,7 @@ app.delete('/api/messages/delete/:messageId', async (req, res) => {
         const { messageId } = req.params;
         const { userId } = req.body; // ID текущего пользователя
 
-        // Проверяем, являет��я ли пользователь отправителем сообщения
+        // Проверяем, является ли пользователь отправителем сообщения
         const message = await pool.query(
             'SELECT * FROM messages WHERE id = $1 AND sender_id = $2',
             [messageId, userId]
@@ -1677,18 +1677,15 @@ app.get('/api/users/check-email', async (req, res) => {
 // Создаем трнспорт для отправки почты
 const transporter = nodemailer.createTransport({
     host: 'smtp.timeweb.ru',
-    port: 110,
+    port: 25,  // меняем порт на 25
     secure: false,
-    requireTLS: true,  // Требуем STARTTLS
     auth: {
         user: 'adminflow@adminflow.ru',
         pass: 'Gg3985502'
     },
     tls: {
-        rejectUnauthorized: false,
-        ciphers: 'SSLv3'
-    },
-    debug: true
+        rejectUnauthorized: false
+    }
 });
 
 // Проверяем соединение при запуске сервера
@@ -1748,9 +1745,8 @@ app.post('/api/send-verification-code', async (req, res) => {
             });
         }
 
-        // ��енерируем код
+        // ненерируем код
         const verificationCode = generateVerificationCode();
-
         // Сохраняем код в базу данных с временем жизни
         await pool.query(`
             INSERT INTO verification_codes (user_id, code, expires_at)
@@ -1855,3 +1851,4 @@ httpServer.listen(80, () => {
 httpsServer.listen(443, () => {
     console.log('HTTPS Server running on port 443');
 });
+
