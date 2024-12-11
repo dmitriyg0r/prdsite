@@ -1936,3 +1936,41 @@ body {
     background: var(--hover-color);
     border-style: solid;
 }
+
+/* Контейнер для списка друзей */
+.friends-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* Две колонки равной ширины */
+    gap: 12px; /* Отступы между элементами */
+    padding: var(--spacing-sm);
+}
+
+/* Обновляем стили для элементов внутри сетки */
+.friend-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    gap: 8px;
+    padding: 8px;
+    border-radius: var(--radius-md);
+    transition: all 0.3s ease;
+    width: 100%; /* Занимаем всю доступную ширину ячейки */
+}
+
+/* Стиль для плейсхолдера при отсутствии друзей */
+.friend-placeholder {
+    grid-column: 1 / -1; /* Растягиваем на обе колонки */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: var(--spacing-md);
+}
+
+/* Кнопка "Показать больше" также должна занимать всю ячейку */
+.more-friends {
+    width: 100%;
+    height: 100%;
+    min-height: 80px; /* Соответствует высоте элемента с аватаркой и именем */
+}
