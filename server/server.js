@@ -257,7 +257,7 @@ const storage = multer.diskStorage({
             prefix = 'message-';
         }
 
-        // Генерируем уникальное имя файла
+        // Генериру��м уникальное имя файла
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
         const ext = path.extname(file.originalname);
         cb(null, `${prefix}${uniqueSuffix}${ext}`);
@@ -672,7 +672,7 @@ app.get('/api/messages/unread/:userId', async (req, res) => {
         res.json({ success: true, unreadCounts: result.rows });
     } catch (err) {
         console.error('Error getting unread counts:', err);
-        res.status(500).json({ error: '��шибка при получении количества непрочитанных сообщений' });
+        res.status(500).json({ error: 'Ошибка при получении количества непрочитанных сообщений' });
     }
 });
 
@@ -852,7 +852,7 @@ app.post('/api/users/update-profile', async (req, res) => {
     try {
         const { userId, username, email } = req.body;
 
-        // Проверяем, не занят ли email другим пользо��ателем
+        // Проверяем, не занят ли email другим пользователем
         if (email) {
             const emailCheck = await pool.query(
                 'SELECT id FROM users WHERE email = $1 AND id != $2',
@@ -967,7 +967,7 @@ const checkAdmin = async (req, res, next) => {
         if (!adminId) {
             return res.status(401).json({ 
                 success: false,
-                error: 'Требуется авто��изация' 
+                error: 'Требуется авторизация' 
             });
         }
 
@@ -1219,7 +1219,7 @@ app.post('/api/posts/create', uploadPost.single('image'), async (req, res) => {
     }
 });
 
-// Получе��ие постов пользователя
+// Получение постов пользователя
 app.get('/api/posts/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
@@ -1558,7 +1558,7 @@ app.post('/api/messages/typing', async (req, res) => {
         const { userId, friendId, isTyping } = req.body;
         
         // Сохраняем статус в Redis или другом быстром хранилище
-        // Здесь используем глобальную переменную для примера
+        // Здесь используем глобальную пер��менную для примера
         global.typingStatus = global.typingStatus || {};
         global.typingStatus[`${userId}-${friendId}`] = {
             isTyping,
@@ -1723,7 +1723,7 @@ alternativeTransporter.verify(function(error, success) {
         console.error('Ошибка подключения к альтернативному SMTP:', error);
     } else {
         console.log('Альтернативный SMTP сервер готов к отправке сообщений');
-        // Если альтернативно�� соединение работает, используем его
+        // Если альтернативно соединение работает, используем его
         transporter = alternativeTransporter;
     }
 });
@@ -1738,16 +1738,36 @@ app.post('/api/send-verification-code', async (req, res) => {
     try {
         const { userId, email } = req.body;
 
+        // Проверяем наличие email в запросе
         if (!userId || !email) {
             return res.status(400).json({
                 success: false,
-                error: 'Отсутствуют необходимые данные'
+                error: 'Отсутствует email или ID пользователя'
             });
         }
 
-        // ненерируем код
+        // Проверяем, что email соответствует пользователю
+        const userResult = await pool.query(`
+            SELECT email FROM users WHERE id = $1
+        `, [userId]);
+
+        if (userResult.rows.length === 0 || !userResult.rows[0].email) {
+            return res.status(400).json({
+                success: false,
+                error: 'Email не найден для данного пользователя'
+            });
+        }
+
+        if (userResult.rows[0].email !== email) {
+            return res.status(400).json({
+                success: false,
+                error: 'Указанный email не соответствует пользователю'
+            });
+        }
+
         const verificationCode = generateVerificationCode();
-        // Сохраняем код в базу данных с временем жизни
+
+        // Сохраняем код в базу
         await pool.query(`
             INSERT INTO verification_codes (user_id, code, expires_at)
             VALUES ($1, $2, NOW() + INTERVAL '5 minutes')
@@ -1771,7 +1791,7 @@ app.post('/api/send-verification-code', async (req, res) => {
                         <strong>${verificationCode}</strong>
                     </div>
                     <p style="color: #666; font-size: 14px; margin-top: 20px;">
-                        Код действителен в течение 5 минут.<br>
+                        Код дей��твителен в течение 5 минут.<br>
                         Если вы не запрашивали код подтверждения, проигнорируйте это письмо.
                     </p>
                 </div>
