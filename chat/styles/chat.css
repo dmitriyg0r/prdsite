@@ -107,7 +107,7 @@ body {
     color: white;
 }
 
-/* Улучшаем область чата */
+/* Улучшаем облас���� чата */
 .chat-area {
     height: 100vh;
     display: flex;
@@ -122,6 +122,65 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
+}
+
+.chat-header-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+#chat-header-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--border-light);
+}
+
+.header-user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+#chat-header-name {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.user-status {
+    font-size: 13px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.user-status::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--text-tertiary);
+}
+
+.user-status.online::before {
+    background: var(--success-color);
+}
+
+/* Анимация для статуса */
+@keyframes statusPulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}
+
+.user-status.online::before {
+    animation: statusPulse 2s ease infinite;
 }
 
 /* Улучшаем стили для области сообщений */
@@ -250,73 +309,89 @@ body {
     margin: 0;
 }
 
-/* Стили сообщений */
+/* Улучшенные стили для сообщений */
 .message {
     max-width: 70%;
     margin-bottom: 16px;
-    padding: 14px 18px;
-    border-radius: var(--radius-lg);
+    padding: 16px;
+    border-radius: 20px;
     position: relative;
     animation: messageAppear 0.3s ease-out;
-    align-self: flex-start; /* По умолчанию слева */
+    align-self: flex-start;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease;
+}
+
+.message:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Полученные сообщения (светлая тема) */
+.message-received {
+    align-self: flex-start;
+    background: #f0f2f5; /* Светло-серый фон для полученных сообщений */
+    color: var(--text-primary);
+    border-bottom-left-radius: 4px;
+    padding-right: 24px;
+}
+
+/* Отправленные сообщения */
+.message-sent {
+    margin-left: auto;
+    align-self: flex-end;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    border-bottom-right-radius: 4px;
+    padding-right: 24px;
 }
 
 .message-content {
     position: relative;
     display: flex;
     flex-direction: column;
+    gap: 4px;
 }
 
 .message-text {
-    font-size: 14px;
+    font-size: 15px;
     line-height: 1.5;
-    margin-right: 40px;
+    margin-right: 24px;
     word-wrap: break-word;
 }
 
-/* Отправленные сообщения */
-.message-sent {
-    margin-left: auto;
-    align-self: flex-end; /* Отправленные сообщения справа */
-    background: var(--primary-color);
-    color: white;
-    border-bottom-right-radius: var(--radius-sm);
-}
-
-.message-sent .message-content {
-    align-items: flex-end;
-}
-
-/* Полученные сообщения */
-.message-received {
-    align-self: flex-start; /* Полученные сообщения слева */
-    background: var(--surface-color);
-    color: var(--text-primary);
-    border-bottom-left-radius: var(--radius-sm);
-    border: 1px solid var(--border-light);
-}
-
-.message-received .message-content {
-    align-items: flex-start;
-}
-
-/* Информация о сообщении (время и статус) */
+/* Информация о сообщении */
 .message-info {
     display: flex;
     align-items: center;
     gap: 4px;
     position: absolute;
-    right: 4px;
-    bottom: 0;
+    right: -8px;
+    bottom: -4px;
+    font-size: 11px;
+    padding: 2px 4px;
+    border-radius: 8px;
 }
 
+.message-received .message-info {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.message-sent .message-info {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Время сообщения */
 .message-time {
     font-size: 11px;
-    color: var(--text-tertiary);
+}
+
+.message-received .message-time {
+    color: var(--text-secondary);
 }
 
 .message-sent .message-time {
-    color: rgba(255, 255, 255, 0.8);
+    color: rgba(255, 255, 255, 0.9);
 }
 
 .message-status {
@@ -326,65 +401,77 @@ body {
 
 .message-sent .message-status i {
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.8);
+    color: rgba(255, 255, 255, 0.9);
 }
 
 .message-status .fa-check-double {
-    color: var(--success-color);
+    color: #4CAF50;
 }
 
-/* Стили для группировки сообщений */
+/* Улучшенные стили для цитат */
+.quoted-message {
+    margin-bottom: 8px;
+    padding: 8px 12px;
+    background: rgba(var(--primary-color-rgb), 0.08);
+    border-left: 3px solid var(--primary-color);
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    position: relative;
+}
+
+.message-received .quoted-message {
+    background: rgba(0, 0, 0, 0.05);
+    border-left: 3px solid var(--primary-color);
+    color: var(--text-secondary);
+}
+
+.message-sent .quoted-message {
+    background: rgba(255, 255, 255, 0.15);
+    border-left-color: rgba(255, 255, 255, 0.4);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Улучшенные стили для вложений */
+.message-attachment {
+    margin-top: 8px;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+}
+
+.message-attachment img {
+    max-width: 300px;
+    max-height: 200px;
+    object-fit: cover;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.message-attachment img:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Группировка сообщений */
 .message + .message {
-    margin-top: 4px;
+    margin-top: 2px;
 }
 
 .message-group {
     margin-bottom: 16px;
 }
 
-/* Стили для даты между сообщениями */
-.message-date-divider {
-    text-align: center;
-    margin: 24px 0;
-    position: relative;
-}
-
-.message-date {
-    background: var(--background-color);
-    padding: 0 16px;
-    color: var(--text-secondary);
-    font-size: 12px;
-    position: relative;
-    z-index: 1;
-}
-
-.message-date-divider::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 50%;
-    height: 1px;
-    background: var(--border-light);
-}
-
-/* Стили для системных сообщений */
-.system-message {
-    text-align: center;
-    margin: 16px 0;
-    color: var(--text-secondary);
-    font-size: 12px;
-}
-
-/* Анимация появления сообщений */
+/* Анимации для сообщений */
 @keyframes messageAppear {
     from {
         opacity: 0;
-        transform: translateY(10px);
+        transform: translateY(10px) scale(0.98);
     }
     to {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateY(0) scale(1);
     }
 }
 
@@ -403,23 +490,37 @@ body {
     height: 8px;
     background: var(--primary-color);
     border-radius: 50%;
+    animation: pulseDot 1.5s infinite;
 }
 
-/* Стили для цитируемых сообщений */
-.quoted-message {
-    margin-bottom: 8px;
-    padding: 8px 12px;
-    background: rgba(var(--primary-color-rgb), 0.1);
-    border-left: 3px solid var(--primary-color);
-    border-radius: var(--radius-sm);
-    font-size: 13px;
+@keyframes pulseDot {
+    0% {
+        transform: translateY(-50%) scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: translateY(-50%) scale(1.2);
+        opacity: 0.7;
+    }
+    100% {
+        transform: translateY(-50%) scale(1);
+        opacity: 1;
+    }
+}
+
+/* Стили для системных сообщений */
+.system-message {
+    text-align: center;
+    margin: 16px 0;
+    padding: 8px 16px;
     color: var(--text-secondary);
-}
-
-.message-sent .quoted-message {
-    background: rgba(255, 255, 255, 0.1);
-    border-left-color: rgba(255, 255, 255, 0.3);
-    color: rgba(255, 255, 255, 0.8);
+    font-size: 12px;
+    background: var(--background-color);
+    border-radius: 16px;
+    max-width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+    border: 1px solid var(--border-light);
 }
 
 /* Стили для ввода во время печати */
@@ -583,7 +684,7 @@ body {
     background-color: var(--text-tertiary);
 }
 
-/* Улучшенные стили для информации о друге */
+/* Улучшенные стили для информации о ��руге */
 .friend-info {
     flex: 1;
     min-width: 0;
