@@ -319,12 +319,6 @@ body {
     animation: messageAppear 0.3s ease-out;
     align-self: flex-start;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    transition: transform 0.2s ease;
-}
-
-.message:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* Полученные сообщения */
@@ -715,7 +709,7 @@ body {
     color: var(--text-tertiary);
 }
 
-/* Стили для непрочитанных сообщений */
+/* Стили для непрочитанных сообщени�� */
 .unread-count {
     background: var(--primary-color);
     color: white;
@@ -791,7 +785,7 @@ body {
     font-size: 13px;
 }
 
-/* Стили для пр��вью файлов */
+/* Стили для превью файлов */
 #filePreview {
     margin-bottom: 12px;
 }
