@@ -937,7 +937,7 @@ app.post('/api/users/update-profile', async (req, res) => {
     }
 });
 
-// Обновляем эндпоинт отправки сообщения с файлом
+// Обновляем эн��поинт отправки сообщения с файлом
 app.post('/api/messages/send-with-file', messageUpload.single('file'), async (req, res) => {
     try {
         const { senderId, receiverId, message, replyTo } = req.body;
@@ -2123,6 +2123,66 @@ app.get('/api/users/:userId', async (req, res) => {
         res.status(500).json({ 
             success: false, 
             error: 'Ошибка при получении данных пользователя' 
+        });
+    }
+});
+
+// Получение списка чатов пользователя
+app.get('/api/chats/:userId', async (req, res) => {
+    try {
+        const { userId } = req.params;
+
+        const result = await pool.query(`
+            WITH LastMessages AS (
+                SELECT DISTINCT ON (
+                    CASE 
+                        WHEN sender_id = $1 THEN receiver_id 
+                        ELSE sender_id 
+                    END
+                )
+                    CASE 
+                        WHEN sender_id = $1 THEN receiver_id 
+                        ELSE sender_id 
+                    END as chat_partner_id,
+                    message,
+                    created_at,
+                    is_read,
+                    sender_id
+                FROM messages
+                WHERE sender_id = $1 OR receiver_id = $1
+                ORDER BY chat_partner_id, created_at DESC
+            )
+            SELECT 
+                u.id,
+                u.username,
+                u.avatar_url,
+                u.is_online,
+                u.last_activity,
+                lm.message as last_message,
+                lm.created_at as last_message_time,
+                lm.is_read,
+                lm.sender_id = $1 as is_own_message,
+                (
+                    SELECT COUNT(*)
+                    FROM messages m
+                    WHERE m.sender_id = u.id 
+                    AND m.receiver_id = $1 
+                    AND m.is_read = false
+                ) as unread_count
+            FROM users u
+            INNER JOIN LastMessages lm ON lm.chat_partner_id = u.id
+            ORDER BY lm.created_at DESC
+        `, [userId]);
+
+        res.json({
+            success: true,
+            chats: result.rows
+        });
+    } catch (err) {
+        console.error('Error getting chats:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при получении списка чатов'
         });
     }
 });
