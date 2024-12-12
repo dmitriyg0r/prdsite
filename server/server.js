@@ -679,7 +679,7 @@ app.get('/api/messages/unread/:userId', async (req, res) => {
         res.json({ success: true, unreadCounts: result.rows });
     } catch (err) {
         console.error('Error getting unread counts:', err);
-        res.status(500).json({ error: 'Ошибка при по��учении количества непрочитанных сообщений' });
+        res.status(500).json({ error: 'Ошибка при получении количества непрочитанных сообщений' });
     }
 });
 
@@ -788,7 +788,7 @@ app.use('/uploads', (req, res, next) => {
     }
 }, express.static('/var/www/html/uploads'));
 
-// Или более д��тально для каждой папки
+// ли более детально для каждой папки
 app.use('/uploads/posts', express.static('/var/www/html/uploads/posts'));
 app.use('/uploads/avatars', express.static('/var/www/html/uploads/avatars'));
 app.use('/uploads/messages', express.static('/var/www/html/uploads/messages'));
@@ -1226,7 +1226,7 @@ app.post('/api/posts/create', uploadPost.single('image'), async (req, res) => {
     }
 });
 
-// Получение постов пол��зователя
+// Получение постов пользователя
 app.get('/api/posts/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
@@ -1375,7 +1375,7 @@ app.get('/api/users/status/:userId', async (req, res) => {
     }
 });
 
-// Обновление статуса пользовател��
+// Обновление статуса пользователя
 app.post('/api/users/update-status', async (req, res) => {
     try {
         const userId = parseInt(req.body.userId);
@@ -1555,7 +1555,7 @@ app.post('/api/posts/comment', async (req, res) => {
         });
     } catch (err) {
         console.error('Error creating comment:', err);
-        res.status(500).json({ error: 'Ошибка при созда��ии комментария' });
+        res.status(500).json({ error: 'Ошибка при создании комментария' });
     }
 });
 
@@ -1740,7 +1740,7 @@ function generateVerificationCode() {
     return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-// Эндпоинт для отправки кода подтверждени��
+// Эндпоинт для отправки кода подтверждения
 app.post('/api/send-verification-code', async (req, res) => {
     try {
         const { userId, email } = req.body;
@@ -1799,7 +1799,7 @@ app.post('/api/send-verification-code', async (req, res) => {
                     </div>
                     <p style="color: #666; font-size: 14px; margin-top: 20px;">
                         Код дейтвителен в течение 5 минут.<br>
-                        Если вы не запрашивали код подтверждения, пр��игнорируйте это письмо.
+                        Если вы не запрашивали код подтверждения, пригнорируйте ��то письмо.
                     </p>
                 </div>
             `
@@ -1886,7 +1886,9 @@ const io = new Server(httpsServer, {
         credentials: true
     },
     pingTimeout: 60000,
-    pingInterval: 25000
+    pingInterval: 25000,
+    allowEIO3: true, // Добавляем поддержку более старых версий
+    maxHttpBufferSize: 1e8 // Увеличиваем размер буфера
 });
 
 // Добавляем middleware для Socket.IO
@@ -1907,6 +1909,8 @@ httpServer.listen(80, () => {
 
 httpsServer.listen(5003, () => {
     console.log('HTTPS Server with Socket.IO running on port 5003');
+}).on('error', (err) => {
+    console.error('Server error:', err);
 });
 
 // Проверка имени пользователя для восстановления пароля
@@ -1941,74 +1945,94 @@ app.post('/api/users/check-username', async (req, res) => {
 });
 
 // WebSocket обработчики
-io.on('connection', (socket) => {
-    console.log('New WebSocket connection');
+io.on('connection', async (socket) => {
+    console.log('New Socket.IO connection:', {
+        id: socket.id,
+        transport: socket.conn.transport.name
+    });
 
     // Авторизация пользователя
     socket.on('auth', async (userId) => {
-        console.log('User authenticated:', userId);
-        if (!userId) return;
-        
-        socket.userId = userId;
-        activeConnections.set(userId, socket.id);
-        
         try {
+            if (!userId) return;
+            
+            socket.userId = userId;
+            
             // Обновляем статус в БД
             await pool.query(`
                 UPDATE users 
                 SET is_online = true, 
-                    last_activity = CURRENT_TIMESTAMP 
+                    last_activity = NOW() 
                 WHERE id = $1
-                RETURNING is_online, last_activity
             `, [userId]);
 
-            // Получаем список друзей
-            const friends = await pool.query(`
-                SELECT 
-                    CASE 
-                        WHEN user_id = $1 THEN friend_id 
-                        ELSE user_id 
-                    END as friend_id
-                FROM friendships 
-                WHERE (user_id = $1 OR friend_id = $1) 
-                AND status = 'accepted'
+            // Получаем список друзей пользователя
+            const friendsResult = await pool.query(`
+                SELECT friend_id as id FROM friendships 
+                WHERE user_id = $1 AND status = 'accepted'
+                UNION
+                SELECT user_id as id FROM friendships 
+                WHERE friend_id = $1 AND status = 'accepted'
             `, [userId]);
 
-            console.log('Broadcasting status to friends:', friends.rows);
-
-            // Оповещаем всех друзей о статусе
-            friends.rows.forEach(friend => {
-                const friendSocketId = activeConnections.get(friend.friend_id);
-                if (friendSocketId) {
-                    io.to(friendSocketId).emit('user_status_update', {
-                        userId: userId,
-                        isOnline: true,
-                        lastActivity: new Date()
-                    });
-                }
-            });
+            // Оповещаем друзей о статусе
+            for (const friend of friendsResult.rows) {
+                io.emit('user_status_update', {
+                    userId: userId,
+                    isOnline: true,
+                    lastActivity: new Date()
+                });
+            }
         } catch (err) {
-            console.error('Error in auth handler:', err);
+            console.error('Auth error:', err);
         }
     });
 
-    // Добавляем периодическое обновление статуса
-    const updateInterval = setInterval(async () => {
-        if (socket.userId) {
-            try {
-                await pool.query(
-                    'UPDATE users SET last_activity = CURRENT_TIMESTAMP WHERE id = $1',
-                    [socket.userId]
-                );
-            } catch (err) {
-                console.error('Error updating activity:', err);
-            }
-        }
-    }, 30000); // Каждые 30 секунд
+    // Обработка отключения
+    socket.on('disconnect', async () => {
+        try {
+            const userId = socket.userId;
+            if (!userId) return;
 
-    socket.on('disconnect', () => {
-        clearInterval(updateInterval);
-        // ... остальной код обработчика disconnect
+            // Обновляем статус в БД
+            await pool.query(`
+                UPDATE users 
+                SET is_online = false, 
+                    last_activity = NOW() 
+                WHERE id = $1
+            `, [userId]);
+
+            // Получаем список друзей
+            const friendsResult = await pool.query(`
+                SELECT friend_id as id FROM friendships 
+                WHERE user_id = $1 AND status = 'accepted'
+                UNION
+                SELECT user_id as id FROM friendships 
+                WHERE friend_id = $1 AND status = 'accepted'
+            `, [userId]);
+
+            // Получаем время последней активности
+            const lastActivityResult = await pool.query(`
+                SELECT last_activity FROM users WHERE id = $1
+            `, [userId]);
+
+            const lastActivity = lastActivityResult.rows[0]?.last_activity;
+
+            // Оповещаем друзей
+            for (const friend of friendsResult.rows) {
+                io.emit('user_status_update', {
+                    userId: userId,
+                    isOnline: false,
+                    lastActivity: lastActivity
+                });
+            }
+        } catch (err) {
+            console.error('Disconnect error:', err);
+        }
+    });
+
+    socket.on('error', (error) => {
+        console.error('Socket error:', error);
     });
 });
 
@@ -2019,6 +2043,11 @@ app.get('/socket.io/', (req, res) => {
 
 // Добавляем обработку ошибок для Socket.IO
 io.engine.on("connection_error", (err) => {
-    console.log('Socket.IO connection error:', err);
+    console.log('Socket.IO connection error details:', {
+        error: err.message,
+        req: err.req?.url,
+        code: err.code,
+        context: err.context
+    });
 });
 
