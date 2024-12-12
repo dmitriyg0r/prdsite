@@ -330,7 +330,7 @@ body {
 /* Полученные сообщения */
 .message-received {
     align-self: flex-start;
-    background: #E8EEF9; /* Нежно-голубой фон для полученных сообщений */
+    background: rgba(var(--primary-color-rgb), 0.1);
     color: var(--text-primary);
     border-bottom-left-radius: 4px;
     padding-right: 24px;
@@ -523,7 +523,7 @@ body {
     border: 1px solid var(--border-light);
 }
 
-/* ��тили для ввода во время печати */
+/* Стили для ввода во время печати */
 .typing-indicator {
     padding: 8px 12px;
     background: var(--surface-color);
