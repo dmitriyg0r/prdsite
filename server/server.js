@@ -2076,3 +2076,54 @@ app.get('/socket.io/test', (req, res) => {
     });
 });
 
+// Добавляем новый endpoint для получения информации о пользователе
+app.get('/api/users/:userId', async (req, res) => {
+    try {
+        const { userId } = req.params;
+
+        const result = await pool.query(`
+            SELECT 
+                id, 
+                username, 
+                email, 
+                role, 
+                avatar_url, 
+                created_at, 
+                last_login,
+                is_online,
+                last_activity
+            FROM users 
+            WHERE id = $1
+        `, [userId]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Пользователь не найден' 
+            });
+        }
+
+        // Проверяем статус дружбы с текущим пользователем
+        const friendshipStatus = await pool.query(`
+            SELECT status 
+            FROM friendships 
+            WHERE (user_id = $1 AND friend_id = $2)
+                OR (user_id = $2 AND friend_id = $1)
+        `, [userId, req.query.currentUserId]);
+
+        res.json({
+            success: true,
+            user: {
+                ...result.rows[0],
+                friendship_status: friendshipStatus.rows[0]?.status || 'none'
+            }
+        });
+    } catch (err) {
+        console.error('Error getting user:', err);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Ошибка при получении данных пользователя' 
+        });
+    }
+});
+

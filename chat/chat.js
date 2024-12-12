@@ -23,286 +23,58 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupContextMenu();
 });
 
+// Функция для загрузки информации о пользователе
+async function loadUserInfo(userId) {
+    try {
+        const response = await fetch(`https://adminflow.ru:5003/api/users/${userId}?currentUserId=${currentUser.id}`);
+        if (!response.ok) {
+            throw new Error('Пользователь не найден');
+        }
+        const data = await response.json();
+        return data.user;
+    } catch (err) {
+        console.error('Error loading user info:', err);
+        throw err;
+    }
+}
+
+// Инициализация чата
 async function initializeChat() {
     try {
-        // Обновляем конфигурацию Socket.IO
-        socket = io('https://adminflow.ru:5003', {
-            path: '/socket.io/',
-            transports: ['polling'],
-            withCredentials: false,
-            reconnection: true,
-            reconnectionAttempts: 3,
-            reconnectionDelay: 2000,
-            timeout: 20000,
-            forceNew: true,
-            autoConnect: true,
-            query: {
-                userId: currentUser.id
+        // Получаем ID пользователя из URL или sessionStorage
+        const urlParams = new URLSearchParams(window.location.search);
+        const chatUserId = urlParams.get('userId');
+        const selectedUser = sessionStorage.getItem('selectedChatUser');
+
+        if (chatUserId) {
+            // Загружаем информацию о пользователе через API
+            const userInfo = await loadUserInfo(chatUserId);
+            if (userInfo) {
+                selectedChatUser = userInfo;
+                sessionStorage.setItem('selectedChatUser', JSON.stringify(userInfo));
             }
-        });
-
-        // Улучшаем логирование
-        socket.on('connect', () => {
-            console.log('Socket.IO connected:', {
-                transport: socket.io.engine.transport.name,
-                id: socket.id,
-                userId: currentUser.id
-            });
-            // Отправляем авторизацию после успешного подключения
-            socket.emit('auth', currentUser.id);
-        });
-
-        socket.on('connect_error', (error) => {
-            console.error('Socket connection error:', {
-                message: error.message,
-                type: error.type,
-                transport: socket.io?.engine?.transport?.name
-            });
-        });
-
-        socket.on('disconnect', (reason) => {
-            console.log('Socket disconnected:', reason);
-            // Пробуем переподключиться через 5 секунд
-            setTimeout(() => {
-                if (!socket.connected) {
-                    console.log('Attempting to reconnect...');
-                    socket.connect();
-                }
-            }, 5000);
-        });
-
-        socket.on('error', (error) => {
-            console.error('Socket general error:', error);
-        });
-
-        socket.io.on('error', (error) => {
-            console.error('Transport error:', error);
-        });
-
-        socket.io.on('reconnect_attempt', (attempt) => {
-            console.log('Reconnection attempt:', attempt);
-        });
-
-        socket.on('upgradeError', (error) => {
-            console.warn('Socket upgrade error:', error);
-        });
-
-        socket.on('user_status_update', (data) => {
-            console.log('Received status update:', data);
-            updateUserStatus(data);
-        });
-
-        socket.on('new_message', (message) => {
-            if (currentChatPartner && message.sender_id === currentChatPartner.id) {
-                const messageElement = createMessageElement(message);
-                document.getElementById('messages').appendChild(messageElement);
-                if (isScrolledToBottom(document.getElementById('messages'))) {
-                    scrollToBottom();
-                }
-                markMessagesAsRead(currentChatPartner.id);
-            }
-            // Обновляем последнее сообщение в списке чатов
-            updateLastMessage(message);
-        });
-
-        socket.on('message_status_update', (data) => {
-            updateMessageStatus(data);
-        });
-
-        // Загружаем список друзей и остальную инициализацию
-        console.log('Загрузка списка друзей...');
-        const response = await fetch(`https://adminflow.ru:5003/api/friends?userId=${currentUser.id}`);
-        const data = await response.json();
-        console.log('Ответ сервера:', data);
-
-        if (data.friends) {
-            displayFriendsList(data.friends);
-            
-            // Проверяем охраненного собеседника в sessionStorage
-            const savedPartner = sessionStorage.getItem('selectedChatUser');
-            if (savedPartner) {
-                const partner = JSON.parse(savedPartner);
-                // Открываем чат с выбранным пользователем
-                openChat(partner);
-                // Очищаем данные из sessionStorage
-                sessionStorage.removeItem('selectedChatUser');
-            }
-        } else {
-            console.error('Ошибка загрузки друзей:', data.error);
+        } else if (selectedUser) {
+            selectedChatUser = JSON.parse(selectedUser);
         }
+
+        if (selectedChatUser) {
+            // Обновляем UI с информацией о пользователе
+            document.querySelector('.chat-header .user-name').textContent = selectedChatUser.username;
+            const avatarImg = document.querySelector('.chat-header .user-avatar');
+            if (avatarImg) {
+                avatarImg.src = selectedChatUser.avatar_url || '/uploads/avatars/default.png';
+            }
+
+            // Загружаем историю сообщений
+            await loadMessageHistory();
+        }
+
+        // Инициализируем Socket.IO соединение
+        initializeSocketConnection();
+
     } catch (err) {
         console.error('Error initializing chat:', err);
-    }
-}
-
-function displayFriendsList(friends) {
-    const friendsList = document.getElementById('friends-list');
-    console.log('Displaying friends:', friends);
-    if (!friendsList) {
-        console.error('friends-list element not found');
-        return;
-    }
-
-    friendsList.innerHTML = friends.map(friend => `
-        <div class="chat-partner" data-friend-id="${friend.id}">
-            <div class="avatar-container">
-                <img src="${friend.avatar_url || '../uploads/avatars/default.png'}" alt="${friend.username}" class="chat-avatar">
-                <span class="status-indicator ${friend.is_online ? 'online' : 'offline'}"></span>
-            </div>
-            <div class="friend-info">
-                <div class="friend-name">${friend.username}</div>
-                <div class="last-message" id="last-message-${friend.id}">...</div>
-                <div class="last-activity">${friend.is_online ? 'онлайн' : getLastActivityTime(friend.last_activity)}</div>
-            </div>
-            <div class="unread-count" id="unread-${friend.id}"></div>
-        </div>
-    `).join('');
-
-    // Добавляем обработчики событий для каждого друга
-    document.querySelectorAll('.chat-partner').forEach(partner => {
-        partner.addEventListener('click', () => {
-            const friendId = partner.dataset.friendId;
-            const friend = friends.find(f => f.id === parseInt(friendId));
-            if (friend) {
-                openChat(friend);
-            }
-        });
-    });
-
-    // Загружаем последние сообщения и счетчики для каждого друга
-    friends.forEach(friend => {
-        loadLastMessage(friend.id);
-        updateUnreadCount(friend.id);
-    });
-}
-
-function getLastActivityTime(timestamp) {
-    if (!timestamp) return 'не в сет';
-    const lastActivity = new Date(timestamp);
-    const now = new Date();
-    const diff = now - lastActivity;
-    
-    if (diff < 60000) return 'был(а) т что';
-    if (diff < 3600000) return `был(а) ${Math.floor(diff/60000)} мн. назад`;
-    if (diff < 86400000) return `был(а) ${Math.floor(diff/3600000)} ч. назад`;
-    return 'был(а) давно';
-}
-
-async function loadLastMessage(friendId) {
-    try {
-        const response = await fetch(`https://adminflow.ru:5003/api/messages/last/${currentUser.id}/${friendId}`);
-        const data = await response.json();
-
-        const lastMessageElement = document.getElementById(`last-message-${friendId}`);
-        if (lastMessageElement) {
-            if (data.success && data.message) {
-                const isOwnMessage = data.message.sender_id === currentUser.id;
-                const messageText = data.message.message.length > 25 
-                    ? data.message.message.substring(0, 25) + '...' 
-                    : data.message.message;
-                lastMessageElement.textContent = `${isOwnMessage ? 'Вы: ' : ''}${messageText}`;
-            } else {
-                lastMessageElement.textContent = 'Нет сообщений';
-            }
-        }
-    } catch (err) {
-        console.error('Error loading last message:', err);
-    }
-}
-
-async function updateUnreadCount(friendId) {
-    if (!friendId) {
-        console.error('FriendId is undefined');
-        return;
-    }
-
-    try {
-        const response = await fetch(`https://adminflow.ru:5003/api/messages/unread/${currentUser.id}/${friendId}`);
-        const data = await response.json();
-        
-        const unreadElement = document.getElementById(`unread-${friendId}`);
-        if (unreadElement) {
-            if (data.count > 0) {
-                unreadElement.textContent = data.count;
-                unreadElement.style.display = 'flex';
-            } else {
-                unreadElement.style.display = 'none';
-            }
-        }
-    } catch (err) {
-        console.error('Error updating unread count:', err);
-    }
-}
-
-async function openChat(friend) {
-    if (!friend || !friend.id) {
-        console.error('Invalid friend object:', friend);
-        return;
-    }
-
-    const friendId = parseInt(friend.id);
-    if (isNaN(friendId)) {
-        console.error('Invalid friend ID:', friend.id);
-        return;
-    }
-
-    try {
-        // Получаем информацию о друге
-        const response = await fetch(`https://adminflow.ru:5003/api/users/${friendId}`);
-        const data = await response.json();
-
-        if (data.success) {
-            // Обновляем текущего обеседника
-            currentChatPartner = data.user;
-            
-            // Обновляем заголовок чата
-            const chatHeader = document.getElementById('chat-header');
-            const headerAvatar = document.getElementById('chat-header-avatar');
-            const headerName = document.getElementById('chat-header-name');
-            
-            if (chatHeader && headerAvatar && headerName) {
-                chatHeader.style.display = 'flex';
-                headerAvatar.src = currentChatPartner.avatar_url || '../uploads/avatars/default.png';
-                headerName.textContent = currentChatPartner.username;
-            }
-            
-            // Скрываем placeholder и показываем область сообщений
-            document.getElementById('chat-placeholder').style.display = 'none';
-            document.getElementById('messages').style.display = 'flex';
-            
-            // Очищаем предыдущие сообщения
-            const messagesContainer = document.getElementById('messages');
-            if (messagesContainer) {
-                messagesContainer.innerHTML = '';
-            }
-            
-            // Обновляем активный чат в списке
-            document.querySelectorAll('.chat-partner').forEach(el => {
-                el.classList.remove('active');
-                if (el.dataset.friendId === friendId.toString()) {
-                    el.classList.add('active');
-                }
-            });
-
-            // Загружаем сообщения
-            await loadMessages(friendId);
-            
-            // Помечаем сообщения как прочитанные
-            await markMessagesAsRead(friendId);
-            
-            // Включаем обновление сообщений
-            startMessageUpdates();
-            
-            // Фокусируем поле ввода
-            const messageInput = document.getElementById('messageInput');
-            if (messageInput) {
-                messageInput.focus();
-            }
-        } else {
-            console.error('Ошибка получения данных пользователя:', data.error);
-        }
-    } catch (err) {
-        console.error('Error opening chat:', err);
+        alert('Ошибка при инициализации чата');
     }
 }
 
