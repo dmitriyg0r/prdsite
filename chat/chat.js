@@ -295,10 +295,13 @@ function isImageFile(url) {
 
 
 async function sendMessage() {
-    if (!currentChatPartner || (!messageInput.value.trim() && !selectedFile)) {
+    const messageInput = document.getElementById('messageInput');
+    
+    // Проверяем наличие собеседника и сообщения/файла
+    if (!currentChatPartner || (!messageInput?.value.trim() && !selectedFile)) {
         return;
     }
-    const messageInput = document.getElementById('messageInput');
+
     try {
         const formData = new FormData();
         formData.append('senderId', currentUser.id);
@@ -327,15 +330,18 @@ async function sendMessage() {
             cancelReply();
             
             const messageElement = createMessageElement(data.message);
-            document.getElementById('messages').appendChild(messageElement);
-            scrollToBottom();
+            const messagesContainer = document.getElementById('messages');
+            if (messagesContainer) {
+                messagesContainer.appendChild(messageElement);
+                scrollToBottom();
+            }
         } else {
             console.error('Ошибка при отправке сообщения:', data.error);
             alert('Ошибка при отправке сообщения');
         }
     } catch (error) {
         console.error('Ошибка при отправке сообщения:', error);
-        alert('Ошибка при отправке сообщений');
+        alert('Ошибка при отправке сообщения');
     }
 }
 
@@ -591,7 +597,7 @@ function showFilePreview(file) {
         </div>
     `;
     
-     // Очищаем предыдущее превью
+     // ��чищаем предыдущее превью
     while(previewContainer.firstChild) {
         previewContainer.removeChild(previewContainer.firstChild);
     }
@@ -741,7 +747,7 @@ function setupContextMenu() {
         // Ищем ближайший элемент сообщения от места клика
         const messageElement = e.target.closest('.message');
         if (messageElement) {
-            // Получаем текст сообщения (может быть в .message-text или в атрибуте alt изображения)
+            // Получаем текст сообщения (может быть в .message-text или в атрибуте alt из��бражения)
             const messageTextElement = messageElement.querySelector('.message-text');
             const messageImage = messageElement.querySelector('.message-attachment img');
             
@@ -811,7 +817,7 @@ function setupContextMenu() {
         });
     }
 
-    // Закрытие м��ню при клике вне его
+    // Закрытие меню при клике вне его
     document.addEventListener('click', (e) => {
         if (!contextMenu.contains(e.target)) {
             hideContextMenu();
@@ -1049,7 +1055,7 @@ async function selectChat(chat) {
     await markMessagesAsRead(chat.id);
 }
 
-// Функция получения времени последней активности пользователя
+// Функция получения времени последней активности п��льзователя
 function getLastActivityTime(lastActivity) {
    if (!lastActivity) return 'неизвестно';
    

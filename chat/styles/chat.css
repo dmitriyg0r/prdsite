@@ -122,6 +122,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    backdrop-filter: blur(10px);
+    background: rgba(var(--surface-color-rgb), 0.95);
 }
 
 .chat-header-info {
@@ -198,6 +200,8 @@ body {
     padding: 20px;
     background: var(--surface-color);
     border-top: 1px solid var(--border-light);
+    backdrop-filter: blur(10px);
+    background: rgba(var(--surface-color-rgb), 0.95);
 }
 
 .input-controls {
@@ -311,23 +315,20 @@ body {
 
 /* Улучшенные стили для сообщений */
 .message {
-    max-width: 70%;
-    margin-bottom: 16px;
-    padding: 16px;
-    border-radius: 20px;
+    max-width: 65%;
+    margin-bottom: 12px;
+    padding: 12px 16px;
+    border-radius: 16px;
     position: relative;
     animation: messageAppear 0.3s ease-out;
-    align-self: flex-start;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 /* Полученные сообщения */
 .message-received {
-    align-self: flex-start;
-    background: #E3F2FD;
-    color: var(--text-primary);
+    background: var(--surface-color);
+    border: 1px solid var(--border-light);
     border-bottom-left-radius: 4px;
-    padding-right: 24px;
 }
 
 /* Полученные сообщения в тёмной теме */
@@ -337,12 +338,9 @@ body {
 
 /* Отправленные сообщения */
 .message-sent {
-    margin-left: auto;
-    align-self: flex-end;
-    background: linear-gradient(135deg, #2196F3, #1976D2);
-    color: white;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
     border-bottom-right-radius: 4px;
-    padding-right: 24px;
+    box-shadow: 0 2px 12px rgba(var(--primary-color-rgb), 0.15);
 }
 
 .message-content {
@@ -367,9 +365,10 @@ body {
     position: absolute;
     right: -8px;
     bottom: -4px;
-    font-size: 11px;
-    padding: 2px 4px;
-    border-radius: 8px;
+    font-size: 12px;
+    padding: 3px 6px;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.06);
 }
 
 .message-received .message-info {
@@ -409,14 +408,11 @@ body {
 
 /* Улучшенные стили для цитат */
 .quoted-message {
-    margin-bottom: 8px;
-    padding: 8px 12px;
-    background: rgba(var(--primary-color-rgb), 0.08);
+    margin-bottom: 10px;
+    padding: 10px 14px;
+    background: rgba(var(--primary-color-rgb), 0.06);
     border-left: 3px solid var(--primary-color);
     border-radius: 8px;
-    font-size: 13px;
-    color: var(--text-secondary);
-    position: relative;
 }
 
 .message-received .quoted-message {
@@ -433,19 +429,18 @@ body {
 
 /* Улучшенные стили для вложений */
 .message-attachment {
-    margin-top: 8px;
+    margin-top: 10px;
     border-radius: 12px;
     overflow: hidden;
-    position: relative;
+    background: var(--background-color);
+    border: 1px solid var(--border-light);
 }
 
 .message-attachment img {
-    max-width: 300px;
-    max-height: 200px;
+    max-width: 280px;
+    max-height: 180px;
     object-fit: cover;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: all 0.3s ease;
+    transition: transform 0.2s ease;
 }
 
 .message-attachment img:hover {
@@ -466,7 +461,7 @@ body {
 @keyframes messageAppear {
     from {
         opacity: 0;
-        transform: translateY(10px) scale(0.98);
+        transform: translateY(15px) scale(0.98);
     }
     to {
         opacity: 1;
@@ -1058,7 +1053,7 @@ body {
     background-color: var(--border-light);
 }
 
-/* Стили для цитируемого соо��щения внутри сообщения */
+/* Стили для цитируемого сообщения внутри сообщения */
 .quoted-message {
     margin-bottom: 8px;
     padding: 8px 12px;
@@ -1087,5 +1082,110 @@ body {
 .message-sent .quoted-message .quote-author,
 .message-sent .quoted-message .quote-text {
     color: rgba(255, 255, 255, 0.9);
+}
+
+/* Улучшаем стили сообщений */
+.message {
+    max-width: 65%;
+    margin-bottom: 12px;
+    padding: 12px 16px;
+    border-radius: 16px;
+    position: relative;
+    animation: messageAppear 0.3s ease-out;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Улучшаем стили для полученных сообщений */
+.message-received {
+    background: var(--surface-color);
+    border: 1px solid var(--border-light);
+    border-bottom-left-radius: 4px;
+}
+
+/* Улучшаем стили для отправленных сообщений */
+.message-sent {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    border-bottom-right-radius: 4px;
+    box-shadow: 0 2px 12px rgba(var(--primary-color-rgb), 0.15);
+}
+
+/* Улучшаем стили для вложений */
+.message-attachment {
+    margin-top: 10px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--background-color);
+    border: 1px solid var(--border-light);
+}
+
+.message-attachment img {
+    max-width: 280px;
+    max-height: 180px;
+    object-fit: cover;
+    transition: transform 0.2s ease;
+}
+
+/* У��учшаем стили для цитат */
+.quoted-message {
+    margin-bottom: 10px;
+    padding: 10px 14px;
+    background: rgba(var(--primary-color-rgb), 0.06);
+    border-left: 3px solid var(--primary-color);
+    border-radius: 8px;
+}
+
+/* Улучшаем стили для контекстного меню */
+.context-menu {
+    min-width: 200px;
+    padding: 6px 0;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.context-menu li {
+    padding: 10px 16px;
+    font-size: 14px;
+}
+
+/* Добавляем новые стили для улучшения UI */
+.chat-header {
+    backdrop-filter: blur(10px);
+    background: rgba(var(--surface-color-rgb), 0.95);
+}
+
+.input-area {
+    backdrop-filter: blur(10px);
+    background: rgba(var(--surface-color-rgb), 0.95);
+}
+
+.message-info {
+    font-size: 12px;
+    padding: 3px 6px;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.06);
+}
+
+/* Улучшаем анимации */
+@keyframes messageAppear {
+    from {
+        opacity: 0;
+        transform: translateY(15px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Добавляем адаптивность */
+@media (max-width: 768px) {
+    .message {
+        max-width: 80%;
+    }
+    
+    .message-attachment img {
+        max-width: 240px;
+        max-height: 160px;
+    }
 }
  
