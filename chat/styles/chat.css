@@ -955,4 +955,13 @@ body {
     padding: 0;
     overflow: hidden;
 }
+
+/* Стили для тёмной темы */
+[data-theme="dark"] .message-received {
+    background: rgba(149, 117, 205, 0.15);
+}
+
+[data-theme="dark"] .message-sent {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+}
  
