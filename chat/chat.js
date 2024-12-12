@@ -20,6 +20,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupEventListeners();
     setupAttachmentHandlers();
     setupContextMenu();
+    
+    // Загружаем список чатов
+    await loadChatsList();
+    
+    // Запускаем периодическое обновление списка чатов
+    setInterval(loadChatsList, 10000); // Обновляем каждые 10 секунд
 });
 
 // Функция для загрузки информации о пользователе
@@ -53,7 +59,7 @@ async function initializeChat() {
                 // Обновляем UI с информацией о пользователе
                 updateChatHeader(userInfo);
                 
-                // Загружаем историю сообщений
+                // Загружаем ист��рию сообщений
                 await loadChatHistory();
                 
                 // Запускаем обновление сообщений
@@ -363,7 +369,7 @@ function setupEventListeners() {
     sendButton?.removeEventListener('click', sendMessage);
     messageInput?.removeEventListener('keypress', handleEnterPress);
 
-    // Добавляем новые обраб��тчики
+    // Добавляем новые обработчики
     sendButton?.addEventListener('click', sendMessage);
     messageInput?.addEventListener('keypress', handleEnterPress);
 
@@ -466,7 +472,7 @@ async function loadMessages(friendId) {
     }
 }
 
-// Функция обновления статуса сообщения
+// Функция обновления ��татуса сообщения
 function updateMessageStatus(messageElement, messageData) {
     const statusElement = messageElement.querySelector('.message-status');
     if (statusElement) {
@@ -561,7 +567,7 @@ function setupAttachmentHandlers() {
 function showFilePreview(file) {
     let previewContainer = document.getElementById('filePreview');
     
-    // Есл�� контейнер не существует, создаем его
+    // Есл контейнер не существует, создаем его
     if (!previewContainer) {
         previewContainer = document.createElement('div');
         previewContainer.id = 'filePreview';
@@ -663,7 +669,7 @@ async function deleteMessage(messageId) {
             alert(data.error || 'Не удалось удалить сообщение');
         }
     } catch (error) {
-        console.error('Ошибка при удалении сообщения:', error);
+        console.error('Ошибка при удалении со��бщения:', error);
         alert('Произошла ошибка при удалении сообщения');
     }
 }
@@ -887,7 +893,7 @@ function cancelReply() {
     replyToMessageId = null;
 }
 
-// Добавляем обработчик видимости страницы
+// Доб��вляем обработчик видимости страницы
 document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && currentChatPartner) {
         loadMessages(currentChatPartner.id);
@@ -948,4 +954,84 @@ function updateLastMessage(message) {
             : message.message;
         lastMessageElement.textContent = `${isOwnMessage ? 'Вы: ' : ''}${messageText}`;
     }
+}
+
+// Функция загрузки списка чатов
+async function loadChatsList() {
+    try {
+        const response = await fetch(`https://adminflow.ru:5003/api/chats/${currentUser.id}`);
+        const data = await response.json();
+
+        if (data.success) {
+            const friendsList = document.getElementById('friends-list');
+            if (!friendsList) {
+                console.error('Friends list container not found');
+                return;
+            }
+
+            friendsList.innerHTML = ''; // Очищаем список
+
+            data.chats.forEach(chat => {
+                const chatElement = document.createElement('div');
+                chatElement.className = 'chat-partner';
+                chatElement.dataset.friendId = chat.id;
+                
+                chatElement.innerHTML = `
+                    <div class="avatar-container">
+                        <img src="${chat.avatar_url || '../uploads/avatars/default.png'}" 
+                             alt="${chat.username}" 
+                             class="chat-avatar">
+                        <span class="status-indicator ${chat.is_online ? 'online' : 'offline'}"></span>
+                    </div>
+                    <div class="chat-info">
+                        <div class="chat-name">${chat.username}</div>
+                        <div class="chat-last-message" id="last-message-${chat.id}">
+                            ${chat.last_message ? 
+                                (chat.is_own_message ? 'Вы: ' : '') + 
+                                (chat.last_message.length > 25 ? 
+                                    chat.last_message.substring(0, 25) + '...' : 
+                                    chat.last_message) : 
+                                'Нет сообщений'}
+                        </div>
+                    </div>
+                    ${chat.unread_count > 0 ? 
+                        `<span class="unread-count">${chat.unread_count}</span>` : 
+                        ''}
+                `;
+
+                // Добавляем обработчик клика
+                chatElement.addEventListener('click', () => selectChat(chat));
+                friendsList.appendChild(chatElement);
+            });
+        }
+    } catch (error) {
+        console.error('Ошибка при загрузке списка чатов:', error);
+    }
+}
+
+// Функция выбора чата
+async function selectChat(chat) {
+    currentChatPartner = chat;
+    
+    // Обновляем UI
+    document.getElementById('chat-placeholder').style.display = 'none';
+    document.getElementById('chat-header').style.display = 'flex';
+    document.getElementById('messages').style.display = 'flex';
+    
+    // Обновляем заголовок чата
+    document.getElementById('chat-header-avatar').src = chat.avatar_url || '../uploads/avatars/default.png';
+    document.getElementById('chat-header-name').textContent = chat.username;
+    document.getElementById('chat-header-status').className = 
+        `user-status ${chat.is_online ? 'online' : ''}`;
+    document.getElementById('chat-header-status').textContent = 
+        chat.is_online ? 'онлайн' : getLastActivityTime(chat.last_activity);
+    
+    // Загружаем историю сообщений
+    await loadChatHistory();
+    
+    // Запускаем обновление сообщений
+    startMessageUpdates();
+    
+    // Помечаем сообщения как прочитанные
+    await markMessagesAsRead(chat.id);
 }
