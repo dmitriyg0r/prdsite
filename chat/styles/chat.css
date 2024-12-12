@@ -107,7 +107,7 @@ body {
     color: white;
 }
 
-/* Улучшаем облас���� чата */
+/* Улучшаем облас чата */
 .chat-area {
     height: 100vh;
     display: flex;
@@ -187,7 +187,7 @@ body {
 .messages-area {
     flex: 1;
     padding: 24px;
-    background: var(--background-color);
+    background: white;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
@@ -327,10 +327,10 @@ body {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Полученные сообщения (светлая тема) */
+/* Полученные сообщения */
 .message-received {
     align-self: flex-start;
-    background: #f0f2f5; /* Светло-серый фон для полученных сообщений */
+    background: #E8EEF9; /* Нежно-голубой фон для полученных сообщений */
     color: var(--text-primary);
     border-bottom-left-radius: 4px;
     padding-right: 24px;
@@ -523,7 +523,7 @@ body {
     border: 1px solid var(--border-light);
 }
 
-/* Стили для ввода во время печати */
+/* ��тили для ввода во время печати */
 .typing-indicator {
     padding: 8px 12px;
     background: var(--surface-color);
@@ -684,7 +684,7 @@ body {
     background-color: var(--text-tertiary);
 }
 
-/* Улучшенные стили для информации о ��руге */
+/* Улучшенные стили для информации о руге */
 .friend-info {
     flex: 1;
     min-width: 0;
