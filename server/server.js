@@ -854,7 +854,7 @@ app.get('/api/users/:id', async (req, res) => {
     }
 });
 
-// Обновле����ие про��иля пользователя
+// Обновле����ие п��о��иля пользователя
 app.post('/api/users/update-profile', async (req, res) => {
     try {
         const { userId, username, email } = req.body;
@@ -2209,19 +2209,44 @@ app.post('/api/messages/send', async (req, res) => {
     try {
         const { senderId, receiverId, message, replyToMessageId } = req.body;
         
-        console.log('Получены данные:', { senderId, receiverId, message, replyToMessageId }); // Для отладки
+        console.log('Получены данные:', { 
+            senderId, 
+            receiverId, 
+            message, 
+            replyToMessageId,
+            body: req.body 
+        });
 
-        // Проверяем обязательные параметры
-        if (!senderId || !receiverId) {
-            console.log('Отсутствуют обязательные параметры');
+        // Проверяем и конвертируем ID в числа
+        const senderIdNum = parseInt(senderId);
+        const receiverIdNum = parseInt(receiverId);
+
+        if (isNaN(senderIdNum) || isNaN(receiverIdNum)) {
             return res.status(400).json({
                 success: false,
-                error: 'Отсутствуют обязательные параметры'
+                error: 'Некорректные ID отправителя или получателя'
             });
         }
 
-        // Сохраняем сообщение в базе данных
-        const result = await pool.query(`
+        // Проверяем существование пользователей
+        const usersExist = await pool.query(`
+            SELECT EXISTS (
+                SELECT 1 FROM users WHERE id = $1
+            ) AS sender_exists,
+            EXISTS (
+                SELECT 1 FROM users WHERE id = $2
+            ) AS receiver_exists
+        `, [senderIdNum, receiverIdNum]);
+
+        if (!usersExist.rows[0].sender_exists || !usersExist.rows[0].receiver_exists) {
+            return res.status(404).json({
+                success: false,
+                error: 'Отправитель или получатель не найден'
+            });
+        }
+
+        // Сохраняем сообщение
+        const insertQuery = `
             INSERT INTO messages 
             (sender_id, receiver_id, message, reply_to, created_at, is_read)
             VALUES ($1, $2, $3, $4, NOW(), false)
@@ -2233,36 +2258,56 @@ app.post('/api/messages/send', async (req, res) => {
                 reply_to,
                 created_at,
                 is_read
-        `, [senderId, receiverId, message || '', replyToMessageId || null]);
+        `;
+
+        console.log('Выполняем запрос:', {
+            query: insertQuery,
+            params: [senderIdNum, receiverIdNum, message || '', replyToMessageId || null]
+        });
+
+        const result = await pool.query(insertQuery, 
+            [senderIdNum, receiverIdNum, message || '', replyToMessageId || null]
+        );
+
+        console.log('Результат запроса:', result.rows[0]);
 
         if (!result.rows[0]) {
             throw new Error('Сообщение не было сохранено');
         }
 
-        const newMessage = result.rows[0];
+        const newMessage = {
+            ...result.rows[0],
+            sender_id: senderIdNum,
+            receiver_id: receiverIdNum
+        };
 
-        // Отправляем уведомление через Socket.IO
+        // Отправляем через Socket.IO
         try {
-            const receiverSocketId = activeConnections.get(parseInt(receiverId));
+            const receiverSocketId = activeConnections.get(receiverIdNum);
             if (receiverSocketId) {
                 io.to(receiverSocketId).emit('new_message', newMessage);
             }
         } catch (socketError) {
-            console.error('Ошибка при отправке через Socket.IO:', socketError);
-            // Не прерываем выполнение, так как сообщение уже сохранено
+            console.error('Ошибка Socket.IO:', socketError);
         }
 
-        // Отправляем успешный ответ
         return res.status(200).json({
             success: true,
             message: newMessage
         });
 
     } catch (error) {
-        console.error('Детальная ошибка отправки сообщения:', error);
+        console.error('Детальная ошибка отправки сообщения:', {
+            error: error.message,
+            stack: error.stack,
+            code: error.code,
+            detail: error.detail
+        });
+
         return res.status(500).json({
             success: false,
-            error: error.message || 'Ошибка при отправке сообщения'
+            error: 'Ошибка при отправке сообщения',
+            details: error.message
         });
     }
 });
