@@ -330,10 +330,15 @@ body {
 /* Полученные сообщения */
 .message-received {
     align-self: flex-start;
-    background: rgba(var(--primary-color-rgb), 0.1);
+    background: #E3F2FD;
     color: var(--text-primary);
     border-bottom-left-radius: 4px;
     padding-right: 24px;
+}
+
+/* Полученные сообщения в тёмной теме */
+[data-theme="dark"] .message-received {
+    background: rgba(149, 117, 205, 0.15);
 }
 
 /* Отправленные сообщения */
