@@ -24,18 +24,22 @@
                 <i class="fas fa-user"></i>
                 <span>Профиль</span>
             </a>
+            <a href="chat.html" class="sidebar-link active">
+                <i class="fas fa-comments"></i>
+                <span>Чат</span>
+            </a>
         </div>
-            <!-- Переключатель темы после навигации -->
-    <div class="theme-switch-wrapper">
-        <div class="theme-toggle-container">
-            <i class="fas fa-sun theme-icon"></i>
-            <input type="checkbox" id="theme-toggle" class="theme-checkbox">
-            <label for="theme-toggle" class="theme-label">
-                <div class="ball"></div>
-            </label>
-            <span>Тёмная тема</span>
+        <!-- Переключатель темы -->
+        <div class="theme-switch-wrapper">
+            <div class="theme-toggle-container">
+                <i class="fas fa-sun theme-icon"></i>
+                <input type="checkbox" id="theme-toggle" class="theme-checkbox">
+                <label for="theme-toggle" class="theme-label">
+                    <div class="ball"></div>
+                </label>
+                <span>Тёмная тема</span>
+            </div>
         </div>
-
     </nav>
 
     <!-- Чат -->
@@ -60,7 +64,10 @@
             <div id="chat-header" class="chat-header" style="display: none;">
                 <div class="chat-header-info">
                     <img id="chat-header-avatar" src="../uploads/avatars/default.png" alt="Avatar" class="chat-avatar">
-                    <h3 id="chat-header-name"></h3>
+                    <div class="header-user-info">
+                        <h3 id="chat-header-name"></h3>
+                        <span id="chat-header-status" class="user-status"></span>
+                    </div>
                 </div>
             </div>
 
@@ -68,25 +75,26 @@
             <div id="chat-placeholder" class="chat-placeholder">
                 <i class="fas fa-comments"></i>
                 <h3>Выберите чат для начала общения</h3>
+                <p>Выберите собеседника из списка слева</p>
             </div>
 
             <!-- Область сообщений -->
-            <div id="messages" class="messages-area">
+            <div id="messages" class="messages-area" style="display: none;">
                 <!-- Сообщения будут добавлены через JavaScript -->
             </div>
 
             <!-- Область ввода -->
             <div class="input-area">
+                <!-- Превью файла -->
                 <div id="filePreview"></div>
+                <!-- Превью ответа -->
+                <div id="replyPreview" class="reply-preview" style="display: none;"></div>
                 <div class="input-controls">
                     <div class="attachment-wrapper">
-                        <input type="file" id="fileInput">
+                        <input type="file" id="fileInput" style="display: none;">
                         <button id="attachButton" class="attach-button">
                             <i class="fas fa-paperclip"></i>
                         </button>
-                    </div>
-                    <div id="replyPreview" class="reply-preview" style="display: none;">
-                        <!-- Предпросмотр ответа будет добавлен через JavaScript -->
                     </div>
                     <input type="text" id="messageInput" placeholder="Введите сообщение...">
                     <button id="sendMessage">
@@ -98,7 +106,7 @@
     </div>
 
     <!-- Модальное окно для просмотра изображений -->
-    <div class="image-modal">
+    <div class="image-modal" style="display: none;">
         <span class="close-modal">&times;</span>
         <img id="modalImage" src="" alt="Preview">
     </div>
@@ -106,11 +114,18 @@
     <!-- Контекстное меню -->
     <div id="contextMenu" class="context-menu" style="display: none;">
         <ul>
-            <li id="replyMessageBtn">Ответить на сообщение</li>
-            <li id="deleteMessageBtn">Удалить сообщение</li>
+            <li id="replyMessageBtn">
+                <i class="fas fa-reply"></i>
+                Ответить
+            </li>
+            <li id="deleteMessageBtn">
+                <i class="fas fa-trash"></i>
+                Удалить
+            </li>
         </ul>
     </div>
 
+    <!-- Скрипты -->
     <script src="../main.js"></script>
     <script src="chat.js"></script>
 </body>
