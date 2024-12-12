@@ -649,7 +649,7 @@ body {
     }
 }
 
-/* Дополнительные стили для аватаров и статусов */
+/* Дополнительные стили для а��атаров и статусов */
 .avatar-container {
     position: relative;
     width: 48px;
@@ -709,7 +709,7 @@ body {
     color: var(--text-tertiary);
 }
 
-/* Стили для непрочитанных сообщени�� */
+/* Стили для непрочитанных сообщений */
 .unread-count {
     background: var(--primary-color);
     color: white;
@@ -957,5 +957,90 @@ body {
 
 [data-theme="dark"] .message-sent {
     background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+}
+
+/* Стили для ответа на сообщение */
+.reply-preview {
+    background: var(--surface-color);
+    border-radius: var(--radius-md);
+    padding: 12px;
+    margin-bottom: 12px;
+    border-left: 4px solid var(--primary-color);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.reply-preview-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.reply-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.reply-author {
+    font-weight: 600;
+    color: var(--primary-color);
+    font-size: 13px;
+}
+
+.reply-message {
+    color: var(--text-secondary);
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 300px;
+}
+
+.close-reply {
+    background: none;
+    border: none;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease;
+}
+
+.close-reply:hover {
+    background-color: var(--border-light);
+}
+
+/* Стили для цитируемого сообщения внутри сообщения */
+.quoted-message {
+    margin-bottom: 8px;
+    padding: 8px 12px;
+    background: rgba(var(--primary-color-rgb), 0.08);
+    border-left: 3px solid var(--primary-color);
+    border-radius: 8px;
+    font-size: 13px;
+}
+
+.quoted-message .quote-author {
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 2px;
+}
+
+.quoted-message .quote-text {
+    color: var(--text-secondary);
+}
+
+/* Стили для цитат в отправленных сообщениях */
+.message-sent .quoted-message {
+    background: rgba(255, 255, 255, 0.15);
+    border-left-color: rgba(255, 255, 255, 0.4);
+}
+
+.message-sent .quoted-message .quote-author,
+.message-sent .quoted-message .quote-text {
+    color: rgba(255, 255, 255, 0.9);
 }
  
