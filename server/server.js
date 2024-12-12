@@ -183,7 +183,7 @@ app.get('/api/download/:folder/:filename', (req, res) => {
 
         console.log('Downloading file:', filePath); // Для отладки
 
-        // Проверяем существование файла
+        // Проверяем существование ��айла
         if (!fs.existsSync(filePath)) {
             console.error('File not found:', filePath);
             return res.status(404).json({ error: 'Файл не найден' });
@@ -323,7 +323,7 @@ app.post('/api/upload-avatar', upload.single('avatar'), (req, res) => {
 app.use((err, req, res, next) => {
     if (err instanceof multer.MulterError) {
         if (err.code === 'LIMIT_FILE_SIZE') {
-            return res.status(400).json({ error: 'Файл слишком большой. Максимальный размер: 10MB' });
+            return res.status(400).json({ error: 'Файл слиш��ом большой. Максимальный размер: 10MB' });
         }
         return res.status(400).json({ error: err.message });
     }
@@ -660,7 +660,7 @@ app.get('/api/messages/last/:userId/:friendId', async (req, res) => {
         res.json({ success: true, message: result.rows[0] });
     } catch (err) {
         console.error('Error getting last message:', err);
-        res.status(500).json({ error: 'Ошибка при получении последнег�� сообщения' });
+        res.status(500).json({ error: 'Ошибка при получении последнего сообщения' });
     }
 });
 
@@ -774,7 +774,7 @@ app.get('/api/chat/friends', async (req, res) => {
     }
 });
 
-// Обновленная наст��ойка статических путей
+// Обновленная настройка статических путей
 app.use('/uploads', (req, res, next) => {
     const ext = path.extname(req.path).toLowerCase();
     // Если это изображение - показываем, иначе отправляем через download API
@@ -859,7 +859,7 @@ app.post('/api/users/update-profile', async (req, res) => {
     try {
         const { userId, username, email } = req.body;
 
-        // Проверяем, не занят ли email другим п��льзователем
+        // Проверяем, не занят ли email другим пользователем
         if (email) {
             const emailCheck = await pool.query(
                 'SELECT id FROM users WHERE email = $1 AND id != $2',
@@ -974,7 +974,7 @@ const checkAdmin = async (req, res, next) => {
         if (!adminId) {
             return res.status(401).json({ 
                 success: false,
-                error: 'Требуется ��вторизация' 
+                error: 'Требуется авторизация' 
             });
         }
 
@@ -1330,7 +1330,7 @@ app.delete('/api/posts/delete/:postId', async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         console.error('Error deleting post:', err);
-        res.status(500).json({ error: 'Ошибка п��и удалении поста' });
+        res.status(500).json({ error: 'Ошибка при удалении поста' });
     }
 });
 
@@ -1600,7 +1600,7 @@ app.delete('/api/messages/delete/:messageId', async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         console.error('Error deleting message:', err);
-        res.status(500).json({ error: 'Ошибка при удалении сообщения' });
+        res.status(500).json({ error: 'Ошибка при удал��нии сообщения' });
     }
 });
 
@@ -1709,7 +1709,7 @@ transporter.verify(function(error, success) {
     }
 });
 
-// Альтернативная конфигурация с TLS
+// Альтернативная конфигурация �� TLS
 const alternativeTransporter = nodemailer.createTransport({
     host: 'smtp.timeweb.ru',
     port: 587,              // Алтернативный порт
@@ -1874,26 +1874,25 @@ const httpsServer = https.createServer(sslOptions, app);
 // Создаем экземпляр Socket.IO
 const io = new Server(httpsServer, {
     path: '/socket.io/',
+    transports: ['websocket', 'polling'],
     cors: {
-        origin: function(origin, callback) {
-            if (!origin) return callback(null, true);
-            
-            const allowedOrigins = [
-                'http://adminflow.ru',
-                'https://adminflow.ru',
-                'http://www.adminflow.ru',
-                'https://www.adminflow.ru'
-            ];
-            
-            if (allowedOrigins.includes(origin)) {
-                callback(null, true);
-            } else {
-                callback(new Error('Not allowed by CORS'));
-            }
-        },
+        origin: [
+            'http://adminflow.ru',
+            'https://adminflow.ru',
+            'http://www.adminflow.ru',
+            'https://www.adminflow.ru'
+        ],
         methods: ['GET', 'POST'],
         credentials: true
     }
+});
+
+// Добавляем middleware для Socket.IO
+app.use('/socket.io', (req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', 'https://adminflow.ru');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    next();
 });
 
 // Хранилище для активных соединений
@@ -1905,7 +1904,7 @@ httpServer.listen(80, () => {
 });
 
 httpsServer.listen(5003, () => {
-    console.log('HTTPS Server running on port 5003');
+    console.log('HTTPS Server with Socket.IO running on port 5003');
 });
 
 // Проверка имени пользователя для восстановления пароля
@@ -2009,5 +2008,10 @@ io.on('connection', (socket) => {
         clearInterval(updateInterval);
         // ... остальной код обработчика disconnect
     });
+});
+
+// Добавляем проверочный endpoint для Socket.IO
+app.get('/socket.io/', (req, res) => {
+    res.send('Socket.IO server is running');
 });
 

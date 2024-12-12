@@ -25,20 +25,28 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function initializeChat() {
     try {
-        // Инициализируем WebSocket соединение
+        // Инициализируем WebSocket соединение с правильным портом
         socket = io('https://adminflow.ru:5003', {
             path: '/socket.io/',
-            withCredentials: true
+            transports: ['websocket', 'polling'],
+            withCredentials: true,
+            reconnection: true,
+            reconnectionAttempts: 5,
+            reconnectionDelay: 1000
         });
 
-        // Обработчики WebSocket событий
+        // Улучшенные обработчики WebSocket событий
         socket.on('connect', () => {
-            console.log('WebSocket connected');
-            // Авторизуем пользователя
+            console.log('WebSocket connected successfully');
             socket.emit('auth', currentUser.id);
         });
 
+        socket.on('connect_error', (error) => {
+            console.error('Socket connection error:', error);
+        });
+
         socket.on('user_status_update', (data) => {
+            console.log('Received status update:', data);
             updateUserStatus(data);
         });
 
@@ -68,7 +76,7 @@ async function initializeChat() {
         if (data.friends) {
             displayFriendsList(data.friends);
             
-            // Проверяем сохраненного собеседника в sessionStorage
+            // Проверяем ��охраненного собеседника в sessionStorage
             const savedPartner = sessionStorage.getItem('selectedChatUser');
             if (savedPartner) {
                 const partner = JSON.parse(savedPartner);
@@ -205,7 +213,7 @@ async function openChat(friend) {
             // Обновляем текущего собеседника
             currentChatPartner = data.user;
             
-            // Обновляем заголовок чата
+            // Обн��вляем заголовок чата
             const chatHeader = document.getElementById('chat-header');
             const headerAvatar = document.getElementById('chat-header-avatar');
             const headerName = document.getElementById('chat-header-name');
@@ -266,7 +274,7 @@ async function loadChatHistory() {
         if (data.success) {
             const messagesContainer = document.getElementById('messages');
             
-            // Оптимизация проверки новых сообщений
+            // Оптимизация проверки н��вых сообщений
             const currentMessageIds = new Set(
                 Array.from(messagesContainer.querySelectorAll('.message'))
                     .map(el => el.dataset.messageId)
@@ -534,7 +542,7 @@ function setupEventListeners() {
     sendButton?.removeEventListener('click', sendMessage);
     messageInput?.removeEventListener('keypress', handleEnterPress);
 
-    // Добавляем новые обраб��тчики
+    // Добавляем новые обработчики
     sendButton?.addEventListener('click', sendMessage);
     messageInput?.addEventListener('keypress', handleEnterPress);
 
@@ -690,7 +698,7 @@ function showImageModal(imageUrl) {
     modalImage.onerror = () => {
         console.error('Ошибка загрузки изображения в модальном окне:', imageUrl);
         modal.style.display = 'none';
-        alert('Ошибк�� при загрузке изображения');
+        alert('Ошибка при загрузке изображения');
     };
     
     modalImage.src = imageUrl;
@@ -834,7 +842,7 @@ async function deleteMessage(messageId) {
             alert(data.error || 'Не удалось удалить сообщение');
         }
     } catch (error) {
-        console.error('Ошибка при удалении сообщения:', error);
+        console.error('Ошибка при удалении со��бщения:', error);
         alert('Произошла ошибка при удалении сообщения');
     }
 }
