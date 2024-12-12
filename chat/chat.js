@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupEventListeners();
     setupAttachmentHandlers();
     setupContextMenu();
-    
+
     // Загружаем список чатов
     await loadChatsList();
     
@@ -59,12 +59,6 @@ async function initializeChat() {
                 await markMessagesAsRead(chatUserId);
             }
         }
-
-        // Загружаем список чатов
-        await loadChatsList();
-        
-        // Запускаем периодическое обновление списка чатов
-        setInterval(loadChatsList, 10000);
         
     } catch (err) {
         console.error('Error initializing chat:', err);
@@ -95,8 +89,12 @@ async function loadChatHistory() {
         const data = await response.json();
 
         if (data.success) {
-            const messagesContainer = document.getElementById('messages');
-            
+             const messagesContainer = document.getElementById('messages');
+             if (!messagesContainer) {
+                 console.error('Messages container not found');
+                 return;
+             }
+
             // Оптимизация проверки новых сообщений
             const currentMessageIds = new Set(
                 Array.from(messagesContainer.querySelectorAll('.message'))
@@ -107,11 +105,8 @@ async function loadChatHistory() {
             const newMessages = data.messages.filter(message => 
                 !currentMessageIds.has(message.id.toString())
             );
-
-            if (messagesContainer.children.length === 0) {
-                displayMessages(data.messages);
-                scrollToBottom();
-            } else if (newMessages.length > 0) {
+            
+           if (newMessages.length > 0) {
                 const isScrolledToBottom = isUserAtBottom(messagesContainer);
                 displayNewMessages(newMessages, isScrolledToBottom);
             }
@@ -128,8 +123,14 @@ function isUserAtBottom(container) {
 
 function displayMessages(messages) {
     const messagesContainer = document.getElementById('messages');
-    messagesContainer.innerHTML = '';
-
+     if (!messagesContainer) {
+         console.error('Messages container not found');
+         return;
+    }
+    while(messagesContainer.firstChild) {
+        messagesContainer.removeChild(messagesContainer.firstChild);
+    }
+    
     messages.forEach(message => {
         const messageElement = createMessageElement(message);
         messageElement.dataset.messageId = message.id;
@@ -138,7 +139,11 @@ function displayMessages(messages) {
 }
 
 function displayNewMessages(newMessages, shouldScroll) {
-    const messagesContainer = document.getElementById('messages');
+     const messagesContainer = document.getElementById('messages');
+     if (!messagesContainer) {
+         console.error('Messages container not found');
+         return;
+    }
     const fragment = document.createDocumentFragment();
 
     newMessages.forEach(message => {
@@ -155,6 +160,7 @@ function displayNewMessages(newMessages, shouldScroll) {
         });
     }
 }
+
 
 function createMessageElement(message) {
     const messageElement = document.createElement('div');
@@ -228,6 +234,7 @@ function createMessageElement(message) {
     return messageElement;
 }
 
+
 function createAttachmentElement(attachmentUrl) {
     const attachmentElement = document.createElement('div');
     attachmentElement.className = 'message-attachment';
@@ -244,6 +251,13 @@ function createAttachmentElement(attachmentUrl) {
     
     // Удаляем возможные двойные слеши
     fullUrl = fullUrl.replace(/([^:]\/)\/+/g, '$1');
+    
+    try{
+     fullUrl = new URL(fullUrl).href
+    } catch(e){
+        console.error('Error while processing url', fullUrl, e)
+    }
+
 
     console.log('Оработанный URL вложения:', fullUrl); // Для отладки
 
@@ -274,18 +288,17 @@ function createAttachmentElement(attachmentUrl) {
     return attachmentElement;
 }
 
-// Вспомогательная функци�� для проверки типа файла
+// Вспомогательная функция для проверки типа файла
 function isImageFile(url) {
     return /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
 }
 
-let isMessageSending = false;
 
 async function sendMessage() {
     if (!currentChatPartner || (!messageInput.value.trim() && !selectedFile)) {
         return;
     }
-
+    const messageInput = document.getElementById('messageInput');
     try {
         const formData = new FormData();
         formData.append('senderId', currentUser.id);
@@ -357,19 +370,18 @@ async function markMessagesAsRead(friendId) {
 }
 
 function setupEventListeners() {
-    // Удаляем старые обработчики перед добавлением новых
     const sendButton = document.getElementById('sendMessage');
     const messageInput = document.getElementById('messageInput');
     
-    // Удаляем старые обработчики
-    sendButton?.removeEventListener('click', sendMessage);
-    messageInput?.removeEventListener('keypress', handleEnterPress);
+   
+    if(sendButton) sendButton.removeEventListener('click', sendMessage);
+    if(messageInput) messageInput.removeEventListener('keypress', handleEnterPress);
+  
+    if (sendButton)  sendButton.addEventListener('click', sendMessage);
+    if (messageInput) messageInput.addEventListener('keypress', handleEnterPress);
 
-    // Добавляем новые обработчики
-    sendButton?.addEventListener('click', sendMessage);
-    messageInput?.addEventListener('keypress', handleEnterPress);
-
-    messageInput?.addEventListener('input', () => {
+    if(messageInput){
+        messageInput.addEventListener('input', () => {
         if (typingTimeout) clearTimeout(typingTimeout);
         
         // Отправляем статус "печатает"
@@ -396,6 +408,7 @@ function setupEventListeners() {
             });
         }, 2000);
     });
+    }
 }
 
 // Выносим обработчик Enter в отдельную функцию
@@ -486,23 +499,6 @@ function scrollToBottom() {
     }
 }
 
-// Функция отметки сообщений как прочитанных
-async function markMessagesAsRead(friendId) {
-    try {
-        await fetch('https://adminflow.ru:5003/api/messages/mark-as-read', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                userId: currentUser.id,
-                friendId: friendId
-            })
-        });
-    } catch (error) {
-        console.error('Ошибка при обновлении статуса сообщений:', error);
-    }
-}
 
 // Функция показа модального окна с изображением
 function showImageModal(imageUrl) {
@@ -511,7 +507,7 @@ function showImageModal(imageUrl) {
     
     // Показываем индикатор загрузки
     modalImage.style.opacity = '0.5';
-    modal.style.display = 'flex';
+    if(modal) modal.style.display = 'flex';
     
     // Загружаем изображение
     modalImage.onload = () => {
@@ -520,7 +516,7 @@ function showImageModal(imageUrl) {
     
     modalImage.onerror = () => {
         console.error('Ошибка загрузки изображения в модальном окне:', imageUrl);
-        modal.style.display = 'none';
+        if(modal) modal.style.display = 'none';
         alert('Ошибка при загрузке изображения');
     };
     
@@ -528,9 +524,12 @@ function showImageModal(imageUrl) {
 }
 
 // Закрытие модального окна
-document.querySelector('.close-modal').onclick = function() {
-    document.querySelector('.image-modal').style.display = 'none';
-};
+const closeModalBtn = document.querySelector('.close-modal');
+if(closeModalBtn){
+    closeModalBtn.onclick = function() {
+        document.querySelector('.image-modal').style.display = 'none';
+    };
+}
 
 // Добавляем обработчики для прикрепления файлов
 function setupAttachmentHandlers() {
@@ -592,8 +591,10 @@ function showFilePreview(file) {
         </div>
     `;
     
-    // Очищаем предыдущее превью
-    previewContainer.innerHTML = '';
+     // Очищаем предыдущее превью
+    while(previewContainer.firstChild) {
+        previewContainer.removeChild(previewContainer.firstChild);
+    }
     previewContainer.appendChild(previewContent);
     
     // Добавляем обработчик для кнопки удаления
@@ -606,7 +607,9 @@ function showFilePreview(file) {
 function removeFilePreview() {
     const previewContainer = document.getElementById('filePreview');
     if (previewContainer) {
-        previewContainer.innerHTML = '';
+        while(previewContainer.firstChild) {
+        previewContainer.removeChild(previewContainer.firstChild);
+    }
     }
     selectedFile = null;
     
@@ -816,9 +819,11 @@ function setupContextMenu() {
     });
 
     // Закрытие меню при скролле
-    messagesArea.addEventListener('scroll', () => {
-        hideContextMenu();
-    });
+    if(messagesArea) {
+        messagesArea.addEventListener('scroll', () => {
+            hideContextMenu();
+        });
+    }
 
     // Закрытие меню при нажатии Escape
     document.addEventListener('keydown', (e) => {
@@ -868,7 +873,9 @@ function showReplyPreview(messageText) {
     `;
 
     // Очищаем и показываем предпросмотр
-    replyPreview.innerHTML = '';
+     while(replyPreview.firstChild) {
+        replyPreview.removeChild(replyPreview.firstChild);
+    }
     replyPreview.appendChild(previewContent);
     replyPreview.style.display = 'block';
 
@@ -884,7 +891,9 @@ function cancelReply() {
     const replyPreview = document.getElementById('replyPreview');
     if (replyPreview) {
         replyPreview.style.display = 'none';
-        replyPreview.innerHTML = '';
+       while(replyPreview.firstChild) {
+            replyPreview.removeChild(replyPreview.firstChild);
+        }
     }
     replyToMessageId = null;
 }
@@ -909,7 +918,7 @@ function startMessageUpdates() {
     }
     
     // Первая загрузка
-    loadMessages(currentChatPartner.id);
+    if(currentChatPartner) loadMessages(currentChatPartner.id);
     
     // Устанавливаем интервал обновления
     messageUpdateInterval = setInterval(() => {
@@ -930,7 +939,6 @@ function updateUserStatus(userId, isOnline, lastActivity) {
         if (statusIndicator) {
             statusIndicator.className = `status-indicator ${isOnline ? 'online' : 'offline'}`;
         }
-        
         if (lastActivityElement) {
             lastActivityElement.textContent = isOnline ? 'онлайн' : getLastActivityTime(lastActivity);
         }
@@ -951,7 +959,7 @@ function updateLastMessage(message) {
     }
 }
 
-// Функция за��рузки списка чатов
+// Функция загрузки списка чатов
 async function loadChatsList() {
     try {
         const response = await fetch(`https://adminflow.ru:5003/api/chats/${currentUser.id}`);
@@ -963,8 +971,9 @@ async function loadChatsList() {
                 console.error('Friends list container not found');
                 return;
             }
-
-            friendsList.innerHTML = ''; // Очищаем список
+            while(friendsList.firstChild) {
+                 friendsList.removeChild(friendsList.firstChild);
+             }
 
             data.chats.forEach(chat => {
                 const chatElement = document.createElement('div');
@@ -1009,17 +1018,26 @@ async function selectChat(chat) {
     currentChatPartner = chat;
     
     // Обновляем UI
-    document.getElementById('chat-placeholder').style.display = 'none';
-    document.getElementById('chat-header').style.display = 'flex';
-    document.getElementById('messages').style.display = 'flex';
+    const chatPlaceholder = document.getElementById('chat-placeholder');
+    const chatHeader = document.getElementById('chat-header');
+    const messages = document.getElementById('messages');
+    const chatHeaderAvatar = document.getElementById('chat-header-avatar')
+    const chatHeaderName = document.getElementById('chat-header-name')
+    const chatHeaderStatus = document.getElementById('chat-header-status')
+
+    if (chatPlaceholder) chatPlaceholder.style.display = 'none';
+    if(chatHeader) chatHeader.style.display = 'flex';
+    if (messages) messages.style.display = 'flex';
     
     // Обновляем заголовок чата
-    document.getElementById('chat-header-avatar').src = chat.avatar_url || '../uploads/avatars/default.png';
-    document.getElementById('chat-header-name').textContent = chat.username;
-    document.getElementById('chat-header-status').className = 
+    if(chatHeaderAvatar) chatHeaderAvatar.src = chat.avatar_url || '../uploads/avatars/default.png';
+    if(chatHeaderName) chatHeaderName.textContent = chat.username;
+    if(chatHeaderStatus){
+    chatHeaderStatus.className = 
         `user-status ${chat.is_online ? 'online' : ''}`;
-    document.getElementById('chat-header-status').textContent = 
+    chatHeaderStatus.textContent = 
         chat.is_online ? 'онлайн' : getLastActivityTime(chat.last_activity);
+    }
     
     // Загружаем историю сообщений
     await loadChatHistory();
@@ -1029,4 +1047,50 @@ async function selectChat(chat) {
     
     // Помечаем сообщения как прочитанные
     await markMessagesAsRead(chat.id);
+}
+
+// Функция получения времени последней активности пользователя
+function getLastActivityTime(lastActivity) {
+   if (!lastActivity) return 'неизвестно';
+   
+    const date = new Date(lastActivity);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now - date) / 1000);
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    const diffInDays = Math.floor(diffInHours / 24);
+  
+    if (diffInDays > 0) {
+        return `${diffInDays} д. назад`;
+    } else if (diffInHours > 0) {
+        return `${diffInHours} ч. назад`;
+    } else if (diffInMinutes > 0) {
+        return `${diffInMinutes} мин. назад`;
+    } else {
+        return 'только что';
+    }
+}
+
+// Функция для обновления счетчика непрочитанных сообщений
+async function updateUnreadCount(friendId) {
+  if(!friendId) return
+  try {
+    const response = await fetch(`https://adminflow.ru:5003/api/chats/${currentUser.id}`);
+    const data = await response.json();
+    if(data.success) {
+          const chat = data.chats.find(chat => chat.id == friendId)
+           if(chat){
+              const unreadCountElement = document.querySelector(`.chat-partner[data-friend-id="${friendId}"] .unread-count`);
+                if (unreadCountElement) {
+                     unreadCountElement.textContent = chat.unread_count > 0 ? chat.unread_count : '';
+                  unreadCountElement.style.display = chat.unread_count > 0 ? 'inline' : 'none';
+                }
+           }
+
+    } else{
+           console.error('Ошибка при загрузке списка чатов:', data.error)
+       }
+    } catch (error) {
+        console.error('Ошибка при загрузке списка чатов:', error);
+    }
 }
