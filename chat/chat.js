@@ -6,6 +6,7 @@ let typingTimeout = null;
 let selectedMessageId = null;
 let selectedMessageText = '';
 let replyToMessageId = null;
+let socket = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
     // Проверка авторизации
@@ -46,6 +47,19 @@ async function loadUserInfo(userId) {
 // Инициализация чата
 async function initializeChat() {
     try {
+        // Подключаемся к Socket.IO
+        socket = io('https://adminflow.ru:5003', {
+            withCredentials: true
+        });
+
+        // Аутентифицируем пользователя
+        socket.emit('authenticate', currentUser.id);
+
+        // Обрабатываем обновления статуса
+        socket.on('user_status_update', (data) => {
+            updateUserStatus(data);
+        });
+        
         // Получаем ID пользователя из URL или sessionStorage
         const urlParams = new URLSearchParams(window.location.search);
         const chatUserId = urlParams.get('userId');
