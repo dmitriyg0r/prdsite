@@ -40,6 +40,8 @@ async function loadUserInfo(userId) {
 
 // Инициализация чата
 async function initializeChat() {
+    let selectedChatUser = null;
+
     try {
         // Получаем ID пользователя из URL или sessionStorage
         const urlParams = new URLSearchParams(window.location.search);
@@ -337,7 +339,7 @@ async function markMessagesAsRead(friendId) {
 
         const data = await response.json();
         if (data.success) {
-            // Обновляем счетчик только если успешно обн��вили статус
+            // Обновляем счетчик только если успешно обновили статус
             await updateUnreadCount(friendId);
         } else {
             console.error('Ошибка при обновлении статуса сообщений:', data.error);
@@ -653,7 +655,7 @@ async function deleteMessage(messageId) {
             });
         } else {
             console.error('Ошибка при удалении сообщения:', data.error);
-            alert(data.error || 'Не удалось удалить сообщение');
+            alert(data.error || 'Не удал��сь удалить сообщение');
         }
     } catch (error) {
         console.error('Ошибка при удалении сообщения:', error);
@@ -676,7 +678,7 @@ chatStyles.textContent = `
         }
     }
 
-    /* С��или контекстного меню */
+    /* Стили контекстного меню */
     .context-menu {
         opacity: 0;
         transform: scale(0.95);
@@ -722,7 +724,7 @@ function setupContextMenu() {
         return;
     }
 
-    // Обрабо��чик правого клика на сообщении
+    // Обработчик правого клика на сообщении
     messagesArea.addEventListener('contextmenu', (e) => {
         e.preventDefault();
         
