@@ -854,7 +854,7 @@ app.get('/api/users/:id', async (req, res) => {
     }
 });
 
-// Обновле����ие п��о��иля пользователя
+// Обновле����ие п��о���иля пользователя
 app.post('/api/users/update-profile', async (req, res) => {
     try {
         const { userId, username, email } = req.body;
@@ -873,7 +873,7 @@ app.post('/api/users/update-profile', async (req, res) => {
             }
         }
 
-        // Про��ер��ем, ��е занято ли имя пользователя
+        // П��о��ер��ем, ��е занято ли имя пользователя
         if (username) {
             const usernameCheck = await pool.query(
                 'SELECT id FROM users WHERE username = $1 AND id != $2',
@@ -1334,7 +1334,7 @@ app.delete('/api/posts/delete/:postId', async (req, res) => {
     }
 });
 
-// Добавляем раздачу статических файлов для постов
+// Добавляем раздачу статических файлов для п��стов
 app.use('/uploads/posts', express.static('/var/www/html/uploads/posts')); 
 
 // Получение статуса пользователя
@@ -2208,14 +2208,6 @@ app.get('/api/chats/:userId', async (req, res) => {
 app.post('/api/messages/send', async (req, res) => {
     try {
         const { senderId, receiverId, message, replyToMessageId } = req.body;
-        
-        console.log('Получены данные:', { 
-            senderId, 
-            receiverId, 
-            message, 
-            replyToMessageId,
-            body: req.body 
-        });
 
         // Проверяем и конвертируем ID в числа
         const senderIdNum = parseInt(senderId);
@@ -2246,7 +2238,7 @@ app.post('/api/messages/send', async (req, res) => {
         }
 
         // Сохраняем сообщение
-        const insertQuery = `
+        const result = await pool.query(`
             INSERT INTO messages 
             (sender_id, receiver_id, message, reply_to, created_at, is_read)
             VALUES ($1, $2, $3, $4, NOW(), false)
@@ -2258,18 +2250,7 @@ app.post('/api/messages/send', async (req, res) => {
                 reply_to,
                 created_at,
                 is_read
-        `;
-
-        console.log('Выполняем запрос:', {
-            query: insertQuery,
-            params: [senderIdNum, receiverIdNum, message || '', replyToMessageId || null]
-        });
-
-        const result = await pool.query(insertQuery, 
-            [senderIdNum, receiverIdNum, message || '', replyToMessageId || null]
-        );
-
-        console.log('Результат запроса:', result.rows[0]);
+        `, [senderIdNum, receiverIdNum, message || '', replyToMessageId || null]);
 
         if (!result.rows[0]) {
             throw new Error('Сообщение не было сохранено');
@@ -2282,13 +2263,9 @@ app.post('/api/messages/send', async (req, res) => {
         };
 
         // Отправляем через Socket.IO
-        try {
-            const receiverSocketId = activeConnections.get(receiverIdNum);
-            if (receiverSocketId) {
-                io.to(receiverSocketId).emit('new_message', newMessage);
-            }
-        } catch (socketError) {
-            console.error('Ошибка Socket.IO:', socketError);
+        const receiverSocketId = activeConnections.get(receiverIdNum);
+        if (receiverSocketId) {
+            io.to(receiverSocketId).emit('new_message', newMessage);
         }
 
         return res.status(200).json({
@@ -2297,17 +2274,10 @@ app.post('/api/messages/send', async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Детальная ошибка отправки сообщения:', {
-            error: error.message,
-            stack: error.stack,
-            code: error.code,
-            detail: error.detail
-        });
-
+        console.error('Ошибка отправки сообщения:', error.message);
         return res.status(500).json({
             success: false,
-            error: 'Ошибка при отправке сообщения',
-            details: error.message
+            error: 'Ошибка при отправке сообщения'
         });
     }
 });
