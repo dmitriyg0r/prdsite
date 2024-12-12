@@ -796,16 +796,17 @@ body {
 
 /* Стили для сообщения-ответа в отправленных сообщениях */
 .message-sent .message-reply {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .message-sent .message-reply-info {
-    color: rgba(255, 255, 255, 0.95);
+    color: rgba(255, 255, 255, 1);
 }
 
 .message-sent .message-reply-text {
-    color: rgba(255, 255, 255, 0.85);
-    border-left-color: rgba(255, 255, 255, 0.4);
+    color: rgba(255, 255, 255, 0.9);
+    border-left-color: rgba(255, 255, 255, 0.6);
 }
 
 /* Стили для тёмной темы */
@@ -1057,7 +1058,7 @@ body {
     background-color: var(--border-light);
 }
 
-/* Стили для цитируемого сообщения внутри сообщения */
+/* Стили для цитируемого соо��щения внутри сообщения */
 .quoted-message {
     margin-bottom: 8px;
     padding: 8px 12px;
