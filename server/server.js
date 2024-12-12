@@ -664,7 +664,7 @@ app.get('/api/messages/last/:userId/:friendId', async (req, res) => {
     }
 });
 
-// Получение ��оличества непрочитанных сообщений
+// Получение количества непрочитанных сообщений
 app.get('/api/messages/unread/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
@@ -1056,7 +1056,7 @@ app.get('/api/admin/users', checkAdmin, async (req, res) => {
         });
     } catch (err) {
         console.error('Admin users error:', err);
-        res.status(500).json({ error: 'Ошибка при получении списка пользователей' });
+        res.status(500).json({ error: 'Оши��ка при получении списка пользователей' });
     }
 });
 
@@ -1799,7 +1799,7 @@ app.post('/api/send-verification-code', async (req, res) => {
                     </div>
                     <p style="color: #666; font-size: 14px; margin-top: 20px;">
                         Код дейтвителен в течение 5 минут.<br>
-                        Если вы не запрашивали код подтверждения, пригнорируйте ��то письмо.
+                        Если вы не запрашивали код подтверждения, пригнорируйте то письмо.
                     </p>
                 </div>
             `
@@ -1874,7 +1874,7 @@ const httpsServer = https.createServer(sslOptions, app);
 // Создаем экземпляр Socket.IO
 const io = new Server(httpsServer, {
     path: '/socket.io/',
-    transports: ['polling'], // Временно используем только polling
+    transports: ['websocket', 'polling'], // Добавляем поддержку websocket
     cors: {
         origin: [
             'http://adminflow.ru',
@@ -1886,9 +1886,7 @@ const io = new Server(httpsServer, {
         credentials: true
     },
     pingTimeout: 60000,
-    pingInterval: 25000,
-    allowEIO3: true, // Добавляем поддержку более старых версий
-    maxHttpBufferSize: 1e8 // Увеличиваем размер буфера
+    pingInterval: 25000
 });
 
 // Добавляем middleware для Socket.IO
@@ -1957,6 +1955,7 @@ io.on('connection', async (socket) => {
             if (!userId) return;
             
             socket.userId = userId;
+            activeConnections.set(userId, socket.id);
             
             // Обновляем статус в БД
             await pool.query(`
@@ -1977,11 +1976,14 @@ io.on('connection', async (socket) => {
 
             // Оповещаем друзей о статусе
             for (const friend of friendsResult.rows) {
-                io.emit('user_status_update', {
-                    userId: userId,
-                    isOnline: true,
-                    lastActivity: new Date()
-                });
+                const friendSocketId = activeConnections.get(friend.id);
+                if (friendSocketId) {
+                    io.to(friendSocketId).emit('user_status_update', {
+                        userId: userId,
+                        isOnline: true,
+                        lastActivity: new Date()
+                    });
+                }
             }
         } catch (err) {
             console.error('Auth error:', err);
@@ -1994,6 +1996,8 @@ io.on('connection', async (socket) => {
             const userId = socket.userId;
             if (!userId) return;
 
+            activeConnections.delete(userId);
+
             // Обновляем статус в БД
             await pool.query(`
                 UPDATE users 
@@ -2002,7 +2006,7 @@ io.on('connection', async (socket) => {
                 WHERE id = $1
             `, [userId]);
 
-            // Получаем список друзей
+            // Получаем список друзей и оповещаем их
             const friendsResult = await pool.query(`
                 SELECT friend_id as id FROM friendships 
                 WHERE user_id = $1 AND status = 'accepted'
@@ -2011,20 +2015,15 @@ io.on('connection', async (socket) => {
                 WHERE friend_id = $1 AND status = 'accepted'
             `, [userId]);
 
-            // Получаем время последней активности
-            const lastActivityResult = await pool.query(`
-                SELECT last_activity FROM users WHERE id = $1
-            `, [userId]);
-
-            const lastActivity = lastActivityResult.rows[0]?.last_activity;
-
-            // Оповещаем друзей
             for (const friend of friendsResult.rows) {
-                io.emit('user_status_update', {
-                    userId: userId,
-                    isOnline: false,
-                    lastActivity: lastActivity
-                });
+                const friendSocketId = activeConnections.get(friend.id);
+                if (friendSocketId) {
+                    io.to(friendSocketId).emit('user_status_update', {
+                        userId: userId,
+                        isOnline: false,
+                        lastActivity: new Date()
+                    });
+                }
             }
         } catch (err) {
             console.error('Disconnect error:', err);
@@ -2033,6 +2032,73 @@ io.on('connection', async (socket) => {
 
     socket.on('error', (error) => {
         console.error('Socket error:', error);
+    });
+
+    // Добавляем обработчик сообщений в Socket.IO
+    socket.on('send_message', async (data) => {
+        try {
+            const { senderId, receiverId, message, attachmentUrl, replyTo } = data;
+            
+            // Сохраняем сообщение в БД
+            const result = await pool.query(`
+                INSERT INTO messages 
+                (sender_id, receiver_id, message, attachment_url, reply_to, created_at, is_read) 
+                VALUES ($1, $2, $3, $4, $5, NOW(), false)
+                RETURNING id, created_at
+            `, [senderId, receiverId, message, attachmentUrl, replyTo]);
+
+            const newMessage = {
+                id: result.rows[0].id,
+                sender_id: senderId,
+                receiver_id: receiverId,
+                message,
+                attachment_url: attachmentUrl,
+                created_at: result.rows[0].created_at,
+                is_read: false,
+                reply_to: replyTo
+            };
+
+            // Отправляем сообщение получателю через WebSocket
+            const receiverSocketId = activeConnections.get(receiverId);
+            if (receiverSocketId) {
+                io.to(receiverSocketId).emit('new_message', newMessage);
+            }
+
+            // Подтверждаем отправку сообщения отправителю
+            socket.emit('message_sent', newMessage);
+
+        } catch (err) {
+            console.error('Error sending message:', err);
+            socket.emit('message_error', { error: 'Ошибка при отправке сообщения' });
+        }
+    });
+
+    // Добавляем обработчик прочтения сообщений
+    socket.on('mark_messages_read', async (data) => {
+        try {
+            const { userId, friendId } = data;
+            
+            // Помечаем сообщения как прочитанные
+            await pool.query(`
+                UPDATE messages 
+                SET is_read = true 
+                WHERE sender_id = $1 
+                AND receiver_id = $2 
+                AND is_read = false
+            `, [friendId, userId]);
+
+            // Уведомляем отправителя о прочтении сообщений
+            const senderSocketId = activeConnections.get(friendId);
+            if (senderSocketId) {
+                io.to(senderSocketId).emit('messages_read', { 
+                    by: userId,
+                    timestamp: new Date()
+                });
+            }
+
+        } catch (err) {
+            console.error('Error marking messages as read:', err);
+        }
     });
 });
 
