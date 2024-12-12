@@ -107,7 +107,7 @@ body {
     color: white;
 }
 
-/* Улучшаем область чата */
+/* Улучшаем облас��ь чата */
 .chat-area {
     height: 100vh;
     display: flex;
@@ -258,7 +258,7 @@ body {
     border-radius: var(--radius-lg);
     position: relative;
     animation: messageAppear 0.3s ease-out;
-    align-self: flex-start; /* По умолчанию слева */
+    align-self: flex-start;
 }
 
 .message-content {
@@ -277,7 +277,7 @@ body {
 /* Отправленные сообщения */
 .message-sent {
     margin-left: auto;
-    align-self: flex-end; /* Отправленные сообщения справа */
+    align-self: flex-end;
     background: var(--primary-color);
     color: white;
     border-bottom-right-radius: var(--radius-sm);
@@ -289,7 +289,7 @@ body {
 
 /* Полученные сообщения */
 .message-received {
-    align-self: flex-start; /* Полученные сообщения слева */
+    align-self: flex-start;
     background: var(--surface-color);
     color: var(--text-primary);
     border-bottom-left-radius: var(--radius-sm);
