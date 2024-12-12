@@ -7,7 +7,9 @@
     gap: 24px;
     height: 100vh;
     padding: 24px;
+    padding-left: 100px;
     background: var(--background-color);
+    box-sizing: border-box;
 }
 
 /* Список чатов (левая панель) */
@@ -132,6 +134,20 @@
     animation: messageAppear 0.3s ease-out;
 }
 
+.message-content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.message-text {
+    font-size: 14px;
+    line-height: 1.5;
+    margin-right: 40px;
+    word-wrap: break-word;
+}
+
+/* Отправленные сообщения */
 .message-sent {
     margin-left: auto;
     background: var(--primary-color);
@@ -139,12 +155,194 @@
     border-bottom-right-radius: var(--radius-sm);
 }
 
+.message-sent .message-content {
+    align-items: flex-end;
+}
+
+/* Полученные сообщения */
 .message-received {
     margin-right: auto;
     background: var(--surface-color);
     color: var(--text-primary);
     border-bottom-left-radius: var(--radius-sm);
     border: 1px solid var(--border-light);
+}
+
+.message-received .message-content {
+    align-items: flex-start;
+}
+
+/* Информация о сообщении (время и статус) */
+.message-info {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    position: absolute;
+    right: 4px;
+    bottom: 0;
+}
+
+.message-time {
+    font-size: 11px;
+    color: var(--text-tertiary);
+}
+
+.message-sent .message-time {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.message-status {
+    display: flex;
+    align-items: center;
+}
+
+.message-sent .message-status i {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.message-status .fa-check-double {
+    color: var(--success-color);
+}
+
+/* Стили для группировки сообщений */
+.message + .message {
+    margin-top: 4px;
+}
+
+.message-group {
+    margin-bottom: 16px;
+}
+
+/* Стили для даты между сообщениями */
+.message-date-divider {
+    text-align: center;
+    margin: 24px 0;
+    position: relative;
+}
+
+.message-date {
+    background: var(--background-color);
+    padding: 0 16px;
+    color: var(--text-secondary);
+    font-size: 12px;
+    position: relative;
+    z-index: 1;
+}
+
+.message-date-divider::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 1px;
+    background: var(--border-light);
+}
+
+/* Стили для системных сообщений */
+.system-message {
+    text-align: center;
+    margin: 16px 0;
+    color: var(--text-secondary);
+    font-size: 12px;
+}
+
+/* Анимация появления сообщений */
+@keyframes messageAppear {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Стили для непрочитанных сообщений */
+.message.unread {
+    position: relative;
+}
+
+.message.unread::after {
+    content: '';
+    position: absolute;
+    right: -6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 8px;
+    height: 8px;
+    background: var(--primary-color);
+    border-radius: 50%;
+}
+
+/* Стили для цитируемых сообщений */
+.quoted-message {
+    margin-bottom: 8px;
+    padding: 8px 12px;
+    background: rgba(var(--primary-color-rgb), 0.1);
+    border-left: 3px solid var(--primary-color);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.message-sent .quoted-message {
+    background: rgba(255, 255, 255, 0.1);
+    border-left-color: rgba(255, 255, 255, 0.3);
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Стили для ввода во время печати */
+.typing-indicator {
+    padding: 8px 12px;
+    background: var(--surface-color);
+    border-radius: var(--radius-lg);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.typing-dots {
+    display: flex;
+    gap: 4px;
+}
+
+.typing-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--text-tertiary);
+    border-radius: 50%;
+    animation: typingDot 1.4s infinite;
+}
+
+.typing-dot:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-dot:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes typingDot {
+    0%, 60%, 100% {
+        transform: translateY(0);
+    }
+    30% {
+        transform: translateY(-4px);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
 /* Область ввода */
@@ -159,7 +357,7 @@
     align-items: center;
     gap: 12px;
     background: var(--background-color);
-    padding: 12px;
+    padding: 8px 12px;
     border-radius: var(--radius-lg);
     border: 1px solid var(--border-light);
 }
@@ -176,35 +374,37 @@
 .attach-button, #sendMessage {
     width: 40px;
     height: 40px;
-    border-radius: var(--radius-md);
+    border-radius: 50%;
     background: var(--primary-color);
     color: white;
     border: none;
     cursor: pointer;
     transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.attach-button i, #sendMessage i {
+    font-size: 16px;
 }
 
 .attach-button:hover, #sendMessage:hover {
     background: var(--primary-dark);
     transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Анимации */
-@keyframes messageAppear {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+.attach-button:active, #sendMessage:active {
+    transform: translateY(0);
+    box-shadow: none;
 }
 
 /* Адаптивность */
 @media (max-width: 992px) {
     .chat-container {
         grid-template-columns: 1fr;
+        padding-left: 24px;
     }
 
     .chat-list {
@@ -468,91 +668,6 @@
     color: var(--text-secondary);
 }
 
-/* Индикатор печати */
-.typing-indicator {
-    color: var(--primary-color);
-    font-size: 13px;
-    padding: 4px 12px;
-    background: var(--background-color);
-    border-radius: var(--radius-md);
-    margin-bottom: 8px;
-    animation: fadeInOut 1.5s infinite;
-}
-
-@keyframes fadeInOut {
-    0%, 100% { opacity: 0.5; }
-    50% { opacity: 1; }
-}
-
-/* Стили для сообщений и статусов доставки */
-.message-content {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-}
-
-.message-text {
-    font-size: 14px;
-    line-height: 1.5;
-    margin-right: 40px;
-}
-
-.message-info {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    position: absolute;
-    right: 4px;
-    bottom: 0;
-}
-
-.message-time {
-    font-size: 11px;
-    color: var(--text-tertiary);
-}
-
-.message-sent .message-time {
-    color: rgba(255, 255, 255, 0.8);
-}
-
-.message-status {
-    display: flex;
-    align-items: center;
-}
-
-.message-sent .message-status i {
-    font-size: 12px;
-    color: rgba(255, 255, 255, 0.8);
-}
-
-.message-status .fa-check-double {
-    color: var(--success-color);
-}
-
-/* Заглушка чата */
-.chat-placeholder {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-    color: var(--text-secondary);
-    padding: 24px;
-}
-
-.chat-placeholder i {
-    font-size: 48px;
-    color: var(--text-tertiary);
-}
-
-.chat-placeholder h3 {
-    font-size: 18px;
-    font-weight: 500;
-    color: var(--text-primary);
-    margin: 0;
-}
-
 /* Эффекты при наведении и фокусе */
 #messageInput:focus {
     outline: none;
@@ -599,5 +714,12 @@
 .messages-area::-webkit-scrollbar-thumb:hover,
 .friends-list::-webkit-scrollbar-thumb:hover {
     background: var(--text-tertiary);
+}
+
+/* Исправляем высоту для корректного отображения */
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
 }
  
