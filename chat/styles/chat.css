@@ -187,7 +187,7 @@ body {
 .messages-area {
     flex: 1;
     padding: 24px;
-    background: white;
+    background: var(--background-color);
     overflow-y: auto;
     display: flex;
     flex-direction: column;
@@ -791,7 +791,7 @@ body {
     font-size: 13px;
 }
 
-/* Стили для превью файлов */
+/* Стили для пр��вью файлов */
 #filePreview {
     margin-bottom: 12px;
 }
