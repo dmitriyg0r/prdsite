@@ -6,7 +6,6 @@ let typingTimeout = null;
 let selectedMessageId = null;
 let selectedMessageText = '';
 let replyToMessageId = null;
-let socket = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
     // Проверка авторизации
@@ -47,43 +46,26 @@ async function loadUserInfo(userId) {
 // Инициализация чата
 async function initializeChat() {
     try {
-        // Подключаемся к Socket.IO
-        socket = io('https://adminflow.ru:5003', {
-            withCredentials: true
-        });
-
-        // Аутентифицируем пользователя
-        socket.emit('authenticate', currentUser.id);
-
-        // Обрабатываем обновления статуса
-        socket.on('user_status_update', (data) => {
-            updateUserStatus(data);
-        });
-        
-        // Получаем ID пользователя из URL или sessionStorage
         const urlParams = new URLSearchParams(window.location.search);
         const chatUserId = urlParams.get('userId');
         
         if (chatUserId) {
-            // Загружаем информацию о пользователе через API
             const userInfo = await loadUserInfo(chatUserId);
             if (userInfo) {
                 currentChatPartner = userInfo;
-                
-                // Обновляем UI с информацией о пользователе
                 updateChatHeader(userInfo);
-                
-                // Загружаем ист��рию сообщений
                 await loadChatHistory();
-                
-                // Запускаем обновление сообщений
                 startMessageUpdates();
-                
-                // Помечаем сообщения как прочитанные
                 await markMessagesAsRead(chatUserId);
             }
         }
 
+        // Загружаем список чатов
+        await loadChatsList();
+        
+        // Запускаем периодическое обновление списка чатов
+        setInterval(loadChatsList, 10000);
+        
     } catch (err) {
         console.error('Error initializing chat:', err);
         alert('Ошибка при инициализации чата');
@@ -292,7 +274,7 @@ function createAttachmentElement(attachmentUrl) {
     return attachmentElement;
 }
 
-// Вспомогательная функция для проверки типа файла
+// Вспомогательная функци�� для проверки типа файла
 function isImageFile(url) {
     return /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
 }
@@ -486,7 +468,7 @@ async function loadMessages(friendId) {
     }
 }
 
-// Функция обновления ��татуса сообщения
+// Функция обновления статуса сообщения
 function updateMessageStatus(messageElement, messageData) {
     const statusElement = messageElement.querySelector('.message-status');
     if (statusElement) {
@@ -683,7 +665,7 @@ async function deleteMessage(messageId) {
             alert(data.error || 'Не удалось удалить сообщение');
         }
     } catch (error) {
-        console.error('Ошибка при удалении со��бщения:', error);
+        console.error('Ошибка при удалении сообщения:', error);
         alert('Произошла ошибка при удалении сообщения');
     }
 }
@@ -826,7 +808,7 @@ function setupContextMenu() {
         });
     }
 
-    // Закрытие меню при клике вне его
+    // Закрытие м��ню при клике вне его
     document.addEventListener('click', (e) => {
         if (!contextMenu.contains(e.target)) {
             hideContextMenu();
@@ -907,7 +889,7 @@ function cancelReply() {
     replyToMessageId = null;
 }
 
-// Доб��вляем обработчик видимости страницы
+// Добвляем обработчик видимости страницы
 document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && currentChatPartner) {
         loadMessages(currentChatPartner.id);
@@ -938,8 +920,7 @@ function startMessageUpdates() {
 }
 
 // Функция обновления статуса пользователя
-function updateUserStatus(data) {
-    const { userId, isOnline, lastActivity } = data;
+function updateUserStatus(userId, isOnline, lastActivity) {
     const userElement = document.querySelector(`.chat-partner[data-friend-id="${userId}"]`);
     
     if (userElement) {
@@ -970,7 +951,7 @@ function updateLastMessage(message) {
     }
 }
 
-// Функция загрузки списка чатов
+// Функция за��рузки списка чатов
 async function loadChatsList() {
     try {
         const response = await fetch(`https://adminflow.ru:5003/api/chats/${currentUser.id}`);
