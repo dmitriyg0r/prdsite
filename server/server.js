@@ -854,7 +854,7 @@ app.get('/api/users/:id', async (req, res) => {
     }
 });
 
-// Обновле����ие п��о���иля пользователя
+// Обновле����ие п��о����иля пользователя
 app.post('/api/users/update-profile', async (req, res) => {
     try {
         const { userId, username, email } = req.body;
@@ -2237,6 +2237,31 @@ app.post('/api/messages/send', async (req, res) => {
             });
         }
 
+        // Проверяем структуру таблицы messages
+        const tableCheck = await pool.query(`
+            SELECT EXISTS (
+                SELECT 1 
+                FROM information_schema.tables 
+                WHERE table_name = 'messages'
+            );
+        `);
+
+        if (!tableCheck.rows[0].exists) {
+            // Создаем таблицу, если она не существует
+            await pool.query(`
+                CREATE TABLE IF NOT EXISTS messages (
+                    id SERIAL PRIMARY KEY,
+                    sender_id INTEGER NOT NULL REFERENCES users(id),
+                    receiver_id INTEGER NOT NULL REFERENCES users(id),
+                    message TEXT,
+                    attachment_url TEXT,
+                    reply_to INTEGER REFERENCES messages(id),
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                    is_read BOOLEAN DEFAULT FALSE
+                );
+            `);
+        }
+
         // Сохраняем сообщение
         const result = await pool.query(`
             INSERT INTO messages 
@@ -2274,10 +2299,19 @@ app.post('/api/messages/send', async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Ошибка отправки сообщения:', error.message);
+        // Детальное логирование ошибки
+        console.error('Ошибка отправки сообщения:', {
+            message: error.message,
+            code: error.code,
+            detail: error.detail,
+            table: error.table,
+            constraint: error.constraint
+        });
+
+        // Возвращаем более информативную ошибку клиенту
         return res.status(500).json({
             success: false,
-            error: 'Ошибка при отправке сообщения'
+            error: `Ошибка при отправке сообщения: ${error.message}`
         });
     }
 });
