@@ -17,25 +17,28 @@
 </head>
 <body>
     <!-- Боковое меню -->
-    <nav class="sidebar">
-        <!-- Добавляем иконку -->
-        <div class="sidebar-logo">
+    <nav class="sidebar glass-effect">
+        <div class="sidebar-logo hover-lift">
             <img src="../flow.ico" alt="Flow Logo" class="sidebar-icon">
         </div>
         <div class="sidebar-nav">
-            <a href="../index.html" class="sidebar-link">
-                <i class="fas fa-home"></i>
-                <span>Расписание</span>
+            <a href="../profile/profile.html" class="sidebar-link active">
+                <i class="fas fa-user"></i>
+                <span>Профиль</span>
             </a>
-            <a href="../home/homework.html" class="sidebar-link">
-                <i class="fas fa-tasks"></i>
-                <span>Задания</span>
+            <a href="../lenta/lenta.html" class="sidebar-link">
+                <i class="fas fa-stream"></i>
+                <span>Лента</span>
+            </a>
+            <a href="../games/games.html" class="sidebar-link">
+                <i class="fas fa-gamepad"></i>
+                <span>Игры</span>
             </a>
             <a href="../downloads/downloads.html" class="sidebar-link">
                 <i class="fas fa-download"></i>
                 <span>Загрузки</span>
             </a>
-            <a href="../memes/memes.html" class="sidebar-link active">
+            <a href="../memes/memes.html" class="sidebar-link">
                 <i class="fas fa-smile"></i>
                 <span>Мемы</span>
             </a>
@@ -43,16 +46,7 @@
                 <i class="fas fa-info-circle"></i>
                 <span>О нас</span>
             </a>
-            <a href="../games/games.html" class="sidebar-link">
-                <i class="fas fa-gamepad"></i>
-                <span>Игры</span>
-            </a>
-            <a href="../profile/profile.html" class="sidebar-link">
-                <i class="fas fa-user"></i>
-                <span>Профиль</span>
-            </a>
         </div>
-        <!-- Переключатель темы после навигации -->
         <div class="theme-switch-wrapper">
             <div class="theme-toggle-container">
                 <i class="fas fa-sun theme-icon"></i>
@@ -64,6 +58,7 @@
             </div>
         </div>
     </nav>
+    <!-- Переключатель темы после навигации -->
     <!-- Мобильное меню -->
 
     <div class="overlay"></div>
