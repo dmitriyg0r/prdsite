@@ -28,7 +28,7 @@ async function initializeChat() {
         // Обновляем конфигурацию Socket.IO
         socket = io('https://adminflow.ru:5003', {
             path: '/socket.io/',
-            transports: ['polling'], // Временно используем только polling
+            transports: ['websocket', 'polling'], // Enable both transports
             withCredentials: true,
             reconnection: true,
             reconnectionAttempts: 5,
@@ -218,7 +218,7 @@ async function openChat(friend) {
             // Обновляем текущего собеседника
             currentChatPartner = data.user;
             
-            // Обн��вляем заголовок чата
+            // Обновляем заголовок чата
             const chatHeader = document.getElementById('chat-header');
             const headerAvatar = document.getElementById('chat-header-avatar');
             const headerName = document.getElementById('chat-header-name');
@@ -279,7 +279,7 @@ async function loadChatHistory() {
         if (data.success) {
             const messagesContainer = document.getElementById('messages');
             
-            // Оптимизация проверки н��вых сообщений
+            // Оптимизация проверки новых сообщений
             const currentMessageIds = new Set(
                 Array.from(messagesContainer.querySelectorAll('.message'))
                     .map(el => el.dataset.messageId)
@@ -383,7 +383,7 @@ function createMessageElement(message) {
         messageContent.appendChild(attachmentElement);
     }
 
-    // Информация о сообщении (время и статус)
+    // ��нформация о сообщении (время и статус)
     const messageInfo = document.createElement('div');
     messageInfo.className = 'message-info';
 
@@ -531,7 +531,7 @@ async function markMessagesAsRead(friendId) {
             // Обновляем счетчик только если успешно обновили статус
             await updateUnreadCount(friendId);
         } else {
-            console.error('Ошибка при обновлении статуса сообщений:', data.error);
+            console.error('Ошибка при обновлении ст��туса сообщений:', data.error);
         }
     } catch (err) {
         console.error('Error marking messages as read:', err);
@@ -618,7 +618,7 @@ async function loadMessages(friendId) {
             // Находим только новые сообщения
             const newMessages = data.messages.filter(msg => !existingMessages.has(msg.id.toString()));
             
-            // Если есть новые сообщения
+            // Если есть ��овые сообщения
             if (newMessages.length > 0) {
                 // Добавляем только новые сообщения
                 newMessages.forEach(message => {
@@ -847,7 +847,7 @@ async function deleteMessage(messageId) {
             alert(data.error || 'Не удалось удалить сообщение');
         }
     } catch (error) {
-        console.error('Ошибка при удалении со��бщения:', error);
+        console.error('Ошибка при удалении сообщения:', error);
         alert('Произошла ошибка при удалении сообщения');
     }
 }
@@ -990,7 +990,7 @@ function setupContextMenu() {
         });
     }
 
-    // Закрытие меню при клике вне его
+    // Закрытие ��еню при клике вне его
     document.addEventListener('click', (e) => {
         if (!contextMenu.contains(e.target)) {
             hideContextMenu();
@@ -1071,7 +1071,7 @@ function cancelReply() {
     replyToMessageId = null;
 }
 
-// Добавляем обработчик видимости страницы
+// Доба��ляем обработчик видимости страницы
 document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && currentChatPartner) {
         loadMessages(currentChatPartner.id);
