@@ -27,6 +27,7 @@ async function initializeChat() {
     try {
         // Инициализируем WebSocket соединение
         socket = io('https://adminflow.ru:5003', {
+            path: '/socket.io/',
             withCredentials: true
         });
 

@@ -183,7 +183,7 @@ app.get('/api/download/:folder/:filename', (req, res) => {
 
         console.log('Downloading file:', filePath); // Для отладки
 
-        // Проверяем существование ��айла
+        // Проверяем существование файла
         if (!fs.existsSync(filePath)) {
             console.error('File not found:', filePath);
             return res.status(404).json({ error: 'Файл не найден' });
@@ -323,7 +323,7 @@ app.post('/api/upload-avatar', upload.single('avatar'), (req, res) => {
 app.use((err, req, res, next) => {
     if (err instanceof multer.MulterError) {
         if (err.code === 'LIMIT_FILE_SIZE') {
-            return res.status(400).json({ error: 'Файл слиш��ом большой. Максимальный размер: 10MB' });
+            return res.status(400).json({ error: 'Файл слишком большой. Максимальный размер: 10MB' });
         }
         return res.status(400).json({ error: err.message });
     }
@@ -430,7 +430,7 @@ app.get('/api/friends', async (req, res) => {
     try {
         const userId = parseInt(req.query.userId);
 
-        // Проверяем, что userId явл��ется числом
+        // Проверяем, что userId является числом
         if (!userId || isNaN(userId)) {
             return res.status(400).json({ 
                 success: false, 
@@ -660,7 +660,7 @@ app.get('/api/messages/last/:userId/:friendId', async (req, res) => {
         res.json({ success: true, message: result.rows[0] });
     } catch (err) {
         console.error('Error getting last message:', err);
-        res.status(500).json({ error: 'Ошибка при получении последнего сообщения' });
+        res.status(500).json({ error: 'Ошибка при получении последнег�� сообщения' });
     }
 });
 
@@ -774,7 +774,7 @@ app.get('/api/chat/friends', async (req, res) => {
     }
 });
 
-// Обновленная настройка статических путей
+// Обновленная наст��ойка статических путей
 app.use('/uploads', (req, res, next) => {
     const ext = path.extname(req.path).toLowerCase();
     // Если это изображение - показываем, иначе отправляем через download API
@@ -859,7 +859,7 @@ app.post('/api/users/update-profile', async (req, res) => {
     try {
         const { userId, username, email } = req.body;
 
-        // Проверяем, не занят ли email другим пользователем
+        // Проверяем, не занят ли email другим п��льзователем
         if (email) {
             const emailCheck = await pool.query(
                 'SELECT id FROM users WHERE email = $1 AND id != $2',
@@ -974,7 +974,7 @@ const checkAdmin = async (req, res, next) => {
         if (!adminId) {
             return res.status(401).json({ 
                 success: false,
-                error: 'Требуется авторизация' 
+                error: 'Требуется ��вторизация' 
             });
         }
 
@@ -1330,7 +1330,7 @@ app.delete('/api/posts/delete/:postId', async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         console.error('Error deleting post:', err);
-        res.status(500).json({ error: 'Ошибка при удалении поста' });
+        res.status(500).json({ error: 'Ошибка п��и удалении поста' });
     }
 });
 
@@ -1712,7 +1712,7 @@ transporter.verify(function(error, success) {
 // Альтернативная конфигурация с TLS
 const alternativeTransporter = nodemailer.createTransport({
     host: 'smtp.timeweb.ru',
-    port: 587,              // Ал��тернативный порт
+    port: 587,              // Алтернативный порт
     secure: false,          // Для порта 587
     requireTLS: true,       // Требуем TLS
     auth: {
@@ -1745,7 +1745,7 @@ app.post('/api/send-verification-code', async (req, res) => {
     try {
         const { userId, email } = req.body;
 
-        // Проверяем наличие email в зап��осе
+        // Проверяем наличие email в запосе
         if (!userId || !email) {
             return res.status(400).json({
                 success: false,
@@ -1865,7 +1865,6 @@ app.post('/api/change-password', async (req, res) => {
 
 // Обновляем настройки HTTP и HTTPS серверов
 const httpServer = http.createServer((req, res) => {
-    // Редирект с HTTP на HTTPS
     res.writeHead(301, { Location: `https://${req.headers.host}${req.url}` });
     res.end();
 });
@@ -1874,6 +1873,7 @@ const httpsServer = https.createServer(sslOptions, app);
 
 // Создаем экземпляр Socket.IO
 const io = new Server(httpsServer, {
+    path: '/socket.io/',
     cors: {
         origin: function(origin, callback) {
             if (!origin) return callback(null, true);
@@ -1904,8 +1904,8 @@ httpServer.listen(80, () => {
     console.log('HTTP Server running on port 80 (redirect to HTTPS)');
 });
 
-httpsServer.listen(443, () => {
-    console.log('HTTPS Server running on port 443');
+httpsServer.listen(5003, () => {
+    console.log('HTTPS Server running on port 5003');
 });
 
 // Проверка имени пользователя для восстановления пароля
