@@ -6,6 +6,7 @@ let typingTimeout = null;
 let selectedMessageId = null;
 let selectedMessageText = '';
 let replyToMessageId = null;
+let socket = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
     // Проверка авторизации
@@ -24,6 +25,40 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function initializeChat() {
     try {
+        // Инициализируем WebSocket соединение
+        socket = io('https://adminflow.ru:5003', {
+            withCredentials: true
+        });
+
+        // Обработчики WebSocket событий
+        socket.on('connect', () => {
+            console.log('WebSocket connected');
+            // Авторизуем пользователя
+            socket.emit('auth', currentUser.id);
+        });
+
+        socket.on('user_status_update', (data) => {
+            updateUserStatus(data);
+        });
+
+        socket.on('new_message', (message) => {
+            if (currentChatPartner && message.sender_id === currentChatPartner.id) {
+                const messageElement = createMessageElement(message);
+                document.getElementById('messages').appendChild(messageElement);
+                if (isScrolledToBottom(document.getElementById('messages'))) {
+                    scrollToBottom();
+                }
+                markMessagesAsRead(currentChatPartner.id);
+            }
+            // Обновляем последнее сообщение в списке чатов
+            updateLastMessage(message);
+        });
+
+        socket.on('message_status_update', (data) => {
+            updateMessageStatus(data);
+        });
+
+        // Загружаем список друзей и остальную инициализацию
         console.log('Загрузка списка друзей...');
         const response = await fetch(`https://adminflow.ru:5003/api/friends?userId=${currentUser.id}`);
         const data = await response.json();
@@ -316,7 +351,7 @@ function createMessageElement(message) {
         messageElement.appendChild(replyElement);
     }
 
-    // ��сновной контент сообщения
+    // Основной контент сообщения
     const messageContent = document.createElement('div');
     messageContent.className = 'message-content';
 
@@ -498,7 +533,7 @@ function setupEventListeners() {
     sendButton?.removeEventListener('click', sendMessage);
     messageInput?.removeEventListener('keypress', handleEnterPress);
 
-    // Добавляем новые обработчики
+    // Добавляем новые обраб��тчики
     sendButton?.addEventListener('click', sendMessage);
     messageInput?.addEventListener('keypress', handleEnterPress);
 
@@ -654,7 +689,7 @@ function showImageModal(imageUrl) {
     modalImage.onerror = () => {
         console.error('Ошибка загрузки изображения в модальном окне:', imageUrl);
         modal.style.display = 'none';
-        alert('Ошибка при загрузке изображения');
+        alert('Ошибк�� при загрузке изображения');
     };
     
     modalImage.src = imageUrl;
@@ -665,7 +700,7 @@ document.querySelector('.close-modal').onclick = function() {
     document.querySelector('.image-modal').style.display = 'none';
 };
 
-// Добавляем обработчики для прик��епления файлов
+// Добавляем обработчики для прикрепления файлов
 function setupAttachmentHandlers() {
     const attachButton = document.getElementById('attachButton');
     const fileInput = document.getElementById('fileInput');
@@ -1035,7 +1070,7 @@ function isScrolledToBottom(element) {
     return Math.abs(element.scrollHeight - element.scrollTop - element.clientHeight) < 1;
 }
 
-// Функция обновлени�� сообщений
+// Функция обновления сообщений
 function startMessageUpdates() {
     if (messageUpdateInterval) {
         clearInterval(messageUpdateInterval);
@@ -1050,4 +1085,37 @@ function startMessageUpdates() {
             loadMessages(currentChatPartner.id);
         }
     }, 3000);
+}
+
+// Функция обновления статуса пользователя
+function updateUserStatus(data) {
+    const { userId, isOnline, lastActivity } = data;
+    const userElement = document.querySelector(`.chat-partner[data-friend-id="${userId}"]`);
+    
+    if (userElement) {
+        const statusIndicator = userElement.querySelector('.status-indicator');
+        const lastActivityElement = userElement.querySelector('.last-activity');
+        
+        if (statusIndicator) {
+            statusIndicator.className = `status-indicator ${isOnline ? 'online' : 'offline'}`;
+        }
+        
+        if (lastActivityElement) {
+            lastActivityElement.textContent = isOnline ? 'онлайн' : getLastActivityTime(lastActivity);
+        }
+    }
+}
+
+// Функция обновления последнего сообщения
+function updateLastMessage(message) {
+    const userId = message.sender_id === currentUser.id ? message.receiver_id : message.sender_id;
+    const lastMessageElement = document.getElementById(`last-message-${userId}`);
+    
+    if (lastMessageElement) {
+        const isOwnMessage = message.sender_id === currentUser.id;
+        const messageText = message.message.length > 25 
+            ? message.message.substring(0, 25) + '...' 
+            : message.message;
+        lastMessageElement.textContent = `${isOwnMessage ? 'Вы: ' : ''}${messageText}`;
+    }
 }
