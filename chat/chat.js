@@ -6,7 +6,6 @@ let typingTimeout = null;
 let selectedMessageId = null;
 let selectedMessageText = '';
 let replyToMessageId = null;
-let socket = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
     // Проверка авторизации
@@ -40,43 +39,49 @@ async function loadUserInfo(userId) {
 
 // Инициализация чата
 async function initializeChat() {
-    let selectedChatUser = null;
-
     try {
         // Получаем ID пользователя из URL или sessionStorage
         const urlParams = new URLSearchParams(window.location.search);
         const chatUserId = urlParams.get('userId');
-        const selectedUser = sessionStorage.getItem('selectedChatUser');
-
+        
         if (chatUserId) {
             // Загружаем информацию о пользователе через API
             const userInfo = await loadUserInfo(chatUserId);
             if (userInfo) {
-                selectedChatUser = userInfo;
-                sessionStorage.setItem('selectedChatUser', JSON.stringify(userInfo));
+                currentChatPartner = userInfo;
+                
+                // Обновляем UI с информацией о пользователе
+                updateChatHeader(userInfo);
+                
+                // Загружаем историю сообщений
+                await loadChatHistory();
+                
+                // Запускаем обновление сообщений
+                startMessageUpdates();
+                
+                // Помечаем сообщения как прочитанные
+                await markMessagesAsRead(chatUserId);
             }
-        } else if (selectedUser) {
-            selectedChatUser = JSON.parse(selectedUser);
         }
-
-        if (selectedChatUser) {
-            // Обновляем UI с информацией о пользователе
-            document.querySelector('.chat-header .user-name').textContent = selectedChatUser.username;
-            const avatarImg = document.querySelector('.chat-header .user-avatar');
-            if (avatarImg) {
-                avatarImg.src = selectedChatUser.avatar_url || '/uploads/avatars/default.png';
-            }
-
-            // Загружаем историю сообщений
-            await loadMessageHistory();
-        }
-
-        // Инициализируем Socket.IO соединение
-        initializeSocketConnection();
 
     } catch (err) {
         console.error('Error initializing chat:', err);
         alert('Ошибка при инициализации чата');
+    }
+}
+
+// Добавляем функцию обновления заголовка чата
+function updateChatHeader(userInfo) {
+    const headerName = document.querySelector('.chat-header .user-name');
+    const headerAvatar = document.querySelector('.chat-header .user-avatar');
+    
+    if (headerName) {
+        headerName.textContent = userInfo.username;
+    }
+    
+    if (headerAvatar) {
+        headerAvatar.src = userInfo.avatar_url || '/uploads/avatars/default.png';
+        headerAvatar.alt = userInfo.username;
     }
 }
 
@@ -358,7 +363,7 @@ function setupEventListeners() {
     sendButton?.removeEventListener('click', sendMessage);
     messageInput?.removeEventListener('keypress', handleEnterPress);
 
-    // Добавляем новые обработчики
+    // Добавляем новые обраб��тчики
     sendButton?.addEventListener('click', sendMessage);
     messageInput?.addEventListener('keypress', handleEnterPress);
 
@@ -556,7 +561,7 @@ function setupAttachmentHandlers() {
 function showFilePreview(file) {
     let previewContainer = document.getElementById('filePreview');
     
-    // Если контейнер не существует, создаем его
+    // Есл�� контейнер не существует, создаем его
     if (!previewContainer) {
         previewContainer = document.createElement('div');
         previewContainer.id = 'filePreview';
@@ -655,7 +660,7 @@ async function deleteMessage(messageId) {
             });
         } else {
             console.error('Ошибка при удалении сообщения:', data.error);
-            alert(data.error || 'Не удал��сь удалить сообщение');
+            alert(data.error || 'Не удалось удалить сообщение');
         }
     } catch (error) {
         console.error('Ошибка при удалении сообщения:', error);
