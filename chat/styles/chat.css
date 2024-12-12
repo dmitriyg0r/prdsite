@@ -762,11 +762,11 @@ body {
     text-decoration: none;
 }
 
-/* Стили для ответа на сообщение */
+/* Стили для сообщения-ответа */
 .message-reply {
     display: flex;
     flex-direction: column;
-    background: rgba(0, 0, 0, 0.05);
+    background: rgba(var(--primary-color-rgb), 0.08);
     border-radius: 12px;
     margin-bottom: 8px;
     padding: 8px 12px;
@@ -796,7 +796,7 @@ body {
 
 /* Стили для сообщения-ответа в отправленных сообщениях */
 .message-sent .message-reply {
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.2);
 }
 
 .message-sent .message-reply-info {
@@ -810,7 +810,7 @@ body {
 
 /* Стили для тёмной темы */
 [data-theme="dark"] .message-reply {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(149, 117, 205, 0.15);
 }
 
 /* Анимация появления */
