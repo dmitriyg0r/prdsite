@@ -303,7 +303,6 @@ async function sendMessage() {
     }
 
     try {
-        // Выбираем endpoint в зависимости от наличия файла
         const endpoint = selectedFile ? 
             'https://adminflow.ru:5003/api/messages/send-with-file' : 
             'https://adminflow.ru:5003/api/messages/send';
@@ -318,49 +317,42 @@ async function sendMessage() {
             data.replyToMessageId = replyToMessageId;
         }
 
-        let response;
-        if (selectedFile) {
-            const formData = new FormData();
-            Object.entries(data).forEach(([key, value]) => {
-                formData.append(key, value);
-            });
-            formData.append('file', selectedFile);
-            
-            response = await fetch(endpoint, {
-                method: 'POST',
-                body: formData
-            });
-        } else {
-            response = await fetch(endpoint, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            });
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Ошибка при отправке сообщения');
         }
 
         const responseData = await response.json();
         
         if (responseData.success) {
+            // Очищаем поле ввода и сбрасываем состояние
             messageInput.value = '';
             selectedFile = null;
             removeFilePreview();
             cancelReply();
             
+            // Добавляем сообщение в чат
             const messageElement = createMessageElement(responseData.message);
             const messagesContainer = document.getElementById('messages');
             if (messagesContainer) {
                 messagesContainer.appendChild(messageElement);
                 scrollToBottom();
             }
-        } else {
-            console.error('Ошибка при отправке сообщения:', responseData.error);
-            alert('Ошибка при отправке сообщения');
         }
     } catch (error) {
-        console.error('Ошибка при отправке сообщения:', error);
-        alert('Ошибка при отправке сообщения');
+        console.error('Ошибка при отправке сообщения:', error.message);
+        // Показываем ошибку пользователю только если это действительно ошибка
+        if (error.message !== 'Unexpected end of JSON input') {
+            alert(`Ошибка при отправке сообщения: ${error.message}`);
+        }
     }
 }
 
@@ -496,7 +488,7 @@ async function loadMessages(friendId) {
                 }
             });
 
-            // Помечаем сообще��ия как прочитанные
+            // Помечаем сообщения как прочитанные
             if (newMessages.length > 0) {
                 await markMessagesAsRead(friendId);
             }
@@ -825,7 +817,7 @@ function setupContextMenu() {
         });
     }
 
-    // Об��аботчик для кнопки удаления
+    // Обработчик для кнопки удаления
     const deleteButton = document.getElementById('deleteMessageBtn');
     if (deleteButton) {
         deleteButton.addEventListener('click', () => {
@@ -1064,7 +1056,7 @@ async function selectChat(chat) {
         chat.is_online ? 'онлайн' : getLastActivityTime(chat.last_activity);
     }
     
-    // Загружаем историю сообщений
+    // Загружаем ис��орию сообщений
     await loadChatHistory();
     
     // Запускаем обновление сообщений

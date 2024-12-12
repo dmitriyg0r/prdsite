@@ -873,7 +873,7 @@ app.post('/api/users/update-profile', async (req, res) => {
             }
         }
 
-        // Провер��ем, ��е занято ли имя пользователя
+        // Про��ер��ем, ��е занято ли имя пользователя
         if (username) {
             const usernameCheck = await pool.query(
                 'SELECT id FROM users WHERE username = $1 AND id != $2',
@@ -2209,8 +2209,11 @@ app.post('/api/messages/send', async (req, res) => {
     try {
         const { senderId, receiverId, message, replyToMessageId } = req.body;
         
+        console.log('Получены данные:', { senderId, receiverId, message, replyToMessageId }); // Для отладки
+
         // Проверяем обязательные параметры
         if (!senderId || !receiverId) {
+            console.log('Отсутствуют обязательные параметры');
             return res.status(400).json({
                 success: false,
                 error: 'Отсутствуют обязательные параметры'
@@ -2222,36 +2225,44 @@ app.post('/api/messages/send', async (req, res) => {
             INSERT INTO messages 
             (sender_id, receiver_id, message, reply_to, created_at, is_read)
             VALUES ($1, $2, $3, $4, NOW(), false)
-            RETURNING id, created_at
+            RETURNING 
+                id, 
+                sender_id,
+                receiver_id,
+                message,
+                reply_to,
+                created_at,
+                is_read
         `, [senderId, receiverId, message || '', replyToMessageId || null]);
 
-        // Формируем объект сообщения для ответа
-        const newMessage = {
-            id: result.rows[0].id,
-            sender_id: parseInt(senderId),
-            receiver_id: parseInt(receiverId),
-            message: message || '',
-            created_at: result.rows[0].created_at,
-            is_read: false,
-            reply_to: replyToMessageId ? parseInt(replyToMessageId) : null
-        };
-
-        // Отправляем уведомление через Socket.IO
-        const receiverSocketId = activeConnections.get(parseInt(receiverId));
-        if (receiverSocketId) {
-            io.to(receiverSocketId).emit('new_message', newMessage);
+        if (!result.rows[0]) {
+            throw new Error('Сообщение не было сохранено');
         }
 
-        res.json({
+        const newMessage = result.rows[0];
+
+        // Отправляем уведомление через Socket.IO
+        try {
+            const receiverSocketId = activeConnections.get(parseInt(receiverId));
+            if (receiverSocketId) {
+                io.to(receiverSocketId).emit('new_message', newMessage);
+            }
+        } catch (socketError) {
+            console.error('Ошибка при отправке через Socket.IO:', socketError);
+            // Не прерываем выполнение, так как сообщение уже сохранено
+        }
+
+        // Отправляем успешный ответ
+        return res.status(200).json({
             success: true,
             message: newMessage
         });
 
     } catch (error) {
-        console.error('Error sending message:', error);
-        res.status(500).json({
+        console.error('Детальная ошибка отправки сообщения:', error);
+        return res.status(500).json({
             success: false,
-            error: 'Error sending message'
+            error: error.message || 'Ошибка при отправке сообщения'
         });
     }
 });
