@@ -854,7 +854,7 @@ app.get('/api/users/:id', async (req, res) => {
     }
 });
 
-// Обновле��ие про��иля пользователя
+// Обновле����ие про��иля пользователя
 app.post('/api/users/update-profile', async (req, res) => {
     try {
         const { userId, username, email } = req.body;
@@ -873,7 +873,7 @@ app.post('/api/users/update-profile', async (req, res) => {
             }
         }
 
-        // Проверяем, ��е занято ли имя пользователя
+        // Провер��ем, ��е занято ли имя пользователя
         if (username) {
             const usernameCheck = await pool.query(
                 'SELECT id FROM users WHERE username = $1 AND id != $2',
@@ -2200,6 +2200,58 @@ app.get('/api/chats/:userId', async (req, res) => {
         res.status(500).json({
             success: false,
             error: 'Ошибка при получении списка чатов'
+        });
+    }
+});
+
+// Добавляем отдельный роут для отправки текстовых сообщений
+app.post('/api/messages/send', async (req, res) => {
+    try {
+        const { senderId, receiverId, message, replyToMessageId } = req.body;
+        
+        // Проверяем обязательные параметры
+        if (!senderId || !receiverId) {
+            return res.status(400).json({
+                success: false,
+                error: 'Отсутствуют обязательные параметры'
+            });
+        }
+
+        // Сохраняем сообщение в базе данных
+        const result = await pool.query(`
+            INSERT INTO messages 
+            (sender_id, receiver_id, message, reply_to, created_at, is_read)
+            VALUES ($1, $2, $3, $4, NOW(), false)
+            RETURNING id, created_at
+        `, [senderId, receiverId, message || '', replyToMessageId || null]);
+
+        // Формируем объект сообщения для ответа
+        const newMessage = {
+            id: result.rows[0].id,
+            sender_id: parseInt(senderId),
+            receiver_id: parseInt(receiverId),
+            message: message || '',
+            created_at: result.rows[0].created_at,
+            is_read: false,
+            reply_to: replyToMessageId ? parseInt(replyToMessageId) : null
+        };
+
+        // Отправляем уведомление через Socket.IO
+        const receiverSocketId = activeConnections.get(parseInt(receiverId));
+        if (receiverSocketId) {
+            io.to(receiverSocketId).emit('new_message', newMessage);
+        }
+
+        res.json({
+            success: true,
+            message: newMessage
+        });
+
+    } catch (error) {
+        console.error('Error sending message:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error sending message'
         });
     }
 });

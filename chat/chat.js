@@ -297,46 +297,65 @@ function isImageFile(url) {
 async function sendMessage() {
     const messageInput = document.getElementById('messageInput');
     
-    // Проверяем наличие собеседника и сообщения/файла
-    if (!currentChatPartner || (!messageInput?.value.trim() && !selectedFile)) {
+    // Проверяем наличие собеседника и сообщения
+    if (!currentChatPartner || !messageInput?.value.trim()) {
         return;
     }
 
     try {
-        const formData = new FormData();
-        formData.append('senderId', currentUser.id);
-        formData.append('receiverId', currentChatPartner.id);
-        formData.append('message', messageInput.value.trim());
-        
-        if (selectedFile) {
-            formData.append('file', selectedFile);
-        }
+        // Выбираем endpoint в зависимости от наличия файла
+        const endpoint = selectedFile ? 
+            'https://adminflow.ru:5003/api/messages/send-with-file' : 
+            'https://adminflow.ru:5003/api/messages/send';
+
+        const data = {
+            senderId: currentUser.id,
+            receiverId: currentChatPartner.id,
+            message: messageInput.value.trim()
+        };
 
         if (replyToMessageId) {
-            formData.append('replyToMessageId', replyToMessageId);
+            data.replyToMessageId = replyToMessageId;
         }
 
-        const response = await fetch('https://adminflow.ru:5003/api/messages/send-with-file', {
-            method: 'POST',
-            body: formData
-        });
+        let response;
+        if (selectedFile) {
+            const formData = new FormData();
+            Object.entries(data).forEach(([key, value]) => {
+                formData.append(key, value);
+            });
+            formData.append('file', selectedFile);
+            
+            response = await fetch(endpoint, {
+                method: 'POST',
+                body: formData
+            });
+        } else {
+            response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+        }
 
-        const data = await response.json();
+        const responseData = await response.json();
         
-        if (data.success) {
+        if (responseData.success) {
             messageInput.value = '';
             selectedFile = null;
             removeFilePreview();
             cancelReply();
             
-            const messageElement = createMessageElement(data.message);
+            const messageElement = createMessageElement(responseData.message);
             const messagesContainer = document.getElementById('messages');
             if (messagesContainer) {
                 messagesContainer.appendChild(messageElement);
                 scrollToBottom();
             }
         } else {
-            console.error('Ошибка при отправке сообщения:', data.error);
+            console.error('Ошибка при отправке сообщения:', responseData.error);
             alert('Ошибка при отправке сообщения');
         }
     } catch (error) {
@@ -477,7 +496,7 @@ async function loadMessages(friendId) {
                 }
             });
 
-            // Помечаем сообщения как прочитанные
+            // Помечаем сообще��ия как прочитанные
             if (newMessages.length > 0) {
                 await markMessagesAsRead(friendId);
             }
@@ -597,7 +616,7 @@ function showFilePreview(file) {
         </div>
     `;
     
-     // ��чищаем предыдущее превью
+     // чищаем предыдущее превью
     while(previewContainer.firstChild) {
         previewContainer.removeChild(previewContainer.firstChild);
     }
@@ -747,7 +766,7 @@ function setupContextMenu() {
         // Ищем ближайший элемент сообщения от места клика
         const messageElement = e.target.closest('.message');
         if (messageElement) {
-            // Получаем текст сообщения (может быть в .message-text или в атрибуте alt из��бражения)
+            // Получаем текст сообщения (может быть в .message-text или в атрибуте alt избражения)
             const messageTextElement = messageElement.querySelector('.message-text');
             const messageImage = messageElement.querySelector('.message-attachment img');
             
@@ -806,7 +825,7 @@ function setupContextMenu() {
         });
     }
 
-    // Обработчик для кнопки удаления
+    // Об��аботчик для кнопки удаления
     const deleteButton = document.getElementById('deleteMessageBtn');
     if (deleteButton) {
         deleteButton.addEventListener('click', () => {
@@ -1055,7 +1074,7 @@ async function selectChat(chat) {
     await markMessagesAsRead(chat.id);
 }
 
-// Функция получения времени последней активности п��льзователя
+// Функция получения времени последней активности пользователя
 function getLastActivityTime(lastActivity) {
    if (!lastActivity) return 'неизвестно';
    
