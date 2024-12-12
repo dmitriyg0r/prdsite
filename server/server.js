@@ -183,7 +183,7 @@ app.get('/api/download/:folder/:filename', (req, res) => {
 
         console.log('Downloading file:', filePath); // Для отладки
 
-        // Проверяем существование ��айла
+        // Проверяем существование файла
         if (!fs.existsSync(filePath)) {
             console.error('File not found:', filePath);
             return res.status(404).json({ error: 'Файл не найден' });
@@ -323,7 +323,7 @@ app.post('/api/upload-avatar', upload.single('avatar'), (req, res) => {
 app.use((err, req, res, next) => {
     if (err instanceof multer.MulterError) {
         if (err.code === 'LIMIT_FILE_SIZE') {
-            return res.status(400).json({ error: 'Файл слиш��ом большой. Максимальный размер: 10MB' });
+            return res.status(400).json({ error: 'Файл слишком большой. Максимальный размер: 10MB' });
         }
         return res.status(400).json({ error: err.message });
     }
@@ -664,7 +664,7 @@ app.get('/api/messages/last/:userId/:friendId', async (req, res) => {
     }
 });
 
-// Получение количества непрочитанных сообщений
+// Получение ��оличества непрочитанных сообщений
 app.get('/api/messages/unread/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
@@ -679,7 +679,7 @@ app.get('/api/messages/unread/:userId', async (req, res) => {
         res.json({ success: true, unreadCounts: result.rows });
     } catch (err) {
         console.error('Error getting unread counts:', err);
-        res.status(500).json({ error: 'Ошибка при получении количества непрочитанных сообщений' });
+        res.status(500).json({ error: 'Ошибка при по��учении количества непрочитанных сообщений' });
     }
 });
 
@@ -788,7 +788,7 @@ app.use('/uploads', (req, res, next) => {
     }
 }, express.static('/var/www/html/uploads'));
 
-// Или более детально для каждой папки
+// Или более д��тально для каждой папки
 app.use('/uploads/posts', express.static('/var/www/html/uploads/posts'));
 app.use('/uploads/avatars', express.static('/var/www/html/uploads/avatars'));
 app.use('/uploads/messages', express.static('/var/www/html/uploads/messages'));
@@ -1226,7 +1226,7 @@ app.post('/api/posts/create', uploadPost.single('image'), async (req, res) => {
     }
 });
 
-// Получение постов пользователя
+// Получение постов пол��зователя
 app.get('/api/posts/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
@@ -1375,7 +1375,7 @@ app.get('/api/users/status/:userId', async (req, res) => {
     }
 });
 
-// Обновление статуса пользователя
+// Обновление статуса пользовател��
 app.post('/api/users/update-status', async (req, res) => {
     try {
         const userId = parseInt(req.body.userId);
@@ -1555,7 +1555,7 @@ app.post('/api/posts/comment', async (req, res) => {
         });
     } catch (err) {
         console.error('Error creating comment:', err);
-        res.status(500).json({ error: 'Ошибка при создании комментария' });
+        res.status(500).json({ error: 'Ошибка при созда��ии комментария' });
     }
 });
 
@@ -1600,7 +1600,7 @@ app.delete('/api/messages/delete/:messageId', async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         console.error('Error deleting message:', err);
-        res.status(500).json({ error: 'Ошибка при удал��нии сообщения' });
+        res.status(500).json({ error: 'Ошибка при удалении сообщения' });
     }
 });
 
@@ -1709,7 +1709,7 @@ transporter.verify(function(error, success) {
     }
 });
 
-// Альтернативная конфигурация �� TLS
+// Альтернативная конфигурация  TLS
 const alternativeTransporter = nodemailer.createTransport({
     host: 'smtp.timeweb.ru',
     port: 587,              // Алтернативный порт
@@ -1740,7 +1740,7 @@ function generateVerificationCode() {
     return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-// Эндпоинт для отправки кода подтверждения
+// Эндпоинт для отправки кода подтверждени��
 app.post('/api/send-verification-code', async (req, res) => {
     try {
         const { userId, email } = req.body;
@@ -1799,7 +1799,7 @@ app.post('/api/send-verification-code', async (req, res) => {
                     </div>
                     <p style="color: #666; font-size: 14px; margin-top: 20px;">
                         Код дейтвителен в течение 5 минут.<br>
-                        Если вы не запрашивали код подтверждения, проигнорируйте это письмо.
+                        Если вы не запрашивали код подтверждения, пр��игнорируйте это письмо.
                     </p>
                 </div>
             `
@@ -1874,7 +1874,7 @@ const httpsServer = https.createServer(sslOptions, app);
 // Создаем экземпляр Socket.IO
 const io = new Server(httpsServer, {
     path: '/socket.io/',
-    transports: ['websocket', 'polling'],
+    transports: ['polling'], // Временно используем только polling
     cors: {
         origin: [
             'http://adminflow.ru',
@@ -1884,7 +1884,9 @@ const io = new Server(httpsServer, {
         ],
         methods: ['GET', 'POST'],
         credentials: true
-    }
+    },
+    pingTimeout: 60000,
+    pingInterval: 25000
 });
 
 // Добавляем middleware для Socket.IO
@@ -2013,5 +2015,10 @@ io.on('connection', (socket) => {
 // Добавляем проверочный endpoint для Socket.IO
 app.get('/socket.io/', (req, res) => {
     res.send('Socket.IO server is running');
+});
+
+// Добавляем обработку ошибок для Socket.IO
+io.engine.on("connection_error", (err) => {
+    console.log('Socket.IO connection error:', err);
 });
 

@@ -25,24 +25,29 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function initializeChat() {
     try {
-        // Инициализируем WebSocket соединение с правильным портом
+        // Обновляем конфигурацию Socket.IO
         socket = io('https://adminflow.ru:5003', {
             path: '/socket.io/',
-            transports: ['websocket', 'polling'],
+            transports: ['polling'], // Временно используем только polling
             withCredentials: true,
             reconnection: true,
             reconnectionAttempts: 5,
-            reconnectionDelay: 1000
+            reconnectionDelay: 1000,
+            timeout: 10000
         });
 
-        // Улучшенные обработчики WebSocket событий
+        // Улучшаем логирование
         socket.on('connect', () => {
-            console.log('WebSocket connected successfully');
+            console.log('Socket.IO connected successfully');
             socket.emit('auth', currentUser.id);
         });
 
         socket.on('connect_error', (error) => {
-            console.error('Socket connection error:', error);
+            console.error('Socket connection error:', error.message);
+        });
+
+        socket.on('error', (error) => {
+            console.error('Socket error:', error);
         });
 
         socket.on('user_status_update', (data) => {
@@ -76,7 +81,7 @@ async function initializeChat() {
         if (data.friends) {
             displayFriendsList(data.friends);
             
-            // Проверяем ��охраненного собеседника в sessionStorage
+            // Проверяем охраненного собеседника в sessionStorage
             const savedPartner = sessionStorage.getItem('selectedChatUser');
             if (savedPartner) {
                 const partner = JSON.parse(savedPartner);
