@@ -183,7 +183,7 @@ app.get('/api/download/:folder/:filename', (req, res) => {
 
         console.log('Downloading file:', filePath); // Для отладки
 
-        // Проверяем существование ��айла
+        // Проверяем существование файла
         if (!fs.existsSync(filePath)) {
             console.error('File not found:', filePath);
             return res.status(404).json({ error: 'Файл не найден' });
@@ -395,7 +395,7 @@ app.post('/api/friend-request', async (req, res) => {
             return res.status(400).json({ error: 'Заявка уже существует' });
         }
 
-        // Создаем новую заявку
+        // Создаем нову�� заявку
         await pool.query(
             'INSERT INTO friendships (user_id, friend_id, status) VALUES ($1, $2, $3)',
             [userId, friendId, 'pending']
@@ -983,7 +983,7 @@ const checkAdmin = async (req, res, next) => {
             [adminId]
         );
 
-        console.log('User role:', userResult.rows[0]?.role); // ��обавляем лог
+        console.log('User role:', userResult.rows[0]?.role); // Добавляем лог
 
         if (userResult.rows.length === 0 || userResult.rows[0].role !== 'admin') {
             return res.status(403).json({ 
@@ -1340,37 +1340,37 @@ app.use('/uploads/posts', express.static('/var/www/html/uploads/posts'));
 // Получение статуса пользователя
 app.get('/api/users/status/:userId', async (req, res) => {
     try {
-        const userId = parseInt(req.params.userId);
-
-        if (!userId || isNaN(userId)) {
-            return res.status(400).json({ 
-                success: false, 
-                error: 'Invalid user ID' 
-            });
-        }
-
-        const result = await pool.query(
-            'SELECT is_online, last_activity FROM users WHERE id = $1',
-            [userId]
-        );
+        const { userId } = req.params;
+        
+        const result = await pool.query(`
+            SELECT 
+                is_online,
+                last_activity,
+                CASE 
+                    WHEN is_online = true THEN true
+                    WHEN last_activity > NOW() - INTERVAL '5 minutes' THEN true
+                    ELSE false
+                END as actual_online_status
+            FROM users 
+            WHERE id = $1
+        `, [userId]);
 
         if (result.rows.length === 0) {
             return res.status(404).json({ 
                 success: false, 
-                error: 'Пользователь не найден' 
+                error: 'User not found' 
             });
         }
 
         res.json({
             success: true,
-            is_online: result.rows[0].is_online,
-            last_activity: result.rows[0].last_activity
+            status: result.rows[0]
         });
     } catch (err) {
         console.error('Error getting user status:', err);
         res.status(500).json({ 
             success: false, 
-            error: 'Ошибка при получении статуса пользователя' 
+            error: 'Error getting user status' 
         });
     }
 });
@@ -1403,7 +1403,7 @@ app.post('/api/users/update-status', async (req, res) => {
     }
 });
 
-// Добавляем автоматическое обновление статуса к��ждые 5 минут
+// Добавляем автоматическое обновление статуса каждые 5 минут
 setInterval(async () => {
     try {
         // Помечаем ользователей как оффлайн, если их последняя активность была более 5 минут назад
@@ -1591,7 +1591,7 @@ app.delete('/api/messages/delete/:messageId', async (req, res) => {
         );
 
         if (message.rows.length === 0) {
-            return res.status(403).json({ error: 'У вас нет прав на удаление ��того сообщения' });
+            return res.status(403).json({ error: 'У вас нет прав на удаление этого сообщения' });
         }
 
         // Удаляем сообщение
@@ -1896,7 +1896,7 @@ const io = new Server(httpsServer, {
     }
 });
 
-// Хранилищ�� для активных соединений
+// Хранилище для активных соединений
 const activeConnections = new Map();
 
 // Запускаем серверы
@@ -1945,17 +1945,19 @@ io.on('connection', (socket) => {
 
     // Авторизация пользователя
     socket.on('auth', async (userId) => {
+        if (!userId) return;
+        
         socket.userId = userId;
         activeConnections.set(userId, socket.id);
         
-        // Обновляем статус пользователя в БД
         try {
+            // Обновляем статус в БД
             await pool.query(
                 'UPDATE users SET is_online = true, last_activity = CURRENT_TIMESTAMP WHERE id = $1',
                 [userId]
             );
-            
-            // Оповещаем друзей о статусе
+
+            // Получаем список друзей
             const friends = await pool.query(`
                 SELECT 
                     CASE 
@@ -1966,86 +1968,64 @@ io.on('connection', (socket) => {
                 WHERE (user_id = $1 OR friend_id = $1) 
                 AND status = 'accepted'
             `, [userId]);
-            
+
+            // Оповещаем всех друзей о статусе
             friends.rows.forEach(friend => {
-                io.to(activeConnections.get(friend.friend_id))
-                    .emit('user_status_update', { userId, isOnline: true });
+                const friendSocketId = activeConnections.get(friend.friend_id);
+                if (friendSocketId) {
+                    io.to(friendSocketId).emit('user_status_update', {
+                        userId: userId,
+                        isOnline: true,
+                        lastActivity: new Date()
+                    });
+                }
             });
         } catch (err) {
-            console.error('Error updating user status:', err);
+            console.error('Error in auth handler:', err);
         }
     });
 
-    // Обработка прочтения сообщений
-    socket.on('messages_read', async ({ userId, friendId }) => {
-        try {
-            // Обновляем статус сообщений в БД
-            await pool.query(`
-                UPDATE messages 
-                SET is_read = true 
-                WHERE sender_id = $1 
-                AND receiver_id = $2 
-                AND is_read = false
-            `, [friendId, userId]);
-
-            // Оповещаем отправителя
-            const friendSocketId = activeConnections.get(friendId);
-            if (friendSocketId) {
-                io.to(friendSocketId).emit('messages_read_update', { 
-                    userId, 
-                    friendId 
-                });
-            }
-        } catch (err) {
-            console.error('Error marking messages as read:', err);
-        }
-    });
-
-    // Обработка набора текста
-    socket.on('typing', ({ userId, friendId, isTyping }) => {
-        const friendSocketId = activeConnections.get(friendId);
-        if (friendSocketId) {
-            io.to(friendSocketId).emit('typing_update', { 
-                userId, 
-                isTyping 
-            });
-        }
-    });
-
-    // Обработка отключения
+    // Обработчик отключения
     socket.on('disconnect', async () => {
-        if (socket.userId) {
-            try {
-                // Обновляем статус в БД
-                await pool.query(
-                    'UPDATE users SET is_online = false, last_activity = CURRENT_TIMESTAMP WHERE id = $1',
-                    [socket.userId]
-                );
+        if (!socket.userId) return;
 
-                // Оповещаем друзей
-                const friends = await pool.query(`
-                    SELECT 
-                        CASE 
-                            WHEN user_id = $1 THEN friend_id 
-                            ELSE user_id 
-                        END as friend_id
-                    FROM friendships 
-                    WHERE (user_id = $1 OR friend_id = $1) 
-                    AND status = 'accepted'
-                `, [socket.userId]);
+        try {
+            const userId = socket.userId;
+            const lastActivity = new Date();
 
-                friends.rows.forEach(friend => {
-                    io.to(activeConnections.get(friend.friend_id))
-                        .emit('user_status_update', { 
-                            userId: socket.userId, 
-                            isOnline: false 
-                        });
-                });
+            // Обновляем статус в БД
+            await pool.query(
+                'UPDATE users SET is_online = false, last_activity = CURRENT_TIMESTAMP WHERE id = $1',
+                [userId]
+            );
 
-                activeConnections.delete(socket.userId);
-            } catch (err) {
-                console.error('Error updating user status on disconnect:', err);
-            }
+            // Получаем список друзей
+            const friends = await pool.query(`
+                SELECT 
+                    CASE 
+                        WHEN user_id = $1 THEN friend_id 
+                        ELSE user_id 
+                    END as friend_id
+                FROM friendships 
+                WHERE (user_id = $1 OR friend_id = $1) 
+                AND status = 'accepted'
+            `, [userId]);
+
+            // Оповещаем всех друзей об отключении
+            friends.rows.forEach(friend => {
+                const friendSocketId = activeConnections.get(friend.friend_id);
+                if (friendSocketId) {
+                    io.to(friendSocketId).emit('user_status_update', {
+                        userId: userId,
+                        isOnline: false,
+                        lastActivity: lastActivity
+                    });
+                }
+            });
+
+            activeConnections.delete(userId);
+        } catch (err) {
+            console.error('Error in disconnect handler:', err);
         }
     });
 });
