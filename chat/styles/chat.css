@@ -649,7 +649,7 @@ body {
     }
 }
 
-/* Дополнительные стили для а��атаров и статусов */
+/* Дополнительные стили для аватаров и статусов */
 .avatar-container {
     position: relative;
     width: 48px;
@@ -764,25 +764,60 @@ body {
 
 /* Стили для ответов на сообщения */
 .message-reply {
-    background: rgba(var(--primary-color-rgb), 0.1);
-    padding: 8px 12px;
-    border-radius: var(--radius-md);
-    margin-bottom: 8px;
-    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
-.reply-header {
+.message-reply-info {
     display: flex;
     align-items: center;
-    gap: 6px;
-    color: var(--primary-color);
+    gap: 8px;
     font-size: 13px;
+    color: var(--primary-color);
     margin-bottom: 4px;
 }
 
-.reply-content {
-    color: var(--text-secondary);
+.message-reply-info i {
+    font-size: 12px;
+    transform: scaleX(-1); /* Разворачиваем иконку ответа */
+}
+
+.message-reply-text {
+    padding: 8px 12px;
+    background: rgba(var(--primary-color-rgb), 0.08);
+    border-left: 2px solid var(--primary-color);
+    border-radius: 4px;
     font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+/* Стили для сообщения-ответа в отправленных сообщениях */
+.message-sent .message-reply-info {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.message-sent .message-reply-text {
+    background: rgba(255, 255, 255, 0.15);
+    border-left-color: rgba(255, 255, 255, 0.4);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Анимация появления */
+.message-reply {
+    animation: replyAppear 0.2s ease-out;
+}
+
+@keyframes replyAppear {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Стили для превью файлов */
