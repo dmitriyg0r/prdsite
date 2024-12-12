@@ -304,6 +304,12 @@ async function sendMessage() {
     try {
         const endpoint = 'https://adminflow.ru:5003/api/messages/send';
         
+        console.log('Отправка сообщения:', {
+            senderId: currentUser.id,
+            receiverId: currentChatPartner.id,
+            message: messageInput.value.trim()
+        });
+
         const response = await fetch(endpoint, {
             method: 'POST',
             headers: {
@@ -318,9 +324,10 @@ async function sendMessage() {
         });
 
         const responseData = await response.json();
+        console.log('Ответ сервера:', responseData);
 
         if (!response.ok) {
-            throw new Error(responseData.error || 'Ошибка при отправке сообщения');
+            throw new Error(responseData.details || responseData.error || 'Ошибка при отправке сообщения');
         }
 
         if (responseData.success) {
@@ -337,8 +344,8 @@ async function sendMessage() {
             }
         }
     } catch (error) {
-        console.error('Ошибка при отправке сообщения:', error.message);
-        alert('Не удалось отправить сообщение');
+        console.error('Ошибка при отправке сообщения:', error);
+        alert(`Не удалось отправить сообщение: ${error.message}`);
     }
 }
 
@@ -594,7 +601,7 @@ function showFilePreview(file) {
         </div>
     `;
     
-     // ��ищаем предыдущее превью
+     // чищаем предыдущее превью
     while(previewContainer.firstChild) {
         previewContainer.removeChild(previewContainer.firstChild);
     }
@@ -744,7 +751,7 @@ function setupContextMenu() {
         // Ищем ближайший элемент сообщения от места клика
         const messageElement = e.target.closest('.message');
         if (messageElement) {
-            // Получаем текст сообщения (может быть в .message-text или в атрибуте alt изб��ажения)
+            // Получаем текст сообщения (может быть в .message-text или в атрибуте alt избражения)
             const messageTextElement = messageElement.querySelector('.message-text');
             const messageImage = messageElement.querySelector('.message-attachment img');
             
@@ -853,7 +860,7 @@ function showReplyPreview(messageText) {
         return;
     }
 
-    // Сохраняем ID со��бщения, на которое отвечаем
+    // Сохраняем ID сообщения, на которое отвечаем
     replyToMessageId = selectedMessageId;
 
     // Обрезаем текст, если он слишком длинный
@@ -1052,7 +1059,7 @@ async function selectChat(chat) {
     await markMessagesAsRead(chat.id);
 }
 
-// Функция получения време��и последней активности пользователя
+// Функция получения времени последней активности пользователя
 function getLastActivityTime(lastActivity) {
    if (!lastActivity) return 'неизвестно';
    
