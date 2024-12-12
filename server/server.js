@@ -8,6 +8,7 @@ const multer = require('multer');
 const path = require('path');
 const nodemailer = require('nodemailer');
 const http = require('http');
+const { Server } = require('socket.io');
 
 const app = express();
 const PORT = 5003;
@@ -182,7 +183,7 @@ app.get('/api/download/:folder/:filename', (req, res) => {
 
         console.log('Downloading file:', filePath); // Для отладки
 
-        // Проверяем существование файла
+        // Проверяем существование ��айла
         if (!fs.existsSync(filePath)) {
             console.error('File not found:', filePath);
             return res.status(404).json({ error: 'Файл не найден' });
@@ -264,7 +265,7 @@ const storage = multer.diskStorage({
             prefix = 'message-';
         }
 
-        // Ге��ерируем уникальное имя файла
+        // Герируем уникальное имя файла
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
         const ext = path.extname(file.originalname);
         cb(null, `${prefix}${uniqueSuffix}${ext}`);
@@ -537,40 +538,39 @@ app.post('/api/messages/send-with-file', upload.single('file'), async (req, res)
         const { senderId, receiverId, message, replyToMessageId } = req.body;
         const file = req.file;
         
-        // Создаем новое сообщение с правильными именами колонок
+        // Создаем новое сообщение
         const result = await pool.query(
             `INSERT INTO messages 
             (sender_id, receiver_id, message, attachment_url, reply_to) 
             VALUES ($1, $2, $3, $4, $5) 
-            RETURNING id, created_at`,
+            RETURNING *`,
             [senderId, receiverId, message, file?.filename, replyToMessageId]
         );
 
-        // Получаем полную информацию о созданном сообщении
-        const newMessageResult = await pool.query(
-            `SELECT 
-                m.*,
-                u.username as sender_username,
-                (SELECT json_build_object(
-                    'id', rm.id,
-                    'message', rm.message,
-                    'sender_id', rm.sender_id,
-                    'sender_username', ru.username
-                )
-                FROM messages rm
-                JOIN users ru ON rm.sender_id = ru.id
-                WHERE rm.id = m.reply_to) as reply_to_message
-            FROM messages m
-            JOIN users u ON m.sender_id = u.id
-            WHERE m.id = $1`,
-            [result.rows[0].id]
+        const newMessage = result.rows[0];
+
+        // Получаем информацию об отправителе
+        const senderInfo = await pool.query(
+            'SELECT username FROM users WHERE id = $1',
+            [senderId]
         );
+
+        // Формируем полные данные сообщения
+        const messageData = {
+            ...newMessage,
+            sender_username: senderInfo.rows[0].username
+        };
+
+        // Отправляем через WebSocket получателю
+        const receiverSocketId = activeConnections.get(receiverId);
+        if (receiverSocketId) {
+            io.to(receiverSocketId).emit('new_message', messageData);
+        }
 
         res.json({
             success: true,
-            message: newMessageResult.rows[0]
+            message: messageData
         });
-
     } catch (err) {
         console.error('Error sending message:', err);
         res.status(500).json({ 
@@ -868,7 +868,7 @@ app.post('/api/users/update-profile', async (req, res) => {
             if (emailCheck.rows.length > 0) {
                 return res.status(400).json({
                     success: false,
-                    error: 'Этот email уже используется другим пользователем'
+                    error: 'Это email уже используется другим пользователем'
                 });
             }
         }
@@ -983,7 +983,7 @@ const checkAdmin = async (req, res, next) => {
             [adminId]
         );
 
-        console.log('User role:', userResult.rows[0]?.role); // Добавляем лог
+        console.log('User role:', userResult.rows[0]?.role); // ��обавляем лог
 
         if (userResult.rows.length === 0 || userResult.rows[0].role !== 'admin') {
             return res.status(403).json({ 
@@ -1403,10 +1403,10 @@ app.post('/api/users/update-status', async (req, res) => {
     }
 });
 
-// Добавляем автоматическое обновление статуса каждые 5 минут
+// Добавляем автоматическое обновление статуса к��ждые 5 минут
 setInterval(async () => {
     try {
-        // Помечаем ��ользователей как оффлайн, если их последняя активность была более 5 минут назад
+        // Помечаем ользователей как оффлайн, если их последняя активность была более 5 минут назад
         await pool.query(`
             UPDATE users 
             SET is_online = false 
@@ -1591,7 +1591,7 @@ app.delete('/api/messages/delete/:messageId', async (req, res) => {
         );
 
         if (message.rows.length === 0) {
-            return res.status(403).json({ error: 'У вас нет прав на удаление этого сообщения' });
+            return res.status(403).json({ error: 'У вас нет прав на удаление ��того сообщения' });
         }
 
         // Удаляем сообщение
@@ -1872,6 +1872,33 @@ const httpServer = http.createServer((req, res) => {
 
 const httpsServer = https.createServer(sslOptions, app);
 
+// Создаем экземпляр Socket.IO
+const io = new Server(httpsServer, {
+    cors: {
+        origin: function(origin, callback) {
+            if (!origin) return callback(null, true);
+            
+            const allowedOrigins = [
+                'http://adminflow.ru',
+                'https://adminflow.ru',
+                'http://www.adminflow.ru',
+                'https://www.adminflow.ru'
+            ];
+            
+            if (allowedOrigins.includes(origin)) {
+                callback(null, true);
+            } else {
+                callback(new Error('Not allowed by CORS'));
+            }
+        },
+        methods: ['GET', 'POST'],
+        credentials: true
+    }
+});
+
+// Хранилищ�� для активных соединений
+const activeConnections = new Map();
+
 // Запускаем серверы
 httpServer.listen(80, () => {
     console.log('HTTP Server running on port 80 (redirect to HTTPS)');
@@ -1910,5 +1937,116 @@ app.post('/api/users/check-username', async (req, res) => {
             error: 'Ошибка при проверке имени пользователя'
         });
     }
+});
+
+// WebSocket обработчики
+io.on('connection', (socket) => {
+    console.log('New WebSocket connection');
+
+    // Авторизация пользователя
+    socket.on('auth', async (userId) => {
+        socket.userId = userId;
+        activeConnections.set(userId, socket.id);
+        
+        // Обновляем статус пользователя в БД
+        try {
+            await pool.query(
+                'UPDATE users SET is_online = true, last_activity = CURRENT_TIMESTAMP WHERE id = $1',
+                [userId]
+            );
+            
+            // Оповещаем друзей о статусе
+            const friends = await pool.query(`
+                SELECT 
+                    CASE 
+                        WHEN user_id = $1 THEN friend_id 
+                        ELSE user_id 
+                    END as friend_id
+                FROM friendships 
+                WHERE (user_id = $1 OR friend_id = $1) 
+                AND status = 'accepted'
+            `, [userId]);
+            
+            friends.rows.forEach(friend => {
+                io.to(activeConnections.get(friend.friend_id))
+                    .emit('user_status_update', { userId, isOnline: true });
+            });
+        } catch (err) {
+            console.error('Error updating user status:', err);
+        }
+    });
+
+    // Обработка прочтения сообщений
+    socket.on('messages_read', async ({ userId, friendId }) => {
+        try {
+            // Обновляем статус сообщений в БД
+            await pool.query(`
+                UPDATE messages 
+                SET is_read = true 
+                WHERE sender_id = $1 
+                AND receiver_id = $2 
+                AND is_read = false
+            `, [friendId, userId]);
+
+            // Оповещаем отправителя
+            const friendSocketId = activeConnections.get(friendId);
+            if (friendSocketId) {
+                io.to(friendSocketId).emit('messages_read_update', { 
+                    userId, 
+                    friendId 
+                });
+            }
+        } catch (err) {
+            console.error('Error marking messages as read:', err);
+        }
+    });
+
+    // Обработка набора текста
+    socket.on('typing', ({ userId, friendId, isTyping }) => {
+        const friendSocketId = activeConnections.get(friendId);
+        if (friendSocketId) {
+            io.to(friendSocketId).emit('typing_update', { 
+                userId, 
+                isTyping 
+            });
+        }
+    });
+
+    // Обработка отключения
+    socket.on('disconnect', async () => {
+        if (socket.userId) {
+            try {
+                // Обновляем статус в БД
+                await pool.query(
+                    'UPDATE users SET is_online = false, last_activity = CURRENT_TIMESTAMP WHERE id = $1',
+                    [socket.userId]
+                );
+
+                // Оповещаем друзей
+                const friends = await pool.query(`
+                    SELECT 
+                        CASE 
+                            WHEN user_id = $1 THEN friend_id 
+                            ELSE user_id 
+                        END as friend_id
+                    FROM friendships 
+                    WHERE (user_id = $1 OR friend_id = $1) 
+                    AND status = 'accepted'
+                `, [socket.userId]);
+
+                friends.rows.forEach(friend => {
+                    io.to(activeConnections.get(friend.friend_id))
+                        .emit('user_status_update', { 
+                            userId: socket.userId, 
+                            isOnline: false 
+                        });
+                });
+
+                activeConnections.delete(socket.userId);
+            } catch (err) {
+                console.error('Error updating user status on disconnect:', err);
+            }
+        }
+    });
 });
 
