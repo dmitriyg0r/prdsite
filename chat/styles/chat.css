@@ -1,13 +1,22 @@
 /* Основные переменные уже определены в profile.css */
 
-/* Обновленная структура чата */
+/* Исправляем основную структуру страницы */
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+}
+
+/* Обновляем структуру чата */
 .chat-container {
+    flex: 1;
     display: grid;
     grid-template-columns: 350px 1fr;
     gap: 24px;
     height: 100vh;
     padding: 24px;
-    padding-left: 100px;
+    margin-left: 80px; /* Отступ для бокового меню */
     background: var(--background-color);
     box-sizing: border-box;
 }
@@ -116,12 +125,14 @@
     border: 2px solid var(--primary-light);
 }
 
-/* Область сообщений */
+/* Исправляем область сообщений */
 .messages-area {
     flex: 1;
     padding: 24px;
     background: var(--background-color);
     overflow-y: auto;
+    display: flex;
+    flex-direction: column; /* Сообщения сверху вниз */
 }
 
 /* Стили сообщений */
@@ -132,6 +143,7 @@
     border-radius: var(--radius-lg);
     position: relative;
     animation: messageAppear 0.3s ease-out;
+    align-self: flex-start; /* По умолчанию слева */
 }
 
 .message-content {
@@ -150,6 +162,7 @@
 /* Отправленные сообщения */
 .message-sent {
     margin-left: auto;
+    align-self: flex-end; /* Отправленные сообщения справа */
     background: var(--primary-color);
     color: white;
     border-bottom-right-radius: var(--radius-sm);
@@ -161,7 +174,7 @@
 
 /* Полученные сообщения */
 .message-received {
-    margin-right: auto;
+    align-self: flex-start; /* Полученные сообщения слева */
     background: var(--surface-color);
     color: var(--text-primary);
     border-bottom-left-radius: var(--radius-sm);
@@ -404,7 +417,8 @@
 @media (max-width: 992px) {
     .chat-container {
         grid-template-columns: 1fr;
-        padding-left: 24px;
+        margin-left: 0;
+        padding: 16px;
     }
 
     .chat-list {
