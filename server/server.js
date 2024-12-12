@@ -2132,25 +2132,38 @@ app.get('/api/chats/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
 
+        // Модифицированный запрос для получения списка чатов
         const result = await pool.query(`
-            WITH LastMessages AS (
+            WITH ChatPartners AS (
+                -- Получаем уникальных собеседников
+                SELECT DISTINCT 
+                    CASE 
+                        WHEN sender_id = $1 THEN receiver_id
+                        ELSE sender_id 
+                    END as partner_id
+                FROM messages 
+                WHERE sender_id = $1 OR receiver_id = $1
+            ),
+            LastMessages AS (
+                -- Получаем последние сообщения для каждого собеседника
                 SELECT DISTINCT ON (
                     CASE 
-                        WHEN sender_id = $1 THEN receiver_id 
+                        WHEN sender_id = $1 THEN receiver_id
                         ELSE sender_id 
                     END
                 )
                     CASE 
-                        WHEN sender_id = $1 THEN receiver_id 
+                        WHEN sender_id = $1 THEN receiver_id
                         ELSE sender_id 
-                    END as chat_partner_id,
+                    END as partner_id,
                     message,
+                    attachment_url,
                     created_at,
                     is_read,
                     sender_id
                 FROM messages
                 WHERE sender_id = $1 OR receiver_id = $1
-                ORDER BY chat_partner_id, created_at DESC
+                ORDER BY partner_id, created_at DESC
             )
             SELECT 
                 u.id,
@@ -2159,6 +2172,7 @@ app.get('/api/chats/:userId', async (req, res) => {
                 u.is_online,
                 u.last_activity,
                 lm.message as last_message,
+                lm.attachment_url as last_message_attachment,
                 lm.created_at as last_message_time,
                 lm.is_read,
                 lm.sender_id = $1 as is_own_message,
@@ -2169,10 +2183,13 @@ app.get('/api/chats/:userId', async (req, res) => {
                     AND m.receiver_id = $1 
                     AND m.is_read = false
                 ) as unread_count
-            FROM users u
-            INNER JOIN LastMessages lm ON lm.chat_partner_id = u.id
-            ORDER BY lm.created_at DESC
+            FROM ChatPartners cp
+            JOIN users u ON u.id = cp.partner_id
+            LEFT JOIN LastMessages lm ON lm.partner_id = u.id
+            ORDER BY lm.created_at DESC NULLS LAST
         `, [userId]);
+
+        console.log('Chats found:', result.rows.length); // Для отладки
 
         res.json({
             success: true,
