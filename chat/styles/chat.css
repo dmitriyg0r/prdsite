@@ -107,7 +107,7 @@ body {
     color: white;
 }
 
-/* Улучшаем облас��ь чата */
+/* Улучшаем облась чата */
 .chat-area {
     height: 100vh;
     display: flex;
@@ -122,6 +122,65 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
+}
+
+.chat-header-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+#chat-header-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--border-light);
+}
+
+.header-user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+#chat-header-name {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.user-status {
+    font-size: 13px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.user-status::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--text-tertiary);
+}
+
+.user-status.online::before {
+    background: var(--success-color);
+}
+
+/* Анимация для статуса */
+@keyframes statusPulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}
+
+.user-status.online::before {
+    animation: statusPulse 2s ease infinite;
 }
 
 /* Улучшаем стили для области сообщений */
