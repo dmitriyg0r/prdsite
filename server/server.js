@@ -1874,120 +1874,30 @@ const httpsServer = https.createServer(sslOptions, app);
 // Создаем экземпляр Socket.IO
 const io = new Server(httpsServer, {
     path: '/socket.io/',
-    transports: ['websocket', 'polling'], // Поддержка обоих транспортов
+    transports: ['polling', 'websocket'],
     cors: {
-        origin: function(origin, callback) {
-            // Разрешаем запросы без origin (например, от мобильных приложений)
-            if (!origin) return callback(null, true);
-            
-            const allowedOrigins = [
-                'http://adminflow.ru',
-                'https://adminflow.ru',
-                'http://www.adminflow.ru',
-                'https://www.adminflow.ru',
-                'http://localhost:3000' // Для локальной разработки
-            ];
-            
-            if (allowedOrigins.includes(origin)) {
-                callback(null, true);
-            } else {
-                callback(new Error('Not allowed by CORS'));
-            }
-        },
-        methods: ['GET', 'POST', 'OPTIONS'],
-        credentials: true,
-        allowedHeaders: ['Content-Type', 'Authorization']
+        origin: "*",  // Разрешаем все источники
+        methods: ["GET", "POST"],
+        credentials: false,  // Отключаем credentials
+        allowedHeaders: ["Content-Type"]
     },
     pingTimeout: 60000,
     pingInterval: 25000,
-    allowEIO3: true, // Поддержка Engine.IO версии 3
-    maxHttpBufferSize: 1e8 // 100MB max buffer
+    allowEIO3: true,
+    maxHttpBufferSize: 1e8
 });
 
-// Добавляем middleware для логирования подключений
-io.use((socket, next) => {
-    console.log('Socket connection attempt:', {
-        id: socket.id,
-        handshake: {
-            headers: socket.handshake.headers,
-            query: socket.handshake.query,
-            auth: socket.handshake.auth
-        }
-    });
-    next();
-});
-
-// Обработка ошибок подключения
-io.engine.on('connection_error', (err) => {
-    console.error('Socket.IO connection error:', {
-        code: err.code,
-        message: err.message,
-        context: err.context,
-        req: err.req ? {
-            url: err.req.url,
-            headers: err.req.headers
-        } : null
-    });
-});
-
-// Добавляем middleware для Socket.IO
+// Удаляем middleware для Socket.IO, так как теперь используем CORS настройки выше
 app.use('/socket.io', (req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', 'https://adminflow.ru');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,POST');
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
     next();
 });
 
-// Хранилище для активных соединений
-const activeConnections = new Map();
-
-// Запускаем серверы
-httpServer.listen(80, () => {
-    console.log('HTTP Server running on port 80 (redirect to HTTPS)');
-});
-
-httpsServer.listen(5003, () => {
-    console.log('HTTPS Server with Socket.IO running on port 5003');
-}).on('error', (err) => {
-    console.error('Server error:', err);
-});
-
-// Проверка имени пользователя для восстановления пароля
-app.post('/api/users/check-username', async (req, res) => {
-    try {
-        const { username } = req.body;
-
-        const result = await pool.query(
-            'SELECT id, email FROM users WHERE username = $1',
-            [username]
-        );
-
-        if (result.rows.length > 0 && result.rows[0].email) {
-            res.json({
-                success: true,
-                userId: result.rows[0].id,
-                email: result.rows[0].email
-            });
-        } else {
-            res.status(404).json({
-                success: false,
-                error: 'Пользователь не найден или email не указан'
-            });
-        }
-    } catch (err) {
-        console.error('Check username error:', err);
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка при проверке имени пользователя'
-        });
-    }
-});
-
-// WebSocket обработчики
+// Обновляем обработчик подключений
 io.on('connection', async (socket) => {
-    console.log('New Socket.IO connection successful:', {
+    console.log('New Socket.IO connection:', {
         id: socket.id,
-        transport: socket.conn.transport.name
+        transport: socket.conn.transport.name,
+        query: socket.handshake.query
     });
 
     socket.on('error', (error) => {

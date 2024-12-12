@@ -28,8 +28,8 @@ async function initializeChat() {
         // Обновляем конфигурацию Socket.IO
         socket = io('https://adminflow.ru:5003', {
             path: '/socket.io/',
-            transports: ['polling'],  // Используем только polling пока не решим проблему
-            withCredentials: true,
+            transports: ['polling'],
+            withCredentials: false,
             reconnection: true,
             reconnectionAttempts: 3,
             reconnectionDelay: 2000,
@@ -37,33 +37,37 @@ async function initializeChat() {
             forceNew: true,
             autoConnect: true,
             query: {
-                userId: currentUser.id  // Добавляем ID пользователя в query параметры
-            },
-            extraHeaders: {
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Credentials': 'true'
+                userId: currentUser.id
             }
         });
 
-        // Улучшаем логирование для отслеживания состояния подключения
+        // Улучшаем логирование
         socket.on('connect', () => {
-            console.log('Socket.IO connected successfully:', {
+            console.log('Socket.IO connected:', {
                 transport: socket.io.engine.transport.name,
                 id: socket.id,
                 userId: currentUser.id
             });
+            // Отправляем авторизацию после успешного подключения
+            socket.emit('auth', currentUser.id);
         });
 
         socket.on('connect_error', (error) => {
             console.error('Socket connection error:', {
                 message: error.message,
                 type: error.type,
-                description: error.description,
                 transport: socket.io?.engine?.transport?.name
             });
-            // Пробуем переподключиться с небольшой задержкой
+        });
+
+        socket.on('disconnect', (reason) => {
+            console.log('Socket disconnected:', reason);
+            // Пробуем переподключиться через 5 секунд
             setTimeout(() => {
-                socket.connect();
+                if (!socket.connected) {
+                    console.log('Attempting to reconnect...');
+                    socket.connect();
+                }
             }, 5000);
         });
 
@@ -81,10 +85,6 @@ async function initializeChat() {
 
         socket.on('upgradeError', (error) => {
             console.warn('Socket upgrade error:', error);
-        });
-
-        socket.on('disconnect', (reason) => {
-            console.log('Socket disconnected:', reason);
         });
 
         socket.on('user_status_update', (data) => {
@@ -169,7 +169,7 @@ function displayFriendsList(friends) {
         });
     });
 
-    // Загружаем последние соо��щения и счетчики для каждого друга
+    // Загружаем последние сообщения и счетчики для каждого друга
     friends.forEach(friend => {
         loadLastMessage(friend.id);
         updateUnreadCount(friend.id);
@@ -454,7 +454,7 @@ function createAttachmentElement(attachmentUrl) {
     // Очищаем и нормализуем путь к файлу
     let fullUrl = attachmentUrl;
     
-    // У��ираем дублирование пути
+    // Удаляем дублирование пути
     if (attachmentUrl.includes('/uploads/messages')) {
         fullUrl = `https://adminflow.ru:5003${attachmentUrl}`;
     } else {
@@ -565,7 +565,7 @@ async function markMessagesAsRead(friendId) {
 
         const data = await response.json();
         if (data.success) {
-            // Обновляем счетчик только если успешно обновили статус
+            // Обновляем счетчик только если успешно обн��вили статус
             await updateUnreadCount(friendId);
         } else {
             console.error('Ошибка при обновлении статуса сообщений:', data.error);
@@ -757,7 +757,7 @@ function setupAttachmentHandlers() {
     const fileInput = document.getElementById('fileInput');
     
     if (!attachButton || !fileInput) {
-        console.error('Эле��енты прикрепления файлов не найдены');
+        console.error('Элементы прикрепления файлов не найдены');
         return;
     }
     
@@ -836,7 +836,7 @@ function removeFilePreview() {
     }
 }
 
-// Функция у��аления сообщения
+// Функция удаления сообщения
 async function deleteMessage(messageId) {
     if (!messageId) {
         console.error('ID сообщения не указан');
@@ -904,7 +904,7 @@ chatStyles.textContent = `
         }
     }
 
-    /* Стили контекстного меню */
+    /* С��или контекстного меню */
     .context-menu {
         opacity: 0;
         transform: scale(0.95);
@@ -950,7 +950,7 @@ function setupContextMenu() {
         return;
     }
 
-    // Обработчик правого клика на сообщении
+    // Обрабо��чик правого клика на сообщении
     messagesArea.addEventListener('contextmenu', (e) => {
         e.preventDefault();
         
@@ -1005,7 +1005,7 @@ function setupContextMenu() {
         }
     });
 
-    // Обработчик для кнопки отв��та
+    // Обработчик для кнопки ответа
     const replyButton = document.getElementById('replyMessageBtn');
     if (replyButton) {
         replyButton.addEventListener('click', () => {
