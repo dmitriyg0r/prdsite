@@ -28,26 +28,38 @@ async function initializeChat() {
         // Обновляем конфигурацию Socket.IO
         socket = io('https://adminflow.ru:5003', {
             path: '/socket.io/',
-            transports: ['websocket', 'polling'], // Enable both transports
+            transports: ['polling', 'websocket'], // Сначала polling, затем websocket
             withCredentials: true,
             reconnection: true,
             reconnectionAttempts: 5,
             reconnectionDelay: 1000,
-            timeout: 10000
+            timeout: 20000,
+            upgrade: true,
+            rememberUpgrade: false
         });
 
-        // Улучшаем логирование
+        // Улучшаем логирование для отслеживания состояния подключения
         socket.on('connect', () => {
-            console.log('Socket.IO connected successfully');
+            console.log('Socket.IO connected successfully:', {
+                transport: socket.io.engine.transport.name,
+                id: socket.id
+            });
             socket.emit('auth', currentUser.id);
         });
 
         socket.on('connect_error', (error) => {
-            console.error('Socket connection error:', error.message);
+            console.error('Socket connection error:', {
+                message: error.message,
+                transport: socket.io?.engine?.transport?.name
+            });
         });
 
-        socket.on('error', (error) => {
-            console.error('Socket error:', error);
+        socket.on('upgradeError', (error) => {
+            console.warn('Socket upgrade error:', error);
+        });
+
+        socket.on('disconnect', (reason) => {
+            console.log('Socket disconnected:', reason);
         });
 
         socket.on('user_status_update', (data) => {
@@ -140,7 +152,7 @@ function displayFriendsList(friends) {
 }
 
 function getLastActivityTime(timestamp) {
-    if (!timestamp) return 'не в сети';
+    if (!timestamp) return 'не в сет��';
     const lastActivity = new Date(timestamp);
     const now = new Date();
     const diff = now - lastActivity;
@@ -215,7 +227,7 @@ async function openChat(friend) {
         const data = await response.json();
 
         if (data.success) {
-            // Обновляем текущего собеседника
+            // Обновляем текущего ��обеседника
             currentChatPartner = data.user;
             
             // Обновляем заголовок чата
@@ -383,7 +395,7 @@ function createMessageElement(message) {
         messageContent.appendChild(attachmentElement);
     }
 
-    // ��нформация о сообщении (время и статус)
+    // Информация о сообщении (время и статус)
     const messageInfo = document.createElement('div');
     messageInfo.className = 'message-info';
 
@@ -531,7 +543,7 @@ async function markMessagesAsRead(friendId) {
             // Обновляем счетчик только если успешно обновили статус
             await updateUnreadCount(friendId);
         } else {
-            console.error('Ошибка при обновлении ст��туса сообщений:', data.error);
+            console.error('Ошибка при обновлении статуса сообщений:', data.error);
         }
     } catch (err) {
         console.error('Error marking messages as read:', err);
@@ -618,7 +630,7 @@ async function loadMessages(friendId) {
             // Находим только новые сообщения
             const newMessages = data.messages.filter(msg => !existingMessages.has(msg.id.toString()));
             
-            // Если есть ��овые сообщения
+            // Если есть новые сообщения
             if (newMessages.length > 0) {
                 // Добавляем только новые сообщения
                 newMessages.forEach(message => {
@@ -686,7 +698,7 @@ async function markMessagesAsRead(friendId) {
     }
 }
 
-// Функция показа модального окна с изображением
+// Функция показа модального окна с из��бражением
 function showImageModal(imageUrl) {
     const modal = document.querySelector('.image-modal');
     const modalImage = document.getElementById('modalImage');
@@ -937,7 +949,7 @@ function setupContextMenu() {
                 deleteButton.style.display = isSentMessage ? 'block' : 'none';
             }
 
-            // Позиционируем меню
+            // Позицион��руем меню
             const x = e.pageX;
             const y = e.pageY;
             
@@ -990,7 +1002,7 @@ function setupContextMenu() {
         });
     }
 
-    // Закрытие ��еню при клике вне его
+    // Закрытие меню при клике вне его
     document.addEventListener('click', (e) => {
         if (!contextMenu.contains(e.target)) {
             hideContextMenu();
@@ -1071,7 +1083,7 @@ function cancelReply() {
     replyToMessageId = null;
 }
 
-// Доба��ляем обработчик видимости страницы
+// Добавляем обработчик видимости страницы
 document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && currentChatPartner) {
         loadMessages(currentChatPartner.id);
