@@ -345,7 +345,7 @@ body {
 .message-sent {
     margin-left: auto;
     align-self: flex-end;
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    background: linear-gradient(135deg, #2196F3, #1976D2);
     color: white;
     border-bottom-right-radius: 4px;
     padding-right: 24px;
