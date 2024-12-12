@@ -6,6 +6,7 @@ body {
     padding: 0;
     min-height: 100vh;
     display: flex;
+    overflow: hidden;
 }
 
 /* Обновляем структуру чата */
@@ -15,21 +16,19 @@ body {
     grid-template-columns: 350px 1fr;
     gap: 24px;
     height: 100vh;
-    padding: 24px;
-    margin-left: 80px; /* Отступ для бокового меню */
+    margin-left: 80px;
     background: var(--background-color);
-    box-sizing: border-box;
+    padding: 0;
 }
 
 /* Список чатов (левая панель) */
 .chat-list {
+    height: 100vh;
     background: var(--surface-color);
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border-light);
+    border-right: 1px solid var(--border-light);
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    box-shadow: var(--shadow-sm);
 }
 
 .chat-list-header {
@@ -95,13 +94,10 @@ body {
 
 /* Область чата */
 .chat-area {
-    background: var(--surface-color);
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border-light);
+    height: 100vh;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
-    box-shadow: var(--shadow-sm);
+    background: var(--surface-color);
 }
 
 /* Заголовок чата */
@@ -418,21 +414,19 @@ body {
     .chat-container {
         grid-template-columns: 1fr;
         margin-left: 0;
-        padding: 16px;
     }
 
     .chat-list {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+        z-index: 1000;
         display: none;
     }
 
     .chat-list.active {
         display: flex;
-        position: fixed;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        width: 100%;
-        z-index: 1000;
     }
 }
 
