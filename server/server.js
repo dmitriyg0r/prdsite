@@ -854,7 +854,7 @@ app.get('/api/users/:id', async (req, res) => {
     }
 });
 
-// Обновление профиля пользователя
+// Обновле��ие профиля пользователя
 app.post('/api/users/update-profile', async (req, res) => {
     try {
         const { userId, username, email } = req.body;
@@ -873,7 +873,7 @@ app.post('/api/users/update-profile', async (req, res) => {
             }
         }
 
-        // Проверяем, не занято ли имя пользователя
+        // Проверяем, ��е занято ли имя пользователя
         if (username) {
             const usernameCheck = await pool.query(
                 'SELECT id FROM users WHERE username = $1 AND id != $2',
@@ -1403,7 +1403,7 @@ app.post('/api/users/update-status', async (req, res) => {
     }
 });
 
-// Добавляем автоматическое обновление статуса каждые 5 минут
+// Добавляем автоматическое обнов��ение статуса каждые 5 минут
 setInterval(async () => {
     try {
         // Помечаем ользователей как оффлайн, если их последняя активность была более 5 минут назад
@@ -1774,7 +1774,7 @@ app.post('/api/send-verification-code', async (req, res) => {
 
         const verificationCode = generateVerificationCode();
 
-        // Сохраняем код в базу
+        // Сохр��няем код в базу
         await pool.query(`
             INSERT INTO verification_codes (user_id, code, expires_at)
             VALUES ($1, $2, NOW() + INTERVAL '5 minutes')
@@ -1874,19 +1874,60 @@ const httpsServer = https.createServer(sslOptions, app);
 // Создаем экземпляр Socket.IO
 const io = new Server(httpsServer, {
     path: '/socket.io/',
-    transports: ['websocket', 'polling'], // Добавляем поддержку websocket
+    transports: ['websocket', 'polling'], // Поддержка обоих транспортов
     cors: {
-        origin: [
-            'http://adminflow.ru',
-            'https://adminflow.ru',
-            'http://www.adminflow.ru',
-            'https://www.adminflow.ru'
-        ],
-        methods: ['GET', 'POST'],
-        credentials: true
+        origin: function(origin, callback) {
+            // Разрешаем запросы без origin (например, от мобильных приложений)
+            if (!origin) return callback(null, true);
+            
+            const allowedOrigins = [
+                'http://adminflow.ru',
+                'https://adminflow.ru',
+                'http://www.adminflow.ru',
+                'https://www.adminflow.ru',
+                'http://localhost:3000' // Для локальной разработки
+            ];
+            
+            if (allowedOrigins.includes(origin)) {
+                callback(null, true);
+            } else {
+                callback(new Error('Not allowed by CORS'));
+            }
+        },
+        methods: ['GET', 'POST', 'OPTIONS'],
+        credentials: true,
+        allowedHeaders: ['Content-Type', 'Authorization']
     },
     pingTimeout: 60000,
-    pingInterval: 25000
+    pingInterval: 25000,
+    allowEIO3: true, // Поддержка Engine.IO версии 3
+    maxHttpBufferSize: 1e8 // 100MB max buffer
+});
+
+// Добавляем middleware для логирования подключений
+io.use((socket, next) => {
+    console.log('Socket connection attempt:', {
+        id: socket.id,
+        handshake: {
+            headers: socket.handshake.headers,
+            query: socket.handshake.query,
+            auth: socket.handshake.auth
+        }
+    });
+    next();
+});
+
+// Обработка ошибок подключения
+io.engine.on('connection_error', (err) => {
+    console.error('Socket.IO connection error:', {
+        code: err.code,
+        message: err.message,
+        context: err.context,
+        req: err.req ? {
+            url: err.req.url,
+            headers: err.req.headers
+        } : null
+    });
 });
 
 // Добавляем middleware для Socket.IO
@@ -1944,9 +1985,13 @@ app.post('/api/users/check-username', async (req, res) => {
 
 // WebSocket обработчики
 io.on('connection', async (socket) => {
-    console.log('New Socket.IO connection:', {
+    console.log('New Socket.IO connection successful:', {
         id: socket.id,
         transport: socket.conn.transport.name
+    });
+
+    socket.on('error', (error) => {
+        console.error('Socket error:', error);
     });
 
     // Авторизация пользователя
@@ -2030,10 +2075,6 @@ io.on('connection', async (socket) => {
         }
     });
 
-    socket.on('error', (error) => {
-        console.error('Socket error:', error);
-    });
-
     // Добавляем обработчик сообщений в Socket.IO
     socket.on('send_message', async (data) => {
         try {
@@ -2114,6 +2155,14 @@ io.engine.on("connection_error", (err) => {
         req: err.req?.url,
         code: err.code,
         context: err.context
+    });
+});
+
+// Добавляем проверочный endpoint
+app.get('/socket.io/test', (req, res) => {
+    res.json({
+        status: 'Socket.IO server is running',
+        activeConnections: activeConnections.size
     });
 });
 
