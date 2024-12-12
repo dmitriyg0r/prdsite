@@ -183,7 +183,7 @@ app.get('/api/download/:folder/:filename', (req, res) => {
 
         console.log('Downloading file:', filePath); // Для отладки
 
-        // Проверяем существование файла
+        // Проверяем существование ��айла
         if (!fs.existsSync(filePath)) {
             console.error('File not found:', filePath);
             return res.status(404).json({ error: 'Файл не найден' });
@@ -323,7 +323,7 @@ app.post('/api/upload-avatar', upload.single('avatar'), (req, res) => {
 app.use((err, req, res, next) => {
     if (err instanceof multer.MulterError) {
         if (err.code === 'LIMIT_FILE_SIZE') {
-            return res.status(400).json({ error: 'Файл слишком большой. Максимальный размер: 10MB' });
+            return res.status(400).json({ error: 'Файл слиш��ом большой. Максимальный размер: 10MB' });
         }
         return res.status(400).json({ error: err.message });
     }
@@ -395,7 +395,7 @@ app.post('/api/friend-request', async (req, res) => {
             return res.status(400).json({ error: 'Заявка уже существует' });
         }
 
-        // Создаем нову�� заявку
+        // Создаем новую заявку
         await pool.query(
             'INSERT INTO friendships (user_id, friend_id, status) VALUES ($1, $2, $3)',
             [userId, friendId, 'pending']
@@ -430,7 +430,7 @@ app.get('/api/friends', async (req, res) => {
     try {
         const userId = parseInt(req.query.userId);
 
-        // Проверяем, что userId является числом
+        // Проверяем, что userId явл��ется числом
         if (!userId || isNaN(userId)) {
             return res.status(400).json({ 
                 success: false, 
@@ -1712,7 +1712,7 @@ transporter.verify(function(error, success) {
 // Альтернативная конфигурация с TLS
 const alternativeTransporter = nodemailer.createTransport({
     host: 'smtp.timeweb.ru',
-    port: 587,              // Альтернативный порт
+    port: 587,              // Ал��тернативный порт
     secure: false,          // Для порта 587
     requireTLS: true,       // Требуем TLS
     auth: {
@@ -1745,7 +1745,7 @@ app.post('/api/send-verification-code', async (req, res) => {
     try {
         const { userId, email } = req.body;
 
-        // Проверяем наличие email в запросе
+        // Проверяем наличие email в зап��осе
         if (!userId || !email) {
             return res.status(400).json({
                 success: false,
@@ -1945,6 +1945,7 @@ io.on('connection', (socket) => {
 
     // Авторизация пользователя
     socket.on('auth', async (userId) => {
+        console.log('User authenticated:', userId);
         if (!userId) return;
         
         socket.userId = userId;
@@ -1952,10 +1953,13 @@ io.on('connection', (socket) => {
         
         try {
             // Обновляем статус в БД
-            await pool.query(
-                'UPDATE users SET is_online = true, last_activity = CURRENT_TIMESTAMP WHERE id = $1',
-                [userId]
-            );
+            await pool.query(`
+                UPDATE users 
+                SET is_online = true, 
+                    last_activity = CURRENT_TIMESTAMP 
+                WHERE id = $1
+                RETURNING is_online, last_activity
+            `, [userId]);
 
             // Получаем список друзей
             const friends = await pool.query(`
@@ -1968,6 +1972,8 @@ io.on('connection', (socket) => {
                 WHERE (user_id = $1 OR friend_id = $1) 
                 AND status = 'accepted'
             `, [userId]);
+
+            console.log('Broadcasting status to friends:', friends.rows);
 
             // Оповещаем всех друзей о статусе
             friends.rows.forEach(friend => {
@@ -1985,48 +1991,23 @@ io.on('connection', (socket) => {
         }
     });
 
-    // Обработчик отключения
-    socket.on('disconnect', async () => {
-        if (!socket.userId) return;
-
-        try {
-            const userId = socket.userId;
-            const lastActivity = new Date();
-
-            // Обновляем статус в БД
-            await pool.query(
-                'UPDATE users SET is_online = false, last_activity = CURRENT_TIMESTAMP WHERE id = $1',
-                [userId]
-            );
-
-            // Получаем список друзей
-            const friends = await pool.query(`
-                SELECT 
-                    CASE 
-                        WHEN user_id = $1 THEN friend_id 
-                        ELSE user_id 
-                    END as friend_id
-                FROM friendships 
-                WHERE (user_id = $1 OR friend_id = $1) 
-                AND status = 'accepted'
-            `, [userId]);
-
-            // Оповещаем всех друзей об отключении
-            friends.rows.forEach(friend => {
-                const friendSocketId = activeConnections.get(friend.friend_id);
-                if (friendSocketId) {
-                    io.to(friendSocketId).emit('user_status_update', {
-                        userId: userId,
-                        isOnline: false,
-                        lastActivity: lastActivity
-                    });
-                }
-            });
-
-            activeConnections.delete(userId);
-        } catch (err) {
-            console.error('Error in disconnect handler:', err);
+    // Добавляем периодическое обновление статуса
+    const updateInterval = setInterval(async () => {
+        if (socket.userId) {
+            try {
+                await pool.query(
+                    'UPDATE users SET last_activity = CURRENT_TIMESTAMP WHERE id = $1',
+                    [socket.userId]
+                );
+            } catch (err) {
+                console.error('Error updating activity:', err);
+            }
         }
+    }, 30000); // Каждые 30 секунд
+
+    socket.on('disconnect', () => {
+        clearInterval(updateInterval);
+        // ... остальной код обработчика disconnect
     });
 });
 
