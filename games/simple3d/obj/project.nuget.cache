@@ -1,8 +1,21 @@
 {
   "version": 2,
-  "dgSpecHash": "+Fgn7GoEXrLFLK2IIWQXBCh1QCK399cXsWkGRJ6rk6YjDOZ++ILvzYnX6Njga1d5D4vZYthIRvtq5/TJeK1y6Q==",
+  "dgSpecHash": "g78T98mJIsmu4zNlAMJyDUQIL6UiDVTr5/0MkXr2/+wwJC8u7JgU/6r3Y9kFTCTwjjbVEDNB8oHIlPwkESIJfw==",
   "success": true,
   "projectFilePath": "/home/mrgodgames/Документы/GitHub/prdsite/games/simple3d/simple3d.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "/home/mrgodgames/.nuget/packages/opentk/4.8.2/opentk.4.8.2.nupkg.sha512",
+    "/home/mrgodgames/.nuget/packages/opentk.audio.openal/4.8.2/opentk.audio.openal.4.8.2.nupkg.sha512",
+    "/home/mrgodgames/.nuget/packages/opentk.compute/4.8.2/opentk.compute.4.8.2.nupkg.sha512",
+    "/home/mrgodgames/.nuget/packages/opentk.core/4.8.2/opentk.core.4.8.2.nupkg.sha512",
+    "/home/mrgodgames/.nuget/packages/opentk.graphics/4.8.2/opentk.graphics.4.8.2.nupkg.sha512",
+    "/home/mrgodgames/.nuget/packages/opentk.input/4.8.2/opentk.input.4.8.2.nupkg.sha512",
+    "/home/mrgodgames/.nuget/packages/opentk.mathematics/4.8.2/opentk.mathematics.4.8.2.nupkg.sha512",
+    "/home/mrgodgames/.nuget/packages/opentk.redist.glfw/3.3.8.39/opentk.redist.glfw.3.3.8.39.nupkg.sha512",
+    "/home/mrgodgames/.nuget/packages/opentk.windowing.common/4.8.2/opentk.windowing.common.4.8.2.nupkg.sha512",
+    "/home/mrgodgames/.nuget/packages/opentk.windowing.desktop/4.8.2/opentk.windowing.desktop.4.8.2.nupkg.sha512",
+    "/home/mrgodgames/.nuget/packages/opentk.windowing.graphicslibraryframework/4.8.2/opentk.windowing.graphicslibraryframework.4.8.2.nupkg.sha512",
+    "/home/mrgodgames/.nuget/packages/system.runtime.compilerservices.unsafe/5.0.0/system.runtime.compilerservices.unsafe.5.0.0.nupkg.sha512"
+  ],
   "logs": []
 }

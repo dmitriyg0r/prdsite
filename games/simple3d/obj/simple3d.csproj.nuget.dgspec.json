@@ -37,6 +37,24 @@
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
+          "dependencies": {
+            "OpenTK": {
+              "target": "Package",
+              "version": "[4.8.2, )"
+            },
+            "OpenTK.Graphics": {
+              "target": "Package",
+              "version": "[4.8.2, )"
+            },
+            "OpenTK.Mathematics": {
+              "target": "Package",
+              "version": "[4.8.2, )"
+            },
+            "OpenTK.Windowing.Desktop": {
+              "target": "Package",
+              "version": "[4.8.2, )"
+            }
+          },
           "imports": [
             "net461",
             "net462",

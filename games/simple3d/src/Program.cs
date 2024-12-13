@@ -10,7 +10,7 @@ namespace Simple3D
         {
             var nativeWindowSettings = new NativeWindowSettings()
             {
-                Size = new Vector2i(800, 600),
+                ClientSize = new Vector2i(800, 600),
                 Title = "Simple 3D Game",
                 // Эти настройки нужны для совместимости
                 Flags = ContextFlags.ForwardCompatible
