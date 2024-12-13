@@ -1,5 +1,0 @@
-/home/mrgodgames/Документы/GitHub/prdsite/games/simple3d/obj/Debug/net8.0/simple3d.GeneratedMSBuildEditorConfig.editorconfig
-/home/mrgodgames/Документы/GitHub/prdsite/games/simple3d/obj/Debug/net8.0/simple3d.AssemblyInfoInputs.cache
-/home/mrgodgames/Документы/GitHub/prdsite/games/simple3d/obj/Debug/net8.0/simple3d.AssemblyInfo.cs
-/home/mrgodgames/Документы/GitHub/prdsite/games/simple3d/obj/Debug/net8.0/simple3d.csproj.CoreCompileInputs.cache
-/home/mrgodgames/Документы/GitHub/prdsite/games/simple3d/obj/Debug/net8.0/simple3d.sourcelink.json
