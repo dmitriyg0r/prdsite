@@ -25,6 +25,8 @@ export class GameState {
     }
 
     updateDifficulty(dt) {
+        if (!this.isPlaying()) return;
+
         this.timeSinceLastDifficultyIncrease += dt;
         
         if (this.score >= this.scoreToNextLevel) {
@@ -40,7 +42,7 @@ export class GameState {
 
     levelUp() {
         this.level++;
-        this.scoreToNextLevel += 1000 * this.level;
+        this.scoreToNextLevel = this.level * 1000;
         this.difficulty += 0.5;
         this.updateDifficultyMultipliers();
     }
@@ -56,33 +58,35 @@ export class GameState {
     }
 
     addScore(points, game) {
-        if (!points || typeof points !== 'number') return;
+        if (!this.isPlaying() || !points || typeof points !== 'number') return;
         
         this.score += points;
         
-        if (game && this.isPlaying()) {
+        if (this.score >= this.scoreToNextLevel) {
+            this.levelUp();
+        }
+
+        if (game) {
             this.updateUI(game);
-            
-            if (this.score >= this.scoreToNextLevel) {
-                this.levelUp();
-                this.updateUI(game);
-            }
         }
     }
 
     updateUI(game) {
-        if (!game || !game.player) return;
+        if (!game || !game.player || !this.isPlaying()) return;
 
         const scoreElement = document.getElementById('score');
         const levelElement = document.getElementById('level');
         const livesElement = document.getElementById('lives');
         
         if (scoreElement) {
-            scoreElement.textContent = `${Math.floor(this.score)}`;
+            const formattedScore = Math.floor(this.score).toString().padStart(6, '0');
+            scoreElement.textContent = formattedScore;
         }
+        
         if (levelElement) {
             levelElement.textContent = `${this.level}`;
         }
+        
         if (livesElement) {
             const currentLives = Math.max(0, game.player.lives);
             livesElement.textContent = `${currentLives}`;
@@ -95,14 +99,19 @@ export class GameState {
         this.difficulty = 1;
         this.timeSinceLastDifficultyIncrease = 0;
         this.scoreToNextLevel = 1000;
-        this.updateDifficultyMultipliers();
+        this.difficultyMultipliers = {
+            enemySpeed: 1,
+            enemySpawnRate: 1,
+            enemyBulletSpeed: 1,
+            scoreMultiplier: 1
+        };
         
         if (game) {
             game.player.reset();
-            this.updateUI(game);
             game.enemyManager.reset();
             game.bulletManager.reset();
             game.particleSystem.reset();
+            this.updateUI(game);
         }
     }
 
@@ -115,20 +124,21 @@ export class GameState {
     }
 
     gameOver(game) {
+        if (!game) return;
+        
         this.state = 'gameover';
-        if (game) {
-            game.player.lives = 0;
-            this.updateUI(game);
-            
-            const gameOverScreen = document.getElementById('gameOverScreen');
-            const finalScoreElement = document.getElementById('finalScore');
-            
-            if (gameOverScreen) {
-                gameOverScreen.style.display = 'flex';
-            }
-            if (finalScoreElement) {
-                finalScoreElement.textContent = `Final Score: ${Math.floor(this.score)}`;
-            }
+        game.player.lives = 0;
+        this.updateUI(game);
+        
+        const gameOverScreen = document.getElementById('gameOverScreen');
+        const finalScoreElement = document.getElementById('finalScore');
+        
+        if (gameOverScreen) {
+            gameOverScreen.style.display = 'flex';
+        }
+        if (finalScoreElement) {
+            const formattedScore = Math.floor(this.score).toString().padStart(6, '0');
+            finalScoreElement.textContent = `Final Score: ${formattedScore}`;
         }
     }
 
