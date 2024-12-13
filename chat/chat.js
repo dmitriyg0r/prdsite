@@ -140,7 +140,7 @@ async function loadChatHistory() {
                     .map(el => el.dataset.messageId)
             );
             
-            // Фильтрация только новых сообщен��й
+            // Фильтрация только новых сообщений
             const newMessages = data.messages.filter(message => 
                 !currentMessageIds.has(message.id.toString())
             );
@@ -179,7 +179,7 @@ function displayMessages(messages) {
         messagesContainer.appendChild(messageElement);
     });
 
-    // Прокручиваем к п��следнему сообщению
+    // Прокручиваем к последнему сообщению
     scrollToBottom();
 }
 
@@ -216,7 +216,6 @@ function createMessageElement(message) {
     messageElement.dataset.messageId = message.id;
     messageElement.dataset.timestamp = message.created_at;
 
-    // Создаем messageContent в начале функции
     const messageContent = document.createElement('div');
     messageContent.className = 'message-content';
 
@@ -244,11 +243,19 @@ function createMessageElement(message) {
         messageElement.appendChild(replyElement);
     }
 
-    // Текст сообщения
+    // Обработка текста сообщения с Markdown
     if (message.message) {
         const messageText = document.createElement('div');
         messageText.className = 'message-text';
-        messageText.textContent = message.message;
+        
+        // Парсим Markdown и очищаем HTML
+        const parsedMessage = marked.parse(message.message);
+        const cleanHtml = DOMPurify.sanitize(parsedMessage, {
+            ALLOWED_TAGS: ['p', 'strong', 'em', 'code', 'pre', 'blockquote', 'ul', 'ol', 'li', 'a'],
+            ALLOWED_ATTR: ['href']
+        });
+        
+        messageText.innerHTML = cleanHtml;
         messageContent.appendChild(messageText);
     }
 
@@ -317,7 +324,7 @@ function createAttachmentElement(attachmentUrl) {
         img.src = fullUrl;
         img.alt = 'Изображение';
         img.onerror = () => {
-            console.error('Ошибка загрузки изо��ражения:', fullUrl);
+            console.error('Ошибка загрузки изображения:', fullUrl);
             img.src = '../uploads/avatars/default.png'; // Заглушка при ошибке
         };
         img.onload = () => {
@@ -472,7 +479,7 @@ function setupEventListeners() {
     }
 }
 
-// Выносим обработчик Enter в о��дельную функцию
+// Выносим обработчик Enter в отдельную функцию
 function handleEnterPress(e) {
     if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
@@ -538,7 +545,7 @@ async function loadMessages(friendId) {
             }
         }
     } catch (error) {
-        console.error('Ошибка при загр��зке сообщений:', error);
+        console.error('Ошибка при загрузке сообщений:', error);
     }
 }
 
@@ -595,7 +602,7 @@ if(closeModalBtn){
     };
 }
 
-// Добавл��ем обработчики для прикрепления файлов
+// Добавляем обработчики для прикрепления файлов
 function setupAttachmentHandlers() {
     const attachButton = document.getElementById('attachButton');
     const fileInput = document.getElementById('fileInput');
@@ -737,7 +744,7 @@ async function deleteMessage(messageId) {
     }
 }
 
-// Добавляем все необходимые стили
+// Добавляем все необходи��ые стили
 const chatStyles = document.createElement('style');
 chatStyles.textContent = `
     /* Анимация удаления сообщения */
@@ -788,7 +795,7 @@ chatStyles.textContent = `
 `;
 document.head.appendChild(chatStyles);
 
-// Обновляем обработчики контекстного меню
+// Обновляем обработч��ки контекстного меню
 function setupContextMenu() {
     const contextMenu = document.getElementById('contextMenu');
     const messagesArea = document.getElementById('messages');
@@ -802,7 +809,7 @@ function setupContextMenu() {
     messagesArea.addEventListener('contextmenu', (e) => {
         e.preventDefault();
         
-        // Ищем ближайший элемент сообщения о�� места клика
+        // Ищем ближайший элемент сообщения о места клика
         const messageElement = e.target.closest('.message');
         if (messageElement) {
             // Получаем текст сообщения (может быть в .message-text или в атрибуте alt избражения)
@@ -1149,7 +1156,7 @@ function createChatElement(chat) {
 }
 
 function formatLastMessage(chat) {
-    if (!chat.last_message) return 'Нет сообщений';
+    if (!chat.last_message) return 'Нет с��общений';
     
     const messageText = chat.last_message.length > 25 
         ? chat.last_message.substring(0, 25) + '...' 
@@ -1280,7 +1287,7 @@ async function updateUnreadCount(friendId) {
            console.error('Ошибка при загрузке списка чатов:', data.error)
        }
     } catch (error) {
-        console.error('Ошибка при загрузке ��писка чатов:', error);
+        console.error('Ошибка при загрузке списка чатов:', error);
     }
 }
 
