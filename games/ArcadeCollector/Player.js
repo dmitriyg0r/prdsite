@@ -45,7 +45,7 @@ export class Player {
     hit() {
         if (this.isInvulnerable) return false;
         
-        this.lives--;
+        this.lives = Math.max(0, this.lives - 1);
         this.isInvulnerable = true;
         this.invulnerabilityTimer = 0;
         return true;

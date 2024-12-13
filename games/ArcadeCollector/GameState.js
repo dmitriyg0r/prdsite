@@ -71,15 +71,22 @@ export class GameState {
     }
 
     updateUI(game) {
-        if (!game) return;
+        if (!game || !game.player) return;
 
         const scoreElement = document.getElementById('score');
         const levelElement = document.getElementById('level');
         const livesElement = document.getElementById('lives');
         
-        if (scoreElement) scoreElement.textContent = `${Math.floor(this.score)}`;
-        if (levelElement) levelElement.textContent = `${this.level}`;
-        if (livesElement && game.player) livesElement.textContent = `${game.player.lives}`;
+        if (scoreElement) {
+            scoreElement.textContent = `${Math.floor(this.score)}`;
+        }
+        if (levelElement) {
+            levelElement.textContent = `${this.level}`;
+        }
+        if (livesElement) {
+            const currentLives = Math.max(0, game.player.lives);
+            livesElement.textContent = `${currentLives}`;
+        }
     }
 
     resetGame(game) {
@@ -92,10 +99,10 @@ export class GameState {
         
         if (game) {
             game.player.reset();
+            this.updateUI(game);
             game.enemyManager.reset();
             game.bulletManager.reset();
             game.particleSystem.reset();
-            this.updateUI(game);
         }
     }
 
@@ -110,6 +117,9 @@ export class GameState {
     gameOver(game) {
         this.state = 'gameover';
         if (game) {
+            game.player.lives = 0;
+            this.updateUI(game);
+            
             const gameOverScreen = document.getElementById('gameOverScreen');
             const finalScoreElement = document.getElementById('finalScore');
             
