@@ -1,9 +1,8 @@
 import { GameState } from './GameState.js';
 import { Player } from './Player.js';
 import { EnemyManager } from './Enemy.js';
-import { BulletManager } from './Bullet.js';
-import { Bullet } from './Bullet.js';
-import { ParticleSystem } from './ParticleSystem.js';
+import { BulletManager, Bullet } from './Bullet.js';
+import { ParticleSystem } from './Particle.js';
 import { Renderer } from './Renderer.js';
 
 class ArcadeCollector {
@@ -32,8 +31,7 @@ class ArcadeCollector {
         this.lastShootTime = 0;
         
         this.bindEvents();
-        this.lastTime = performance.now();
-        this.animate(this.lastTime);
+        this.animate();
         
         // Добавляем обработчик для включения/выключения режима отладки
         window.addEventListener('keydown', (e) => {
@@ -53,36 +51,33 @@ class ArcadeCollector {
         this.startMenu = document.getElementById('startMenu');
     }
 
-    animate(currentTime) {
-        this.deltaTime = Utils.calculateDeltaTime(currentTime, this.lastTime);
-        this.lastTime = currentTime;
-
+    animate() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
         // Добавим вывод состояния для отладки
         console.log('Game state:', this.gameState.state);
 
         if (this.gameState.isPlaying()) {
-            this.update(this.deltaTime);
+            this.update();
             this.renderer.draw(this);
         } else if (this.gameState.isStartScreen()) {
             this.renderer.drawStartScreen(this.canvas);
         }
 
-        requestAnimationFrame((time) => this.animate(time));
+        requestAnimationFrame(() => this.animate());
     }
 
-    update(dt) {
+    update() {
         if (!this.gameState.isPlaying()) {
             console.log('Game is not in playing state');
             return;
         }
         
-        this.gameState.updateDifficulty(dt);
-        this.player.update(dt);
-        this.enemyManager.update(dt, this);
-        this.bulletManager.update(dt, this);
-        this.particleSystem.update(dt);
+        this.gameState.updateDifficulty();
+        this.player.update();
+        this.enemyManager.update(this);
+        this.bulletManager.update(this);
+        this.particleSystem.update();
 
         // Проверяем нажатие пробела для стрельбы
         if (this.player.keys['Space']) {
@@ -118,7 +113,7 @@ class ArcadeCollector {
     tryShoot() {
         const currentTime = performance.now();
         if (currentTime - this.lastShootTime >= this.shootCooldown) {
-            // Создаем новую пулю
+            // С��здаем новую пулю
             const bullet = new Bullet(
                 this.player.x + this.player.width/2 - 2.5,
                 this.player.y,
@@ -133,4 +128,8 @@ class ArcadeCollector {
 // Создание экземпляра игры при загрузке страницы
 window.addEventListener('load', () => {
     new ArcadeCollector();
-}); 
+});
+
+// Создаем и экспортируем экземпляр игры
+const game = new ArcadeCollector();
+export default game; 
