@@ -352,7 +352,7 @@ body {
 /* Стили для отправленных сообщений в светлой теме */
 [data-theme="light"] .message-sent {
     background: var(--primary-color);
-    color: white;
+    color: rgb(47, 0, 255);
 }
 
 /* Стили для отправленных сообщений в тёмной теме */
