@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Загружаем список чатов
     await loadChatsList();
     
-    // Запускаем периодическ��е обновление списка чатов
+    // Запускаем периодическое обновление списка чатов
     setInterval(loadChatsList, 10000); // Обновляем каждые 10 секунд
 });
 
@@ -340,7 +340,7 @@ function createAttachmentElement(attachmentUrl) {
     // Очищаем и нормализуем путь к файлу
     let fullUrl = attachmentUrl;
     
-    // Удаляем дублирование пу��и
+    // Удаляем дублирование пути
     if (attachmentUrl.includes('/uploads/messages')) {
         fullUrl = `https://adminflow.ru:5003${attachmentUrl}`;
     } else {
@@ -406,14 +406,14 @@ async function sendMessage() {
     }
 
     try {
-        // Сохраняем текст сообщения перед очисткой (на случай ошибки)
-        const originalText = messageText;
-        
-        // Очищаем поле ввода до отправки запроса
+        // Принудительно очищаем поле ввода
         messageInput.value = '';
-        messageInput.style.height = 'auto'; // Сбрасываем высоту, если есть автоматическое изменение
-        messageInput.dispatchEvent(new Event('input')); // Вызываем событие для обновления UI
-        
+        // Принудительно устанавливаем пустое значение через setTimeout
+        setTimeout(() => {
+            messageInput.value = '';
+            messageInput.dispatchEvent(new Event('input'));
+        }, 0);
+
         const response = await fetch('https://adminflow.ru:5003/api/messages/send', {
             method: 'POST',
             headers: {
@@ -422,7 +422,7 @@ async function sendMessage() {
             body: JSON.stringify({
                 senderId: currentUser.id,
                 receiverId: currentChatPartner.id,
-                message: originalText,
+                message: messageText,
                 replyToMessageId: replyToMessageId || null
             })
         });
@@ -430,14 +430,11 @@ async function sendMessage() {
         const responseData = await response.json();
 
         if (!response.ok) {
-            // Возвращаем текст в случае ошибки
-            messageInput.value = originalText;
-            messageInput.dispatchEvent(new Event('input'));
             throw new Error(responseData.details || responseData.error || 'Ошибка при отправке сообщения');
         }
 
         if (responseData.success) {
-            // Убеждаемся, что поле точно пустое
+            // Еще раз очищаем поле ввода
             messageInput.value = '';
             messageInput.dispatchEvent(new Event('input'));
             
@@ -455,7 +452,12 @@ async function sendMessage() {
     } catch (error) {
         console.error('Ошибка при отправке сообщения:', error);
         alert(`Не удалось отправить сообщение: ${error.message}`);
+        // В случае ошибки НЕ возвращаем текст
     }
+
+    // Финальная очистка
+    messageInput.value = '';
+    messageInput.dispatchEvent(new Event('input'));
 }
 
 async function markMessagesAsRead(friendId) {
@@ -671,7 +673,7 @@ function setupAttachmentHandlers() {
         const file = e.target.files[0];
         if (file) {
             if (file.size > 5 * 1024 * 1024) {
-                alert('Файл слишком большой (максимум 5MB)');
+                alert('Фай�� слишком большой (максимум 5MB)');
                 fileInput.value = '';
                 return;
             }
@@ -750,7 +752,7 @@ async function deleteMessage(messageId) {
     }
 
     try {
-        // Находм сообщение в DOM до его удаления
+        // Находм со��бщение в DOM до его удаления
         const messageElement = document.querySelector(`.message[data-message-id="${messageId}"]`);
         if (!messageElement) {
             console.error('Сообщение не найдено в DOM');
@@ -899,7 +901,7 @@ function setupContextMenu() {
                 contextMenu.style.left = `${x}px`;
             }
 
-            // Проверяем и корректируем позицию по вертикали
+            // Проверяем и к��рректируем позицию по вертикали
             if (y + menuRect.height > windowHeight) {
                 contextMenu.style.top = `${y - menuRect.height}px`;
             } else {
@@ -1083,7 +1085,7 @@ function updateLastMessage(message) {
 
 // Функция загрузки списка чатов с защитой от дёрганья
 let lastUpdateTime = 0;
-const UPDATE_INTERVAL = 2000; // Минимальный интервал между обновлениями
+const UPDATE_INTERVAL = 2000; // Минимальный интервал между ��бновлениями
 
 async function loadChatsList() {
     try {
@@ -1224,7 +1226,7 @@ async function selectChat(chat) {
             return;
         }
 
-        // Убираем активный класс у предыдущего чата
+        // Убираем активный кла��с у предыдущего чата
         const previousActive = document.querySelector('.chat-partner.active');
         if (previousActive) {
             previousActive.classList.remove('active');
