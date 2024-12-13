@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Загружаем список чатов
     await loadChatsList();
     
-    // Запускаем периодическое обновление списка чатов
+    // Запускаем периодическ��е обновление списка чатов
     setInterval(loadChatsList, 10000); // Обновляем каждые 10 секунд
 });
 
@@ -406,18 +406,9 @@ async function sendMessage() {
     }
 
     try {
-        // Создаем новый элемент input
-        const newInput = document.createElement('input');
-        newInput.type = 'text';
-        newInput.id = 'messageInput';
-        newInput.placeholder = 'Введите сообщение...';
+        // Немедленно очищаем значение
+        messageInput.value = '';
         
-        // Заменяем старый input новым
-        messageInput.parentNode.replaceChild(newInput, messageInput);
-        
-        // Переустанавливаем обработчики событий на новый input
-        setupEventListeners();
-
         const response = await fetch('https://adminflow.ru:5003/api/messages/send', {
             method: 'POST',
             headers: {
@@ -792,7 +783,7 @@ async function deleteMessage(messageId) {
     }
 }
 
-// Добавляем ��се необходимые стили
+// Добавляем се необходимые стили
 const chatStyles = document.createElement('style');
 chatStyles.textContent = `
     /* Анимация удаления сообщения */
@@ -843,7 +834,7 @@ chatStyles.textContent = `
 `;
 document.head.appendChild(chatStyles);
 
-// Обновл��ем обработчики контекстного меню
+// Обновляем обработчики контекстного меню
 function setupContextMenu() {
     const contextMenu = document.getElementById('contextMenu');
     const messagesArea = document.getElementById('messages');
@@ -866,7 +857,7 @@ function setupContextMenu() {
             
             selectedMessageId = messageElement.dataset.messageId;
             selectedMessageText = messageTextElement ? messageTextElement.textContent : 
-                                (messageImage ? 'Изображение' : 'Вложение');
+                                (messageImage ? 'Изображение' : 'Вложе��ие');
             
             // Проверяем, является ли сообщение наим
             const isSentMessage = messageElement.classList.contains('message-sent');
@@ -991,7 +982,7 @@ function showReplyPreview(messageText) {
         </button>
     `;
 
-    // Очищаем и показываем пр��дпросмотр
+    // Очищаем и показываем прдпросмотр
      while(replyPreview.firstChild) {
         replyPreview.removeChild(replyPreview.firstChild);
     }
