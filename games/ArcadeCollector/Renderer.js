@@ -7,7 +7,9 @@ export class Renderer {
             enemyBasic: '#FF4500',
             enemyFast: '#FF0000',
             enemyTank: '#800080',
+            enemyWave: '#00FFFF',
             bullet: '#FFFF00',
+            enemyBullet: '#FF0000',
             particleDefault: '#FFA500'
         };
     }
@@ -19,8 +21,11 @@ export class Renderer {
         // Отрисовка врагов с эффектами
         this.drawEnemies(game.enemyManager.enemies);
         
-        // Отрисовка пуль со следом
-        this.drawBullets(game.bulletManager.bullets);
+        // Отрисовка пуль игрока и врагов
+        this.drawBullets(game.bulletManager.bullets, this.colors.bullet);
+        if (game.enemyManager.enemyBullets) {
+            this.drawBullets(game.enemyManager.enemyBullets, this.colors.enemyBullet);
+        }
         
         // Отрисовка частиц
         this.drawParticles(game.particleSystem.particles);
@@ -43,6 +48,7 @@ export class Renderer {
     drawEnemies(enemies) {
         enemies.forEach(enemy => {
             this.ctx.save();
+            
             switch(enemy.type) {
                 case 'fast':
                     this.ctx.fillStyle = this.colors.enemyFast;
@@ -50,26 +56,43 @@ export class Renderer {
                     const scale = 1 + Math.sin(Date.now() / 200) * 0.1;
                     this.ctx.transform(scale, 0, 0, scale, enemy.x + enemy.width/2, enemy.y + enemy.height/2);
                     this.ctx.fillRect(-enemy.width/2, -enemy.height/2, enemy.width, enemy.height);
+                    
+                    // Добавляем след
+                    const gradient = this.ctx.createLinearGradient(
+                        -enemy.width/2, -enemy.height/2,
+                        -enemy.width/2, enemy.height/2
+                    );
+                    gradient.addColorStop(0, 'transparent');
+                    gradient.addColorStop(1, this.colors.enemyFast);
+                    this.ctx.fillStyle = gradient;
+                    this.ctx.fillRect(-enemy.width/2, -enemy.height, enemy.width, enemy.height);
                     break;
+                    
                 case 'tank':
                     this.ctx.fillStyle = this.colors.enemyTank;
                     this.ctx.strokeStyle = '#A020F0';
                     this.ctx.lineWidth = 2;
                     this.ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
                     this.ctx.strokeRect(enemy.x, enemy.y, enemy.width, enemy.height);
+                    
+                    // Добавляем броню
+                    this.ctx.strokeStyle = '#A020F0';
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(enemy.x, enemy.y + enemy.height/3);
+                    this.ctx.lineTo(enemy.x + enemy.width, enemy.y + enemy.height/3);
+                    this.ctx.moveTo(enemy.x, enemy.y + 2*enemy.height/3);
+                    this.ctx.lineTo(enemy.x + enemy.width, enemy.y + 2*enemy.height/3);
+                    this.ctx.stroke();
                     break;
-                default:
-                    this.ctx.fillStyle = this.colors.enemyBasic;
-                    this.ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
             }
             this.ctx.restore();
         });
     }
 
-    drawBullets(bullets) {
+    drawBullets(bullets, color) {
         this.ctx.save();
-        this.ctx.fillStyle = this.colors.bullet;
-        this.ctx.shadowColor = this.colors.bullet;
+        this.ctx.fillStyle = color;
+        this.ctx.shadowColor = color;
         this.ctx.shadowBlur = 5;
         
         bullets.forEach(bullet => {
@@ -81,15 +104,15 @@ export class Renderer {
                 bullet.x + bullet.width/2, 
                 bullet.y, 
                 bullet.x + bullet.width/2, 
-                bullet.y + bullet.height * 2
+                bullet.y + (bullet.speedY > 0 ? bullet.height * 2 : -bullet.height * 2)
             );
-            gradient.addColorStop(0, this.colors.bullet);
+            gradient.addColorStop(0, color);
             gradient.addColorStop(1, 'transparent');
             
             this.ctx.fillStyle = gradient;
             this.ctx.fillRect(
                 bullet.x + bullet.width/2 - 1,
-                bullet.y + bullet.height,
+                bullet.y + (bullet.speedY > 0 ? bullet.height : -bullet.height),
                 2,
                 bullet.height
             );
