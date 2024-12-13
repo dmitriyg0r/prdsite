@@ -25,6 +25,9 @@ class ArcadeCollector {
         // UI элементы
         this.initializeUI();
         
+        // Добавим вывод для отладки
+        console.log('Game initialized');
+        
         this.bindEvents();
         this.lastTime = performance.now();
         this.animate(this.lastTime);
@@ -46,6 +49,9 @@ class ArcadeCollector {
 
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
+        // Добавим вывод состояния для отладки
+        console.log('Game state:', this.gameState.state);
+
         if (this.gameState.isPlaying()) {
             this.update(this.deltaTime);
             this.renderer.draw(this);
@@ -57,7 +63,10 @@ class ArcadeCollector {
     }
 
     update(dt) {
-        if (!this.gameState.isPlaying()) return;
+        if (!this.gameState.isPlaying()) {
+            console.log('Game is not in playing state');
+            return;
+        }
         
         this.gameState.updateDifficulty(dt);
         this.player.update(dt);
@@ -78,15 +87,27 @@ class ArcadeCollector {
     }
 
     handleKeyDown(e) {
+        // Добавим вывод для отладки нажатий клавиш
+        console.log('Key pressed:', e.code);
+        
         if(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {
             e.preventDefault();
         }
         
         if (this.player.keys.hasOwnProperty(e.code)) {
             this.player.keys[e.code] = true;
-            if (e.code === 'Escape') this.gameState.togglePause();
+            
+            // Обработка клавиши Escape
+            if (e.code === 'Escape') {
+                this.gameState.togglePause();
+            }
+            
+            // Обработка пробела для начала игры
             if (e.code === 'Space' && this.gameState.isStartScreen()) {
+                console.log('Starting game...');
                 this.gameState.startGame(this);
+                // Добавим сброс состояния клавиш при старте игры
+                this.player.keys['Space'] = false;
             }
         }
     }

@@ -3,13 +3,42 @@ export class GameState {
         this.score = 0;
         this.level = 1;
         this.difficulty = 1;
-        this.state = 'start'; // 'start', 'playing', 'paused', 'gameOver'
-        this.difficultyIncreaseInterval = 30000; // 30 секунд
+        this.state = 'start';
+        this.difficultyIncreaseInterval = 30000;
         this.timeSinceLastDifficultyIncrease = 0;
+        
+        console.log('GameState initialized:', this.state);
+    }
+
+    startGame(game) {
+        console.log('Starting game...');
+        this.state = 'playing';
+        this.resetGame(game);
+        console.log('Game started, state:', this.state);
     }
 
     isPlaying() {
         return this.state === 'playing';
+    }
+
+    isStartScreen() {
+        return this.state === 'start';
+    }
+
+    resetGame(game) {
+        console.log('Resetting game...');
+        this.score = 0;
+        this.level = 1;
+        this.difficulty = 1;
+        this.timeSinceLastDifficultyIncrease = 0;
+        
+        game.player.reset();
+        game.enemyManager.reset();
+        game.bulletManager.reset();
+        game.particleSystem.reset();
+        
+        this.updateUI(game);
+        console.log('Game reset completed');
     }
 
     isPaused() {
@@ -18,15 +47,6 @@ export class GameState {
 
     isGameOver() {
         return this.state === 'gameOver';
-    }
-
-    isStartScreen() {
-        return this.state === 'start';
-    }
-
-    startGame(game) {
-        this.state = 'playing';
-        this.resetGame(game);
     }
 
     togglePause() {
@@ -54,20 +74,6 @@ export class GameState {
         this.state = 'playing';
         document.getElementById('gameOverMenu').style.display = 'none';
         document.getElementById('pauseMenu').style.display = 'none';
-    }
-
-    resetGame(game) {
-        this.score = 0;
-        this.level = 1;
-        this.difficulty = 1;
-        this.timeSinceLastDifficultyIncrease = 0;
-        
-        game.player.reset();
-        game.enemyManager.reset();
-        game.bulletManager.reset();
-        game.particleSystem.reset();
-        
-        this.updateUI(game);
     }
 
     updateDifficulty(dt) {
