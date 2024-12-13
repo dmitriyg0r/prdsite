@@ -338,9 +338,21 @@ body {
 
 /* Отправленные сообщения */
 .message-sent {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    box-shadow: 0 2px 8px rgba(var(--primary-color-rgb), 0.2);
+}
+
+/* Стили для отправленных сообщений в светлой теме */
+[data-theme="light"] .message-sent {
+    background: var(--primary-color);
+    color: white;
+}
+
+/* Стили для отправленных сообщений в тёмной теме */
+[data-theme="dark"] .message-sent {
     background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-    border-bottom-right-radius: 4px;
-    box-shadow: 0 2px 12px rgba(var(--primary-color-rgb), 0.15);
 }
 
 .message-content {
@@ -377,6 +389,7 @@ body {
 
 .message-sent .message-info {
     background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.9);
 }
 
 /* Время сообщения */
