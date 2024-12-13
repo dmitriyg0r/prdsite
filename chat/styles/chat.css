@@ -697,7 +697,7 @@ body {
     background-color: var(--text-tertiary);
 }
 
-/* Улучшенные стили для информации о руге */
+/* Улучше��ные стили для информации о руге */
 .friend-info {
     flex: 1;
     min-width: 0;
@@ -778,53 +778,50 @@ body {
 
 /* Стили для сообщения-ответа */
 .message-reply {
-    display: flex;
-    flex-direction: column;
-    background: rgba(var(--primary-color-rgb), 0.08);
-    border-radius: 8px;
     margin-bottom: 8px;
     padding: 8px 12px;
-    animation: replyAppear 0.2s ease-out;
+    background: rgba(var(--primary-color-rgb), 0.08);
+    border-radius: 8px;
+    border-left: 2px solid var(--primary-color);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.message-reply:hover {
+    background: rgba(var(--primary-color-rgb), 0.12);
+}
+
+/* Стили для сообщения-ответа в отправленных сообщениях */
+.message-sent .message-reply {
+    background: rgba(255, 255, 255, 0.15);
+    border-left-color: rgba(255, 255, 255, 0.4);
 }
 
 .reply-header {
     display: flex;
     align-items: center;
-    gap: 8px;
-    color: var(--primary-color);
-    font-size: 13px;
-    font-weight: 600;
+    gap: 6px;
     margin-bottom: 4px;
-}
-
-.reply-content {
-    color: var(--text-secondary);
     font-size: 13px;
-    padding-left: 20px;
-    border-left: 2px solid var(--primary-color);
 }
 
-/* Стили для сообщения-ответа в отправленных сообщениях */
-.message-sent .message-reply {
-    background: rgba(255, 255, 255, 0.1);
-    border-left-color: rgba(255, 255, 255, 0.4);
+.reply-author {
+    font-weight: 600;
+    color: var(--primary-color);
 }
 
-.message-sent .reply-header,
-.message-sent .reply-content {
+.message-sent .reply-author {
     color: rgba(255, 255, 255, 0.9);
 }
 
-/* Анимация появления */
-@keyframes replyAppear {
-    from {
-        opacity: 0;
-        transform: translateY(-4px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+.reply-content {
+    font-size: 13px;
+    color: var(--text-secondary);
+    opacity: 0.8;
+}
+
+.message-sent .reply-content {
+    color: rgba(255, 255, 255, 0.8);
 }
 
 /* Стили для превью файлов */
@@ -1196,13 +1193,13 @@ body {
     }
 }
 
+/* Анимация подсветки сообщения */
+@keyframes highlightMessage {
+    0% { background-color: rgba(var(--primary-color-rgb), 0.1); }
+    100% { background-color: transparent; }
+}
 
-.message-received {
-    align-self: flex-start;
-    margin-right: auto;
-    background: var(--surface-color);
-    border: 1px solid var(--border-light);
-    border-bottom-left-radius: 4px;
-    color: var(--text-primary);
+.message.highlight {
+    animation: highlightMessage 2s ease-out;
 }
  
