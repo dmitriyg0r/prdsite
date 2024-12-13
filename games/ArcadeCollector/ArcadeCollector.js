@@ -25,12 +25,19 @@ class ArcadeCollector {
             height: 40,
             velocityX: 0,
             velocityY: 0,
-            baseSpeed: 300,
-            horizontalSpeedMultiplier: 1.5, // Множитель скорости для движения влево/вправо
+            baseSpeed: 400, // Увеличиваем базовую скорость
+            horizontalSpeedMultiplier: 1.5,
             lives: 3,
             color: '#6366f1',
             shootCooldown: 0,
-            shootRate: 250
+            shootRate: 250,
+            // Добавляем параметры рывка
+            dashSpeed: 1200, // Скорость рывка
+            dashDuration: 0.15, // Длительность рывка в секундах
+            dashCooldown: 2, // Откат рывка в секундах
+            dashTimer: 0, // Таймер текущего рывка
+            dashCooldownTimer: 0, // Таймер отката
+            isDashing: false
         };
         
         // Типы противников
@@ -79,7 +86,7 @@ class ArcadeCollector {
         this.bullets = [];
         this.score = 0;
         
-        // Параметры спавна
+        // ��араметры спавна
         this.enemySpawnTimer = 0;
         this.enemySpawnRate = 2000; // начальная частота появления врагов
         this.coinSpawnTimer = 0;
@@ -100,7 +107,8 @@ class ArcadeCollector {
             ArrowUp: false,
             ArrowDown: false,
             Space: false,
-            Escape: false
+            Escape: false,
+            Shift: false
         };
         
         // Добавляем стартовое меню
@@ -195,7 +203,7 @@ class ArcadeCollector {
         // Также увеличиваем сложность на основе очков
         this.difficulty += Math.floor(this.score / 100) * 0.1;
         
-        // Обновляем час��оту появления объектов
+        // Обновляем частоту появления объектов
         this.enemySpawnRate = Math.max(500, 2000 - this.difficulty * 200);
         this.coinSpawnRate = Math.max(400, 1000 - this.difficulty * 100);
         
@@ -230,7 +238,7 @@ class ArcadeCollector {
             this.enemies.forEach(enemy => {
                 if (!hitEnemy && this.checkCollision(bullet, enemy)) {
                     hitEnemy = true;
-                    enemy.health -= 1; // Уменьшаем здор��вье противника
+                    enemy.health -= 1; // Уменьшаем здоровье противника
                     
                     // Если противник уничтожен
                     if (enemy.health <= 0) {
@@ -445,17 +453,54 @@ class ArcadeCollector {
 
     updatePlayerPosition(dt) {
         const baseSpeed = this.player.baseSpeed * dt;
-        
-        // Горизонтальное движение быстрее
-        if (this.keys.ArrowLeft) {
-            this.player.x -= baseSpeed * this.player.horizontalSpeedMultiplier;
+        let currentSpeed = baseSpeed;
+        let moveX = 0;
+        let moveY = 0;
+
+        // Определяем направление движения
+        if (this.keys.ArrowLeft) moveX -= 1;
+        if (this.keys.ArrowRight) moveX += 1;
+        if (this.keys.ArrowUp) moveY -= 1;
+        if (this.keys.ArrowDown) moveY += 1;
+
+        // Обработка рывка
+        if (this.keys.Shift && this.player.dashCooldownTimer <= 0 && !this.player.isDashing && (moveX !== 0 || moveY !== 0)) {
+            this.player.isDashing = true;
+            this.player.dashTimer = this.player.dashDuration;
+            this.player.dashCooldownTimer = this.player.dashCooldown;
+            // Создаем эффект следа при рывке
+            this.createDashEffect();
         }
-        if (this.keys.ArrowRight) {
-            this.player.x += baseSpeed * this.player.horizontalSpeedMultiplier;
+
+        // Обновление таймеров рывка
+        if (this.player.dashCooldownTimer > 0) {
+            this.player.dashCooldownTimer -= dt;
         }
-        if (this.keys.ArrowUp) this.player.y -= baseSpeed;
-        if (this.keys.ArrowDown) this.player.y += baseSpeed;
-        
+
+        if (this.player.isDashing) {
+            this.player.dashTimer -= dt;
+            if (this.player.dashTimer <= 0) {
+                this.player.isDashing = false;
+            }
+            currentSpeed = this.player.dashSpeed * dt;
+        }
+
+        // Нормализация диагонального движения
+        if (moveX !== 0 && moveY !== 0) {
+            const normalizer = 1 / Math.sqrt(2);
+            moveX *= normalizer;
+            moveY *= normalizer;
+        }
+
+        // Применяем горизонтальный множитель скорости
+        if (moveX !== 0) {
+            moveX *= this.player.horizontalSpeedMultiplier;
+        }
+
+        // Обновляем позицию
+        this.player.x += moveX * currentSpeed;
+        this.player.y += moveY * currentSpeed;
+
         // Ограничение движения игрока
         this.player.x = Math.max(0, Math.min(this.canvas.width - this.player.width, this.player.x));
         this.player.y = Math.max(0, Math.min(this.canvas.height - this.player.height, this.player.y));
@@ -674,7 +719,7 @@ class ArcadeCollector {
         this.ctx.closePath();
         this.ctx.fill();
 
-        // Отрисовка ��уль игрока
+        // Отрисовка пуль игрока
         this.bullets.forEach(bullet => {
             this.ctx.fillStyle = bullet.color;
             this.ctx.beginPath();
@@ -751,6 +796,29 @@ class ArcadeCollector {
             this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
             this.ctx.fill();
         });
+
+        // Добавляем индикатор отката рывка
+        if (this.player.dashCooldownTimer > 0) {
+            const dashCooldownPercent = this.player.dashCooldownTimer / this.player.dashCooldown;
+            const dashBarWidth = 30;
+            const dashBarHeight = 4;
+            
+            this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+            this.ctx.fillRect(
+                this.player.x + (this.player.width - dashBarWidth) / 2,
+                this.player.y - 10,
+                dashBarWidth,
+                dashBarHeight
+            );
+            
+            this.ctx.fillStyle = '#6366f1';
+            this.ctx.fillRect(
+                this.player.x + (this.player.width - dashBarWidth) / 2,
+                this.player.y - 10,
+                dashBarWidth * (1 - dashCooldownPercent),
+                dashBarHeight
+            );
+        }
     }
 
     checkCollision(rect1, rect2) {
@@ -782,23 +850,49 @@ class ArcadeCollector {
     }
 
     restartGame() {
-        // Сброс состояния игры
+        // Полный сброс состояния игры
+        this.gameState = 'playing';
         this.score = 0;
         this.player.lives = 3;
+        this.difficulty = 1;
+        this.gameTime = 0;
+        this.enemySpawnTimer = 0;
+        this.coinSpawnTimer = 0;
+        
+        // Очищаем все массивы
         this.coins = [];
-        this.obstacles = [];
-        this.player.x = this.canvas.width / 2;
+        this.enemies = [];
+        this.bullets = [];
+        this.enemyBullets = [];
+        this.particles = [];
+        
+        // Сбрасываем позицию игрока
+        this.player.x = this.canvas.width / 2 - this.player.width / 2;
         this.player.y = this.canvas.height - 50;
         
-        // Обновление UI
-        this.scoreElement.textContent = this.score;
-        this.livesElement.textContent = this.player.lives;
+        // Сбрасываем все таймеры и кулдауны
+        this.player.shootCooldown = 0;
+        this.timeAccumulator = 0;
+        this.lastTime = performance.now();
+        
+        // Обновляем UI
+        this.scoreElement.textContent = '0';
+        this.livesElement.textContent = '3';
+        this.levelElement.textContent = '1.0';
+        
+        // Скрываем все меню
         this.pauseMenu.style.display = 'none';
         this.gameOverMenu.style.display = 'none';
         
-        // Возобновление игры
-        this.gameState = 'playing';
-        this.lastTime = performance.now();
+        // Сбрасываем состояние клавиш
+        Object.keys(this.keys).forEach(key => {
+            this.keys[key] = false;
+        });
+        
+        // Сбрасываем параметры рывка
+        this.player.dashTimer = 0;
+        this.player.dashCooldownTimer = 0;
+        this.player.isDashing = false;
     }
 
     startGame() {
@@ -822,6 +916,22 @@ class ArcadeCollector {
         // Сбрасываем позицию игрока
         this.player.x = this.canvas.width / 2 - this.player.width / 2;
         this.player.y = this.canvas.height - 50;
+    }
+
+    createDashEffect() {
+        const particles = 20;
+        for (let i = 0; i < particles; i++) {
+            this.particles.push({
+                x: this.player.x + this.player.width / 2,
+                y: this.player.y + this.player.height / 2,
+                size: 3 + Math.random() * 3,
+                color: '#6366f1',
+                lifetime: 0.3 + Math.random() * 0.2,
+                time: 0,
+                vx: (Math.random() - 0.5) * 100,
+                vy: (Math.random() - 0.5) * 100
+            });
+        }
     }
 }
 
