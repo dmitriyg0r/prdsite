@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     setInterval(loadChatsList, 10000); // Обновляем каждые 10 секунд
 });
 
-// Функция для загрузки информ����ии о пользователе
+// Функция для загрузки информции о пользователе
 async function loadUserInfo(userId) {
     try {
         const response = await fetch(`https://adminflow.ru:5003/api/users/${userId}?currentUserId=${currentUser.id}`);
@@ -140,7 +140,7 @@ async function loadChatHistory() {
                     .map(el => el.dataset.messageId)
             );
             
-            // Фильтрация только новых сообщений
+            // Фильтрация только новых сообщен��й
             const newMessages = data.messages.filter(message => 
                 !currentMessageIds.has(message.id.toString())
             );
@@ -179,7 +179,7 @@ function displayMessages(messages) {
         messagesContainer.appendChild(messageElement);
     });
 
-    // Прокручиваем к последнему сообщению
+    // Прокручиваем к п��следнему сообщению
     scrollToBottom();
 }
 
@@ -216,7 +216,11 @@ function createMessageElement(message) {
     messageElement.dataset.messageId = message.id;
     messageElement.dataset.timestamp = message.created_at;
 
-    // Если есть информация об ответе, показываем её
+    // Создаем messageContent в начале функции
+    const messageContent = document.createElement('div');
+    messageContent.className = 'message-content';
+
+    // Добавляем обработку ответа на сообщение
     if (message.reply_to) {
         const replyElement = document.createElement('div');
         replyElement.className = 'message-reply';
@@ -225,7 +229,7 @@ function createMessageElement(message) {
         const replyAuthor = message.reply_to_message?.sender_id === currentUser.id ? 'Вы' : 
             message.reply_to_message?.sender_username || 'Пользователь';
         
-        const truncatedReplyText = message.reply_to_message?.message.length > 50 
+        const truncatedReplyText = message.reply_to_message?.message?.length > 50 
             ? message.reply_to_message.message.substring(0, 50) + '...' 
             : message.reply_to_message?.message || 'Сообщение недоступно';
 
@@ -237,12 +241,8 @@ function createMessageElement(message) {
             <div class="reply-content">${truncatedReplyText}</div>
         `;
 
-        messageElement.insertBefore(replyElement, messageContent);
+        messageElement.appendChild(replyElement);
     }
-
-    // Основной контент сообщения
-    const messageContent = document.createElement('div');
-    messageContent.className = 'message-content';
 
     // Текст сообщения
     if (message.message) {
@@ -317,7 +317,7 @@ function createAttachmentElement(attachmentUrl) {
         img.src = fullUrl;
         img.alt = 'Изображение';
         img.onerror = () => {
-            console.error('Ошибка загрузки изображения:', fullUrl);
+            console.error('Ошибка загрузки изо��ражения:', fullUrl);
             img.src = '../uploads/avatars/default.png'; // Заглушка при ошибке
         };
         img.onload = () => {
@@ -396,7 +396,7 @@ async function sendMessage() {
         }
     } catch (error) {
         console.error('Ошибка при отправке сообщения:', error);
-        alert(`Не удалось отправить сообщени��: ${error.message}`);
+        alert(`Не удалось отправить сообщение: ${error.message}`);
     }
 }
 
@@ -472,7 +472,7 @@ function setupEventListeners() {
     }
 }
 
-// Выносим обработчик Enter в отдельную функцию
+// Выносим обработчик Enter в о��дельную функцию
 function handleEnterPress(e) {
     if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
@@ -538,11 +538,11 @@ async function loadMessages(friendId) {
             }
         }
     } catch (error) {
-        console.error('Ошибка при загрузке сообщений:', error);
+        console.error('Ошибка при загр��зке сообщений:', error);
     }
 }
 
-// Функ��ия обновления статуса сообщения
+// Функция обновления статуса сообщения
 function updateMessageStatus(messageElement, messageData) {
     const statusElement = messageElement.querySelector('.message-status');
     if (statusElement) {
@@ -556,7 +556,7 @@ function updateMessageStatus(messageElement, messageData) {
 function scrollToBottom() {
     const messagesContainer = document.getElementById('messages');
     if (messagesContainer) {
-        // Используем requestAnimationFrame для гарантированной прокрутки после рендер��нга
+        // Используем requestAnimationFrame для гарантированной прокрутки после рендернга
         requestAnimationFrame(() => {
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         });
@@ -595,7 +595,7 @@ if(closeModalBtn){
     };
 }
 
-// Добавляем обработчики для прикрепления фай��ов
+// Добавл��ем обработчики для прикрепления файлов
 function setupAttachmentHandlers() {
     const attachButton = document.getElementById('attachButton');
     const fileInput = document.getElementById('fileInput');
@@ -692,7 +692,7 @@ async function deleteMessage(messageId) {
     }
 
     try {
-        // Находим сообщени�� в DOM до его удаления
+        // Находим сообщение в DOM до его удаления
         const messageElement = document.querySelector(`.message[data-message-id="${messageId}"]`);
         if (!messageElement) {
             console.error('Сообщение не найдено в DOM');
@@ -802,7 +802,7 @@ function setupContextMenu() {
     messagesArea.addEventListener('contextmenu', (e) => {
         e.preventDefault();
         
-        // Ищем ближайший элемент сообщения от места клика
+        // Ищем ближайший элемент сообщения о�� места клика
         const messageElement = e.target.closest('.message');
         if (messageElement) {
             // Получаем текст сообщения (может быть в .message-text или в атрибуте alt избражения)
@@ -811,7 +811,7 @@ function setupContextMenu() {
             
             selectedMessageId = messageElement.dataset.messageId;
             selectedMessageText = messageTextElement ? messageTextElement.textContent : 
-                                (messageImage ? 'Изображение' : 'Влож��ние');
+                                (messageImage ? 'Изображение' : 'Вложение');
             
             // Проверяем, является ли сообщение наим
             const isSentMessage = messageElement.classList.contains('message-sent');
@@ -1158,11 +1158,11 @@ function formatLastMessage(chat) {
     return chat.is_own_message ? `Вы: ${messageText}` : messageText;
 }
 
-// Функция ��ыбора чата
+// Функция выбора чата
 async function selectChat(chat) {
     try {
         if (!chat || !chat.id) {
-            console.error('Не��орректные данные чата');
+            console.error('Некорректные данные чата');
             return;
         }
 
@@ -1178,7 +1178,7 @@ async function selectChat(chat) {
             newActive.classList.add('active');
         }
 
-        // Очищаем предыдущ��е сообщения
+        // Очищаем предыдущие сообщения
         const messagesContainer = document.getElementById('messages');
         if (messagesContainer) {
             messagesContainer.innerHTML = '';
@@ -1250,7 +1250,7 @@ function getLastActivityTime(lastActivity) {
     const diffInDays = Math.floor(diffInHours / 24);
   
     if (diffInDays > 0) {
-        return `${diffInDays} д. н��зад`;
+        return `${diffInDays} д. назад`;
     } else if (diffInHours > 0) {
         return `${diffInHours} ч. назад`;
     } else if (diffInMinutes > 0) {
@@ -1280,7 +1280,7 @@ async function updateUnreadCount(friendId) {
            console.error('Ошибка при загрузке списка чатов:', data.error)
        }
     } catch (error) {
-        console.error('Ошибка при загрузке списка ч��тов:', error);
+        console.error('Ошибка при загрузке ��писка чатов:', error);
     }
 }
 
