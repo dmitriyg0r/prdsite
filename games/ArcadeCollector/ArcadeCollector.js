@@ -31,6 +31,13 @@ class ArcadeCollector {
         this.bindEvents();
         this.lastTime = performance.now();
         this.animate(this.lastTime);
+        
+        // Добавляем обработчик для включения/выключения режима отладки
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'KeyD') {
+                this.renderer.debugMode = !this.renderer.debugMode;
+            }
+        });
     }
 
     initializeUI() {

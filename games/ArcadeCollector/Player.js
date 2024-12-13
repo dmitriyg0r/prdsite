@@ -31,7 +31,7 @@ export class Player {
     }
 
     update(dt) {
-        // Обновление неуязвимости
+        // Обновление таймера неуязвимости
         if (this.isInvulnerable) {
             this.invulnerabilityTimer += dt;
             if (this.invulnerabilityTimer >= this.invulnerabilityTime) {
@@ -40,10 +40,11 @@ export class Player {
             }
         }
 
-        // Обработка движения
+        // Сброс скорости
         this.dx = 0;
         this.dy = 0;
 
+        // Обработка движения
         if (this.keys['ArrowLeft']) this.dx = -this.speed;
         if (this.keys['ArrowRight']) this.dx = this.speed;
         if (this.keys['ArrowUp']) this.dy = -this.speed;
