@@ -219,7 +219,7 @@ export class Renderer {
         this.ctx.save();
         
         // Хитбокс игрока
-        const padding = 8;
+        const padding = 5;
         
         // Рисуем внешнюю границу игрока
         this.ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)';
@@ -265,28 +265,30 @@ export class Renderer {
         });
         
         // Хитбоксы пуль
-        const bulletPadding = 4;
-        game.enemyManager.enemyBullets.forEach(bullet => {
-            // Внешняя граница
-            this.ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)';
-            this.ctx.lineWidth = 1;
-            this.ctx.strokeRect(
-                bullet.x,
-                bullet.y,
-                bullet.width,
-                bullet.height
-            );
-            
-            // Хитбокс
-            this.ctx.strokeStyle = 'rgba(255, 0, 255, 0.8)';
-            this.ctx.lineWidth = 2;
-            this.ctx.strokeRect(
-                bullet.x + bulletPadding,
-                bullet.y + bulletPadding,
-                bullet.width - bulletPadding * 2,
-                bullet.height - bulletPadding * 2
-            );
-        });
+        const bulletPadding = 3;
+        if (game.enemyManager.enemyBullets) {
+            game.enemyManager.enemyBullets.forEach(bullet => {
+                // Внешняя граница
+                this.ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)';
+                this.ctx.lineWidth = 1;
+                this.ctx.strokeRect(
+                    bullet.x,
+                    bullet.y,
+                    bullet.width,
+                    bullet.height
+                );
+                
+                // Хитбокс
+                this.ctx.strokeStyle = 'rgba(255, 0, 255, 0.8)';
+                this.ctx.lineWidth = 2;
+                this.ctx.strokeRect(
+                    bullet.x + bulletPadding,
+                    bullet.y + bulletPadding,
+                    bullet.width - bulletPadding * 2,
+                    bullet.height - bulletPadding * 2
+                );
+            });
+        }
         
         this.ctx.restore();
     }
