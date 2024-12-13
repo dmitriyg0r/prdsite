@@ -27,7 +27,6 @@ export class GameState {
     startGame(game) {
         this.state = 'playing';
         this.resetGame(game);
-        document.getElementById('startMenu').style.display = 'none';
     }
 
     togglePause() {

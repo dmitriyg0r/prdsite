@@ -97,5 +97,27 @@ export class Renderer {
         this.ctx.restore();
     }
 
+    drawStartScreen(canvas) {
+        this.ctx.save();
+        
+        // Clear the canvas
+        this.ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Draw title
+        this.ctx.fillStyle = '#FFFFFF';
+        this.ctx.font = 'bold 48px Arial';
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText('ARCADE COLLECTOR', canvas.width/2, canvas.height/3);
+        
+        // Draw instructions
+        this.ctx.font = '24px Arial';
+        this.ctx.fillText('Press SPACE to start', canvas.width/2, canvas.height/2);
+        this.ctx.font = '18px Arial';
+        this.ctx.fillText('Use arrow keys to move', canvas.width/2, canvas.height/2 + 40);
+        this.ctx.fillText('Space to shoot', canvas.width/2, canvas.height/2 + 70);
+        
+        this.ctx.restore();
+    }
+
     // ... остальные методы остаются без изменений
 }
