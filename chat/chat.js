@@ -340,7 +340,7 @@ function createAttachmentElement(attachmentUrl) {
     // Очищаем и нормализуем путь к файлу
     let fullUrl = attachmentUrl;
     
-    // Удаляем дублирование пути
+    // Удаляем дублирование ути
     if (attachmentUrl.includes('/uploads/messages')) {
         fullUrl = `https://adminflow.ru:5003${attachmentUrl}`;
     } else {
@@ -406,13 +406,17 @@ async function sendMessage() {
     }
 
     try {
-        // Принудительно очищаем поле ввода
-        messageInput.value = '';
-        // Принудительно устанавливаем пустое значение через setTimeout
-        setTimeout(() => {
-            messageInput.value = '';
-            messageInput.dispatchEvent(new Event('input'));
-        }, 0);
+        // Создаем новый элемент input
+        const newInput = document.createElement('input');
+        newInput.type = 'text';
+        newInput.id = 'messageInput';
+        newInput.placeholder = 'Введите сообщение...';
+        
+        // Заменяем старый input новым
+        messageInput.parentNode.replaceChild(newInput, messageInput);
+        
+        // Переустанавливаем обработчики событий на новый input
+        setupEventListeners();
 
         const response = await fetch('https://adminflow.ru:5003/api/messages/send', {
             method: 'POST',
@@ -434,10 +438,6 @@ async function sendMessage() {
         }
 
         if (responseData.success) {
-            // Еще раз очищаем поле ввода
-            messageInput.value = '';
-            messageInput.dispatchEvent(new Event('input'));
-            
             if (replyToMessageId) {
                 cancelReply();
             }
@@ -452,12 +452,7 @@ async function sendMessage() {
     } catch (error) {
         console.error('Ошибка при отправке сообщения:', error);
         alert(`Не удалось отправить сообщение: ${error.message}`);
-        // В случае ошибки НЕ возвращаем текст
     }
-
-    // Финальная очистка
-    messageInput.value = '';
-    messageInput.dispatchEvent(new Event('input'));
 }
 
 async function markMessagesAsRead(friendId) {
@@ -516,7 +511,7 @@ function setupEventListeners() {
             })
         });
         
-        // бразываем статус через 2 секунды
+        // Сбрасываем статус через 2 секунды
         typingTimeout = setTimeout(() => {
             fetch('https://adminflow.ru:5003/api/messages/typing', {
                 method: 'POST',
@@ -673,7 +668,7 @@ function setupAttachmentHandlers() {
         const file = e.target.files[0];
         if (file) {
             if (file.size > 5 * 1024 * 1024) {
-                alert('Фай�� слишком большой (максимум 5MB)');
+                alert('Файл слишком большой (максимум 5MB)');
                 fileInput.value = '';
                 return;
             }
@@ -752,7 +747,7 @@ async function deleteMessage(messageId) {
     }
 
     try {
-        // Находм со��бщение в DOM до его удаления
+        // Находм собщение в DOM до его удаления
         const messageElement = document.querySelector(`.message[data-message-id="${messageId}"]`);
         if (!messageElement) {
             console.error('Сообщение не найдено в DOM');
@@ -797,7 +792,7 @@ async function deleteMessage(messageId) {
     }
 }
 
-// Добавляем все необходимые стили
+// Добавляем ��се необходимые стили
 const chatStyles = document.createElement('style');
 chatStyles.textContent = `
     /* Анимация удаления сообщения */
@@ -848,7 +843,7 @@ chatStyles.textContent = `
 `;
 document.head.appendChild(chatStyles);
 
-// Обновляем обработчики контекстного меню
+// Обновл��ем обработчики контекстного меню
 function setupContextMenu() {
     const contextMenu = document.getElementById('contextMenu');
     const messagesArea = document.getElementById('messages');
@@ -901,7 +896,7 @@ function setupContextMenu() {
                 contextMenu.style.left = `${x}px`;
             }
 
-            // Проверяем и к��рректируем позицию по вертикали
+            // Проверяем и крректируем позицию по вертикали
             if (y + menuRect.height > windowHeight) {
                 contextMenu.style.top = `${y - menuRect.height}px`;
             } else {
@@ -996,7 +991,7 @@ function showReplyPreview(messageText) {
         </button>
     `;
 
-    // Очищаем и показываем предпросмотр
+    // Очищаем и показываем пр��дпросмотр
      while(replyPreview.firstChild) {
         replyPreview.removeChild(replyPreview.firstChild);
     }
@@ -1085,7 +1080,7 @@ function updateLastMessage(message) {
 
 // Функция загрузки списка чатов с защитой от дёрганья
 let lastUpdateTime = 0;
-const UPDATE_INTERVAL = 2000; // Минимальный интервал между ��бновлениями
+const UPDATE_INTERVAL = 2000; // Минимальный интервал между обновлениями
 
 async function loadChatsList() {
     try {
@@ -1226,7 +1221,7 @@ async function selectChat(chat) {
             return;
         }
 
-        // Убираем активный кла��с у предыдущего чата
+        // Убираем активный класс у предыдущего чата
         const previousActive = document.querySelector('.chat-partner.active');
         if (previousActive) {
             previousActive.classList.remove('active');
@@ -1437,7 +1432,7 @@ document.getElementById('replyMessageBtn').addEventListener('click', () => {
 // Инициализация
 setupReplyFunctionality();
 
-// Добавляем подсказку для Markdown в placeholder
+// Добавляем подсказку дл Markdown в placeholder
 document.addEventListener('DOMContentLoaded', () => {
     const messageInput = document.getElementById('messageInput');
     if (messageInput) {
