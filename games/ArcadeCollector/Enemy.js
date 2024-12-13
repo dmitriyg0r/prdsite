@@ -1,3 +1,5 @@
+import { Bullet } from './Bullet.js';
+
 export class Enemy {
     constructor(canvas, x, y, type = 'basic') {
         this.canvas = canvas;
