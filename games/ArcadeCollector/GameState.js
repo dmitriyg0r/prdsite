@@ -6,15 +6,82 @@ export class GameState {
         this.state = 'start';
         this.difficultyIncreaseInterval = 30000;
         this.timeSinceLastDifficultyIncrease = 0;
+        this.scoreToNextLevel = 1000;
         
-        console.log('GameState initialized:', this.state);
+        this.difficultyMultipliers = {
+            enemySpeed: 1,
+            enemySpawnRate: 1,
+            enemyBulletSpeed: 1,
+            scoreMultiplier: 1
+        };
     }
 
     startGame(game) {
-        console.log('Starting game...');
         this.state = 'playing';
         this.resetGame(game);
-        console.log('Game started, state:', this.state);
+    }
+
+    updateDifficulty(dt) {
+        this.timeSinceLastDifficultyIncrease += dt;
+        
+        if (this.score >= this.scoreToNextLevel) {
+            this.levelUp();
+        }
+
+        if (this.timeSinceLastDifficultyIncrease >= this.difficultyIncreaseInterval) {
+            this.difficulty += 0.5;
+            this.timeSinceLastDifficultyIncrease = 0;
+            this.updateDifficultyMultipliers();
+            console.log(`Difficulty increased to ${this.difficulty}`);
+        }
+    }
+
+    levelUp() {
+        this.level++;
+        this.scoreToNextLevel += 1000 * this.level;
+        this.difficulty += 0.5;
+        this.updateDifficultyMultipliers();
+        console.log(`Level up! Level: ${this.level}, Difficulty: ${this.difficulty}`);
+    }
+
+    updateDifficultyMultipliers() {
+        this.difficultyMultipliers = {
+            enemySpeed: 1 + (this.difficulty - 1) * 0.2,
+            enemySpawnRate: 1 + (this.difficulty - 1) * 0.3,
+            enemyBulletSpeed: 1 + (this.difficulty - 1) * 0.15,
+            scoreMultiplier: 1 + (this.level - 1) * 0.5
+        };
+    }
+
+    addScore(points) {
+        this.score += Math.floor(points * this.difficultyMultipliers.scoreMultiplier);
+        this.updateUI();
+    }
+
+    updateUI(game) {
+        const scoreElement = document.getElementById('score');
+        const levelElement = document.getElementById('level');
+        const livesElement = document.getElementById('lives');
+        
+        if (scoreElement) scoreElement.textContent = `Score: ${this.score}`;
+        if (levelElement) levelElement.textContent = `Level: ${this.level}`;
+        if (livesElement && game.player) livesElement.textContent = `Lives: ${game.player.lives}`;
+    }
+
+    resetGame(game) {
+        this.score = 0;
+        this.level = 1;
+        this.difficulty = 1;
+        this.timeSinceLastDifficultyIncrease = 0;
+        this.scoreToNextLevel = 1000;
+        this.updateDifficultyMultipliers();
+        
+        game.player.reset();
+        game.enemyManager.reset();
+        game.bulletManager.reset();
+        game.particleSystem.reset();
+        
+        this.updateUI(game);
     }
 
     isPlaying() {
@@ -25,28 +92,13 @@ export class GameState {
         return this.state === 'start';
     }
 
-    resetGame(game) {
-        console.log('Resetting game...');
-        this.score = 0;
-        this.level = 1;
-        this.difficulty = 1;
-        this.timeSinceLastDifficultyIncrease = 0;
-        
-        game.player.reset();
-        game.enemyManager.reset();
-        game.bulletManager.reset();
-        game.particleSystem.reset();
-        
-        this.updateUI(game);
-        console.log('Game reset completed');
+    gameOver(game) {
+        this.state = 'gameover';
+        console.log('Game Over! Final score:', this.score);
     }
 
     isPaused() {
         return this.state === 'paused';
-    }
-
-    isGameOver() {
-        return this.state === 'gameOver';
     }
 
     togglePause() {
@@ -63,36 +115,10 @@ export class GameState {
         document.getElementById('pauseMenu').style.display = 'none';
     }
 
-    gameOver(game) {
-        this.state = 'gameOver';
-        document.getElementById('gameOverMenu').style.display = 'flex';
-        document.getElementById('finalScore').textContent = this.score;
-    }
-
     restartGame(game) {
         this.resetGame(game);
         this.state = 'playing';
         document.getElementById('gameOverMenu').style.display = 'none';
         document.getElementById('pauseMenu').style.display = 'none';
-    }
-
-    updateDifficulty(dt) {
-        this.timeSinceLastDifficultyIncrease += dt;
-        if (this.timeSinceLastDifficultyIncrease >= this.difficultyIncreaseInterval) {
-            this.difficulty += 0.1;
-            this.level = Math.floor(this.difficulty);
-            this.timeSinceLastDifficultyIncrease = 0;
-        }
-    }
-
-    updateUI(game) {
-        document.getElementById('score').textContent = this.score;
-        document.getElementById('lives').textContent = game.player.lives;
-        document.getElementById('level').textContent = this.level;
-    }
-
-    addScore(points) {
-        this.score += points;
-        document.getElementById('score').textContent = this.score;
     }
 } 

@@ -91,23 +91,32 @@ export class EnemyManager {
     }
 
     update(dt, game) {
-        // Обновление таймера спавна
-        this.spawnTimer += dt;
+        const multipliers = game.gameState.difficultyMultipliers;
+        
+        // Обновление таймера спавна с учетом множителя скорости спавна
+        this.spawnTimer += dt * multipliers.enemySpawnRate;
         this.shootTimer += dt;
 
         // Спавн врагов
         if (this.spawnTimer >= this.spawnInterval) {
             this.spawnEnemy(game.canvas, game.gameState.difficulty);
             this.spawnTimer = 0;
+            // Уменьшаем интервал спавна с ростом сложности
             this.spawnInterval = Math.max(300, 1000 - (game.gameState.difficulty * 50));
         }
 
         // Стрельба врагов
         if (this.shootTimer >= this.shootInterval) {
-            this.enemyShoot();
+            this.enemyShoot(game.gameState.difficultyMultipliers.enemyBulletSpeed);
             this.shootTimer = 0;
+            // Уменьшаем интервал стрельбы с ростом сложности
             this.shootInterval = Math.max(1000, 2000 - (game.gameState.difficulty * 100));
         }
+
+        // Обновление врагов с учетом множителя скорости
+        this.enemies.forEach(enemy => {
+            enemy.speed = enemy.baseSpeed * multipliers.enemySpeed;
+        });
 
         // Обновление пуль врагов
         for (let i = this.enemyBullets.length - 1; i >= 0; i--) {
@@ -115,23 +124,15 @@ export class EnemyManager {
             bullet.update(dt);
 
             // Проверка столкновения с игроком
-            if (!game.player.isInvulnerable) {
-                const collision = this.checkBulletCollision(bullet, game.player);
-                if (collision) {
-                    console.log('Bullet collision detected:', {
-                        bulletPos: { x: bullet.x, y: bullet.y },
-                        playerPos: { x: game.player.x, y: game.player.y }
-                    });
-                    this.enemyBullets.splice(i, 1);
-                    if (game.player.hit()) {
-                        game.particleSystem.createExplosion(
-                            game.player.x + game.player.width/2,
-                            game.player.y + game.player.height/2
-                        );
-                        game.gameState.updateUI(game);
-                    }
-                    continue;
+            if (!game.player.isInvulnerable && this.checkBulletCollision(bullet, game.player)) {
+                this.enemyBullets.splice(i, 1);
+                game.player.hit();
+                game.gameState.updateUI(game);
+                
+                if (game.player.lives <= 0) {
+                    game.gameState.gameOver(game);
                 }
+                continue;
             }
 
             // Удаление пуль за пределами экрана
@@ -146,20 +147,12 @@ export class EnemyManager {
             enemy.update(dt);
 
             // Проверка столкновения с игроком
-            if (!game.player.isInvulnerable) {
-                const collision = this.checkCollision(enemy, game.player);
-                if (collision) {
-                    console.log('Enemy collision detected:', {
-                        enemyPos: { x: enemy.x, y: enemy.y },
-                        playerPos: { x: game.player.x, y: game.player.y }
-                    });
-                    if (game.player.hit()) {
-                        game.particleSystem.createExplosion(
-                            game.player.x + game.player.width/2,
-                            game.player.y + game.player.height/2
-                        );
-                        game.gameState.updateUI(game);
-                    }
+            if (!game.player.isInvulnerable && this.checkCollision(enemy, game.player)) {
+                game.player.hit();
+                game.gameState.updateUI(game);
+                
+                if (game.player.lives <= 0) {
+                    game.gameState.gameOver(game);
                 }
             }
 
@@ -184,70 +177,43 @@ export class EnemyManager {
     }
 
     checkCollision(enemy, player) {
-        // Увеличиваем отступ для более точной коллизии
-        const padding = 8;
-        const hitbox = {
-            enemy: {
-                x: enemy.x + padding,
-                y: enemy.y + padding,
-                width: enemy.width - padding * 2,
-                height: enemy.height - padding * 2
-            },
-            player: {
-                x: player.x + padding,
-                y: player.y + padding,
-                width: player.width - padding * 2,
-                height: player.height - padding * 2
-            }
-        };
-
-        return hitbox.enemy.x < hitbox.player.x + hitbox.player.width &&
-               hitbox.enemy.x + hitbox.enemy.width > hitbox.player.x &&
-               hitbox.enemy.y < hitbox.player.y + hitbox.player.height &&
-               hitbox.enemy.y + hitbox.enemy.height > hitbox.player.y;
+        const padding = 5;
+        return (enemy.x + padding) < (player.x + player.width - padding) &&
+               (enemy.x + enemy.width - padding) > (player.x + padding) &&
+               (enemy.y + padding) < (player.y + player.height - padding) &&
+               (enemy.y + enemy.height - padding) > (player.y + padding);
     }
 
     checkBulletCollision(bullet, player) {
-        // Увеличиваем отступ для более точной коллизии пуль
-        const padding = 4;
-        const hitbox = {
-            bullet: {
-                x: bullet.x + padding,
-                y: bullet.y + padding,
-                width: bullet.width - padding * 2,
-                height: bullet.height - padding * 2
-            },
-            player: {
-                x: player.x + padding,
-                y: player.y + padding,
-                width: player.width - padding * 2,
-                height: player.height - padding * 2
-            }
-        };
-
-        return hitbox.bullet.x < hitbox.player.x + hitbox.player.width &&
-               hitbox.bullet.x + hitbox.bullet.width > hitbox.player.x &&
-               hitbox.bullet.y < hitbox.player.y + hitbox.player.height &&
-               hitbox.bullet.y + hitbox.bullet.height > hitbox.player.y;
+        const padding = 3;
+        return (bullet.x + padding) < (player.x + player.width - padding) &&
+               (bullet.x + bullet.width - padding) > (player.x + padding) &&
+               (bullet.y + padding) < (player.y + player.height - padding) &&
+               (bullet.y + bullet.height - padding) > (player.y + padding);
     }
 
     spawnEnemy(canvas, difficulty) {
-        // Выбор типа противника с учетом сложности
+        const x = Math.random() * (canvas.width - 30);
+        
+        // Выбор типа врага в зависимости от сложности
         let type = 'basic';
         const rand = Math.random();
         
-        if (difficulty >= 2) {
-            if (rand < 0.3) type = 'fast';
-            else if (rand < 0.5) type = 'tank';
-            else if (rand < 0.7) type = 'wave';
+        if (difficulty >= 3) {
+            if (rand < 0.3) type = 'wave';
+            else if (rand < 0.6) type = 'tank';
+            else if (rand < 0.8) type = 'fast';
+        } else if (difficulty >= 2) {
+            if (rand < 0.2) type = 'wave';
+            else if (rand < 0.4) type = 'tank';
+            else if (rand < 0.7) type = 'fast';
         } else if (difficulty >= 1) {
-            if (rand < 0.2) type = 'fast';
-            else if (rand < 0.3) type = 'tank';
+            if (rand < 0.3) type = 'fast';
+            else if (rand < 0.4) type = 'tank';
         }
 
-        // Случайная позиция по X
-        const x = Math.random() * (canvas.width - 30);
         const enemy = new Enemy(canvas, x, -30, type);
+        enemy.baseSpeed = enemy.speed; // Сохраняем базовую скорость
         this.enemies.push(enemy);
     }
 
