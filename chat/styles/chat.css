@@ -1125,7 +1125,7 @@ body {
     transition: transform 0.2s ease;
 }
 
-/* У��учшаем стили для цитат */
+/* Улучшаем стили для цитат */
 .quoted-message {
     margin-bottom: 10px;
     padding: 10px 14px;
@@ -1187,5 +1187,23 @@ body {
         max-width: 240px;
         max-height: 160px;
     }
+}
+
+/* Добавляем стили для выравнивания сообщений */
+.message-sent {
+    align-self: flex-end;
+    margin-left: auto;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    border-bottom-right-radius: 4px;
+}
+
+.message-received {
+    align-self: flex-start;
+    margin-right: auto;
+    background: var(--surface-color);
+    border: 1px solid var(--border-light);
+    border-bottom-left-radius: 4px;
+    color: var(--text-primary);
 }
  
