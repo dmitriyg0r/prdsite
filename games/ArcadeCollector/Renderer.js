@@ -12,19 +12,20 @@ export class Renderer {
             enemyBullet: '#FF0000',
             particleDefault: '#FFA500'
         };
+        this.debugMode = false;
     }
 
     draw(game) {
         // Очистка canvas
         this.ctx.clearRect(0, 0, game.canvas.width, game.canvas.height);
         
-        // Отрисовка игрока с эффектом неуязвимости
+        // Отрисовка игрока
         this.drawPlayer(game.player);
         
-        // Отрисовка врагов с эффектами
+        // Отрисовка врагов
         this.drawEnemies(game.enemyManager.enemies);
         
-        // Отрисовка пуль игрока и врагов
+        // Отрисовка пуль
         this.drawBullets(game.bulletManager.bullets, this.colors.bullet);
         if (game.enemyManager.enemyBullets) {
             this.drawBullets(game.enemyManager.enemyBullets, this.colors.enemyBullet);
@@ -32,19 +33,23 @@ export class Renderer {
         
         // Отрисовка частиц
         this.drawParticles(game.particleSystem.particles);
+
+        // Отрисовка хитбоксов в режиме отладки
+        if (this.debugMode) {
+            this.drawHitboxes(game);
+        }
     }
 
     drawPlayer(player) {
         this.ctx.save();
-        if (player.isInvulnerable) {
-            this.ctx.globalAlpha = 0.5 + Math.sin(Date.now() / 100) * 0.5;
-        }
-        this.ctx.fillStyle = this.colors.player;
+        
+        // Отрисовка игрока
+        this.ctx.fillStyle = player.isInvulnerable ? 
+            this.colors.playerInvulnerable : 
+            this.colors.player;
+            
         this.ctx.fillRect(player.x, player.y, player.width, player.height);
         
-        // Добавляем свечение для игрока
-        this.ctx.shadowColor = this.colors.player;
-        this.ctx.shadowBlur = 10;
         this.ctx.restore();
     }
 
@@ -207,6 +212,44 @@ export class Renderer {
             this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
             this.ctx.fill();
         });
+        this.ctx.restore();
+    }
+
+    drawHitboxes(game) {
+        this.ctx.save();
+        this.ctx.strokeStyle = 'red';
+        this.ctx.lineWidth = 1;
+        
+        // Хитбокс игрока
+        const padding = 5;
+        this.ctx.strokeRect(
+            game.player.x + padding,
+            game.player.y + padding,
+            game.player.width - padding * 2,
+            game.player.height - padding * 2
+        );
+        
+        // Хитбоксы врагов
+        game.enemyManager.enemies.forEach(enemy => {
+            this.ctx.strokeRect(
+                enemy.x + padding,
+                enemy.y + padding,
+                enemy.width - padding * 2,
+                enemy.height - padding * 2
+            );
+        });
+        
+        // Хитбоксы пуль
+        const bulletPadding = 2;
+        game.enemyManager.enemyBullets.forEach(bullet => {
+            this.ctx.strokeRect(
+                bullet.x + bulletPadding,
+                bullet.y + bulletPadding,
+                bullet.width - bulletPadding * 2,
+                bullet.height - bulletPadding * 2
+            );
+        });
+        
         this.ctx.restore();
     }
 

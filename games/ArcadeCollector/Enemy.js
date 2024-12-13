@@ -168,11 +168,22 @@ export class EnemyManager {
         }
     }
 
+    checkCollision(enemy, player) {
+        // Добавляем отступы для более точной коллизии
+        const padding = 5;
+        return enemy.x + padding < player.x + player.width - padding &&
+               enemy.x + enemy.width - padding > player.x + padding &&
+               enemy.y + padding < player.y + player.height - padding &&
+               enemy.y + enemy.height - padding > player.y + padding;
+    }
+
     checkBulletCollision(bullet, player) {
-        return bullet.x < player.x + player.width &&
-               bullet.x + bullet.width > player.x &&
-               bullet.y < player.y + player.height &&
-               bullet.y + bullet.height > player.y;
+        // Добавляем отступы для более точной коллизии
+        const padding = 2;
+        return bullet.x + padding < player.x + player.width - padding &&
+               bullet.x + bullet.width - padding > player.x + padding &&
+               bullet.y + padding < player.y + player.height - padding &&
+               bullet.y + bullet.height - padding > player.y + padding;
     }
 
     spawnEnemy(canvas, difficulty) {
