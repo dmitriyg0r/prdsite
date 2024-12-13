@@ -1,3 +1,12 @@
+// Настройка marked в начале файла
+marked.setOptions({
+    breaks: true, // Переносы строк
+    gfm: true, // GitHub Flavored Markdown
+    headerIds: false, // Отключаем ID для заголовков
+    mangle: false, // Отключаем экранирование email
+    sanitize: false, // Отключаем встроенную санитизацию, так как используем DOMPurify
+});
+
 document.addEventListener('DOMContentLoaded', () => {
     // Добавляем стили для ответов
     const style = document.createElement('style');
@@ -219,7 +228,7 @@ function createMessageElement(message) {
     const messageContent = document.createElement('div');
     messageContent.className = 'message-content';
 
-    // Добавляем обработку ответа на сообщение
+    // Обработка ответа на сообщение
     if (message.reply_to) {
         const replyElement = document.createElement('div');
         replyElement.className = 'message-reply';
@@ -248,18 +257,49 @@ function createMessageElement(message) {
         const messageText = document.createElement('div');
         messageText.className = 'message-text';
         
-        // Парсим Markdown и очищаем HTML
-        const parsedMessage = marked.parse(message.message);
-        const cleanHtml = DOMPurify.sanitize(parsedMessage, {
-            ALLOWED_TAGS: ['p', 'strong', 'em', 'code', 'pre', 'blockquote', 'ul', 'ol', 'li', 'a'],
-            ALLOWED_ATTR: ['href']
-        });
+        try {
+            // Экранируем специальные HTML-символы
+            let safeMessage = message.message
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+            
+            // Парсим Markdown
+            const parsedMessage = marked.parse(safeMessage);
+            
+            // Очищаем HTML с помощью DOMPurify
+            const cleanHtml = DOMPurify.sanitize(parsedMessage, {
+                ALLOWED_TAGS: [
+                    'p', 'br', 'strong', 'em', 'code', 'pre',
+                    'blockquote', 'ul', 'ol', 'li', 'a',
+                    'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+                    'hr', 'del', 'span'
+                ],
+                ALLOWED_ATTR: ['href', 'target', 'class'],
+                ALLOW_DATA_ATTR: false,
+                ADD_ATTR: ['target'], // Добавляем target для ссылок
+                FORBID_TAGS: ['style', 'script'],
+                FORBID_ATTR: ['style', 'onerror', 'onload'],
+            });
+            
+            messageText.innerHTML = cleanHtml;
+            
+            // Добавляем target="_blank" для всех ссылок
+            messageText.querySelectorAll('a').forEach(link => {
+                link.setAttribute('target', '_blank');
+                link.setAttribute('rel', 'noopener noreferrer');
+            });
+            
+        } catch (error) {
+            console.error('Error parsing markdown:', error);
+            // В случае ошибки показываем текст как есть
+            messageText.textContent = message.message;
+        }
         
-        messageText.innerHTML = cleanHtml;
         messageContent.appendChild(messageText);
     }
 
-    // Если есть вложение
+    // Обработка вложений
     if (message.attachment_url) {
         const attachmentElement = createAttachmentElement(message.attachment_url);
         messageContent.appendChild(attachmentElement);
@@ -586,7 +626,7 @@ function showImageModal(imageUrl) {
     };
     
     modalImage.onerror = () => {
-        console.error('Ошибка загрузки изображения в модальном окне:', imageUrl);
+        console.error('Ошибка за��рузки изображения в модальном окне:', imageUrl);
         if(modal) modal.style.display = 'none';
         alert('Ошибка при загрузке изображения');
     };
@@ -699,7 +739,7 @@ async function deleteMessage(messageId) {
     }
 
     try {
-        // Находим сообщение в DOM до его удаления
+        // Наход��м сообщение в DOM до его удаления
         const messageElement = document.querySelector(`.message[data-message-id="${messageId}"]`);
         if (!messageElement) {
             console.error('Сообщение не найдено в DOM');
@@ -744,7 +784,7 @@ async function deleteMessage(messageId) {
     }
 }
 
-// Добавляем все необходи��ые стили
+// Добавляем все необходимые стили
 const chatStyles = document.createElement('style');
 chatStyles.textContent = `
     /* Анимация удаления сообщения */
@@ -795,7 +835,7 @@ chatStyles.textContent = `
 `;
 document.head.appendChild(chatStyles);
 
-// Обновляем обработч��ки контекстного меню
+// Обновляем обработчики контекстного меню
 function setupContextMenu() {
     const contextMenu = document.getElementById('contextMenu');
     const messagesArea = document.getElementById('messages');
@@ -1156,7 +1196,7 @@ function createChatElement(chat) {
 }
 
 function formatLastMessage(chat) {
-    if (!chat.last_message) return 'Нет с��общений';
+    if (!chat.last_message) return 'Нет сообщений';
     
     const messageText = chat.last_message.length > 25 
         ? chat.last_message.substring(0, 25) + '...' 
@@ -1191,7 +1231,7 @@ async function selectChat(chat) {
             messagesContainer.innerHTML = '';
         }
 
-        // Останавливаем предыдущие обновления
+        // Останавливаем пр��дыдущие обновления
         if (messageUpdateInterval) {
             clearInterval(messageUpdateInterval);
         }
@@ -1383,3 +1423,11 @@ document.getElementById('replyMessageBtn').addEventListener('click', () => {
 
 // Инициализация
 setupReplyFunctionality();
+
+// Добавляем подсказку для Markdown в placeholder
+document.addEventListener('DOMContentLoaded', () => {
+    const messageInput = document.getElementById('messageInput');
+    if (messageInput) {
+        messageInput.placeholder = 'Сообщение... (*курсив*, **жирный**, `код`, ```блок кода```, > цитата)';
+    }
+});
