@@ -854,7 +854,7 @@ app.get('/api/users/:id', async (req, res) => {
     }
 });
 
-// Обновле����ие п��о��иля пользователя
+// Об��овле����ие п��о��иля пользователя
 app.post('/api/users/update-profile', async (req, res) => {
     try {
         const { userId, username, email } = req.body;
@@ -1870,6 +1870,9 @@ const httpServer = http.createServer((req, res) => {
 });
 
 const httpsServer = https.createServer(sslOptions, app);
+
+// Создаем Map для хранения активных соединений
+const activeConnections = new Map();
 
 // Создаем экземпляр Socket.IO
 const io = new Server(httpsServer, {
