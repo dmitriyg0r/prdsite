@@ -14,6 +14,9 @@ export class GameState {
             enemyBulletSpeed: 1,
             scoreMultiplier: 1
         };
+
+        this.gameOverScreen = document.getElementById('gameOverScreen');
+        this.finalScoreElement = document.getElementById('finalScore');
     }
 
     startGame(game) {
@@ -99,6 +102,23 @@ export class GameState {
     gameOver(game) {
         this.state = 'gameover';
         console.log('Game Over! Final score:', this.score);
+        
+        if (this.gameOverScreen) {
+            this.gameOverScreen.style.display = 'flex';
+            if (this.finalScoreElement) {
+                this.finalScoreElement.textContent = `Final Score: ${this.score}`;
+            }
+        }
+
+        const handleRestart = (e) => {
+            if (e.code === 'Space') {
+                this.gameOverScreen.style.display = 'none';
+                this.startGame(game);
+                window.removeEventListener('keydown', handleRestart);
+            }
+        };
+        
+        window.addEventListener('keydown', handleRestart);
     }
 
     isPaused() {

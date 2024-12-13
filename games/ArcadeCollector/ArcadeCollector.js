@@ -28,6 +28,9 @@ class ArcadeCollector {
         // Добавим вывод для отладки
         console.log('Game initialized');
         
+        this.shootCooldown = 250; // Задержка между выстрелами (в миллисекундах)
+        this.lastShootTime = 0;
+        
         this.bindEvents();
         this.lastTime = performance.now();
         this.animate(this.lastTime);
@@ -80,48 +83,49 @@ class ArcadeCollector {
         this.enemyManager.update(dt, this);
         this.bulletManager.update(dt, this);
         this.particleSystem.update(dt);
+
+        // Проверяем нажатие пробела для стрельбы
+        if (this.player.keys['Space']) {
+            this.tryShoot();
+        }
     }
 
     bindEvents() {
-        // Основные обработчики событий
-        window.addEventListener('keydown', this.handleKeyDown.bind(this));
-        window.addEventListener('keyup', this.handleKeyUp.bind(this));
-        
-        // UI обработчики
-        document.getElementById('resumeBtn').addEventListener('click', () => this.gameState.resumeGame());
-        document.getElementById('restartBtn').addEventListener('click', () => this.gameState.restartGame(this));
-        document.getElementById('playAgainBtn').addEventListener('click', () => this.gameState.restartGame(this));
-    }
-
-    handleKeyDown(e) {
-        // Добавим вывод для отладки нажатий клавиш
-        console.log('Key pressed:', e.code);
-        
-        if(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {
-            e.preventDefault();
-        }
-        
-        if (this.player.keys.hasOwnProperty(e.code)) {
-            this.player.keys[e.code] = true;
-            
-            // Обработка клавиши Escape
-            if (e.code === 'Escape') {
-                this.gameState.togglePause();
-            }
-            
-            // Обработка пробела для начала игры
-            if (e.code === 'Space' && this.gameState.isStartScreen()) {
-                console.log('Starting game...');
+        window.addEventListener('keydown', (e) => {
+            // Обработка нажатий клавиш
+            if (this.gameState.isPlaying()) {
+                if (e.code === 'Space' && !this.player.keys['Space']) {
+                    this.player.keys['Space'] = true;
+                    this.tryShoot();
+                }
+            } else if (this.gameState.isStartScreen() && e.code === 'Space') {
                 this.gameState.startGame(this);
-                // Добавим сброс состояния клавиш при старте игры
-                this.player.keys['Space'] = false;
             }
-        }
+
+            // Добавляем остальные клавиши управления
+            if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.code)) {
+                this.player.keys[e.code] = true;
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Space'].includes(e.code)) {
+                this.player.keys[e.code] = false;
+            }
+        });
     }
 
-    handleKeyUp(e) {
-        if (this.player.keys.hasOwnProperty(e.code)) {
-            this.player.keys[e.code] = false;
+    tryShoot() {
+        const currentTime = performance.now();
+        if (currentTime - this.lastShootTime >= this.shootCooldown) {
+            // Создаем новую пулю
+            const bullet = new Bullet(
+                this.player.x + this.player.width/2 - 2.5,
+                this.player.y,
+                400
+            );
+            this.bulletManager.addBullet(bullet);
+            this.lastShootTime = currentTime;
         }
     }
 }
