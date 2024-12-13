@@ -32,6 +32,13 @@ class ArcadeCollector {
         
         console.log('Game initialized');
         
+        // Предотвращаем прокрутку страницы
+        window.addEventListener('keydown', (e) => {
+            if(['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
+                e.preventDefault();
+            }
+        }, false);
+        
         this.bindEvents();
         this.animate();
     }
@@ -78,6 +85,11 @@ class ArcadeCollector {
 
     bindEvents() {
         window.addEventListener('keydown', (e) => {
+            // Предотвращаем действия по умолчанию для игровых клавиш
+            if(['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
+                e.preventDefault();
+            }
+            
             // Обработка нажатий клавиш
             if (this.gameState.isPlaying()) {
                 if (e.code === 'Space' && !this.player.keys['Space']) {
