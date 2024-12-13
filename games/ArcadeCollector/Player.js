@@ -1,37 +1,20 @@
 export class Player {
     constructor(canvas) {
         this.canvas = canvas;
-        this.width = 40;
-        this.height = 40;
-        
-        // Начальная позиция игрока (центр нижней части экрана)
+        this.width = 30;
+        this.height = 30;
         this.x = canvas.width / 2 - this.width / 2;
-        this.y = canvas.height - this.height - 20;
-        
-        // Параметры движения
+        this.y = canvas.height - this.height - 10;
         this.speed = 300;
-        this.dx = 0;
-        this.dy = 0;
-        
-        // Состояние клавиш
-        this.keys = {
-            'ArrowLeft': false,
-            'ArrowRight': false,
-            'ArrowUp': false,
-            'ArrowDown': false,
-            'Space': false,
-            'Escape': false
-        };
-        
-        // Параметры игрока
         this.lives = 3;
         this.isInvulnerable = false;
-        this.invulnerabilityTime = 2000; // 2 секунды
+        this.invulnerabilityTime = 2000; // 2 секунды неуязвимости после попадания
         this.invulnerabilityTimer = 0;
+        this.keys = {};
     }
 
     update(dt) {
-        // Обновление таймера неуязвимости
+        // Обновление неуязвимости
         if (this.isInvulnerable) {
             this.invulnerabilityTimer += dt;
             if (this.invulnerabilityTimer >= this.invulnerabilityTime) {
@@ -40,19 +23,19 @@ export class Player {
             }
         }
 
-        // Сброс скорости
-        this.dx = 0;
-        this.dy = 0;
-
-        // Обработка движения
-        if (this.keys['ArrowLeft']) this.dx = -this.speed;
-        if (this.keys['ArrowRight']) this.dx = this.speed;
-        if (this.keys['ArrowUp']) this.dy = -this.speed;
-        if (this.keys['ArrowDown']) this.dy = this.speed;
-
-        // Применение движения с учетом deltaTime
-        this.x += this.dx * (dt / 1000);
-        this.y += this.dy * (dt / 1000);
+        // Движение
+        if (this.keys['ArrowLeft']) {
+            this.x -= this.speed * (dt / 1000);
+        }
+        if (this.keys['ArrowRight']) {
+            this.x += this.speed * (dt / 1000);
+        }
+        if (this.keys['ArrowUp']) {
+            this.y -= this.speed * (dt / 1000);
+        }
+        if (this.keys['ArrowDown']) {
+            this.y += this.speed * (dt / 1000);
+        }
 
         // Ограничение движения в пределах canvas
         this.x = Math.max(0, Math.min(this.x, this.canvas.width - this.width));
@@ -60,20 +43,20 @@ export class Player {
     }
 
     hit() {
-        if (!this.isInvulnerable) {
-            this.lives--;
-            this.isInvulnerable = true;
-            this.invulnerabilityTimer = 0;
-            return true;
-        }
-        return false;
+        if (this.isInvulnerable) return false;
+        
+        this.lives = Math.max(0, this.lives - 1);
+        this.isInvulnerable = true;
+        this.invulnerabilityTimer = 0;
+        return true;
     }
 
     reset() {
         this.x = this.canvas.width / 2 - this.width / 2;
-        this.y = this.canvas.height - this.height - 20;
+        this.y = this.canvas.height - this.height - 10;
         this.lives = 3;
         this.isInvulnerable = false;
         this.invulnerabilityTimer = 0;
+        this.keys = {};
     }
 } 
