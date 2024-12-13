@@ -90,12 +90,10 @@ export class EnemyManager {
     }
 
     update(dt, game) {
-        if (!game) return; // Добавляем проверку на существование game
+        if (!game) return;
 
-        const multipliers = game.gameState.difficultyMultipliers;
-        
         // Обновление таймера спавна
-        this.spawnTimer += dt * (multipliers ? multipliers.enemySpawnRate : 1);
+        this.spawnTimer += dt;
         this.shootTimer += dt;
 
         // Спавн врагов
@@ -107,9 +105,32 @@ export class EnemyManager {
 
         // Стрельба врагов
         if (this.shootTimer >= this.shootInterval) {
-            this.enemyShoot(game.gameState.difficultyMultipliers.enemyBulletSpeed);
+            this.enemyShoot();
             this.shootTimer = 0;
             this.shootInterval = Math.max(1000, 2000 - (game.gameState.difficulty * 100));
+        }
+
+        // Обновление пуль врагов
+        for (let i = this.enemyBullets.length - 1; i >= 0; i--) {
+            const bullet = this.enemyBullets[i];
+            bullet.update(dt);
+
+            // Проверка столкновения с игроком
+            if (!game.player.isInvulnerable && this.checkBulletCollision(bullet, game.player)) {
+                this.enemyBullets.splice(i, 1);
+                game.player.hit();
+                game.gameState.updateUI(game);
+                
+                if (game.player.lives <= 0) {
+                    game.gameState.gameOver(game);
+                }
+                continue;
+            }
+
+            // Удаление пуль за пределами экрана
+            if (bullet.y > game.canvas.height) {
+                this.enemyBullets.splice(i, 1);
+            }
         }
 
         // Обновление врагов
@@ -119,16 +140,11 @@ export class EnemyManager {
 
             // Проверка столкновения с игроком
             if (!game.player.isInvulnerable && this.checkCollision(enemy, game.player)) {
-                if (game.player.hit()) {
-                    game.particleSystem.createExplosion(
-                        game.player.x + game.player.width/2,
-                        game.player.y + game.player.height/2
-                    );
-                    game.gameState.updateUI(game);
-                    
-                    if (game.player.lives <= 0) {
-                        game.gameState.gameOver(game);
-                    }
+                game.player.hit();
+                game.gameState.updateUI(game);
+                
+                if (game.player.lives <= 0) {
+                    game.gameState.gameOver(game);
                 }
             }
 
@@ -139,16 +155,76 @@ export class EnemyManager {
     }
 
     enemyShoot() {
-        // Выбираем случайного врага для стрельбы
-        if (this.enemies.length > 0) {
-            const shooter = this.enemies[Math.floor(Math.random() * this.enemies.length)];
-            const bullet = new Bullet(
-                shooter.x + shooter.width/2,
-                shooter.y + shooter.height,
-                -400
-            );
-            bullet.speedY = Math.abs(bullet.speed);
-            this.enemyBullets.push(bullet);
+        this.enemies.forEach(enemy => {
+            if (Math.random() < 0.3) { // 30% шанс выстрела для каждого врага
+                const bullet = {
+                    x: enemy.x + enemy.width / 2,
+                    y: enemy.y + enemy.height,
+                    width: 5,
+                    height: 10,
+                    speed: 300,
+                    update(dt) {
+                        this.y += this.speed * (dt / 1000);
+                    }
+                };
+                this.enemyBullets.push(bullet);
+            }
+        });
+    }
+
+    spawnEnemy(canvas, difficulty) {
+        const x = Math.random() * (canvas.width - 30);
+        const type = this.getRandomEnemyType(difficulty);
+        const enemy = {
+            x: x,
+            y: -30,
+            width: 30,
+            height: 30,
+            speed: this.getEnemySpeed(type),
+            type: type,
+            points: this.getEnemyPoints(type),
+            update(dt) {
+                this.y += this.speed * (dt / 1000);
+            },
+            isOffScreen() {
+                return this.y > canvas.height;
+            }
+        };
+        this.enemies.push(enemy);
+    }
+
+    getRandomEnemyType(difficulty) {
+        const rand = Math.random();
+        if (difficulty >= 3) {
+            if (rand < 0.3) return 'wave';
+            if (rand < 0.6) return 'tank';
+            if (rand < 0.8) return 'fast';
+        } else if (difficulty >= 2) {
+            if (rand < 0.2) return 'wave';
+            if (rand < 0.4) return 'tank';
+            if (rand < 0.7) return 'fast';
+        } else if (difficulty >= 1) {
+            if (rand < 0.3) return 'fast';
+            if (rand < 0.4) return 'tank';
+        }
+        return 'basic';
+    }
+
+    getEnemySpeed(type) {
+        switch(type) {
+            case 'fast': return 200;
+            case 'tank': return 50;
+            case 'wave': return 150;
+            default: return 100;
+        }
+    }
+
+    getEnemyPoints(type) {
+        switch(type) {
+            case 'fast': return 150;
+            case 'tank': return 200;
+            case 'wave': return 300;
+            default: return 100;
         }
     }
 
@@ -168,37 +244,10 @@ export class EnemyManager {
                (bullet.y + bullet.height - padding) > (player.y + padding);
     }
 
-    spawnEnemy(canvas, difficulty) {
-        const x = Math.random() * (canvas.width - 30);
-        
-        // Выбор типа врага в зависимости от сложности
-        let type = 'basic';
-        const rand = Math.random();
-        
-        if (difficulty >= 3) {
-            if (rand < 0.3) type = 'wave';
-            else if (rand < 0.6) type = 'tank';
-            else if (rand < 0.8) type = 'fast';
-        } else if (difficulty >= 2) {
-            if (rand < 0.2) type = 'wave';
-            else if (rand < 0.4) type = 'tank';
-            else if (rand < 0.7) type = 'fast';
-        } else if (difficulty >= 1) {
-            if (rand < 0.3) type = 'fast';
-            else if (rand < 0.4) type = 'tank';
-        }
-
-        const enemy = new Enemy(canvas, x, -30, type);
-        enemy.baseSpeed = enemy.speed; // Сохраняем базовую скорость
-        this.enemies.push(enemy);
-    }
-
     reset() {
         this.enemies = [];
         this.enemyBullets = [];
         this.spawnTimer = 0;
         this.shootTimer = 0;
-        this.spawnInterval = 1000;
-        this.shootInterval = 2000;
     }
 } 
