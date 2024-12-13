@@ -1,6 +1,6 @@
 .scroll-bottom-btn {
     position: absolute;
-    bottom: 95px;
+    bottom: 120px;
     right: 34px;
     width: 40px;
     height: 40px;
@@ -24,9 +24,6 @@
     transform: translateY(0);
 }
 
-.scroll-bottom-btn:hover {
-    background-color: var(--accent-color-hover);
-}
 
 .scroll-bottom-btn i {
     font-size: 1.2em;
