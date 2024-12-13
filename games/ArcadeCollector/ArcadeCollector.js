@@ -26,11 +26,52 @@ class ArcadeCollector {
             velocityX: 0,
             velocityY: 0,
             baseSpeed: 300,
+            horizontalSpeedMultiplier: 1.5, // Множитель скорости для движения влево/вправо
             lives: 3,
             color: '#6366f1',
             shootCooldown: 0,
-            shootRate: 250 // миллисекунд между выстрелами
+            shootRate: 250
         };
+        
+        // Типы противников
+        this.enemyTypes = {
+            basic: {
+                width: 30,
+                height: 30,
+                speed: 150,
+                color: '#ef4444',
+                health: 1,
+                points: 10,
+                shootRate: 2000,
+                bulletSpeed: 200,
+                behavior: 'straight'
+            },
+            shooter: {
+                width: 40,
+                height: 40,
+                speed: 100,
+                color: '#fb923c',
+                health: 2,
+                points: 20,
+                shootRate: 1500,
+                bulletSpeed: 250,
+                behavior: 'strafe'
+            },
+            boss: {
+                width: 60,
+                height: 60,
+                speed: 80,
+                color: '#dc2626',
+                health: 5,
+                points: 50,
+                shootRate: 1000,
+                bulletSpeed: 300,
+                behavior: 'sine'
+            }
+        };
+
+        this.enemies = [];
+        this.enemyBullets = [];
         
         // Игровые объекты
         this.coins = [];
@@ -196,6 +237,119 @@ class ArcadeCollector {
         });
     }
 
+    spawnEnemy() {
+        const types = ['basic', 'shooter', 'boss'];
+        const weights = [0.6, 0.3, 0.1];
+        const type = this.weightedRandom(types, weights);
+        const enemyType = this.enemyTypes[type];
+
+        const enemy = {
+            ...enemyType,
+            x: Math.random() * (this.canvas.width - enemyType.width),
+            y: -enemyType.height,
+            initialX: 0,
+            time: 0,
+            lastShot: 0,
+            type: type
+        };
+
+        enemy.initialX = enemy.x;
+        this.enemies.push(enemy);
+    }
+
+    weightedRandom(items, weights) {
+        const total = weights.reduce((a, b) => a + b);
+        let random = Math.random() * total;
+        
+        for (let i = 0; i < items.length; i++) {
+            if (random < weights[i]) return items[i];
+            random -= weights[i];
+        }
+        return items[0];
+    }
+
+    updateEnemies(dt) {
+        this.enemies = this.enemies.filter(enemy => {
+            // Обновление времени для поведения
+            enemy.time += dt;
+
+            // Обновление позиции в зависимости от поведения
+            switch(enemy.behavior) {
+                case 'straight':
+                    enemy.y += enemy.speed * dt;
+                    break;
+                case 'strafe':
+                    enemy.y += enemy.speed * dt;
+                    enemy.x = enemy.initialX + Math.sin(enemy.time) * 100;
+                    break;
+                case 'sine':
+                    enemy.y += enemy.speed * dt;
+                    enemy.x = enemy.initialX + Math.sin(enemy.time * 2) * 150;
+                    break;
+            }
+
+            // Стрельба противников
+            if (enemy.time - enemy.lastShot > enemy.shootRate / 1000) {
+                this.enemyShoot(enemy);
+                enemy.lastShot = enemy.time;
+            }
+
+            return enemy.y < this.canvas.height && enemy.health > 0;
+        });
+    }
+
+    enemyShoot(enemy) {
+        const bulletSpeed = enemy.bulletSpeed * this.difficulty;
+        
+        switch(enemy.type) {
+            case 'basic':
+                this.createEnemyBullet(enemy, 0, bulletSpeed);
+                break;
+            case 'shooter':
+                this.createEnemyBullet(enemy, -bulletSpeed/4, bulletSpeed);
+                this.createEnemyBullet(enemy, bulletSpeed/4, bulletSpeed);
+                break;
+            case 'boss':
+                for(let i = -2; i <= 2; i++) {
+                    this.createEnemyBullet(enemy, bulletSpeed/3 * i, bulletSpeed);
+                }
+                break;
+        }
+    }
+
+    createEnemyBullet(enemy, speedX, speedY) {
+        this.enemyBullets.push({
+            x: enemy.x + enemy.width/2,
+            y: enemy.y + enemy.height,
+            width: 8,
+            height: 12,
+            speedX: speedX,
+            speedY: speedY,
+            color: enemy.color
+        });
+    }
+
+    updateEnemyBullets(dt) {
+        this.enemyBullets = this.enemyBullets.filter(bullet => {
+            bullet.x += bullet.speedX * dt;
+            bullet.y += bullet.speedY * dt;
+
+            // Проверка столкновения с игроком
+            if (this.checkCollision(this.player, bullet)) {
+                this.player.lives--;
+                this.livesElement.textContent = this.player.lives;
+                
+                if (this.player.lives <= 0) {
+                    this.gameOver();
+                }
+                return false;
+            }
+
+            return bullet.y < this.canvas.height && bullet.y > 0 &&
+                   bullet.x > 0 && bullet.x < this.canvas.width;
+        });
+    }
+
     update(dt) {
         if (this.gameState !== 'playing') return;
         
@@ -204,22 +358,26 @@ class ArcadeCollector {
         this.updateSpawnTimers(dt);
         this.updateGameObjects(dt);
         this.updateBullets(dt);
+        this.updateEnemies(dt);
+        this.updateEnemyBullets(dt);
         
-        // Стрельба
         if (this.keys.Space) {
             this.shoot();
         }
     }
 
     updatePlayerPosition(dt) {
-        // Расчет скорости движения
-        const moveSpeed = this.player.baseSpeed * dt;
+        const baseSpeed = this.player.baseSpeed * dt;
         
-        // Обновление позиции на основе нажатых клавиш
-        if (this.keys.ArrowLeft) this.player.x -= moveSpeed;
-        if (this.keys.ArrowRight) this.player.x += moveSpeed;
-        if (this.keys.ArrowUp) this.player.y -= moveSpeed;
-        if (this.keys.ArrowDown) this.player.y += moveSpeed;
+        // Горизонтальное движение быстрее
+        if (this.keys.ArrowLeft) {
+            this.player.x -= baseSpeed * this.player.horizontalSpeedMultiplier;
+        }
+        if (this.keys.ArrowRight) {
+            this.player.x += baseSpeed * this.player.horizontalSpeedMultiplier;
+        }
+        if (this.keys.ArrowUp) this.player.y -= baseSpeed;
+        if (this.keys.ArrowDown) this.player.y += baseSpeed;
         
         // Ограничение движения игрока
         this.player.x = Math.max(0, Math.min(this.canvas.width - this.player.width, this.player.x));
@@ -301,10 +459,34 @@ class ArcadeCollector {
         this.ctx.fillStyle = this.player.color;
         this.ctx.fillRect(this.player.x, this.player.y, this.player.width, this.player.height);
         
-        // Отрисовка пуль
+        // Отрисовка пуль игрока
         this.bullets.forEach(bullet => {
             this.ctx.fillStyle = bullet.color;
             this.ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+        });
+
+        // Отрисовка пуль противников
+        this.enemyBullets.forEach(bullet => {
+            this.ctx.fillStyle = bullet.color;
+            this.ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+        });
+        
+        // Отрисовка противников
+        this.enemies.forEach(enemy => {
+            this.ctx.fillStyle = enemy.color;
+            this.ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+            
+            // Отрисовка полоски здоровья для босса
+            if (enemy.type === 'boss') {
+                const healthPercentage = enemy.health / this.enemyTypes.boss.health;
+                this.ctx.fillStyle = '#22c55e';
+                this.ctx.fillRect(
+                    enemy.x, 
+                    enemy.y - 10, 
+                    enemy.width * healthPercentage, 
+                    5
+                );
+            }
         });
         
         // Отрисовка монет
@@ -313,12 +495,6 @@ class ArcadeCollector {
             this.ctx.beginPath();
             this.ctx.arc(coin.x + coin.width/2, coin.y + coin.height/2, coin.width/2, 0, Math.PI * 2);
             this.ctx.fill();
-        });
-        
-        // Отрисовка препятствий
-        this.obstacles.forEach(obstacle => {
-            this.ctx.fillStyle = obstacle.color;
-            this.ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
         });
     }
 
@@ -384,6 +560,8 @@ class ArcadeCollector {
         this.coins = [];
         this.obstacles = [];
         this.bullets = [];
+        this.enemies = [];
+        this.enemyBullets = [];
         
         // Сбрасываем позицию игрока
         this.player.x = this.canvas.width / 2 - this.player.width / 2;
