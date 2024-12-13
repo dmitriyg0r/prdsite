@@ -7,6 +7,9 @@ let selectedMessageId = null;
 let selectedMessageText = '';
 let replyToMessageId = null;
 
+// Добавляем переменную для хранения предыдущего состояния чатов
+let previousChatsState = new Map();
+
 document.addEventListener('DOMContentLoaded', async () => {
     // Проверка авторизации
     currentUser = JSON.parse(localStorage.getItem('user'));
@@ -451,7 +454,7 @@ async function loadMessages(friendId) {
 
             const isAtBottom = isScrolledToBottom(messagesContainer);
             
-            // Получаем сущест��ующие сообщения
+            // Получаем существующие сообщения
             const existingMessages = new Set(
                 Array.from(messagesContainer.children).map(el => el.dataset.messageId)
             );
@@ -984,73 +987,85 @@ async function loadChatsList() {
         const response = await fetch(`https://adminflow.ru:5003/api/chats/${currentUser.id}`);
         const data = await response.json();
 
-        if (data.success) {
-            const friendsList = document.getElementById('friends-list');
-            if (!friendsList) return;
+        if (!data.success) return;
 
-            // Создаём Map существующих чатов для быстрого поиска
-            const existingChats = new Map();
-            friendsList.querySelectorAll('.chat-partner').forEach(el => {
-                existingChats.set(el.dataset.friendId, el);
-            });
+        const friendsList = document.getElementById('friends-list');
+        if (!friendsList) return;
 
-            // Создаём Map новых позиций
-            const newPositions = new Map();
-            data.chats.forEach((chat, index) => {
-                newPositions.set(chat.id.toString(), index);
-            });
+        data.chats.forEach(chat => {
+            const chatId = chat.id.toString();
+            const existingElement = friendsList.querySelector(`.chat-partner[data-friend-id="${chatId}"]`);
+            
+            if (existingElement) {
+                // Обновляем только содержимое существующего элемента
+                updateExistingChatElement(existingElement, chat);
+            } else {
+                // Добавляем новый элемент только если его нет
+                const chatElement = createChatElement(chat);
+                friendsList.appendChild(chatElement);
+            }
+        });
 
-            // Обновляем или создаём элементы чатов
-            data.chats.forEach(chat => {
-                const existingElement = existingChats.get(chat.id.toString());
-                const needsUpdate = !existingElement || shouldUpdateChat(existingElement, chat);
+        // Удаляем чаты, которых больше нет в списке
+        const currentChatIds = new Set(data.chats.map(chat => chat.id.toString()));
+        friendsList.querySelectorAll('.chat-partner').forEach(el => {
+            if (!currentChatIds.has(el.dataset.friendId)) {
+                el.remove();
+            }
+        });
 
-                if (needsUpdate) {
-                    const chatElement = createChatElement(chat);
-                    
-                    if (existingElement) {
-                        // Обновляем существующий элемент без изменения позиции
-                        existingElement.replaceWith(chatElement);
-                    } else {
-                        // Вставляем новый элемент в правильную позицию
-                        const position = newPositions.get(chat.id.toString());
-                        const nextElement = friendsList.children[position];
-                        if (nextElement) {
-                            friendsList.insertBefore(chatElement, nextElement);
-                        } else {
-                            friendsList.appendChild(chatElement);
-                        }
-                    }
-                }
-                
-                // Удаляем обработанный чат из Map существующих
-                existingChats.delete(chat.id.toString());
-            });
-
-            // Удаляем чаты, которых больше нет в списке
-            existingChats.forEach(element => {
-                element.remove();
-            });
-        }
     } catch (error) {
         console.error('Ошибка при загрузке списка чатов:', error);
     }
 }
 
-// Вспомогательная функция для проверки необходимости обновления
-function shouldUpdateChat(element, chat) {
-    const lastMessage = element.querySelector('.chat-last-message');
-    const unreadCount = element.querySelector('.unread-count');
+function updateExistingChatElement(element, chat) {
+    // Обновляем только текстовое содержимое и классы, не трогая структуру DOM
+    const lastMessageEl = element.querySelector('.chat-last-message');
+    const unreadCountEl = element.querySelector('.unread-count');
     const statusIndicator = element.querySelector('.status-indicator');
-    
-    return (
-        lastMessage?.textContent !== formatLastMessage(chat) ||
-        (unreadCount?.textContent || '0') !== (chat.unread_count || '0').toString() ||
-        statusIndicator?.classList.contains('online') !== chat.is_online
-    );
+    const avatarImg = element.querySelector('.chat-avatar');
+
+    // Обновляем последнее сообщение
+    if (lastMessageEl) {
+        const newMessageText = formatLastMessage(chat);
+        if (lastMessageEl.textContent !== newMessageText) {
+            lastMessageEl.textContent = newMessageText;
+        }
+    }
+
+    // Обновляем счетчик непрочитанных
+    if (chat.unread_count > 0) {
+        if (!unreadCountEl) {
+            const span = document.createElement('span');
+            span.className = 'unread-count';
+            span.textContent = chat.unread_count;
+            element.appendChild(span);
+        } else {
+            unreadCountEl.textContent = chat.unread_count;
+        }
+    } else if (unreadCountEl) {
+        unreadCountEl.remove();
+    }
+
+    // Обновляем статус онлайн
+    if (statusIndicator) {
+        statusIndicator.className = `status-indicator ${chat.is_online ? 'online' : 'offline'}`;
+    }
+
+    // Обновляем аватар только если изменился
+    if (avatarImg && avatarImg.src !== chat.avatar_url) {
+        avatarImg.src = chat.avatar_url || '../uploads/avatars/default.png';
+    }
+
+    // Обновляем активный статус
+    if (currentChatPartner?.id === chat.id) {
+        element.classList.add('active');
+    } else {
+        element.classList.remove('active');
+    }
 }
 
-// Вспомогательная функция для создания элемента чата
 function createChatElement(chat) {
     const chatElement = document.createElement('div');
     chatElement.className = `chat-partner ${currentChatPartner?.id === chat.id ? 'active' : ''}`;
@@ -1082,7 +1097,6 @@ function createChatElement(chat) {
     return chatElement;
 }
 
-// Вспомогательная функция для форматирования последнего сообщения
 function formatLastMessage(chat) {
     if (!chat.last_message) return 'Нет сообщений';
     
