@@ -39,7 +39,10 @@ class ArcadeCollector {
             ghostInterval: 0.02,
             ghostTimer: 0,
             ghostDuration: 0.3, // Длительность существования следа
-            friction: 0.92
+            friction: 0.92,
+            // Параметры стрельбы
+            shootCooldown: 0,
+            shootRate: 250, // Уменьшим задержку между выстрелами
         };
         
         // Типы противников
@@ -72,7 +75,7 @@ class ArcadeCollector {
                 speed: 60, // Уменьшаем с 80 до 60
                 color: '#dc2626',
                 health: 8, // Увеличиваем с 5 до 8
-                points: 75, // Увеличиваем с 50 до 75
+                points: 75, // Увели��иваем с 50 до 75
                 shootRate: 1500, // Увеличиваем с 1000 до 1500
                 bulletSpeed: 300,
                 behavior: 'sine'
@@ -170,7 +173,7 @@ class ArcadeCollector {
     }
 
     bindEvents() {
-        // Предотвр��щаем прокрутку страницы
+        // Предотврщаем прокрутку страницы
         window.addEventListener('keydown', (e) => {
             if(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyE', 'KeyW', 'Space'].includes(e.code)) {
                 e.preventDefault();
@@ -202,7 +205,7 @@ class ArcadeCollector {
     updateDifficulty(dt) {
         this.gameTime += dt;
         // Замедляем рост сложности
-        this.difficulty = 1 + Math.floor(this.gameTime / 45) * 0.15; // Было 30 сек и 0.2
+        this.difficulty = 1 + Math.floor(this.gameTime / 45) * 0.15; // ��ыло 30 сек и 0.2
         
         // Уменьшаем влияние очков на сложность
         this.difficulty += Math.floor(this.score / 150) * 0.08; // Было 100 и 0.1
@@ -217,48 +220,38 @@ class ArcadeCollector {
     }
 
     shoot() {
+        const bulletWidth = 10;
+        const bulletHeight = 20;
+        
         this.bullets.push({
-            x: this.player.x + this.player.width/2 - 5,
+            x: this.player.x + (this.player.width - bulletWidth) / 2,
             y: this.player.y,
-            width: 10,
-            height: 20,
+            width: bulletWidth,
+            height: bulletHeight,
             speed: -800,
-            color: '#4ade80' // Цвет пули под цвет корабля
+            color: '#4ade80'
         });
     }
 
     updateBullets(dt) {
-        this.player.shootCooldown = Math.max(0, this.player.shootCooldown - dt * 1000);
-        
         this.bullets = this.bullets.filter(bullet => {
-            bullet.y -= bullet.speed * dt;
+            bullet.y += bullet.speed * dt;
             
-            // Проверяем столкновения с противниками
-            let hitEnemy = false;
-            this.enemies.forEach(enemy => {
-                if (!hitEnemy && this.checkCollision(bullet, enemy)) {
-                    hitEnemy = true;
-                    enemy.health -= 1; // Уменьшаем здоровье проивника
-                    
-                    // Если противник уничтожен
+            // Проверяем столкновения с врагами
+            for (let i = this.enemies.length - 1; i >= 0; i--) {
+                const enemy = this.enemies[i];
+                if (this.checkCollision(bullet, enemy)) {
+                    enemy.health--;
                     if (enemy.health <= 0) {
-                        // Добавляем очки в зависимости от типа противника
-                        this.score += this.enemyTypes[enemy.type].points;
+                        this.score += enemy.points;
                         this.scoreElement.textContent = this.score;
-                        
-                        // Удаляем противника
-                        this.enemies = this.enemies.filter(e => e !== enemy);
-                        
-                        // Эффект уничтожения (частицы)
-                        this.createDestroyEffect(enemy);
-                    } else {
-                        // Эффект попадания
-                        this.createHitEffect(enemy);
+                        this.enemies.splice(i, 1);
                     }
+                    return false;
                 }
-            });
+            }
             
-            return !hitEnemy && bullet.y > 0;
+            return bullet.y > -bullet.height;
         });
     }
 
@@ -452,7 +445,7 @@ class ArcadeCollector {
             return ghost.time < ghost.lifetime;
         });
 
-        // Стрельба на клавишу E
+        // Обработка стрельбы
         if (this.keys.KeyE && this.player.shootCooldown <= 0) {
             this.shoot();
             this.player.shootCooldown = this.player.shootRate;
@@ -529,7 +522,7 @@ class ArcadeCollector {
         this.player.x += this.player.velocityX * dt;
         this.player.y += this.player.velocityY * dt;
 
-        // Ограничение движения игр��ка
+        // Ограничение движения игрка
         if (this.player.x < 0) {
             this.player.x = 0;
             this.player.velocityX = 0;
@@ -790,7 +783,7 @@ class ArcadeCollector {
         this.ctx.closePath();
         this.ctx.fill();
 
-        // Отрисовка пуль игрока
+        // Отрисовка пуль
         this.bullets.forEach(bullet => {
             this.ctx.fillStyle = bullet.color;
             this.ctx.beginPath();
@@ -946,7 +939,7 @@ class ArcadeCollector {
         this.pauseMenu.style.display = 'none';
         this.gameOverMenu.style.display = 'none';
         
-        // Сбрасываем состояние клавиш
+        // Сбрасываем состояни�� клавиш
         Object.keys(this.keys).forEach(key => {
             this.keys[key] = false;
         });
