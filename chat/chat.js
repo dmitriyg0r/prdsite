@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Загружаем список чатов
     await loadChatsList();
     
-    // Запускаем периодическое обновление списка чатов
+    // Запускаем периодическ��е обновление списка чатов
     setInterval(loadChatsList, 10000); // Обновляем каждые 10 секунд
 });
 
@@ -340,7 +340,7 @@ function createAttachmentElement(attachmentUrl) {
     // Очищаем и нормализуем путь к файлу
     let fullUrl = attachmentUrl;
     
-    // Удаляем дублирование пути
+    // Удаляем дублирование пу��и
     if (attachmentUrl.includes('/uploads/messages')) {
         fullUrl = `https://adminflow.ru:5003${attachmentUrl}`;
     } else {
@@ -395,7 +395,6 @@ function isImageFile(url) {
 async function sendMessage() {
     const messageInput = document.getElementById('messageInput');
     
-    // Проверяем существование элемента и наличие текста
     if (!messageInput || !currentChatPartner) {
         console.error('messageInput не найден или нет получателя');
         return;
@@ -407,14 +406,15 @@ async function sendMessage() {
     }
 
     try {
-        // Очищаем поле ввода немедленно
+        // Сохраняем текст сообщения перед очисткой (на случай ошибки)
+        const originalText = messageText;
+        
+        // Очищаем поле ввода до отправки запроса
         messageInput.value = '';
-        // Принудительно обновляем состояние поля
-        messageInput.dispatchEvent(new Event('input'));
+        messageInput.style.height = 'auto'; // Сбрасываем высоту, если есть автоматическое изменение
+        messageInput.dispatchEvent(new Event('input')); // Вызываем событие для обновления UI
         
-        const endpoint = 'https://adminflow.ru:5003/api/messages/send';
-        
-        const response = await fetch(endpoint, {
+        const response = await fetch('https://adminflow.ru:5003/api/messages/send', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -422,7 +422,7 @@ async function sendMessage() {
             body: JSON.stringify({
                 senderId: currentUser.id,
                 receiverId: currentChatPartner.id,
-                message: messageText,
+                message: originalText,
                 replyToMessageId: replyToMessageId || null
             })
         });
@@ -431,7 +431,8 @@ async function sendMessage() {
 
         if (!response.ok) {
             // Возвращаем текст в случае ошибки
-            messageInput.value = messageText;
+            messageInput.value = originalText;
+            messageInput.dispatchEvent(new Event('input'));
             throw new Error(responseData.details || responseData.error || 'Ошибка при отправке сообщения');
         }
 
@@ -454,8 +455,6 @@ async function sendMessage() {
     } catch (error) {
         console.error('Ошибка при отправке сообщения:', error);
         alert(`Не удалось отправить сообщение: ${error.message}`);
-        // Возвращаем текст в случае ошибки
-        messageInput.value = messageText;
     }
 }
 
@@ -583,7 +582,7 @@ async function loadMessages(friendId) {
                 }
             }
             
-            // Обновляем статусы ��уществующих сообщений
+            // Обновляем статусы уществующих сообщений
             data.messages.forEach(message => {
                 const existingMessage = messagesContainer.querySelector(`[data-message-id="${message.id}"]`);
                 if (existingMessage) {
@@ -615,7 +614,7 @@ function updateMessageStatus(messageElement, messageData) {
 function scrollToBottom() {
     const messagesContainer = document.getElementById('messages');
     if (messagesContainer) {
-        // Используем requestAnimationFrame для гарантированной прок��утки после рендернга
+        // Используем requestAnimationFrame для гарантированной прокрутки после рендернга
         requestAnimationFrame(() => {
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         });
@@ -872,7 +871,7 @@ function setupContextMenu() {
             selectedMessageText = messageTextElement ? messageTextElement.textContent : 
                                 (messageImage ? 'Изображение' : 'Вложение');
             
-            // Проверяем, является ��и сообщение наим
+            // Проверяем, является ли сообщение наим
             const isSentMessage = messageElement.classList.contains('message-sent');
             const deleteButton = document.getElementById('deleteMessageBtn');
             
@@ -1297,7 +1296,7 @@ async function selectChat(chat) {
     }
 }
 
-// Функция получения времени последней активн��сти пользователя
+// Функция получения времени последней активност пользователя
 function getLastActivityTime(lastActivity) {
    if (!lastActivity) return 'неизвестно';
    
