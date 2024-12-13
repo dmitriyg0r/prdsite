@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Загружаем список чатов
     await loadChatsList();
     
-    // Запускаем периодическ��е обновление списка чатов
+    // Запускаем периодическое обновление списка чатов
     setInterval(loadChatsList, 10000); // Обновляем каждые 10 секунд
 });
 
@@ -395,17 +395,23 @@ function isImageFile(url) {
 async function sendMessage() {
     const messageInput = document.getElementById('messageInput');
     
-    if (!currentChatPartner || !messageInput?.value.trim()) {
+    // Проверяем существование элемента и наличие текста
+    if (!messageInput || !currentChatPartner) {
+        console.error('messageInput не найден или нет получателя');
         return;
     }
 
-    // Сохраняем текст сообщения перед очисткой
     const messageText = messageInput.value.trim();
-    
-    // Очищаем поле ввода сразу
-    messageInput.value = '';
+    if (!messageText) {
+        return;
+    }
 
     try {
+        // Очищаем поле ввода немедленно
+        messageInput.value = '';
+        // Принудительно обновляем состояние поля
+        messageInput.dispatchEvent(new Event('input'));
+        
         const endpoint = 'https://adminflow.ru:5003/api/messages/send';
         
         const response = await fetch(endpoint, {
@@ -424,12 +430,16 @@ async function sendMessage() {
         const responseData = await response.json();
 
         if (!response.ok) {
-            // В случае ошибки возвращаем текст обратно в поле ввода
+            // Возвращаем текст в случае ошибки
             messageInput.value = messageText;
             throw new Error(responseData.details || responseData.error || 'Ошибка при отправке сообщения');
         }
 
         if (responseData.success) {
+            // Убеждаемся, что поле точно пустое
+            messageInput.value = '';
+            messageInput.dispatchEvent(new Event('input'));
+            
             if (replyToMessageId) {
                 cancelReply();
             }
@@ -444,6 +454,8 @@ async function sendMessage() {
     } catch (error) {
         console.error('Ошибка при отправке сообщения:', error);
         alert(`Не удалось отправить сообщение: ${error.message}`);
+        // Возвращаем текст в случае ошибки
+        messageInput.value = messageText;
     }
 }
 
@@ -503,7 +515,7 @@ function setupEventListeners() {
             })
         });
         
-        // ��брасываем статус через 2 секунды
+        // бразываем статус через 2 секунды
         typingTimeout = setTimeout(() => {
             fetch('https://adminflow.ru:5003/api/messages/typing', {
                 method: 'POST',
@@ -571,7 +583,7 @@ async function loadMessages(friendId) {
                 }
             }
             
-            // Обновляем статусы существующих сообщений
+            // Обновляем статусы ��уществующих сообщений
             data.messages.forEach(message => {
                 const existingMessage = messagesContainer.querySelector(`[data-message-id="${message.id}"]`);
                 if (existingMessage) {
@@ -603,7 +615,7 @@ function updateMessageStatus(messageElement, messageData) {
 function scrollToBottom() {
     const messagesContainer = document.getElementById('messages');
     if (messagesContainer) {
-        // Используем requestAnimationFrame для гарантированной прокрутки после рендернга
+        // Используем requestAnimationFrame для гарантированной прок��утки после рендернга
         requestAnimationFrame(() => {
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         });
@@ -860,7 +872,7 @@ function setupContextMenu() {
             selectedMessageText = messageTextElement ? messageTextElement.textContent : 
                                 (messageImage ? 'Изображение' : 'Вложение');
             
-            // Проверяем, является ли сообщение наим
+            // Проверяем, является ��и сообщение наим
             const isSentMessage = messageElement.classList.contains('message-sent');
             const deleteButton = document.getElementById('deleteMessageBtn');
             
@@ -1285,7 +1297,7 @@ async function selectChat(chat) {
     }
 }
 
-// Функция получения времени последней активности пользователя
+// Функция получения времени последней активн��сти пользователя
 function getLastActivityTime(lastActivity) {
    if (!lastActivity) return 'неизвестно';
    
@@ -1410,7 +1422,7 @@ async function sendMessage() {
     }
 }
 
-// Добавляем ��бработчик контекстного меню
+// Добавляем обработчик контекстного меню
 document.getElementById('replyMessageBtn').addEventListener('click', () => {
     const messageElement = document.querySelector(`.message[data-message-id="${selectedMessageId}"]`);
     if (messageElement) {
