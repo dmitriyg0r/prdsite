@@ -170,7 +170,7 @@ class ArcadeCollector {
     }
 
     bindEvents() {
-        // Предотвращаем прокрутку страницы
+        // Предотвр��щаем прокрутку страницы
         window.addEventListener('keydown', (e) => {
             if(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyE', 'KeyW', 'Space'].includes(e.code)) {
                 e.preventDefault();
@@ -207,7 +207,7 @@ class ArcadeCollector {
         // Уменьшаем влияние очков на сложность
         this.difficulty += Math.floor(this.score / 150) * 0.08; // Было 100 и 0.1
         
-        // Более плавное изменение част��ты спавна
+        // Более плавное изменение частоты спавна
         this.enemySpawnRate = Math.max(800, 2500 - this.difficulty * 150); // Корректируем значения
         this.coinSpawnRate = Math.max(600, 1500 - this.difficulty * 75);
         
@@ -217,17 +217,14 @@ class ArcadeCollector {
     }
 
     shoot() {
-        if (this.player.shootCooldown <= 0) {
-            this.bullets.push({
-                x: this.player.x + this.player.width / 2 - 5,
-                y: this.player.y,
-                width: 10,
-                height: 20,
-                speed: 500,
-                color: '#4ade80'
-            });
-            this.player.shootCooldown = this.player.shootRate;
-        }
+        this.bullets.push({
+            x: this.player.x + this.player.width/2 - 5,
+            y: this.player.y,
+            width: 10,
+            height: 20,
+            speed: -800,
+            color: '#4ade80' // Цвет пули под цвет корабля
+        });
     }
 
     updateBullets(dt) {
@@ -241,7 +238,7 @@ class ArcadeCollector {
             this.enemies.forEach(enemy => {
                 if (!hitEnemy && this.checkCollision(bullet, enemy)) {
                     hitEnemy = true;
-                    enemy.health -= 1; // Уменьшаем здоровье про��ивника
+                    enemy.health -= 1; // Уменьшаем здоровье проивника
                     
                     // Если противник уничтожен
                     if (enemy.health <= 0) {
@@ -449,16 +446,22 @@ class ArcadeCollector {
         this.updateEnemyBullets(dt);
         this.updateParticles(dt);
         
-        // Стрельба на клавишу E
-        if (this.keys.KeyE) {
-            this.shoot();
-        }
-
         // Обновляем след рывка
         this.player.dashGhosts = this.player.dashGhosts.filter(ghost => {
             ghost.time += dt;
             return ghost.time < ghost.lifetime;
         });
+
+        // Стрельба на клавишу E
+        if (this.keys.KeyE && this.player.shootCooldown <= 0) {
+            this.shoot();
+            this.player.shootCooldown = this.player.shootRate;
+        }
+
+        // Обновление кулдауна стрельбы
+        if (this.player.shootCooldown > 0) {
+            this.player.shootCooldown -= dt * 1000;
+        }
     }
 
     updatePlayerPosition(dt) {
@@ -492,7 +495,7 @@ class ArcadeCollector {
             this.createDashEffect();
         }
 
-        // Об��овление таймеров рывка
+        // Обновление таймеров рывка
         if (this.player.dashCooldownTimer > 0) {
             this.player.dashCooldownTimer -= dt;
         }
@@ -526,7 +529,7 @@ class ArcadeCollector {
         this.player.x += this.player.velocityX * dt;
         this.player.y += this.player.velocityY * dt;
 
-        // Ограничение движения игрока
+        // Ограничение движения игр��ка
         if (this.player.x < 0) {
             this.player.x = 0;
             this.player.velocityX = 0;
@@ -934,7 +937,7 @@ class ArcadeCollector {
         this.timeAccumulator = 0;
         this.lastTime = performance.now();
         
-        // ��бновляем UI
+        // бновляем UI
         this.scoreElement.textContent = '0';
         this.livesElement.textContent = '3';
         this.levelElement.textContent = '1.0';
@@ -974,7 +977,8 @@ class ArcadeCollector {
 
     createDashEffect() {
         const particles = 30;
-        const colors = ['#6366f1', '#818cf8', '#4f46e5', '#ffffff'];
+        // Используем оттенки зеленого, соответствующие цвету корабля
+        const colors = ['#4ade80', '#86efac', '#22c55e', '#ffffff'];
         const angleSpread = Math.PI / 3; // 60 градусов разброс
         
         // Определяем направление движения
@@ -987,7 +991,7 @@ class ArcadeCollector {
             this.particles.push({
                 x: this.player.x + this.player.width / 2,
                 y: this.player.y + this.player.height / 2,
-                vx: -Math.cos(particleAngle) * speed, // Частицы летят в противоположном направлении
+                vx: -Math.cos(particleAngle) * speed,
                 vy: -Math.sin(particleAngle) * speed,
                 size: 4 + Math.random() * 4,
                 color: colors[Math.floor(Math.random() * colors.length)],
@@ -996,14 +1000,14 @@ class ArcadeCollector {
             });
         }
 
-        // Добавляем вспышку
+        // Добавляем вспышку в цвет корабля
         this.particles.push({
             x: this.player.x + this.player.width / 2,
             y: this.player.y + this.player.height / 2,
             vx: 0,
             vy: 0,
             size: this.player.width * 2,
-            color: '#ffffff',
+            color: '#4ade80',
             lifetime: 0.15,
             time: 0,
             isFlash: true,
