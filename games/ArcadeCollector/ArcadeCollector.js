@@ -10,13 +10,21 @@ class ArcadeCollector {
         // Состояние игры
         this.gameState = 'playing'; // playing, paused, gameOver
         
+        // Временные параметры
+        this.lastTime = 0;
+        this.deltaTime = 0;
+        this.fixedTimeStep = 1000 / 60; // 60 FPS
+        this.timeAccumulator = 0;
+        
         // Игрок
         this.player = {
             x: this.canvas.width / 2,
             y: this.canvas.height - 50,
             width: 40,
             height: 40,
-            speed: 5,
+            velocityX: 0,
+            velocityY: 0,
+            baseSpeed: 300, // пикселей в секунду
             lives: 3,
             color: '#6366f1'
         };
@@ -26,11 +34,11 @@ class ArcadeCollector {
         this.obstacles = [];
         this.score = 0;
         
-        // Интервалы создания объектов
-        this.coinSpawnInterval = 60;
-        this.obstacleSpawnInterval = 120;
-        this.coinCounter = 0;
-        this.obstacleCounter = 0;
+        // Параметры спавна объектов
+        this.coinSpawnTimer = 0;
+        this.obstacleSpawnTimer = 0;
+        this.coinSpawnRate = 1000; // миллисекунд
+        this.obstacleSpawnRate = 2000; // миллисекунд
         
         // UI элементы
         this.scoreElement = document.getElementById('score');
@@ -48,11 +56,7 @@ class ArcadeCollector {
             Escape: false
         };
         
-        // Привязка обработчиков событий
         this.bindEvents();
-        
-        // Запуск игрового цикла
-        this.lastTime = 0;
         this.animate(0);
     }
 
@@ -78,67 +82,98 @@ class ArcadeCollector {
     }
 
     animate(currentTime) {
-        const deltaTime = currentTime - this.lastTime;
-        this.lastTime = currentTime;
-
         if (this.gameState === 'playing') {
-            // Очистка canvas
-            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            // Расчет deltaTime в секундах
+            this.deltaTime = (currentTime - this.lastTime) / 1000;
+            // Ограничиваем deltaTime для предотвращения больших скачков
+            this.deltaTime = Math.min(this.deltaTime, 0.1);
+            this.lastTime = currentTime;
             
-            // Обновление состояния игры
-            this.update(deltaTime);
+            this.timeAccumulator += this.deltaTime * 1000;
+            
+            // Фиксированный временной шаг для физики
+            while (this.timeAccumulator >= this.fixedTimeStep) {
+                this.update(this.fixedTimeStep / 1000);
+                this.timeAccumulator -= this.fixedTimeStep;
+            }
             
             // Отрисовка
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
             this.draw();
         }
-
+        
         requestAnimationFrame((time) => this.animate(time));
     }
 
-    update(deltaTime) {
+    update(dt) {
         // Обновление позиции игрока
-        if (this.keys.ArrowLeft) this.player.x -= this.player.speed;
-        if (this.keys.ArrowRight) this.player.x += this.player.speed;
-        if (this.keys.ArrowUp) this.player.y -= this.player.speed;
-        if (this.keys.ArrowDown) this.player.y += this.player.speed;
+        this.updatePlayerPosition(dt);
+        
+        // Обновление таймеров спавна
+        this.updateSpawnTimers(dt);
+        
+        // Обновление позиций объектов
+        this.updateGameObjects(dt);
+    }
+
+    updatePlayerPosition(dt) {
+        // Расчет скорости движения
+        const moveSpeed = this.player.baseSpeed * dt;
+        
+        // Обновление позиции на основе нажатых клавиш
+        if (this.keys.ArrowLeft) this.player.x -= moveSpeed;
+        if (this.keys.ArrowRight) this.player.x += moveSpeed;
+        if (this.keys.ArrowUp) this.player.y -= moveSpeed;
+        if (this.keys.ArrowDown) this.player.y += moveSpeed;
         
         // Ограничение движения игрока
         this.player.x = Math.max(0, Math.min(this.canvas.width - this.player.width, this.player.x));
         this.player.y = Math.max(0, Math.min(this.canvas.height - this.player.height, this.player.y));
-        
-        // Создание монет
-        this.coinCounter++;
-        if (this.coinCounter >= this.coinSpawnInterval) {
-            this.coins.push({
-                x: Math.random() * (this.canvas.width - 20),
-                y: -20,
-                width: 20,
-                height: 20,
-                speed: 2,
-                color: '#FFD700'
-            });
-            this.coinCounter = 0;
+    }
+
+    updateSpawnTimers(dt) {
+        // Обновление таймера монет
+        this.coinSpawnTimer += dt * 1000;
+        if (this.coinSpawnTimer >= this.coinSpawnRate) {
+            this.spawnCoin();
+            this.coinSpawnTimer = 0;
         }
         
-        // Создание препятствий
-        this.obstacleCounter++;
-        if (this.obstacleCounter >= this.obstacleSpawnInterval) {
-            this.obstacles.push({
-                x: Math.random() * (this.canvas.width - 30),
-                y: -30,
-                width: 30,
-                height: 30,
-                speed: 3,
-                color: '#ef4444'
-            });
-            this.obstacleCounter = 0;
+        // Обновление таймера препятствий
+        this.obstacleSpawnTimer += dt * 1000;
+        if (this.obstacleSpawnTimer >= this.obstacleSpawnRate) {
+            this.spawnObstacle();
+            this.obstacleSpawnTimer = 0;
         }
-        
+    }
+
+    spawnCoin() {
+        this.coins.push({
+            x: Math.random() * (this.canvas.width - 20),
+            y: -20,
+            width: 20,
+            height: 20,
+            speed: 150, // пикселей в секунду
+            color: '#FFD700'
+        });
+    }
+
+    spawnObstacle() {
+        this.obstacles.push({
+            x: Math.random() * (this.canvas.width - 30),
+            y: -30,
+            width: 30,
+            height: 30,
+            speed: 200, // пикселей в секунду
+            color: '#ef4444'
+        });
+    }
+
+    updateGameObjects(dt) {
         // Обновление монет
         this.coins = this.coins.filter(coin => {
-            coin.y += coin.speed;
+            coin.y += coin.speed * dt;
             
-            // Проверка столкновения с игроком
             if (this.checkCollision(this.player, coin)) {
                 this.score += 10;
                 this.scoreElement.textContent = this.score;
@@ -150,9 +185,8 @@ class ArcadeCollector {
         
         // Обновление препятствий
         this.obstacles = this.obstacles.filter(obstacle => {
-            obstacle.y += obstacle.speed;
+            obstacle.y += obstacle.speed * dt;
             
-            // Проверка столкновения с игроком
             if (this.checkCollision(this.player, obstacle)) {
                 this.player.lives--;
                 this.livesElement.textContent = this.player.lives;
