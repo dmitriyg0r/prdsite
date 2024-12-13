@@ -25,23 +25,25 @@ class ArcadeCollector {
             height: 40,
             velocityX: 0,
             velocityY: 0,
-            baseSpeed: 300, // Уменьшаем с 400 до 300 для лучшего контроля
+            baseSpeed: 300,
             horizontalSpeedMultiplier: 1.2, // Уменьшаем с 1.5 до 1.2
-            lives: 5, // Увеличиваем с 3 до 5 для большей выж��ваемости
+            lives: 5, // Увеличиваем с 3 до 5 для большей выживаемости
             color: '#6366f1',
             shootCooldown: 0,
             shootRate: 350, // Увеличиваем с 250 до 350 мс
-            // Добавляем параметры рывка
-            dashSpeed: 1500, // Увеличиваем с 900 до 1500
-            dashDuration: 0.15, // Уменьшаем для более резкого рывка
-            dashCooldown: 1.0, // Уменьшаем для более частого использования
+            // Обновленные параметры рывка
+            dashForce: 2000, // Сила импульса рывка
+            dashDuration: 0.15,
+            dashCooldown: 0.8,
             dashTimer: 0,
             dashCooldownTimer: 0,
             isDashing: false,
             // Добавляем след от рывка
             dashGhosts: [], // Массив для хранения "призрачных" копий
             ghostInterval: 0.02, // Интервал создания призраков
-            ghostTimer: 0
+            ghostTimer: 0,
+            // Добавляем трение для плавного замедления
+            friction: 0.92
         };
         
         // Типы противников
@@ -74,7 +76,7 @@ class ArcadeCollector {
                 speed: 60, // Уменьшаем с 80 до 60
                 color: '#dc2626',
                 health: 8, // Увеличиваем с 5 до 8
-                points: 75, // Увеличиваем с 50 до 75
+                points: 75, // Увеличи��аем с 50 до 75
                 shootRate: 1500, // Увеличиваем с 1000 до 1500
                 bulletSpeed: 300,
                 behavior: 'sine'
@@ -291,7 +293,7 @@ class ArcadeCollector {
     }
 
     createHitEffect(enemy) {
-        // Создаем эффек�� попадания
+        // Создаем эффект попадания
         const particles = 6;
         const colors = ['#ffffff', '#fcd34d'];
         
@@ -455,8 +457,6 @@ class ArcadeCollector {
     }
 
     updatePlayerPosition(dt) {
-        const baseSpeed = this.player.baseSpeed * dt;
-        let currentSpeed = baseSpeed;
         let moveX = 0;
         let moveY = 0;
 
@@ -466,12 +466,23 @@ class ArcadeCollector {
         if (this.keys.ArrowUp) moveY -= 1;
         if (this.keys.ArrowDown) moveY += 1;
 
+        // Нормализация диагонального движения
+        if (moveX !== 0 && moveY !== 0) {
+            const normalizer = 1 / Math.sqrt(2);
+            moveX *= normalizer;
+            moveY *= normalizer;
+        }
+
         // Проверяем возможность рывка
         if (this.keys.Shift && this.player.dashCooldownTimer <= 0 && !this.player.isDashing && (moveX !== 0 || moveY !== 0)) {
-            console.log('Dash activated!'); // Добавим для отладки
             this.player.isDashing = true;
             this.player.dashTimer = this.player.dashDuration;
             this.player.dashCooldownTimer = this.player.dashCooldown;
+            
+            // Применяем импульс в направлении движения
+            this.player.velocityX = moveX * this.player.dashForce;
+            this.player.velocityY = moveY * this.player.dashForce;
+            
             this.createDashEffect();
         }
 
@@ -493,23 +504,39 @@ class ArcadeCollector {
             if (this.player.dashTimer <= 0) {
                 this.player.isDashing = false;
             }
-            currentSpeed = this.player.dashSpeed * dt;
         }
 
-        // Нормализация диагонального движения
-        if (moveX !== 0 && moveY !== 0) {
-            const normalizer = 1 / Math.sqrt(2);
-            moveX *= normalizer;
-            moveY *= normalizer;
+        // Применяем обычное движение, если не в рывке
+        if (!this.player.isDashing) {
+            this.player.velocityX = moveX * this.player.baseSpeed;
+            this.player.velocityY = moveY * this.player.baseSpeed;
         }
 
-        // Обновляем позицию
-        this.player.x += moveX * currentSpeed;
-        this.player.y += moveY * currentSpeed;
+        // Применяем трение
+        this.player.velocityX *= this.player.friction;
+        this.player.velocityY *= this.player.friction;
+
+        // Обновляем позицию на основе скорости
+        this.player.x += this.player.velocityX * dt;
+        this.player.y += this.player.velocityY * dt;
 
         // Ограничение движения игрока
-        this.player.x = Math.max(0, Math.min(this.canvas.width - this.player.width, this.player.x));
-        this.player.y = Math.max(0, Math.min(this.canvas.height - this.player.height, this.player.y));
+        if (this.player.x < 0) {
+            this.player.x = 0;
+            this.player.velocityX = 0;
+        }
+        if (this.player.x > this.canvas.width - this.player.width) {
+            this.player.x = this.canvas.width - this.player.width;
+            this.player.velocityX = 0;
+        }
+        if (this.player.y < 0) {
+            this.player.y = 0;
+            this.player.velocityY = 0;
+        }
+        if (this.player.y > this.canvas.height - this.player.height) {
+            this.player.y = this.canvas.height - this.player.height;
+            this.player.velocityY = 0;
+        }
     }
 
     updateSpawnTimers(dt) {
@@ -620,7 +647,7 @@ class ArcadeCollector {
                 );
                 this.ctx.fill();
 
-                // Добавляем пульсирующее ор��жие
+                // Добавляем пульсирующее оржие
                 const gunSize = 8;
                 this.ctx.fillStyle = '#fff';
                 this.ctx.fillRect(enemy.x - gunSize/2, enemy.y + enemy.height - gunSize/2, gunSize, gunSize);
@@ -648,7 +675,7 @@ class ArcadeCollector {
                 this.ctx.lineWidth = 2;
                 this.ctx.stroke();
 
-                // Полос��а здоровья
+                // Полоса здоровья
                 const healthPercentage = enemy.health / this.enemyTypes.boss.health;
                 const healthBarWidth = enemy.width * 1.2;
                 const healthBarHeight = 8;
@@ -947,22 +974,40 @@ class ArcadeCollector {
     createDashEffect() {
         const particles = 30;
         const colors = ['#6366f1', '#818cf8', '#4f46e5', '#ffffff'];
+        const angleSpread = Math.PI / 3; // 60 градусов разброс
+        
+        // Определяем направление движения
+        const angle = Math.atan2(this.player.velocityY, this.player.velocityX);
         
         for (let i = 0; i < particles; i++) {
-            const angle = (Math.PI * 2 * i) / particles;
-            const speed = 200 + Math.random() * 300;
+            const particleAngle = angle + (Math.random() - 0.5) * angleSpread;
+            const speed = 300 + Math.random() * 400;
             
             this.particles.push({
                 x: this.player.x + this.player.width / 2,
                 y: this.player.y + this.player.height / 2,
-                vx: Math.cos(angle) * speed,
-                vy: Math.sin(angle) * speed,
+                vx: -Math.cos(particleAngle) * speed, // Частицы летят в противоположном направлении
+                vy: -Math.sin(particleAngle) * speed,
                 size: 4 + Math.random() * 4,
                 color: colors[Math.floor(Math.random() * colors.length)],
-                lifetime: 0.4 + Math.random() * 0.3,
+                lifetime: 0.3 + Math.random() * 0.2,
                 time: 0
             });
         }
+
+        // Добавляем вспышку
+        this.particles.push({
+            x: this.player.x + this.player.width / 2,
+            y: this.player.y + this.player.height / 2,
+            vx: 0,
+            vy: 0,
+            size: this.player.width * 2,
+            color: '#ffffff',
+            lifetime: 0.15,
+            time: 0,
+            isFlash: true,
+            alpha: 0.7
+        });
     }
 
     createDashGhost() {
