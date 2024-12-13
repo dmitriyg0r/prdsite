@@ -229,4 +229,134 @@
 
 .level-container i {
     color: var(--primary-color);
+}
+
+/* Стили игровых элементов */
+/* Игрок */
+.player {
+    background-color: #00FF00;
+    width: 40px;
+    height: 40px;
+    position: absolute;
+    transition: opacity 0.1s;
+}
+
+/* Противники */
+.enemy {
+    position: absolute;
+}
+
+.enemy-basic {
+    background-color: #FF4500;
+    width: 30px;
+    height: 30px;
+}
+
+.enemy-fast {
+    background-color: #FF0000;
+    width: 25px;
+    height: 25px;
+    animation: enemyFastPulse 0.5s infinite;
+}
+
+.enemy-tank {
+    background-color: #800080;
+    width: 40px;
+    height: 40px;
+    border: 2px solid #A020F0;
+}
+
+/* Пули */
+.bullet {
+    position: absolute;
+    width: 5px;
+    height: 10px;
+    background-color: #FFFF00;
+    border-radius: 2px;
+    box-shadow: 0 0 5px #FFFF00;
+}
+
+/* Частицы */
+.particle {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+/* Анимации */
+@keyframes enemyFastPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+/* Эффекты при столкновении */
+.collision-effect {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
+    pointer-events: none;
+    animation: collisionFade 0.3s forwards;
+}
+
+@keyframes collisionFade {
+    from { transform: scale(0); opacity: 1; }
+    to { transform: scale(2); opacity: 0; }
+}
+
+/* Эффект неуязвимости игрока */
+.player.invulnerable {
+    animation: invulnerabilityBlink 0.2s infinite;
+}
+
+@keyframes invulnerabilityBlink {
+    0% { opacity: 1; }
+    50% { opacity: 0.3; }
+    100% { opacity: 1; }
+}
+
+/* Эффекты врагов */
+.enemy-basic::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, #FF4500, transparent);
+    z-index: -1;
+    opacity: 0.5;
+    border-radius: 2px;
+}
+
+.enemy-tank::before {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    right: -4px;
+    bottom: -4px;
+    background: linear-gradient(45deg, #800080, transparent);
+    z-index: -1;
+    opacity: 0.5;
+    border-radius: 4px;
+    animation: tankPulse 2s infinite;
+}
+
+@keyframes tankPulse {
+    0% { transform: scale(1); opacity: 0.5; }
+    50% { transform: scale(1.1); opacity: 0.3; }
+    100% { transform: scale(1); opacity: 0.5; }
+}
+
+/* Эффект следа пули */
+.bullet::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    width: 2px;
+    height: 10px;
+    background: linear-gradient(to bottom, #FFFF00, transparent);
+    transform: translateX(-50%);
 } 

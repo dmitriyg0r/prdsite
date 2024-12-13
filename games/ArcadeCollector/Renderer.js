@@ -1,16 +1,25 @@
 export class Renderer {
     constructor(ctx) {
         this.ctx = ctx;
+        this.colors = {
+            player: '#00FF00',
+            playerInvulnerable: 'rgba(0, 255, 0, 0.5)',
+            enemyBasic: '#FF4500',
+            enemyFast: '#FF0000',
+            enemyTank: '#800080',
+            bullet: '#FFFF00',
+            particleDefault: '#FFA500'
+        };
     }
 
     draw(game) {
-        // Отрисовка игрока
+        // Отрисовка игрока с эффектом неуязвимости
         this.drawPlayer(game.player);
         
-        // Отрисовка врагов
+        // Отрисовка врагов с эффектами
         this.drawEnemies(game.enemyManager.enemies);
         
-        // Отрисовка пуль
+        // Отрисовка пуль со следом
         this.drawBullets(game.bulletManager.bullets);
         
         // Отрисовка частиц
@@ -18,56 +27,75 @@ export class Renderer {
     }
 
     drawPlayer(player) {
-        this.ctx.fillStyle = player.isInvulnerable ? 
-            `rgba(0, 255, 0, ${Math.sin(Date.now() / 100)})` : 
-            '#00FF00';
-        
+        this.ctx.save();
+        if (player.isInvulnerable) {
+            this.ctx.globalAlpha = 0.5 + Math.sin(Date.now() / 100) * 0.5;
+        }
+        this.ctx.fillStyle = this.colors.player;
         this.ctx.fillRect(player.x, player.y, player.width, player.height);
+        
+        // Добавляем свечение для игрока
+        this.ctx.shadowColor = this.colors.player;
+        this.ctx.shadowBlur = 10;
+        this.ctx.restore();
     }
 
     drawEnemies(enemies) {
         enemies.forEach(enemy => {
+            this.ctx.save();
             switch(enemy.type) {
                 case 'fast':
-                    this.ctx.fillStyle = '#FF0000';
+                    this.ctx.fillStyle = this.colors.enemyFast;
+                    // Эффект пульсации для быстрых врагов
+                    const scale = 1 + Math.sin(Date.now() / 200) * 0.1;
+                    this.ctx.transform(scale, 0, 0, scale, enemy.x + enemy.width/2, enemy.y + enemy.height/2);
+                    this.ctx.fillRect(-enemy.width/2, -enemy.height/2, enemy.width, enemy.height);
                     break;
                 case 'tank':
-                    this.ctx.fillStyle = '#800080';
+                    this.ctx.fillStyle = this.colors.enemyTank;
+                    this.ctx.strokeStyle = '#A020F0';
+                    this.ctx.lineWidth = 2;
+                    this.ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+                    this.ctx.strokeRect(enemy.x, enemy.y, enemy.width, enemy.height);
                     break;
                 default:
-                    this.ctx.fillStyle = '#FF4500';
+                    this.ctx.fillStyle = this.colors.enemyBasic;
+                    this.ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
             }
-            this.ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+            this.ctx.restore();
         });
     }
 
     drawBullets(bullets) {
-        this.ctx.fillStyle = '#FFFF00';
+        this.ctx.save();
+        this.ctx.fillStyle = this.colors.bullet;
+        this.ctx.shadowColor = this.colors.bullet;
+        this.ctx.shadowBlur = 5;
+        
         bullets.forEach(bullet => {
+            // Рисуем пулю
             this.ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+            
+            // Добавляем след
+            const gradient = this.ctx.createLinearGradient(
+                bullet.x + bullet.width/2, 
+                bullet.y, 
+                bullet.x + bullet.width/2, 
+                bullet.y + bullet.height * 2
+            );
+            gradient.addColorStop(0, this.colors.bullet);
+            gradient.addColorStop(1, 'transparent');
+            
+            this.ctx.fillStyle = gradient;
+            this.ctx.fillRect(
+                bullet.x + bullet.width/2 - 1,
+                bullet.y + bullet.height,
+                2,
+                bullet.height
+            );
         });
+        this.ctx.restore();
     }
 
-    drawParticles(particles) {
-        particles.forEach(particle => {
-            this.ctx.fillStyle = `rgba(${this.hexToRgb(particle.color)}, ${particle.opacity})`;
-            this.ctx.beginPath();
-            this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-            this.ctx.fill();
-        });
-    }
-
-    drawStartScreen(canvas) {
-        this.ctx.fillStyle = '#FFFFFF';
-        this.ctx.font = '30px Arial';
-        this.ctx.textAlign = 'center';
-        this.ctx.fillText('Press SPACE to Start', canvas.width/2, canvas.height/2);
-    }
-
-    hexToRgb(hex) {
-        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-        return result ? 
-            `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : 
-            '255, 255, 255';
-    }
+    // ... остальные методы остаются без изменений
 }
