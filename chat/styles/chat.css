@@ -326,9 +326,12 @@ body {
 
 /* Полученные сообщения */
 .message-received {
+    align-self: flex-start;
+    margin-right: auto;
     background: var(--surface-color);
     border: 1px solid var(--border-light);
     border-bottom-left-radius: 4px;
+    color: var(--text-primary);
 }
 
 /* Полученные сообщения в тёмной теме */
@@ -338,10 +341,12 @@ body {
 
 /* Отправленные сообщения */
 .message-sent {
+    align-self: flex-end;
+    margin-left: auto;
     background: var(--primary-color);
     color: white;
-    border: none;
-    box-shadow: 0 2px 8px rgba(var(--primary-color-rgb), 0.2);
+    border-bottom-right-radius: 4px;
+    box-shadow: 0 2px 12px rgba(var(--primary-color-rgb), 0.15);
 }
 
 /* Стили для отправленных сообщений в светлой теме */
@@ -1110,14 +1115,20 @@ body {
 
 /* Улучшаем стили для полученных сообщений */
 .message-received {
+    align-self: flex-start;
+    margin-right: auto;
     background: var(--surface-color);
     border: 1px solid var(--border-light);
     border-bottom-left-radius: 4px;
+    color: var(--text-primary);
 }
 
 /* Улучшаем стили для отправленных сообщений */
 .message-sent {
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    align-self: flex-end;
+    margin-left: auto;
+    background: var(--primary-color);
+    color: white;
     border-bottom-right-radius: 4px;
     box-shadow: 0 2px 12px rgba(var(--primary-color-rgb), 0.15);
 }
