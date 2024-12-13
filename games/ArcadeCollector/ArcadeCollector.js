@@ -392,7 +392,7 @@ class ArcadeCollector {
             this.coinSpawnTimer = 0;
         }
         
-        // Обновление таймера препятствий
+        // Обновление таймера препятств��й
         this.obstacleSpawnTimer += dt * 1000;
         if (this.obstacleSpawnTimer >= this.obstacleSpawnRate) {
             this.spawnObstacle();
@@ -454,46 +454,215 @@ class ArcadeCollector {
         });
     }
 
+    drawEnemy(enemy) {
+        switch(enemy.type) {
+            case 'basic':
+                // Треугольный враг
+                this.ctx.fillStyle = enemy.color;
+                this.ctx.beginPath();
+                this.ctx.moveTo(enemy.x + enemy.width / 2, enemy.y);
+                this.ctx.lineTo(enemy.x + enemy.width, enemy.y + enemy.height);
+                this.ctx.lineTo(enemy.x, enemy.y + enemy.height);
+                this.ctx.closePath();
+                this.ctx.fill();
+
+                // Добавляем свечение
+                this.ctx.shadowColor = enemy.color;
+                this.ctx.shadowBlur = 10;
+                this.ctx.strokeStyle = '#fff';
+                this.ctx.stroke();
+                this.ctx.shadowBlur = 0;
+                break;
+
+            case 'shooter':
+                // Шестиугольный враг с градиентом
+                const shooterGradient = this.ctx.createLinearGradient(
+                    enemy.x, enemy.y, 
+                    enemy.x + enemy.width, enemy.y + enemy.height
+                );
+                shooterGradient.addColorStop(0, enemy.color);
+                shooterGradient.addColorStop(1, '#fbbf24');
+
+                this.ctx.fillStyle = shooterGradient;
+                this.ctx.beginPath();
+                this.drawHexagon(
+                    enemy.x + enemy.width / 2,
+                    enemy.y + enemy.height / 2,
+                    enemy.width / 2
+                );
+                this.ctx.fill();
+
+                // Добавляем пульсирующее оружие
+                const gunSize = 8;
+                this.ctx.fillStyle = '#fff';
+                this.ctx.fillRect(enemy.x - gunSize/2, enemy.y + enemy.height - gunSize/2, gunSize, gunSize);
+                this.ctx.fillRect(enemy.x + enemy.width - gunSize/2, enemy.y + enemy.height - gunSize/2, gunSize, gunSize);
+                break;
+
+            case 'boss':
+                // Сложная форма босса с градиентом
+                const bossGradient = this.ctx.createRadialGradient(
+                    enemy.x + enemy.width/2, enemy.y + enemy.height/2, 0,
+                    enemy.x + enemy.width/2, enemy.y + enemy.height/2, enemy.width/2
+                );
+                bossGradient.addColorStop(0, '#dc2626');
+                bossGradient.addColorStop(0.5, enemy.color);
+                bossGradient.addColorStop(1, '#991b1b');
+
+                // Основное тело
+                this.ctx.fillStyle = bossGradient;
+                this.ctx.beginPath();
+                this.drawBossShape(enemy);
+                this.ctx.fill();
+
+                // Энергетическое поле
+                this.ctx.strokeStyle = `rgba(255, 255, 255, ${0.3 + Math.sin(enemy.time * 5) * 0.2})`;
+                this.ctx.lineWidth = 2;
+                this.ctx.stroke();
+
+                // Полоска здоровья
+                const healthPercentage = enemy.health / this.enemyTypes.boss.health;
+                const healthBarWidth = enemy.width * 1.2;
+                const healthBarHeight = 8;
+                const healthBarX = enemy.x + (enemy.width - healthBarWidth) / 2;
+                const healthBarY = enemy.y - healthBarHeight - 5;
+
+                // Фон полоски здоровья
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                this.ctx.fillRect(healthBarX, healthBarY, healthBarWidth, healthBarHeight);
+
+                // Заполнение полоски здоровья
+                const healthGradient = this.ctx.createLinearGradient(
+                    healthBarX, healthBarY,
+                    healthBarX + healthBarWidth, healthBarY
+                );
+                healthGradient.addColorStop(0, '#22c55e');
+                healthGradient.addColorStop(1, '#4ade80');
+                
+                this.ctx.fillStyle = healthGradient;
+                this.ctx.fillRect(
+                    healthBarX,
+                    healthBarY,
+                    healthBarWidth * healthPercentage,
+                    healthBarHeight
+                );
+                break;
+        }
+    }
+
+    drawHexagon(x, y, size) {
+        this.ctx.beginPath();
+        for (let i = 0; i < 6; i++) {
+            const angle = (i * Math.PI) / 3;
+            const xPoint = x + size * Math.cos(angle);
+            const yPoint = y + size * Math.sin(angle);
+            if (i === 0) {
+                this.ctx.moveTo(xPoint, yPoint);
+            } else {
+                this.ctx.lineTo(xPoint, yPoint);
+            }
+        }
+        this.ctx.closePath();
+    }
+
+    drawBossShape(enemy) {
+        const x = enemy.x;
+        const y = enemy.y;
+        const w = enemy.width;
+        const h = enemy.height;
+        const time = enemy.time;
+
+        // Создаем пульсирующий эффект
+        const pulse = 1 + Math.sin(time * 3) * 0.1;
+
+        this.ctx.beginPath();
+        this.ctx.moveTo(x + w/2, y);
+        this.ctx.lineTo(x + w, y + h/3);
+        this.ctx.lineTo(x + w * pulse, y + h/2);
+        this.ctx.lineTo(x + w, y + h * 2/3);
+        this.ctx.lineTo(x + w/2, y + h);
+        this.ctx.lineTo(x, y + h * 2/3);
+        this.ctx.lineTo(x - w * (pulse - 1), y + h/2);
+        this.ctx.lineTo(x, y + h/3);
+        this.ctx.closePath();
+    }
+
     draw() {
         // Отрисовка игрока
         this.ctx.fillStyle = this.player.color;
-        this.ctx.fillRect(this.player.x, this.player.y, this.player.width, this.player.height);
-        
+        this.ctx.beginPath();
+        this.ctx.moveTo(this.player.x + this.player.width / 2, this.player.y);
+        this.ctx.lineTo(this.player.x + this.player.width, this.player.y + this.player.height);
+        this.ctx.lineTo(this.player.x, this.player.y + this.player.height);
+        this.ctx.closePath();
+        this.ctx.fill();
+
         // Отрисовка пуль игрока
         this.bullets.forEach(bullet => {
             this.ctx.fillStyle = bullet.color;
-            this.ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+            this.ctx.beginPath();
+            this.ctx.ellipse(
+                bullet.x + bullet.width/2,
+                bullet.y + bullet.height/2,
+                bullet.width/2,
+                bullet.height/2,
+                0, 0, Math.PI * 2
+            );
+            this.ctx.fill();
         });
 
         // Отрисовка пуль противников
         this.enemyBullets.forEach(bullet => {
-            this.ctx.fillStyle = bullet.color;
-            this.ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
-        });
-        
-        // Отрисовка противников
-        this.enemies.forEach(enemy => {
-            this.ctx.fillStyle = enemy.color;
-            this.ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+            const gradient = this.ctx.createLinearGradient(
+                bullet.x, bullet.y,
+                bullet.x, bullet.y + bullet.height
+            );
+            gradient.addColorStop(0, bullet.color);
+            gradient.addColorStop(1, '#fff');
             
-            // Отрисовка полоски здоровья для босса
-            if (enemy.type === 'boss') {
-                const healthPercentage = enemy.health / this.enemyTypes.boss.health;
-                this.ctx.fillStyle = '#22c55e';
-                this.ctx.fillRect(
-                    enemy.x, 
-                    enemy.y - 10, 
-                    enemy.width * healthPercentage, 
-                    5
-                );
-            }
+            this.ctx.fillStyle = gradient;
+            this.ctx.beginPath();
+            this.ctx.ellipse(
+                bullet.x + bullet.width/2,
+                bullet.y + bullet.height/2,
+                bullet.width/2,
+                bullet.height/2,
+                0, 0, Math.PI * 2
+            );
+            this.ctx.fill();
         });
-        
+
+        // Отрисовка противников
+        this.enemies.forEach(enemy => this.drawEnemy(enemy));
+
         // Отрисовка монет
         this.coins.forEach(coin => {
-            this.ctx.fillStyle = coin.color;
+            const coinGradient = this.ctx.createRadialGradient(
+                coin.x + coin.width/2, coin.y + coin.height/2, 0,
+                coin.x + coin.width/2, coin.y + coin.height/2, coin.width/2
+            );
+            coinGradient.addColorStop(0, '#fcd34d');
+            coinGradient.addColorStop(1, '#f59e0b');
+
+            this.ctx.fillStyle = coinGradient;
             this.ctx.beginPath();
-            this.ctx.arc(coin.x + coin.width/2, coin.y + coin.height/2, coin.width/2, 0, Math.PI * 2);
+            this.ctx.arc(
+                coin.x + coin.width/2,
+                coin.y + coin.height/2,
+                coin.width/2,
+                0, Math.PI * 2
+            );
+            this.ctx.fill();
+
+            // Блик на монете
+            this.ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+            this.ctx.beginPath();
+            this.ctx.arc(
+                coin.x + coin.width/3,
+                coin.y + coin.height/3,
+                coin.width/6,
+                0, Math.PI * 2
+            );
             this.ctx.fill();
         });
     }
