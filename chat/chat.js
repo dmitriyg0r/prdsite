@@ -451,7 +451,7 @@ async function loadMessages(friendId) {
 
             const isAtBottom = isScrolledToBottom(messagesContainer);
             
-            // Получаем сущест��ующие сообщения
+            // Получаем существующие сообщения
             const existingMessages = new Set(
                 Array.from(messagesContainer.children).map(el => el.dataset.messageId)
             );
@@ -969,9 +969,18 @@ function updateLastMessage(message) {
     }
 }
 
-// Функция загрузки списка чатов
+// Функция загрузки списка чатов с защитой от дёрганья
+let lastUpdateTime = 0;
+const UPDATE_INTERVAL = 2000; // Минимальный интервал между обновлениями
+
 async function loadChatsList() {
     try {
+        const now = Date.now();
+        if (now - lastUpdateTime < UPDATE_INTERVAL) {
+            return; // Пропускаем обновление, если прошло мало времени
+        }
+        lastUpdateTime = now;
+
         const response = await fetch(`https://adminflow.ru:5003/api/chats/${currentUser.id}`);
         const data = await response.json();
 
@@ -981,40 +990,76 @@ async function loadChatsList() {
                 console.error('Friends list container not found');
                 return;
             }
-            friendsList.innerHTML = ''; // Очищаем список перед обновлением
+
+            // Создаём фрагмент для оптимизации DOM-операций
+            const fragment = document.createDocumentFragment();
+            const currentChats = new Set();
 
             data.chats.forEach(chat => {
-                const chatElement = document.createElement('div');
-                chatElement.className = 'chat-partner';
-                chatElement.dataset.friendId = chat.id;
+                currentChats.add(chat.id.toString());
                 
-                chatElement.innerHTML = `
-                    <div class="avatar-container">
-                        <img src="${chat.avatar_url || '../uploads/avatars/default.png'}" 
-                             alt="${chat.username}" 
-                             class="chat-avatar">
-                        <span class="status-indicator ${chat.is_online ? 'online' : 'offline'}"></span>
-                    </div>
-                    <div class="chat-info">
-                        <div class="chat-name">${chat.username}</div>
-                        <div class="chat-last-message" id="last-message-${chat.id}">
-                            ${chat.last_message ? 
-                                (chat.is_own_message ? 'Вы: ' : '') + 
-                                (chat.last_message.length > 25 ? 
-                                    chat.last_message.substring(0, 25) + '...' : 
-                                    chat.last_message) : 
-                                'Нет сообщений'}
-                        </div>
-                    </div>
-                    ${chat.unread_count > 0 ? 
-                        `<span class="unread-count">${chat.unread_count}</span>` : 
-                        ''}
-                `;
+                // Проверяем, существует ли уже элемент чата
+                let chatElement = friendsList.querySelector(`.chat-partner[data-friend-id="${chat.id}"]`);
+                const needsUpdate = !chatElement || 
+                    chatElement.querySelector('.chat-last-message').textContent !== 
+                    (chat.last_message ? 
+                        (chat.is_own_message ? 'Вы: ' : '') + 
+                        (chat.last_message.length > 25 ? 
+                            chat.last_message.substring(0, 25) + '...' : 
+                            chat.last_message) : 
+                        'Нет сообщений');
 
-                // Добавляем обработчик клика
-                chatElement.addEventListener('click', () => selectChat(chat));
-                friendsList.appendChild(chatElement);
+                if (!chatElement || needsUpdate) {
+                    chatElement = document.createElement('div');
+                    chatElement.className = `chat-partner ${currentChatPartner?.id === chat.id ? 'active' : ''}`;
+                    chatElement.dataset.friendId = chat.id;
+                    
+                    chatElement.innerHTML = `
+                        <div class="avatar-container">
+                            <img src="${chat.avatar_url || '../uploads/avatars/default.png'}" 
+                                 alt="${chat.username}" 
+                                 class="chat-avatar">
+                            <span class="status-indicator ${chat.is_online ? 'online' : 'offline'}"></span>
+                        </div>
+                        <div class="chat-info">
+                            <div class="chat-name">${chat.username}</div>
+                            <div class="chat-last-message" id="last-message-${chat.id}">
+                                ${chat.last_message ? 
+                                    (chat.is_own_message ? 'Вы: ' : '') + 
+                                    (chat.last_message.length > 25 ? 
+                                        chat.last_message.substring(0, 25) + '...' : 
+                                        chat.last_message) : 
+                                    'Нет сообщений'}
+                            </div>
+                        </div>
+                        ${chat.unread_count > 0 ? 
+                            `<span class="unread-count">${chat.unread_count}</span>` : 
+                            ''}
+                    `;
+
+                    // Добавляем обработчик клика
+                    chatElement.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        selectChat(chat);
+                    });
+
+                    if (!friendsList.querySelector(`.chat-partner[data-friend-id="${chat.id}"]`)) {
+                        fragment.appendChild(chatElement);
+                    } else {
+                        friendsList.replaceChild(chatElement, friendsList.querySelector(`.chat-partner[data-friend-id="${chat.id}"]`));
+                    }
+                }
             });
+
+            // Удаляем чаты, которых больше нет в списке
+            friendsList.querySelectorAll('.chat-partner').forEach(el => {
+                if (!currentChats.has(el.dataset.friendId)) {
+                    el.remove();
+                }
+            });
+
+            // Добавляем новые чаты
+            friendsList.appendChild(fragment);
         }
     } catch (error) {
         console.error('Ошибка при загрузке списка чатов:', error);
@@ -1023,39 +1068,79 @@ async function loadChatsList() {
 
 // Функция выбора чата
 async function selectChat(chat) {
-    if (currentChatPartner && currentChatPartner.id === chat.id) {
-        return; // Если чат уже выбран, ничего не делаем
-    }
-    currentChatPartner = chat;
-    
-    // Обновляем UI
-    const chatPlaceholder = document.getElementById('chat-placeholder');
-    const chatHeader = document.getElementById('chat-header');
-    const messages = document.getElementById('messages');
-    const chatHeaderAvatar = document.getElementById('chat-header-avatar');
-    const chatHeaderName = document.getElementById('chat-header-name');
-    const chatHeaderStatus = document.getElementById('chat-header-status');
+    try {
+        if (!chat || !chat.id) {
+            console.error('Некорректные данные чата');
+            return;
+        }
 
-    if (chatPlaceholder) chatPlaceholder.style.display = 'none';
-    if (chatHeader) chatHeader.style.display = 'flex';
-    if (messages) messages.style.display = 'flex';
-    
-    // Обновляем заголовок чата
-    if (chatHeaderAvatar) chatHeaderAvatar.src = chat.avatar_url || '../uploads/avatars/default.png';
-    if (chatHeaderName) chatHeaderName.textContent = chat.username;
-    if (chatHeaderStatus) {
-        chatHeaderStatus.className = `user-status ${chat.is_online ? 'online' : ''}`;
-        chatHeaderStatus.textContent = chat.is_online ? 'онлайн' : getLastActivityTime(chat.last_activity);
+        // Убираем активный класс у предыдущего чата
+        const previousActive = document.querySelector('.chat-partner.active');
+        if (previousActive) {
+            previousActive.classList.remove('active');
+        }
+
+        // Добавляем активный класс новому чату
+        const newActive = document.querySelector(`.chat-partner[data-friend-id="${chat.id}"]`);
+        if (newActive) {
+            newActive.classList.add('active');
+        }
+
+        // Очищаем предыдущие сообщения
+        const messagesContainer = document.getElementById('messages');
+        if (messagesContainer) {
+            messagesContainer.innerHTML = '';
+        }
+
+        // Останавливаем предыдущие обновления
+        if (messageUpdateInterval) {
+            clearInterval(messageUpdateInterval);
+        }
+
+        currentChatPartner = chat;
+        
+        // Обновляем UI
+        const chatPlaceholder = document.getElementById('chat-placeholder');
+        const chatHeader = document.getElementById('chat-header');
+        const messages = document.getElementById('messages');
+        const chatHeaderAvatar = document.getElementById('chat-header-avatar');
+        const chatHeaderName = document.getElementById('chat-header-name');
+        const chatHeaderStatus = document.getElementById('chat-header-status');
+
+        if (chatPlaceholder) chatPlaceholder.style.display = 'none';
+        if (chatHeader) chatHeader.style.display = 'flex';
+        if (messages) {
+            messages.style.display = 'flex';
+            messages.scrollTop = messages.scrollHeight;
+        }
+        
+        // Обновляем заголовок чата
+        if (chatHeaderAvatar) {
+            chatHeaderAvatar.src = chat.avatar_url || '../uploads/avatars/default.png';
+            chatHeaderAvatar.onerror = () => {
+                chatHeaderAvatar.src = '../uploads/avatars/default.png';
+            };
+        }
+        if (chatHeaderName) chatHeaderName.textContent = chat.username;
+        if (chatHeaderStatus) {
+            chatHeaderStatus.className = `user-status ${chat.is_online ? 'online' : ''}`;
+            chatHeaderStatus.textContent = chat.is_online ? 'онлайн' : getLastActivityTime(chat.last_activity);
+        }
+        
+        // Загружаем историю сообщений
+        await loadChatHistory();
+        
+        // Запускаем обновление сообщений с небольшой задержкой
+        setTimeout(() => {
+            startMessageUpdates();
+        }, 500);
+        
+        // Помечаем сообщения как прочитанные
+        await markMessagesAsRead(chat.id);
+
+    } catch (error) {
+        console.error('Ошибка при выборе чата:', error);
     }
-    
-    // Загружаем историю сообщений
-    await loadChatHistory();
-    
-    // Запускаем обновление сообщений
-    startMessageUpdates();
-    
-    // Помечаем сообщения как прочитанные
-    await markMessagesAsRead(chat.id);
 }
 
 // Функция получения времени последней активности пользователя
