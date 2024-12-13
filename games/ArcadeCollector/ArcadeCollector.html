@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arcade Collector - AdminFlow</title>
+    <link rel="stylesheet" href="../../style.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="game-wrapper">
+        <!-- Кнопка возврата -->
+        <a href="../games.html" class="back-button">
+            <i class="fas fa-arrow-left"></i>
+            Вернуться к играм
+        </a>
+
+        <!-- Игровой контейнер -->
+        <div class="game-container">
+            <canvas id="gameCanvas"></canvas>
+            <div class="game-ui">
+                <div class="score-container">
+                    <i class="fas fa-coins"></i>
+                    <span id="score">0</span>
+                </div>
+                <div class="lives-container">
+                    <i class="fas fa-heart"></i>
+                    <span id="lives">3</span>
+                </div>
+            </div>
+            
+            <!-- Меню паузы -->
+            <div class="pause-menu" id="pauseMenu">
+                <div class="menu-content">
+                    <h2>Пауза</h2>
+                    <button id="resumeBtn" class="menu-button">Продолжить</button>
+                    <button id="restartBtn" class="menu-button">Начать заново</button>
+                </div>
+            </div>
+            
+            <!-- Меню окончания игры -->
+            <div class="game-over-menu" id="gameOverMenu">
+                <div class="menu-content">
+                    <h2>Игра окончена</h2>
+                    <p>Ваш счет: <span id="finalScore">0</span></p>
+                    <button id="playAgainBtn" class="menu-button">Играть снова</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="ArcadeCollector.js"></script>
+</body>
+</html> 
