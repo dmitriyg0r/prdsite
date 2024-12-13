@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     setInterval(loadChatsList, 10000); // Обновляем каждые 10 секунд
 });
 
-// Функция для загрузки информации о пользователе
+// Функция для загрузки информции о пользователе
 async function loadUserInfo(userId) {
     try {
         const response = await fetch(`https://adminflow.ru:5003/api/users/${userId}?currentUserId=${currentUser.id}`);
@@ -69,7 +69,7 @@ async function initializeChat() {
     }
 }
 
-// Добавляем функцию обновления заголовка чата
+// Добавляем функцию обновл��ния заголовка чата
 function updateChatHeader(userInfo) {
     const headerName = document.querySelector('.chat-header .user-name');
     const headerAvatar = document.querySelector('.chat-header .user-avatar');
@@ -92,11 +92,11 @@ async function loadChatHistory() {
         const data = await response.json();
 
         if (data.success) {
-             const messagesContainer = document.getElementById('messages');
-             if (!messagesContainer) {
-                 console.error('Messages container not found');
-                 return;
-             }
+            const messagesContainer = document.getElementById('messages');
+            if (!messagesContainer) {
+                console.error('Messages container not found');
+                return;
+            }
 
             // Оптимизация проверки новых сообщений
             const currentMessageIds = new Set(
@@ -109,9 +109,9 @@ async function loadChatHistory() {
                 !currentMessageIds.has(message.id.toString())
             );
             
-           if (newMessages.length > 0) {
-                const isScrolledToBottom = isUserAtBottom(messagesContainer);
-                displayNewMessages(newMessages, isScrolledToBottom);
+            if (newMessages.length > 0) {
+                displayNewMessages(newMessages, true);
+                scrollManager?.checkScroll();
             }
         }
     } catch (err) {
@@ -126,10 +126,11 @@ function isUserAtBottom(container) {
 
 function displayMessages(messages) {
     const messagesContainer = document.getElementById('messages');
-     if (!messagesContainer) {
-         console.error('Messages container not found');
-         return;
+    if (!messagesContainer) {
+        console.error('Messages container not found');
+        return;
     }
+    
     while(messagesContainer.firstChild) {
         messagesContainer.removeChild(messagesContainer.firstChild);
     }
@@ -139,6 +140,9 @@ function displayMessages(messages) {
         messageElement.dataset.messageId = message.id;
         messagesContainer.appendChild(messageElement);
     });
+
+    // Прокручиваем к последнему сообщению
+    scrollToBottom();
 }
 
 function displayNewMessages(newMessages, shouldScroll) {
@@ -159,9 +163,12 @@ function displayNewMessages(newMessages, shouldScroll) {
 
     if (shouldScroll) {
         requestAnimationFrame(() => {
-            scrollToBottom();
+            scrollManager?.scrollToBottom();
         });
     }
+    
+    // Проверяем необходимость показа кнопки
+    scrollManager?.checkScroll();
 }
 
 
@@ -192,7 +199,7 @@ function createMessageElement(message) {
         messageElement.appendChild(replyElement);
     }
 
-    // Основной контент сообщения
+    // ��сновной контент сообщения
     const messageContent = document.createElement('div');
     messageContent.className = 'message-content';
 
@@ -267,7 +274,7 @@ function createAttachmentElement(attachmentUrl) {
     if (isImageFile(attachmentUrl)) {
         const img = document.createElement('img');
         img.src = fullUrl;
-        img.alt = 'Изображение';
+        img.alt = 'Изображ��ние';
         img.onerror = () => {
             console.error('Ошибка загрузки изображения:', fullUrl);
             img.src = '../uploads/avatars/default.png'; // Заглушка при ошибке
@@ -484,7 +491,7 @@ async function loadMessages(friendId) {
                 }
             });
 
-            // Помечаем сообщения как прочитанные
+            // Помечаем сообщен��я как прочитанные
             if (newMessages.length > 0) {
                 await markMessagesAsRead(friendId);
             }
@@ -504,11 +511,14 @@ function updateMessageStatus(messageElement, messageData) {
     }
 }
 
-// Функция прокрутки чата вниз
+// Улучшенная функция прокрутки
 function scrollToBottom() {
     const messagesContainer = document.getElementById('messages');
     if (messagesContainer) {
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        // Используем requestAnimationFrame для гарантированной прокрутки после рендеринга
+        requestAnimationFrame(() => {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        });
     }
 }
 
@@ -1165,11 +1175,12 @@ async function selectChat(chat) {
         if (chatHeaderName) chatHeaderName.textContent = chat.username;
         if (chatHeaderStatus) {
             chatHeaderStatus.className = `user-status ${chat.is_online ? 'online' : ''}`;
-            chatHeaderStatus.textContent = chat.is_online ? 'онлайн' : getLastActivityTime(chat.last_activity);
+            chatHeaderStatus.textContent = chat.is_online ? 'онл��йн' : getLastActivityTime(chat.last_activity);
         }
         
         // Загружаем историю сообщений
         await loadChatHistory();
+        scrollManager?.checkScroll();
         
         // Запускаем обновление сообщений с небольшой задержкой
         setTimeout(() => {
@@ -1206,7 +1217,7 @@ function getLastActivityTime(lastActivity) {
     }
 }
 
-// Функция для обновления счетчика непрочитанных сообщений
+// Функция для об��овления счетчика непрочитанных сообщений
 async function updateUnreadCount(friendId) {
   if(!friendId) return
   try {
