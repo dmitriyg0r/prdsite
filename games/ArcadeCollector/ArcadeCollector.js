@@ -25,16 +25,16 @@ class ArcadeCollector {
             height: 40,
             velocityX: 0,
             velocityY: 0,
-            baseSpeed: 400, // Увеличиваем базовую скорость
-            horizontalSpeedMultiplier: 1.5,
-            lives: 3,
+            baseSpeed: 300, // Уменьшаем с 400 до 300 для лучшего контроля
+            horizontalSpeedMultiplier: 1.2, // Уменьшаем с 1.5 до 1.2
+            lives: 5, // Увеличиваем с 3 до 5 для большей выживаемости
             color: '#6366f1',
             shootCooldown: 0,
-            shootRate: 250,
+            shootRate: 350, // Увеличиваем с 250 до 350 мс
             // Добавляем параметры рывка
-            dashSpeed: 1200, // Скорость рывка
-            dashDuration: 0.15, // Длительность рывка в секундах
-            dashCooldown: 2, // Откат рывка в секундах
+            dashSpeed: 900, // Уменьшаем с 1200 до 900
+            dashDuration: 0.2, // Увеличиваем с 0.15 до 0.2
+            dashCooldown: 1.5, // Уменьшаем с 2 до 1.5
             dashTimer: 0, // Таймер текущего рывка
             dashCooldownTimer: 0, // Таймер отката
             isDashing: false
@@ -45,33 +45,33 @@ class ArcadeCollector {
             basic: {
                 width: 30,
                 height: 30,
-                speed: 150,
+                speed: 120, // Уменьшаем с 150 до 120
                 color: '#ef4444',
-                health: 1,
-                points: 10,
-                shootRate: 2000,
+                health: 2, // Увеличиваем с 1 до 2
+                points: 15, // Увеличиваем с 10 до 15
+                shootRate: 2500, // Увеличиваем с 2000 до 2500
                 bulletSpeed: 200,
                 behavior: 'straight'
             },
             shooter: {
                 width: 40,
                 height: 40,
-                speed: 100,
+                speed: 80, // Уменьшаем с 100 до 80
                 color: '#fb923c',
-                health: 2,
-                points: 20,
-                shootRate: 1500,
+                health: 3, // Увеличиваем с 2 до 3
+                points: 25, // Увеличиваем с 20 до 25
+                shootRate: 2000, // Увеличиваем с 1500 до 2000
                 bulletSpeed: 250,
                 behavior: 'strafe'
             },
             boss: {
                 width: 60,
                 height: 60,
-                speed: 80,
+                speed: 60, // Уменьшаем с 80 до 60
                 color: '#dc2626',
-                health: 5,
-                points: 50,
-                shootRate: 1000,
+                health: 8, // Увеличиваем с 5 до 8
+                points: 75, // Увеличиваем с 50 до 75
+                shootRate: 1500, // Увеличиваем с 1000 до 1500
                 bulletSpeed: 300,
                 behavior: 'sine'
             }
@@ -86,11 +86,11 @@ class ArcadeCollector {
         this.bullets = [];
         this.score = 0;
         
-        // ��араметры спавна
+        // араметры спавна
         this.enemySpawnTimer = 0;
-        this.enemySpawnRate = 2000; // начальная частота появления врагов
+        this.enemySpawnRate = 2500; // Увеличиваем с 2000 до 2500
         this.coinSpawnTimer = 0;
-        this.coinSpawnRate = 1000;
+        this.coinSpawnRate = 1500; // Увеличиваем с 1000 до 1500
         
         // UI элементы
         this.scoreElement = document.getElementById('score');
@@ -125,7 +125,7 @@ class ArcadeCollector {
     animate(currentTime) {
         // Расчет deltaTime в секундах
         this.deltaTime = (currentTime - this.lastTime) / 1000;
-        // Ограничиваем deltaTime для предотвращения больших скачков
+        // Ограничиваем deltaTime для предотвращения больших скач��ов
         this.deltaTime = Math.min(this.deltaTime, 0.1);
         this.lastTime = currentTime;
 
@@ -197,17 +197,16 @@ class ArcadeCollector {
 
     updateDifficulty(dt) {
         this.gameTime += dt;
-        // Увеличиваем сложность каждые 30 секунд
-        this.difficulty = 1 + Math.floor(this.gameTime / 30) * 0.2;
+        // Замедляем рост сложности
+        this.difficulty = 1 + Math.floor(this.gameTime / 45) * 0.15; // Было 30 сек и 0.2
         
-        // Также увеличиваем сложность на основе очков
-        this.difficulty += Math.floor(this.score / 100) * 0.1;
+        // Уменьшаем влияние очков на сложность
+        this.difficulty += Math.floor(this.score / 150) * 0.08; // Было 100 и 0.1
         
-        // Обновляем частоту появления объектов
-        this.enemySpawnRate = Math.max(500, 2000 - this.difficulty * 200);
-        this.coinSpawnRate = Math.max(400, 1000 - this.difficulty * 100);
+        // Более плавное изменение частоты спавна
+        this.enemySpawnRate = Math.max(800, 2500 - this.difficulty * 150); // Корректируем значения
+        this.coinSpawnRate = Math.max(600, 1500 - this.difficulty * 75);
         
-        // Обновляем UI
         if (this.levelElement) {
             this.levelElement.textContent = Math.floor(this.difficulty * 10) / 10;
         }
@@ -507,7 +506,7 @@ class ArcadeCollector {
     }
 
     updateSpawnTimers(dt) {
-        // Спавн врагов
+        // Спа��н врагов
         this.enemySpawnTimer += dt * 1000;
         if (this.enemySpawnTimer >= this.enemySpawnRate) {
             this.spawnEnemy();
@@ -859,7 +858,7 @@ class ArcadeCollector {
         this.enemySpawnTimer = 0;
         this.coinSpawnTimer = 0;
         
-        // Очищаем все массивы
+        // ��чищаем все массивы
         this.coins = [];
         this.enemies = [];
         this.bullets = [];
