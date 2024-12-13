@@ -119,5 +119,17 @@ export class Renderer {
         this.ctx.restore();
     }
 
+    drawParticles(particles) {
+        this.ctx.save();
+        particles.forEach(particle => {
+            this.ctx.globalAlpha = particle.opacity;
+            this.ctx.fillStyle = particle.color;
+            this.ctx.beginPath();
+            this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+            this.ctx.fill();
+        });
+        this.ctx.restore();
+    }
+
     // ... остальные методы остаются без изменений
 }
