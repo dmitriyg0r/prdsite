@@ -87,7 +87,7 @@ body {
     gap: 12px;
     padding: 12px;
     margin-bottom: 4px;
-    border-radius: var(--radius-lg);
+    border-radius: 10px;
     cursor: pointer;
     transition: all 0.3s ease;
 }
