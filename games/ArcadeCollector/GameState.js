@@ -53,12 +53,16 @@ export class GameState {
         };
     }
 
-    addScore(points) {
+    addScore(points, game) {
         this.score += Math.floor(points * this.difficultyMultipliers.scoreMultiplier);
-        this.updateUI();
+        if (game) {
+            this.updateUI(game);
+        }
     }
 
     updateUI(game) {
+        if (!game) return;
+
         const scoreElement = document.getElementById('score');
         const levelElement = document.getElementById('level');
         const livesElement = document.getElementById('lives');
