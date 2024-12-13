@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     setInterval(loadChatsList, 10000); // Обновляем каждые 10 секунд
 });
 
-// Функция для загрузки информции о пользователе
+// Функция для загрузки информ����ии о пользователе
 async function loadUserInfo(userId) {
     try {
         const response = await fetch(`https://adminflow.ru:5003/api/users/${userId}?currentUserId=${currentUser.id}`);
@@ -69,7 +69,7 @@ async function initializeChat() {
     }
 }
 
-// Добавляем функцию обновл��ния заголовка чата
+// Добавляем функцию обновления заголовка чата
 function updateChatHeader(userInfo) {
     const headerName = document.querySelector('.chat-header .user-name');
     const headerAvatar = document.querySelector('.chat-header .user-avatar');
@@ -111,7 +111,9 @@ async function loadChatHistory() {
             
             if (newMessages.length > 0) {
                 displayNewMessages(newMessages, true);
-                scrollManager?.checkScroll();
+                if (window.scrollManager) {
+                    window.scrollManager.checkScroll();
+                }
             }
         }
     } catch (err) {
@@ -199,7 +201,7 @@ function createMessageElement(message) {
         messageElement.appendChild(replyElement);
     }
 
-    // ��сновной контент сообщения
+    // Основной контент сообщения
     const messageContent = document.createElement('div');
     messageContent.className = 'message-content';
 
@@ -274,7 +276,7 @@ function createAttachmentElement(attachmentUrl) {
     if (isImageFile(attachmentUrl)) {
         const img = document.createElement('img');
         img.src = fullUrl;
-        img.alt = 'Изображ��ние';
+        img.alt = 'Изображение';
         img.onerror = () => {
             console.error('Ошибка загрузки изображения:', fullUrl);
             img.src = '../uploads/avatars/default.png'; // Заглушка при ошибке
@@ -491,7 +493,7 @@ async function loadMessages(friendId) {
                 }
             });
 
-            // Помечаем сообщен��я как прочитанные
+            // Помечаем сообщения как прочитанные
             if (newMessages.length > 0) {
                 await markMessagesAsRead(friendId);
             }
@@ -776,7 +778,7 @@ function setupContextMenu() {
             const isSentMessage = messageElement.classList.contains('message-sent');
             const deleteButton = document.getElementById('deleteMessageBtn');
             
-            // Показываем кнопку удаления только для наших сообщений
+            // Показываем кнопку удаления только для наши�� сообщений
             if (deleteButton) {
                 deleteButton.style.display = isSentMessage ? 'block' : 'none';
             }
@@ -1117,11 +1119,11 @@ function formatLastMessage(chat) {
     return chat.is_own_message ? `Вы: ${messageText}` : messageText;
 }
 
-// Функция выбора чата
+// Функция ��ыбора чата
 async function selectChat(chat) {
     try {
         if (!chat || !chat.id) {
-            console.error('Некорректные данные чата');
+            console.error('Не��орректные данные чата');
             return;
         }
 
@@ -1175,12 +1177,14 @@ async function selectChat(chat) {
         if (chatHeaderName) chatHeaderName.textContent = chat.username;
         if (chatHeaderStatus) {
             chatHeaderStatus.className = `user-status ${chat.is_online ? 'online' : ''}`;
-            chatHeaderStatus.textContent = chat.is_online ? 'онл��йн' : getLastActivityTime(chat.last_activity);
+            chatHeaderStatus.textContent = chat.is_online ? 'онлайн' : getLastActivityTime(chat.last_activity);
         }
         
         // Загружаем историю сообщений
         await loadChatHistory();
-        scrollManager?.checkScroll();
+        if (window.scrollManager) {
+            window.scrollManager.checkScroll();
+        }
         
         // Запускаем обновление сообщений с небольшой задержкой
         setTimeout(() => {
@@ -1217,7 +1221,7 @@ function getLastActivityTime(lastActivity) {
     }
 }
 
-// Функция для об��овления счетчика непрочитанных сообщений
+// Функция для обновления счетчика непрочитанных сообщений
 async function updateUnreadCount(friendId) {
   if(!friendId) return
   try {
