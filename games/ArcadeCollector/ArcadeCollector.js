@@ -159,6 +159,13 @@ class ArcadeCollector {
     }
 
     bindEvents() {
+        // Предотвращаем прокрутку страницы стрелками
+        window.addEventListener('keydown', (e) => {
+            if(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {
+                e.preventDefault();
+            }
+        });
+
         document.addEventListener('keydown', (e) => {
             if (this.keys.hasOwnProperty(e.code)) {
                 this.keys[e.code] = true;
@@ -188,7 +195,7 @@ class ArcadeCollector {
         // Также увеличиваем сложность на основе очков
         this.difficulty += Math.floor(this.score / 100) * 0.1;
         
-        // Обновляем частоту появления объектов
+        // Обновляем час��оту появления объектов
         this.enemySpawnRate = Math.max(500, 2000 - this.difficulty * 200);
         this.coinSpawnRate = Math.max(400, 1000 - this.difficulty * 100);
         
@@ -223,7 +230,7 @@ class ArcadeCollector {
             this.enemies.forEach(enemy => {
                 if (!hitEnemy && this.checkCollision(bullet, enemy)) {
                     hitEnemy = true;
-                    enemy.health -= 1; // Уменьшаем здоровье противника
+                    enemy.health -= 1; // Уменьшаем здор��вье противника
                     
                     // Если противник уничтожен
                     if (enemy.health <= 0) {
@@ -667,7 +674,7 @@ class ArcadeCollector {
         this.ctx.closePath();
         this.ctx.fill();
 
-        // Отрисовка пуль игрока
+        // Отрисовка ��уль игрока
         this.bullets.forEach(bullet => {
             this.ctx.fillStyle = bullet.color;
             this.ctx.beginPath();
