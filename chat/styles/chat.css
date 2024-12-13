@@ -781,58 +781,41 @@ body {
     display: flex;
     flex-direction: column;
     background: rgba(var(--primary-color-rgb), 0.08);
-    border-radius: 12px;
+    border-radius: 8px;
     margin-bottom: 8px;
     padding: 8px 12px;
+    animation: replyAppear 0.2s ease-out;
 }
 
-.message-reply-info {
+.reply-header {
     display: flex;
     align-items: center;
     gap: 8px;
+    color: var(--primary-color);
     font-size: 13px;
     font-weight: 600;
-    color: var(--primary-color);
+    margin-bottom: 4px;
 }
 
-.message-reply-info i {
-    font-size: 12px;
-    transform: scaleX(-1);
-}
-
-.message-reply-text {
-    font-size: 13px;
+.reply-content {
     color: var(--text-secondary);
-    margin-top: 4px;
+    font-size: 13px;
     padding-left: 20px;
     border-left: 2px solid var(--primary-color);
 }
 
 /* Стили для сообщения-ответа в отправленных сообщениях */
 .message-sent .message-reply {
-    background: rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+    border-left-color: rgba(255, 255, 255, 0.4);
 }
 
-.message-sent .message-reply-info {
-    color: rgba(255, 255, 255, 1);
-}
-
-.message-sent .message-reply-text {
+.message-sent .reply-header,
+.message-sent .reply-content {
     color: rgba(255, 255, 255, 0.9);
-    border-left-color: rgba(255, 255, 255, 0.6);
-}
-
-/* Стили для тёмной темы */
-[data-theme="dark"] .message-reply {
-    background: rgba(149, 117, 205, 0.15);
 }
 
 /* Анимация появления */
-.message-reply {
-    animation: replyAppear 0.2s ease-out;
-}
-
 @keyframes replyAppear {
     from {
         opacity: 0;
@@ -1042,7 +1025,6 @@ body {
 
 .reply-author {
     font-weight: 600;
-    color: var(--primary-color);
     font-size: 13px;
 }
 

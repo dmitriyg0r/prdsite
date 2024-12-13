@@ -1,3 +1,37 @@
+document.addEventListener('DOMContentLoaded', () => {
+    // Добавляем стили для ответов
+    const style = document.createElement('style');
+    style.textContent = `
+        .message-reply {
+            display: flex !important;
+            flex-direction: column;
+            background: rgba(var(--primary-color-rgb), 0.08);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            padding: 8px 12px;
+            animation: replyAppear 0.2s ease-out;
+        }
+        
+        .reply-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary-color);
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .reply-content {
+            color: var(--text-secondary);
+            font-size: 13px;
+            padding-left: 20px;
+            border-left: 2px solid var(--primary-color);
+        }
+    `;
+    document.head.appendChild(style);
+});
+
 let currentChatPartner = null;
 let currentUser = null;
 let messageUpdateInterval = null;
@@ -219,7 +253,7 @@ function createMessageElement(message) {
         messageContent.appendChild(attachmentElement);
     }
 
-    // Информация о сообщении (время и статус)
+    // Информация о сообщении (вре��я и статус)
     const messageInfo = document.createElement('div');
     messageInfo.className = 'message-info';
 
@@ -517,7 +551,7 @@ function updateMessageStatus(messageElement, messageData) {
 function scrollToBottom() {
     const messagesContainer = document.getElementById('messages');
     if (messagesContainer) {
-        // Используем requestAnimationFrame для гарантированной прокрутки после рендеринга
+        // Используем requestAnimationFrame для гарантированной прокрутки после рендер��нга
         requestAnimationFrame(() => {
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         });
@@ -556,7 +590,7 @@ if(closeModalBtn){
     };
 }
 
-// Добавляем обработчики для прикрепления файлов
+// Добавляем обработчики для прикрепления фай��ов
 function setupAttachmentHandlers() {
     const attachButton = document.getElementById('attachButton');
     const fileInput = document.getElementById('fileInput');
@@ -774,11 +808,11 @@ function setupContextMenu() {
             selectedMessageText = messageTextElement ? messageTextElement.textContent : 
                                 (messageImage ? 'Изображение' : 'Вложение');
             
-            // Проверяем, является ли сообщение нашим
+            // Проверяем, является ли сообщение на��им
             const isSentMessage = messageElement.classList.contains('message-sent');
             const deleteButton = document.getElementById('deleteMessageBtn');
             
-            // Показываем кнопку удаления только для наши�� сообщений
+            // Показываем кнопку удаления только для наших сообщений
             if (deleteButton) {
                 deleteButton.style.display = isSentMessage ? 'block' : 'none';
             }
@@ -1139,7 +1173,7 @@ async function selectChat(chat) {
             newActive.classList.add('active');
         }
 
-        // Очищаем предыдущие сообщения
+        // Очищаем предыдущ��е сообщения
         const messagesContainer = document.getElementById('messages');
         if (messagesContainer) {
             messagesContainer.innerHTML = '';
@@ -1241,6 +1275,6 @@ async function updateUnreadCount(friendId) {
            console.error('Ошибка при загрузке списка чатов:', data.error)
        }
     } catch (error) {
-        console.error('Ошибка при загрузке списка чатов:', error);
+        console.error('Ошибка при загрузке списка ч��тов:', error);
     }
 }
