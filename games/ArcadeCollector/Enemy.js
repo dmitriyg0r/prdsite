@@ -115,14 +115,16 @@ export class EnemyManager {
             const bullet = this.enemyBullets[i];
             bullet.update(dt);
 
-            // Проверка столкновения с игроком
+            // Проверка столкн��вения с игроком
             if (!game.player.isInvulnerable && this.checkBulletCollision(bullet, game.player)) {
                 this.enemyBullets.splice(i, 1);
-                game.player.hit();
-                game.gameState.updateUI(game);
-                
-                if (game.player.lives <= 0) {
-                    game.gameState.gameOver(game);
+                const wasHit = game.player.hit();
+                if (wasHit) {
+                    game.gameState.updateUI(game);
+                    
+                    if (game.player.lives <= 0) {
+                        game.gameState.gameOver(game);
+                    }
                 }
                 continue;
             }
@@ -140,11 +142,13 @@ export class EnemyManager {
 
             // Проверка столкновения с игроком
             if (!game.player.isInvulnerable && this.checkCollision(enemy, game.player)) {
-                game.player.hit();
-                game.gameState.updateUI(game);
-                
-                if (game.player.lives <= 0) {
-                    game.gameState.gameOver(game);
+                const wasHit = game.player.hit();
+                if (wasHit) {
+                    game.gameState.updateUI(game);
+                    
+                    if (game.player.lives <= 0) {
+                        game.gameState.gameOver(game);
+                    }
                 }
             }
 

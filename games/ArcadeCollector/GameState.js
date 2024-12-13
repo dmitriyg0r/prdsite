@@ -56,12 +56,15 @@ export class GameState {
     }
 
     addScore(points, game) {
-        if (!points) return;
+        if (!points || typeof points !== 'number') return;
         
         const actualPoints = Math.floor(points * this.difficultyMultipliers.scoreMultiplier);
         this.score += actualPoints;
         
-        if (game) {
+        this.updateUI(game);
+        
+        if (this.score >= this.scoreToNextLevel) {
+            this.levelUp();
             this.updateUI(game);
         }
     }
@@ -73,9 +76,9 @@ export class GameState {
         const levelElement = document.getElementById('level');
         const livesElement = document.getElementById('lives');
         
-        if (scoreElement) scoreElement.textContent = `Score: ${Math.floor(this.score)}`;
-        if (levelElement) levelElement.textContent = `Level: ${this.level}`;
-        if (livesElement && game.player) livesElement.textContent = `Lives: ${game.player.lives}`;
+        if (scoreElement) scoreElement.textContent = `${Math.floor(this.score)}`;
+        if (levelElement) levelElement.textContent = `${this.level}`;
+        if (livesElement && game.player) livesElement.textContent = `${game.player.lives}`;
     }
 
     resetGame(game) {
