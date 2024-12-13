@@ -451,7 +451,7 @@ async function loadMessages(friendId) {
 
             const isAtBottom = isScrolledToBottom(messagesContainer);
             
-            // Получаем существующие сообщения
+            // Получаем сущест��ующие сообщения
             const existingMessages = new Set(
                 Array.from(messagesContainer.children).map(el => el.dataset.messageId)
             );
@@ -981,9 +981,7 @@ async function loadChatsList() {
                 console.error('Friends list container not found');
                 return;
             }
-            while(friendsList.firstChild) {
-                 friendsList.removeChild(friendsList.firstChild);
-             }
+            friendsList.innerHTML = ''; // Очищаем список перед обновлением
 
             data.chats.forEach(chat => {
                 const chatElement = document.createElement('div');
@@ -1025,28 +1023,29 @@ async function loadChatsList() {
 
 // Функция выбора чата
 async function selectChat(chat) {
+    if (currentChatPartner && currentChatPartner.id === chat.id) {
+        return; // Если чат уже выбран, ничего не делаем
+    }
     currentChatPartner = chat;
     
     // Обновляем UI
     const chatPlaceholder = document.getElementById('chat-placeholder');
     const chatHeader = document.getElementById('chat-header');
     const messages = document.getElementById('messages');
-    const chatHeaderAvatar = document.getElementById('chat-header-avatar')
-    const chatHeaderName = document.getElementById('chat-header-name')
-    const chatHeaderStatus = document.getElementById('chat-header-status')
+    const chatHeaderAvatar = document.getElementById('chat-header-avatar');
+    const chatHeaderName = document.getElementById('chat-header-name');
+    const chatHeaderStatus = document.getElementById('chat-header-status');
 
     if (chatPlaceholder) chatPlaceholder.style.display = 'none';
-    if(chatHeader) chatHeader.style.display = 'flex';
+    if (chatHeader) chatHeader.style.display = 'flex';
     if (messages) messages.style.display = 'flex';
     
     // Обновляем заголовок чата
-    if(chatHeaderAvatar) chatHeaderAvatar.src = chat.avatar_url || '../uploads/avatars/default.png';
-    if(chatHeaderName) chatHeaderName.textContent = chat.username;
-    if(chatHeaderStatus){
-    chatHeaderStatus.className = 
-        `user-status ${chat.is_online ? 'online' : ''}`;
-    chatHeaderStatus.textContent = 
-        chat.is_online ? 'онлайн' : getLastActivityTime(chat.last_activity);
+    if (chatHeaderAvatar) chatHeaderAvatar.src = chat.avatar_url || '../uploads/avatars/default.png';
+    if (chatHeaderName) chatHeaderName.textContent = chat.username;
+    if (chatHeaderStatus) {
+        chatHeaderStatus.className = `user-status ${chat.is_online ? 'online' : ''}`;
+        chatHeaderStatus.textContent = chat.is_online ? 'онлайн' : getLastActivityTime(chat.last_activity);
     }
     
     // Загружаем историю сообщений
