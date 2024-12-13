@@ -15,6 +15,9 @@ export class GameState {
             scoreMultiplier: 1
         };
 
+        this.scoreElement = document.getElementById('score');
+        this.levelElement = document.getElementById('level');
+        this.livesElement = document.getElementById('lives');
         this.gameOverScreen = document.getElementById('gameOverScreen');
         this.finalScoreElement = document.getElementById('finalScore');
     }
@@ -29,10 +32,6 @@ export class GameState {
 
         this.timeSinceLastDifficultyIncrease += dt;
         
-        if (this.score >= this.scoreToNextLevel) {
-            this.levelUp();
-        }
-
         if (this.timeSinceLastDifficultyIncrease >= this.difficultyIncreaseInterval) {
             this.difficulty += 0.5;
             this.timeSinceLastDifficultyIncrease = 0;
@@ -45,6 +44,7 @@ export class GameState {
         this.scoreToNextLevel = this.level * 1000;
         this.difficulty += 0.5;
         this.updateDifficultyMultipliers();
+        this.updateLevel();
     }
 
     updateDifficultyMultipliers() {
@@ -53,44 +53,50 @@ export class GameState {
             enemySpeed: multiplier,
             enemySpawnRate: multiplier,
             enemyBulletSpeed: multiplier,
-            scoreMultiplier: multiplier
+            scoreMultiplier: 1
         };
     }
 
     addScore(points, game) {
         if (!this.isPlaying() || !points || typeof points !== 'number') return;
+        if (!game || !game.player) return;
         
-        this.score += points;
+        const scoreToAdd = Math.floor(points);
+        this.score += scoreToAdd;
+        
+        this.updateScore();
         
         if (this.score >= this.scoreToNextLevel) {
             this.levelUp();
         }
+    }
 
-        if (game) {
-            this.updateUI(game);
+    updateScore() {
+        if (this.scoreElement) {
+            const formattedScore = Math.floor(this.score).toString().padStart(6, '0');
+            this.scoreElement.textContent = formattedScore;
+        }
+    }
+
+    updateLevel() {
+        if (this.levelElement) {
+            this.levelElement.textContent = this.level.toString();
+        }
+    }
+
+    updateLives(game) {
+        if (this.livesElement && game && game.player) {
+            const lives = Math.max(0, game.player.lives);
+            this.livesElement.textContent = lives.toString();
         }
     }
 
     updateUI(game) {
         if (!game || !game.player || !this.isPlaying()) return;
-
-        const scoreElement = document.getElementById('score');
-        const levelElement = document.getElementById('level');
-        const livesElement = document.getElementById('lives');
         
-        if (scoreElement) {
-            const formattedScore = Math.floor(this.score).toString().padStart(6, '0');
-            scoreElement.textContent = formattedScore;
-        }
-        
-        if (levelElement) {
-            levelElement.textContent = `${this.level}`;
-        }
-        
-        if (livesElement) {
-            const currentLives = Math.max(0, game.player.lives);
-            livesElement.textContent = `${currentLives}`;
-        }
+        this.updateScore();
+        this.updateLevel();
+        this.updateLives(game);
     }
 
     resetGame(game) {
@@ -130,15 +136,13 @@ export class GameState {
         game.player.lives = 0;
         this.updateUI(game);
         
-        const gameOverScreen = document.getElementById('gameOverScreen');
-        const finalScoreElement = document.getElementById('finalScore');
-        
-        if (gameOverScreen) {
-            gameOverScreen.style.display = 'flex';
+        if (this.gameOverScreen) {
+            this.gameOverScreen.style.display = 'flex';
         }
-        if (finalScoreElement) {
+        
+        if (this.finalScoreElement) {
             const formattedScore = Math.floor(this.score).toString().padStart(6, '0');
-            finalScoreElement.textContent = `Final Score: ${formattedScore}`;
+            this.finalScoreElement.textContent = `Final Score: ${formattedScore}`;
         }
     }
 
