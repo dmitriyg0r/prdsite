@@ -40,6 +40,8 @@ let typingTimeout = null;
 let selectedMessageId = null;
 let selectedMessageText = '';
 let replyToMessageId = null;
+let replyToMessageText = null;
+let replyToMessageAuthor = null;
 
 // Добавляем переменную для хранения предыдущего состояния чатов
 let previousChatsState = new Map();
@@ -215,14 +217,17 @@ function createMessageElement(message) {
     messageElement.dataset.timestamp = message.created_at;
 
     // Если есть информация об ответе, показываем её
-    if (message.reply_to_message) {
+    if (message.reply_to) {
         const replyElement = document.createElement('div');
         replyElement.className = 'message-reply';
+        replyElement.dataset.replyToMessageId = message.reply_to;
         
-        const replyAuthor = message.reply_to_message.sender_id === currentUser.id ? 'Вы' : message.reply_to_message.sender_username;
-        const truncatedReplyText = message.reply_to_message.message.length > 50 
+        const replyAuthor = message.reply_to_message?.sender_id === currentUser.id ? 'Вы' : 
+            message.reply_to_message?.sender_username || 'Пользователь';
+        
+        const truncatedReplyText = message.reply_to_message?.message.length > 50 
             ? message.reply_to_message.message.substring(0, 50) + '...' 
-            : message.reply_to_message.message;
+            : message.reply_to_message?.message || 'Сообщение недоступно';
 
         replyElement.innerHTML = `
             <div class="reply-header">
@@ -232,7 +237,7 @@ function createMessageElement(message) {
             <div class="reply-content">${truncatedReplyText}</div>
         `;
 
-        messageElement.appendChild(replyElement);
+        messageElement.insertBefore(replyElement, messageContent);
     }
 
     // Основной контент сообщения
@@ -253,7 +258,7 @@ function createMessageElement(message) {
         messageContent.appendChild(attachmentElement);
     }
 
-    // Информация о сообщении (вре��я и статус)
+    // Информация о сообщении (время и статус)
     const messageInfo = document.createElement('div');
     messageInfo.className = 'message-info';
 
@@ -391,7 +396,7 @@ async function sendMessage() {
         }
     } catch (error) {
         console.error('Ошибка при отправке сообщения:', error);
-        alert(`Не удалось отправить сообщение: ${error.message}`);
+        alert(`Не удалось отправить сообщени��: ${error.message}`);
     }
 }
 
@@ -537,7 +542,7 @@ async function loadMessages(friendId) {
     }
 }
 
-// Функция обновления статуса сообщения
+// Функ��ия обновления статуса сообщения
 function updateMessageStatus(messageElement, messageData) {
     const statusElement = messageElement.querySelector('.message-status');
     if (statusElement) {
@@ -687,7 +692,7 @@ async function deleteMessage(messageId) {
     }
 
     try {
-        // Находим сообщение в DOM до его удаления
+        // Находим сообщени�� в DOM до его удаления
         const messageElement = document.querySelector(`.message[data-message-id="${messageId}"]`);
         if (!messageElement) {
             console.error('Сообщение не найдено в DOM');
@@ -806,9 +811,9 @@ function setupContextMenu() {
             
             selectedMessageId = messageElement.dataset.messageId;
             selectedMessageText = messageTextElement ? messageTextElement.textContent : 
-                                (messageImage ? 'Изображение' : 'Вложение');
+                                (messageImage ? 'Изображение' : 'Влож��ние');
             
-            // Проверяем, является ли сообщение на��им
+            // Проверяем, является ли сообщение наим
             const isSentMessage = messageElement.classList.contains('message-sent');
             const deleteButton = document.getElementById('deleteMessageBtn');
             
@@ -1245,7 +1250,7 @@ function getLastActivityTime(lastActivity) {
     const diffInDays = Math.floor(diffInHours / 24);
   
     if (diffInDays > 0) {
-        return `${diffInDays} д. назад`;
+        return `${diffInDays} д. н��зад`;
     } else if (diffInHours > 0) {
         return `${diffInHours} ч. назад`;
     } else if (diffInMinutes > 0) {
@@ -1278,3 +1283,96 @@ async function updateUnreadCount(friendId) {
         console.error('Ошибка при загрузке списка ч��тов:', error);
     }
 }
+
+function setupReplyFunctionality() {
+    // Обработчик клика по сообщению-ответу
+    document.getElementById('messages').addEventListener('click', (e) => {
+        const replyElement = e.target.closest('.message-reply');
+        if (replyElement) {
+            const messageId = replyElement.dataset.replyToMessageId;
+            if (messageId) {
+                scrollToMessage(messageId);
+            }
+        }
+    });
+}
+
+function scrollToMessage(messageId) {
+    const message = document.querySelector(`.message[data-message-id="${messageId}"]`);
+    if (message) {
+        message.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        message.classList.add('highlight');
+        setTimeout(() => message.classList.remove('highlight'), 2000);
+    }
+}
+
+function setReplyTo(messageId, messageText, authorName) {
+    replyToMessageId = messageId;
+    replyToMessageText = messageText;
+    replyToMessageAuthor = authorName;
+
+    const replyPreview = document.getElementById('replyPreview');
+    replyPreview.innerHTML = `
+        <div class="reply-preview-content">
+            <div class="reply-text">
+                <span class="reply-author">${authorName}</span>
+                <span class="reply-message">${messageText}</span>
+            </div>
+            <button class="close-reply" onclick="cancelReply()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    `;
+    replyPreview.style.display = 'block';
+}
+
+function cancelReply() {
+    replyToMessageId = null;
+    replyToMessageText = null;
+    replyToMessageAuthor = null;
+    document.getElementById('replyPreview').style.display = 'none';
+}
+
+// Обновляем функцию sendMessage для поддержки ответов
+async function sendMessage() {
+    // ... existing code ...
+
+    const messageData = {
+        senderId: currentUser.id,
+        receiverId: currentChatPartner.id,
+        message: messageInput.value.trim(),
+        replyToMessageId: replyToMessageId
+    };
+
+    try {
+        const response = await fetch('https://adminflow.ru:5003/api/messages/send', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(messageData)
+        });
+
+        // ... rest of the existing code ...
+
+        if (replyToMessageId) {
+            cancelReply();
+        }
+    } catch (error) {
+        // ... error handling ...
+    }
+}
+
+// Добавляем обработчик контекстного меню
+document.getElementById('replyMessageBtn').addEventListener('click', () => {
+    const messageElement = document.querySelector(`.message[data-message-id="${selectedMessageId}"]`);
+    if (messageElement) {
+        const messageText = messageElement.querySelector('.message-text')?.textContent;
+        const authorName = messageElement.classList.contains('message-sent') ? 'Вы' : currentChatPartner.username;
+        setReplyTo(selectedMessageId, messageText, authorName);
+    }
+    hideContextMenu();
+});
+
+// Инициализация
+setupReplyFunctionality();
