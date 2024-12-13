@@ -115,13 +115,18 @@ export class EnemyManager {
             bullet.update(dt);
 
             // Проверка столкновения с игроком
-            if (this.checkBulletCollision(bullet, game.player)) {
+            if (!game.player.isInvulnerable && this.checkBulletCollision(bullet, game.player)) {
                 this.enemyBullets.splice(i, 1);
-                game.player.hit();
-                game.gameState.updateUI(game);
-                
-                if (game.player.lives <= 0) {
-                    game.gameState.gameOver(game);
+                if (game.player.hit()) {
+                    game.particleSystem.createExplosion(
+                        game.player.x + game.player.width/2,
+                        game.player.y + game.player.height/2
+                    );
+                    game.gameState.updateUI(game);
+                    
+                    if (game.player.lives <= 0) {
+                        game.gameState.gameOver(game);
+                    }
                 }
                 continue;
             }
