@@ -25,36 +25,52 @@ class ArcadeCollector {
         this.shootCooldown = 250;
         this.lastShootTime = 0;
         
+        // Параметры времени
+        this.lastTime = performance.now();
+        this.accumulator = 0;
+        this.timestep = 1000 / 60; // 60 FPS фиксированный шаг
+        
         console.log('Game initialized');
         
         this.bindEvents();
         this.animate();
     }
 
-    animate() {
+    animate(currentTime = performance.now()) {
+        // Расчет дельты времени
+        const deltaTime = currentTime - this.lastTime;
+        this.lastTime = currentTime;
+        
+        // Накапливаем время
+        this.accumulator += deltaTime;
+        
+        // Обновляем игру с фиксированным шагом
+        while (this.accumulator >= this.timestep) {
+            if (this.gameState.isPlaying()) {
+                this.update(this.timestep);
+            }
+            this.accumulator -= this.timestep;
+        }
+        
+        // Рендерим с текущей частотой кадров
         if (this.gameState.isPlaying()) {
-            this.update();
             this.renderer.draw(this);
         } else if (this.gameState.isStartScreen()) {
             this.renderer.drawStartScreen(this.canvas);
         }
 
-        console.log('Game state:', this.gameState.state);
-        requestAnimationFrame(() => this.animate());
+        requestAnimationFrame((time) => this.animate(time));
     }
 
-    update() {
+    update(dt) {
         if (!this.gameState.isPlaying()) return;
-
-        const dt = 16; // Фиксированный deltaTime для стабильного обновления
         
         this.gameState.updateDifficulty(dt);
         this.player.update(dt);
-        this.enemyManager.update(dt, this); // Передаем this как game
-        this.bulletManager.update(dt, this); // Передаем this как game
+        this.enemyManager.update(dt, this);
+        this.bulletManager.update(dt, this);
         this.particleSystem.update(dt);
 
-        // Проверяем нажатие пробела для стрельбы
         if (this.player.keys['Space']) {
             this.tryShoot();
         }
