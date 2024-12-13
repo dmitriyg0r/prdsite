@@ -343,8 +343,8 @@ body {
 .message-sent {
     align-self: flex-end;
     margin-left: auto;
-    background: var(--primary-color);
-    color: rgb(4, 0, 255);
+    background: rgb(4, 0, 255);
+    color: rgb(255, 255, 255);
     border-bottom-right-radius: 4px;
     box-shadow: 0 2px 12px rgba(var(--primary-color-rgb), 0.15);
 }
