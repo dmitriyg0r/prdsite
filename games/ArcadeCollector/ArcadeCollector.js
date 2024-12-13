@@ -13,7 +13,7 @@ class ArcadeCollector {
         this.canvas.width = 800;
         this.canvas.height = 600;
         
-        // Инициализация менеджеров
+        // Инициализация игровых объектов
         this.gameState = new GameState();
         this.player = new Player(this.canvas);
         this.enemyManager = new EnemyManager();
@@ -21,65 +21,63 @@ class ArcadeCollector {
         this.particleSystem = new ParticleSystem();
         this.renderer = new Renderer(this.ctx);
         
-        // UI элементы
-        this.initializeUI();
+        // Параметры стрельбы
+        this.shootCooldown = 250;
+        this.lastShootTime = 0;
         
-        // Добавим вывод для отладки
+        // Параметры времени
+        this.lastTime = performance.now();
+        this.accumulator = 0;
+        this.timestep = 1000 / 60; // 60 FPS фиксированный шаг
+        
         console.log('Game initialized');
         
-        this.shootCooldown = 250; // Задержка между выстрелами (в миллисекундах)
-        this.lastShootTime = 0;
+        // Предотвращаем прокрутку страницы
+        window.addEventListener('keydown', (e) => {
+            if(['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
+                e.preventDefault();
+            }
+        }, false);
         
         this.bindEvents();
         this.animate();
+    }
+
+    animate(currentTime = performance.now()) {
+        // Расчет дельты времени
+        const deltaTime = currentTime - this.lastTime;
+        this.lastTime = currentTime;
         
-        // Добавляем обработчик для включения/выключения режима отладки
-        window.addEventListener('keydown', (e) => {
-            if (e.code === 'KeyD') {
-                this.renderer.debugMode = !this.renderer.debugMode;
+        // Накапливаем время
+        this.accumulator += deltaTime;
+        
+        // Обновляем игру с фиксированным шагом
+        while (this.accumulator >= this.timestep) {
+            if (this.gameState.isPlaying()) {
+                this.update(this.timestep);
             }
-        });
-    }
-
-    initializeUI() {
-        this.scoreElement = document.getElementById('score');
-        this.livesElement = document.getElementById('lives');
-        this.levelElement = document.getElementById('level');
-        this.pauseMenu = document.getElementById('pauseMenu');
-        this.gameOverMenu = document.getElementById('gameOverMenu');
-        this.finalScoreElement = document.getElementById('finalScore');
-        this.startMenu = document.getElementById('startMenu');
-    }
-
-    animate() {
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-        // Добавим вывод состояния для отладки
-        console.log('Game state:', this.gameState.state);
-
+            this.accumulator -= this.timestep;
+        }
+        
+        // Рендерим с текущей частотой кадров
         if (this.gameState.isPlaying()) {
-            this.update();
             this.renderer.draw(this);
         } else if (this.gameState.isStartScreen()) {
             this.renderer.drawStartScreen(this.canvas);
         }
 
-        requestAnimationFrame(() => this.animate());
+        requestAnimationFrame((time) => this.animate(time));
     }
 
-    update() {
-        if (!this.gameState.isPlaying()) {
-            console.log('Game is not in playing state');
-            return;
-        }
+    update(dt) {
+        if (!this.gameState.isPlaying()) return;
         
-        this.gameState.updateDifficulty();
-        this.player.update();
-        this.enemyManager.update(this);
-        this.bulletManager.update(this);
-        this.particleSystem.update();
+        this.gameState.updateDifficulty(dt);
+        this.player.update(dt);
+        this.enemyManager.update(dt, this);
+        this.bulletManager.update(dt, this);
+        this.particleSystem.update(dt);
 
-        // Проверяем нажатие пробела для стрельбы
         if (this.player.keys['Space']) {
             this.tryShoot();
         }
@@ -87,6 +85,11 @@ class ArcadeCollector {
 
     bindEvents() {
         window.addEventListener('keydown', (e) => {
+            // Предотвращаем действия по умолчанию для игровых клавиш
+            if(['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
+                e.preventDefault();
+            }
+            
             // Обработка нажатий клавиш
             if (this.gameState.isPlaying()) {
                 if (e.code === 'Space' && !this.player.keys['Space']) {
@@ -113,7 +116,7 @@ class ArcadeCollector {
     tryShoot() {
         const currentTime = performance.now();
         if (currentTime - this.lastShootTime >= this.shootCooldown) {
-            // С��здаем новую пулю
+            // Сздаем новую пулю
             const bullet = new Bullet(
                 this.player.x + this.player.width/2 - 2.5,
                 this.player.y,

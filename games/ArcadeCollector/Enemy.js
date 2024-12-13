@@ -85,23 +85,23 @@ export class EnemyManager {
         this.enemyBullets = [];
         this.spawnTimer = 0;
         this.spawnInterval = 1000;
-        this.enemyTypes = ['basic', 'fast', 'tank', 'wave'];
         this.shootTimer = 0;
         this.shootInterval = 2000;
     }
 
     update(dt, game) {
+        if (!game) return; // Добавляем проверку на существование game
+
         const multipliers = game.gameState.difficultyMultipliers;
         
-        // Обновление таймера спавна с учетом множителя скорости спавна
-        this.spawnTimer += dt * multipliers.enemySpawnRate;
+        // Обновление таймера спавна
+        this.spawnTimer += dt * (multipliers ? multipliers.enemySpawnRate : 1);
         this.shootTimer += dt;
 
         // Спавн врагов
         if (this.spawnTimer >= this.spawnInterval) {
             this.spawnEnemy(game.canvas, game.gameState.difficulty);
             this.spawnTimer = 0;
-            // Уменьшаем интервал спавна с ростом сложности
             this.spawnInterval = Math.max(300, 1000 - (game.gameState.difficulty * 50));
         }
 
@@ -109,36 +109,7 @@ export class EnemyManager {
         if (this.shootTimer >= this.shootInterval) {
             this.enemyShoot(game.gameState.difficultyMultipliers.enemyBulletSpeed);
             this.shootTimer = 0;
-            // Уменьшаем интервал стрельбы с ростом сложности
             this.shootInterval = Math.max(1000, 2000 - (game.gameState.difficulty * 100));
-        }
-
-        // Обновление врагов с учетом множителя скорости
-        this.enemies.forEach(enemy => {
-            enemy.speed = enemy.baseSpeed * multipliers.enemySpeed;
-        });
-
-        // Обновление пуль врагов
-        for (let i = this.enemyBullets.length - 1; i >= 0; i--) {
-            const bullet = this.enemyBullets[i];
-            bullet.update(dt);
-
-            // Проверка столкновения с игроком
-            if (!game.player.isInvulnerable && this.checkBulletCollision(bullet, game.player)) {
-                this.enemyBullets.splice(i, 1);
-                game.player.hit();
-                game.gameState.updateUI(game);
-                
-                if (game.player.lives <= 0) {
-                    game.gameState.gameOver(game);
-                }
-                continue;
-            }
-
-            // Удаление пуль за пределами экрана
-            if (bullet.y > game.canvas.height) {
-                this.enemyBullets.splice(i, 1);
-            }
         }
 
         // Обновление врагов
@@ -148,11 +119,16 @@ export class EnemyManager {
 
             // Проверка столкновения с игроком
             if (!game.player.isInvulnerable && this.checkCollision(enemy, game.player)) {
-                game.player.hit();
-                game.gameState.updateUI(game);
-                
-                if (game.player.lives <= 0) {
-                    game.gameState.gameOver(game);
+                if (game.player.hit()) {
+                    game.particleSystem.createExplosion(
+                        game.player.x + game.player.width/2,
+                        game.player.y + game.player.height/2
+                    );
+                    game.gameState.updateUI(game);
+                    
+                    if (game.player.lives <= 0) {
+                        game.gameState.gameOver(game);
+                    }
                 }
             }
 
