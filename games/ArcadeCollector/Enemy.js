@@ -115,20 +115,23 @@ export class EnemyManager {
             bullet.update(dt);
 
             // Проверка столкновения с игроком
-            if (!game.player.isInvulnerable && this.checkBulletCollision(bullet, game.player)) {
-                this.enemyBullets.splice(i, 1);
-                if (game.player.hit()) {
-                    game.particleSystem.createExplosion(
-                        game.player.x + game.player.width/2,
-                        game.player.y + game.player.height/2
-                    );
-                    game.gameState.updateUI(game);
-                    
-                    if (game.player.lives <= 0) {
-                        game.gameState.gameOver(game);
+            if (!game.player.isInvulnerable) {
+                const collision = this.checkBulletCollision(bullet, game.player);
+                if (collision) {
+                    console.log('Bullet collision detected:', {
+                        bulletPos: { x: bullet.x, y: bullet.y },
+                        playerPos: { x: game.player.x, y: game.player.y }
+                    });
+                    this.enemyBullets.splice(i, 1);
+                    if (game.player.hit()) {
+                        game.particleSystem.createExplosion(
+                            game.player.x + game.player.width/2,
+                            game.player.y + game.player.height/2
+                        );
+                        game.gameState.updateUI(game);
                     }
+                    continue;
                 }
-                continue;
             }
 
             // Удаление пуль за пределами экрана
@@ -142,14 +145,26 @@ export class EnemyManager {
             const enemy = this.enemies[i];
             enemy.update(dt);
 
+            // Проверка столкновения с игроком
+            if (!game.player.isInvulnerable) {
+                const collision = this.checkCollision(enemy, game.player);
+                if (collision) {
+                    console.log('Enemy collision detected:', {
+                        enemyPos: { x: enemy.x, y: enemy.y },
+                        playerPos: { x: game.player.x, y: game.player.y }
+                    });
+                    if (game.player.hit()) {
+                        game.particleSystem.createExplosion(
+                            game.player.x + game.player.width/2,
+                            game.player.y + game.player.height/2
+                        );
+                        game.gameState.updateUI(game);
+                    }
+                }
+            }
+
             if (enemy.isOffScreen()) {
                 this.enemies.splice(i, 1);
-                game.player.hit();
-                game.gameState.updateUI(game);
-                
-                if (game.player.lives <= 0) {
-                    game.gameState.gameOver(game);
-                }
             }
         }
     }
@@ -169,21 +184,51 @@ export class EnemyManager {
     }
 
     checkCollision(enemy, player) {
-        // Добавляем отступы для более точной коллизии
-        const padding = 5;
-        return enemy.x + padding < player.x + player.width - padding &&
-               enemy.x + enemy.width - padding > player.x + padding &&
-               enemy.y + padding < player.y + player.height - padding &&
-               enemy.y + enemy.height - padding > player.y + padding;
+        // Увеличиваем отступ для более точной коллизии
+        const padding = 8;
+        const hitbox = {
+            enemy: {
+                x: enemy.x + padding,
+                y: enemy.y + padding,
+                width: enemy.width - padding * 2,
+                height: enemy.height - padding * 2
+            },
+            player: {
+                x: player.x + padding,
+                y: player.y + padding,
+                width: player.width - padding * 2,
+                height: player.height - padding * 2
+            }
+        };
+
+        return hitbox.enemy.x < hitbox.player.x + hitbox.player.width &&
+               hitbox.enemy.x + hitbox.enemy.width > hitbox.player.x &&
+               hitbox.enemy.y < hitbox.player.y + hitbox.player.height &&
+               hitbox.enemy.y + hitbox.enemy.height > hitbox.player.y;
     }
 
     checkBulletCollision(bullet, player) {
-        // Добавляем отступы для более точной коллизии
-        const padding = 2;
-        return bullet.x + padding < player.x + player.width - padding &&
-               bullet.x + bullet.width - padding > player.x + padding &&
-               bullet.y + padding < player.y + player.height - padding &&
-               bullet.y + bullet.height - padding > player.y + padding;
+        // Увеличиваем отступ для более точной коллизии пуль
+        const padding = 4;
+        const hitbox = {
+            bullet: {
+                x: bullet.x + padding,
+                y: bullet.y + padding,
+                width: bullet.width - padding * 2,
+                height: bullet.height - padding * 2
+            },
+            player: {
+                x: player.x + padding,
+                y: player.y + padding,
+                width: player.width - padding * 2,
+                height: player.height - padding * 2
+            }
+        };
+
+        return hitbox.bullet.x < hitbox.player.x + hitbox.player.width &&
+               hitbox.bullet.x + hitbox.bullet.width > hitbox.player.x &&
+               hitbox.bullet.y < hitbox.player.y + hitbox.player.height &&
+               hitbox.bullet.y + hitbox.bullet.height > hitbox.player.y;
     }
 
     spawnEnemy(canvas, difficulty) {

@@ -217,11 +217,23 @@ export class Renderer {
 
     drawHitboxes(game) {
         this.ctx.save();
-        this.ctx.strokeStyle = 'red';
-        this.ctx.lineWidth = 1;
         
         // Хитбокс игрока
-        const padding = 5;
+        const padding = 8;
+        
+        // Рисуем внешнюю границу игрока
+        this.ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)';
+        this.ctx.lineWidth = 1;
+        this.ctx.strokeRect(
+            game.player.x,
+            game.player.y,
+            game.player.width,
+            game.player.height
+        );
+        
+        // Рисуем хитбокс игрока
+        this.ctx.strokeStyle = 'rgba(0, 255, 0, 0.8)';
+        this.ctx.lineWidth = 2;
         this.ctx.strokeRect(
             game.player.x + padding,
             game.player.y + padding,
@@ -231,6 +243,19 @@ export class Renderer {
         
         // Хитбоксы врагов
         game.enemyManager.enemies.forEach(enemy => {
+            // Внешняя граница
+            this.ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)';
+            this.ctx.lineWidth = 1;
+            this.ctx.strokeRect(
+                enemy.x,
+                enemy.y,
+                enemy.width,
+                enemy.height
+            );
+            
+            // Хитбокс
+            this.ctx.strokeStyle = 'rgba(255, 255, 0, 0.8)';
+            this.ctx.lineWidth = 2;
             this.ctx.strokeRect(
                 enemy.x + padding,
                 enemy.y + padding,
@@ -240,8 +265,21 @@ export class Renderer {
         });
         
         // Хитбоксы пуль
-        const bulletPadding = 2;
+        const bulletPadding = 4;
         game.enemyManager.enemyBullets.forEach(bullet => {
+            // Внешняя граница
+            this.ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)';
+            this.ctx.lineWidth = 1;
+            this.ctx.strokeRect(
+                bullet.x,
+                bullet.y,
+                bullet.width,
+                bullet.height
+            );
+            
+            // Хитбокс
+            this.ctx.strokeStyle = 'rgba(255, 0, 255, 0.8)';
+            this.ctx.lineWidth = 2;
             this.ctx.strokeRect(
                 bullet.x + bulletPadding,
                 bullet.y + bulletPadding,
