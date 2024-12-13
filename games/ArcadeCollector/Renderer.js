@@ -15,6 +15,9 @@ export class Renderer {
     }
 
     draw(game) {
+        // Очистка canvas
+        this.ctx.clearRect(0, 0, game.canvas.width, game.canvas.height);
+        
         // Отрисовка игрока с эффектом неуязвимости
         this.drawPlayer(game.player);
         
@@ -49,42 +52,95 @@ export class Renderer {
         enemies.forEach(enemy => {
             this.ctx.save();
             
+            // Базовые настройки для всех врагов
+            this.ctx.shadowBlur = 0;
+            this.ctx.lineWidth = 2;
+            
             switch(enemy.type) {
                 case 'fast':
+                    // Быстрый враг с эффектом размытия и следом
                     this.ctx.fillStyle = this.colors.enemyFast;
-                    // Эффект пульсации для быстрых врагов
+                    this.ctx.shadowColor = this.colors.enemyFast;
+                    this.ctx.shadowBlur = 10;
+                    
+                    // Эффект пульсации
                     const scale = 1 + Math.sin(Date.now() / 200) * 0.1;
-                    this.ctx.transform(scale, 0, 0, scale, enemy.x + enemy.width/2, enemy.y + enemy.height/2);
+                    this.ctx.translate(enemy.x + enemy.width/2, enemy.y + enemy.height/2);
+                    this.ctx.scale(scale, scale);
                     this.ctx.fillRect(-enemy.width/2, -enemy.height/2, enemy.width, enemy.height);
                     
-                    // Добавляем след
-                    const gradient = this.ctx.createLinearGradient(
-                        -enemy.width/2, -enemy.height/2,
-                        -enemy.width/2, enemy.height/2
-                    );
-                    gradient.addColorStop(0, 'transparent');
-                    gradient.addColorStop(1, this.colors.enemyFast);
-                    this.ctx.fillStyle = gradient;
-                    this.ctx.fillRect(-enemy.width/2, -enemy.height, enemy.width, enemy.height);
+                    // След
+                    const fastGradient = this.ctx.createLinearGradient(0, -enemy.height, 0, 0);
+                    fastGradient.addColorStop(0, 'transparent');
+                    fastGradient.addColorStop(1, this.colors.enemyFast);
+                    this.ctx.fillStyle = fastGradient;
+                    this.ctx.fillRect(-enemy.width/2, -enemy.height, enemy.width, enemy.height/2);
                     break;
                     
                 case 'tank':
+                    // Танк с броней и укреплениями
                     this.ctx.fillStyle = this.colors.enemyTank;
                     this.ctx.strokeStyle = '#A020F0';
-                    this.ctx.lineWidth = 2;
+                    
+                    // Основное тело
                     this.ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
                     this.ctx.strokeRect(enemy.x, enemy.y, enemy.width, enemy.height);
                     
-                    // Добавляем броню
-                    this.ctx.strokeStyle = '#A020F0';
+                    // Броня (полосы)
                     this.ctx.beginPath();
                     this.ctx.moveTo(enemy.x, enemy.y + enemy.height/3);
                     this.ctx.lineTo(enemy.x + enemy.width, enemy.y + enemy.height/3);
                     this.ctx.moveTo(enemy.x, enemy.y + 2*enemy.height/3);
                     this.ctx.lineTo(enemy.x + enemy.width, enemy.y + 2*enemy.height/3);
                     this.ctx.stroke();
+                    
+                    // Дополнительное укрепление углов
+                    this.ctx.strokeRect(enemy.x - 2, enemy.y - 2, enemy.width + 4, enemy.height + 4);
+                    break;
+                    
+                case 'wave':
+                    // Волновой враг с эффектом свечения
+                    this.ctx.fillStyle = this.colors.enemyWave;
+                    this.ctx.shadowColor = this.colors.enemyWave;
+                    this.ctx.shadowBlur = 15;
+                    
+                    // Волновое смещение
+                    const waveOffset = Math.sin(Date.now() / 300) * 5;
+                    this.ctx.translate(enemy.x + waveOffset, enemy.y);
+                    
+                    // Основная форма
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(enemy.width/2, 0);
+                    this.ctx.lineTo(enemy.width, enemy.height/2);
+                    this.ctx.lineTo(enemy.width/2, enemy.height);
+                    this.ctx.lineTo(0, enemy.height/2);
+                    this.ctx.closePath();
+                    this.ctx.fill();
+                    
+                    // Внутреннее свечение
+                    const waveGradient = this.ctx.createRadialGradient(
+                        enemy.width/2, enemy.height/2, 0,
+                        enemy.width/2, enemy.height/2, enemy.width/2
+                    );
+                    waveGradient.addColorStop(0, this.colors.enemyWave);
+                    waveGradient.addColorStop(1, 'transparent');
+                    this.ctx.fillStyle = waveGradient;
+                    this.ctx.fill();
+                    break;
+                    
+                default: // basic
+                    // Базовый враг с простым эффектом свечения
+                    this.ctx.fillStyle = this.colors.enemyBasic;
+                    this.ctx.shadowColor = this.colors.enemyBasic;
+                    this.ctx.shadowBlur = 5;
+                    this.ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+                    
+                    // Обводка
+                    this.ctx.strokeStyle = '#FF6347';
+                    this.ctx.strokeRect(enemy.x, enemy.y, enemy.width, enemy.height);
                     break;
             }
+            
             this.ctx.restore();
         });
     }
