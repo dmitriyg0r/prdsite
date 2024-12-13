@@ -115,16 +115,14 @@ export class EnemyManager {
             const bullet = this.enemyBullets[i];
             bullet.update(dt);
 
-            // Проверка столкн��вения с игроком
+            // Проверка столкновения с игроком
             if (!game.player.isInvulnerable && this.checkBulletCollision(bullet, game.player)) {
                 this.enemyBullets.splice(i, 1);
-                const wasHit = game.player.hit();
-                if (wasHit) {
-                    game.gameState.updateUI(game);
-                    
-                    if (game.player.lives <= 0) {
-                        game.gameState.gameOver(game);
-                    }
+                game.player.hit();
+                game.gameState.updateUI(game);
+                
+                if (game.player.lives <= 0) {
+                    game.gameState.gameOver(game);
                 }
                 continue;
             }
@@ -142,13 +140,11 @@ export class EnemyManager {
 
             // Проверка столкновения с игроком
             if (!game.player.isInvulnerable && this.checkCollision(enemy, game.player)) {
-                const wasHit = game.player.hit();
-                if (wasHit) {
-                    game.gameState.updateUI(game);
-                    
-                    if (game.player.lives <= 0) {
-                        game.gameState.gameOver(game);
-                    }
+                game.player.hit();
+                game.gameState.updateUI(game);
+                
+                if (game.player.lives <= 0) {
+                    game.gameState.gameOver(game);
                 }
             }
 
@@ -233,19 +229,59 @@ export class EnemyManager {
     }
 
     checkCollision(enemy, player) {
-        const padding = 5;
-        return (enemy.x + padding) < (player.x + player.width - padding) &&
-               (enemy.x + enemy.width - padding) > (player.x + padding) &&
-               (enemy.y + padding) < (player.y + player.height - padding) &&
-               (enemy.y + enemy.height - padding) > (player.y + padding);
+        // Увеличиваем padding для более точного определения столкновений
+        const padding = 8;
+        
+        // Получаем границы объектов
+        const enemyBounds = {
+            left: enemy.x + padding,
+            right: enemy.x + enemy.width - padding,
+            top: enemy.y + padding,
+            bottom: enemy.y + enemy.height - padding
+        };
+        
+        const playerBounds = {
+            left: player.x + padding,
+            right: player.x + player.width - padding,
+            top: player.y + padding,
+            bottom: player.y + player.height - padding
+        };
+        
+        // Проверяем пересечение границ
+        return !(
+            enemyBounds.left >= playerBounds.right ||
+            enemyBounds.right <= playerBounds.left ||
+            enemyBounds.top >= playerBounds.bottom ||
+            enemyBounds.bottom <= playerBounds.top
+        );
     }
 
     checkBulletCollision(bullet, player) {
-        const padding = 3;
-        return (bullet.x + padding) < (player.x + player.width - padding) &&
-               (bullet.x + bullet.width - padding) > (player.x + padding) &&
-               (bullet.y + padding) < (player.y + player.height - padding) &&
-               (bullet.y + bullet.height - padding) > (player.y + padding);
+        // Уменьшаем padding для пуль
+        const padding = 4;
+        
+        // Получаем границы объектов
+        const bulletBounds = {
+            left: bullet.x + padding,
+            right: bullet.x + bullet.width - padding,
+            top: bullet.y + padding,
+            bottom: bullet.y + bullet.height - padding
+        };
+        
+        const playerBounds = {
+            left: player.x + padding,
+            right: player.x + player.width - padding,
+            top: player.y + padding,
+            bottom: player.y + player.height - padding
+        };
+        
+        // Проверяем пересечение границ
+        return !(
+            bulletBounds.left >= playerBounds.right ||
+            bulletBounds.right <= playerBounds.left ||
+            bulletBounds.top >= playerBounds.bottom ||
+            bulletBounds.bottom <= playerBounds.top
+        );
     }
 
     reset() {
