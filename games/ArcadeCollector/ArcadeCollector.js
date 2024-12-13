@@ -13,7 +13,7 @@ class ArcadeCollector {
         this.canvas.width = 800;
         this.canvas.height = 600;
         
-        // Инициализация менеджеров
+        // Инициализация игровых объектов
         this.gameState = new GameState();
         this.player = new Player(this.canvas);
         this.enemyManager = new EnemyManager();
@@ -21,42 +21,17 @@ class ArcadeCollector {
         this.particleSystem = new ParticleSystem();
         this.renderer = new Renderer(this.ctx);
         
-        // UI элементы
-        this.initializeUI();
-        
-        // Добавим вывод для отладки
-        console.log('Game initialized');
-        
-        this.shootCooldown = 250; // Задержка между выстрелами (в миллисекундах)
+        // Параметры стрельбы
+        this.shootCooldown = 250;
         this.lastShootTime = 0;
+        
+        console.log('Game initialized');
         
         this.bindEvents();
         this.animate();
-        
-        // Добавляем обработчик для включения/выключения режима отладки
-        window.addEventListener('keydown', (e) => {
-            if (e.code === 'KeyD') {
-                this.renderer.debugMode = !this.renderer.debugMode;
-            }
-        });
-    }
-
-    initializeUI() {
-        this.scoreElement = document.getElementById('score');
-        this.livesElement = document.getElementById('lives');
-        this.levelElement = document.getElementById('level');
-        this.pauseMenu = document.getElementById('pauseMenu');
-        this.gameOverMenu = document.getElementById('gameOverMenu');
-        this.finalScoreElement = document.getElementById('finalScore');
-        this.startMenu = document.getElementById('startMenu');
     }
 
     animate() {
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-        // Добавим вывод состояния для отладки
-        console.log('Game state:', this.gameState.state);
-
         if (this.gameState.isPlaying()) {
             this.update();
             this.renderer.draw(this);
@@ -64,20 +39,20 @@ class ArcadeCollector {
             this.renderer.drawStartScreen(this.canvas);
         }
 
+        console.log('Game state:', this.gameState.state);
         requestAnimationFrame(() => this.animate());
     }
 
     update() {
-        if (!this.gameState.isPlaying()) {
-            console.log('Game is not in playing state');
-            return;
-        }
+        if (!this.gameState.isPlaying()) return;
+
+        const dt = 16; // Фиксированный deltaTime для стабильного обновления
         
-        this.gameState.updateDifficulty();
-        this.player.update();
-        this.enemyManager.update(this);
-        this.bulletManager.update(this);
-        this.particleSystem.update();
+        this.gameState.updateDifficulty(dt);
+        this.player.update(dt);
+        this.enemyManager.update(dt, this); // Передаем this как game
+        this.bulletManager.update(dt, this); // Передаем this как game
+        this.particleSystem.update(dt);
 
         // Проверяем нажатие пробела для стрельбы
         if (this.player.keys['Space']) {
@@ -113,7 +88,7 @@ class ArcadeCollector {
     tryShoot() {
         const currentTime = performance.now();
         if (currentTime - this.lastShootTime >= this.shootCooldown) {
-            // С��здаем новую пулю
+            // Сздаем новую пулю
             const bullet = new Bullet(
                 this.player.x + this.player.width/2 - 2.5,
                 this.player.y,
