@@ -27,17 +27,21 @@ class ArcadeCollector {
             velocityY: 0,
             baseSpeed: 300, // Уменьшаем с 400 до 300 для лучшего контроля
             horizontalSpeedMultiplier: 1.2, // Уменьшаем с 1.5 до 1.2
-            lives: 5, // Увеличиваем с 3 до 5 для большей выж��ваемости
+            lives: 5, // Увеличиваем с 3 до 5 для большей выживаемости
             color: '#6366f1',
             shootCooldown: 0,
             shootRate: 350, // Увеличиваем с 250 до 350 мс
             // Добавляем параметры рывка
-            dashSpeed: 900, // Уменьшаем с 1200 до 900
-            dashDuration: 0.2, // Увеличиваем с 0.15 до 0.2
-            dashCooldown: 1.5, // Уменьшаем с 2 до 1.5
-            dashTimer: 0, // Таймер текущего рывка
-            dashCooldownTimer: 0, // Таймер отката
-            isDashing: false
+            dashSpeed: 1500, // Увеличиваем с 900 до 1500
+            dashDuration: 0.15, // Уменьшаем для более резкого рывка
+            dashCooldown: 1.0, // Уменьшаем для более частого использования
+            dashTimer: 0,
+            dashCooldownTimer: 0,
+            isDashing: false,
+            // Добавляем след от рывка
+            dashGhosts: [], // Массив для хранения "призрачных" копий
+            ghostInterval: 0.02, // Интервал создания призраков
+            ghostTimer: 0
         };
         
         // Типы противников
@@ -353,7 +357,7 @@ class ArcadeCollector {
 
     updateEnemies(dt) {
         this.enemies = this.enemies.filter(enemy => {
-            // Обновление времени для поведения
+            // Обновление времени для поведе��ия
             enemy.time += dt;
 
             // Обновление позиции в зависимости от поведения
@@ -467,8 +471,9 @@ class ArcadeCollector {
             this.player.isDashing = true;
             this.player.dashTimer = this.player.dashDuration;
             this.player.dashCooldownTimer = this.player.dashCooldown;
-            // Создаем эффект следа при рывке
             this.createDashEffect();
+            // Добавляем эффект экранной тряски
+            this.screenShake = 0.2;
         }
 
         // Обновление таймеров рывка
@@ -478,6 +483,14 @@ class ArcadeCollector {
 
         if (this.player.isDashing) {
             this.player.dashTimer -= dt;
+            this.player.ghostTimer -= dt;
+            
+            // Создаем призрачный след
+            if (this.player.ghostTimer <= 0) {
+                this.createDashGhost();
+                this.player.ghostTimer = this.player.ghostInterval;
+            }
+            
             if (this.player.dashTimer <= 0) {
                 this.player.isDashing = false;
             }
@@ -499,6 +512,12 @@ class ArcadeCollector {
         // Обновляем позицию
         this.player.x += moveX * currentSpeed;
         this.player.y += moveY * currentSpeed;
+
+        // Обновляем призрачный след
+        this.player.dashGhosts = this.player.dashGhosts.filter(ghost => {
+            ghost.time += dt;
+            return ghost.time < ghost.lifetime;
+        });
 
         // Ограничение движения игрока
         this.player.x = Math.max(0, Math.min(this.canvas.width - this.player.width, this.player.x));
@@ -587,7 +606,7 @@ class ArcadeCollector {
                 this.ctx.closePath();
                 this.ctx.fill();
 
-                // Добавляем св��чение
+                // Добавляем свчение
                 this.ctx.shadowColor = enemy.color;
                 this.ctx.shadowBlur = 10;
                 this.ctx.strokeStyle = '#fff';
@@ -709,8 +728,37 @@ class ArcadeCollector {
     }
 
     draw() {
+        // Отрисовка призрачного следа
+        this.player.dashGhosts.forEach(ghost => {
+            const alpha = 1 - (ghost.time / ghost.lifetime);
+            this.ctx.fillStyle = `rgba(99, 102, 241, ${alpha * 0.3})`;
+            this.ctx.beginPath();
+            this.ctx.moveTo(ghost.x + ghost.width / 2, ghost.y);
+            this.ctx.lineTo(ghost.x + ghost.width, ghost.y + ghost.height);
+            this.ctx.lineTo(ghost.x, ghost.y + ghost.height);
+            this.ctx.closePath();
+            this.ctx.fill();
+        });
+
+        // Отрисовка частиц
+        this.particles.forEach(particle => {
+            if (particle.isFlash) {
+                const alpha = (1 - particle.time / particle.lifetime) * particle.alpha;
+                this.ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+                this.ctx.beginPath();
+                this.ctx.arc(particle.x, particle.y, particle.size * (1 - particle.time / particle.lifetime), 0, Math.PI * 2);
+                this.ctx.fill();
+            } else {
+                const alpha = (1 - particle.time / particle.lifetime) * (particle.alpha || 1);
+                this.ctx.fillStyle = particle.color + Math.floor(alpha * 255).toString(16).padStart(2, '0');
+                this.ctx.beginPath();
+                this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+                this.ctx.fill();
+            }
+        });
+
         // Отрисовка игрока
-        this.ctx.fillStyle = this.player.color;
+        this.ctx.fillStyle = this.player.isDashing ? '#818cf8' : this.player.color;
         this.ctx.beginPath();
         this.ctx.moveTo(this.player.x + this.player.width / 2, this.player.y);
         this.ctx.lineTo(this.player.x + this.player.width, this.player.y + this.player.height);
@@ -784,15 +832,6 @@ class ArcadeCollector {
                 coin.width/6,
                 0, Math.PI * 2
             );
-            this.ctx.fill();
-        });
-
-        // Отрисовка частиц
-        this.particles.forEach(particle => {
-            const alpha = 1 - (particle.time / particle.lifetime);
-            this.ctx.fillStyle = particle.color + Math.floor(alpha * 255).toString(16).padStart(2, '0');
-            this.ctx.beginPath();
-            this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
             this.ctx.fill();
         });
 
@@ -918,19 +957,53 @@ class ArcadeCollector {
     }
 
     createDashEffect() {
-        const particles = 20;
+        // Создаем больше частиц
+        const particles = 30;
+        const colors = ['#6366f1', '#818cf8', '#4f46e5', '#ffffff'];
+        
         for (let i = 0; i < particles; i++) {
+            const angle = (Math.PI * 2 * i) / particles;
+            const speed = 200 + Math.random() * 300;
+            const size = 4 + Math.random() * 4;
+            
             this.particles.push({
                 x: this.player.x + this.player.width / 2,
                 y: this.player.y + this.player.height / 2,
-                size: 3 + Math.random() * 3,
-                color: '#6366f1',
-                lifetime: 0.3 + Math.random() * 0.2,
+                size: size,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                lifetime: 0.4 + Math.random() * 0.3,
                 time: 0,
-                vx: (Math.random() - 0.5) * 100,
-                vy: (Math.random() - 0.5) * 100
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                alpha: 1
             });
         }
+
+        // Добавляем эффект вспышки
+        this.particles.push({
+            x: this.player.x + this.player.width / 2,
+            y: this.player.y + this.player.height / 2,
+            size: this.player.width * 2,
+            color: '#ffffff',
+            lifetime: 0.2,
+            time: 0,
+            vx: 0,
+            vy: 0,
+            alpha: 0.5,
+            isFlash: true
+        });
+    }
+
+    // Добавляем метод для создания призрачного следа
+    createDashGhost() {
+        this.player.dashGhosts.push({
+            x: this.player.x,
+            y: this.player.y,
+            width: this.player.width,
+            height: this.player.height,
+            lifetime: 0.3,
+            time: 0
+        });
     }
 }
 
