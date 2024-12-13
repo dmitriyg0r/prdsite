@@ -90,7 +90,7 @@ export class EnemyManager {
     }
 
     update(dt, game) {
-        if (!game) return;
+        if (!game || !game.player) return;
 
         // Обновление таймера спавна
         this.spawnTimer += dt;
@@ -110,46 +110,54 @@ export class EnemyManager {
             this.shootInterval = Math.max(1000, 2000 - (game.gameState.difficulty * 100));
         }
 
-        // Обновление пуль врагов
-        for (let i = this.enemyBullets.length - 1; i >= 0; i--) {
-            const bullet = this.enemyBullets[i];
-            bullet.update(dt);
-
-            // Проверка столкновения с игроком
-            if (!game.player.isInvulnerable && this.checkBulletCollision(bullet, game.player)) {
-                this.enemyBullets.splice(i, 1);
-                game.player.hit();
-                game.gameState.updateUI(game);
-                
-                if (game.player.lives <= 0) {
-                    game.gameState.gameOver(game);
-                }
-                continue;
-            }
-
-            // Удаление пуль за пределами экрана
-            if (bullet.y > game.canvas.height) {
-                this.enemyBullets.splice(i, 1);
-            }
-        }
-
         // Обновление врагов
         for (let i = this.enemies.length - 1; i >= 0; i--) {
             const enemy = this.enemies[i];
             enemy.update(dt);
 
-            // Проверка столкновения с игроком
-            if (!game.player.isInvulnerable && this.checkCollision(enemy, game.player)) {
-                game.player.hit();
-                game.gameState.updateUI(game);
-                
-                if (game.player.lives <= 0) {
-                    game.gameState.gameOver(game);
-                }
-            }
-
+            // Удаляем врагов за пределами экрана
             if (enemy.isOffScreen()) {
                 this.enemies.splice(i, 1);
+                continue;
+            }
+
+            // Проверка столкновения с игроком только если игрок не неуязвим
+            if (!game.player.isInvulnerable) {
+                const collision = this.checkCollision(enemy, game.player);
+                if (collision) {
+                    game.player.hit();
+                    game.gameState.updateUI(game);
+                    
+                    if (game.player.lives <= 0) {
+                        game.gameState.gameOver(game);
+                    }
+                }
+            }
+        }
+
+        // Обновление пуль врагов
+        for (let i = this.enemyBullets.length - 1; i >= 0; i--) {
+            const bullet = this.enemyBullets[i];
+            bullet.update(dt);
+
+            // Удаляем пули за пределами экрана
+            if (bullet.y > game.canvas.height) {
+                this.enemyBullets.splice(i, 1);
+                continue;
+            }
+
+            // Проверка столкновения с игроком только если игрок не неуязвим
+            if (!game.player.isInvulnerable) {
+                const collision = this.checkBulletCollision(bullet, game.player);
+                if (collision) {
+                    this.enemyBullets.splice(i, 1);
+                    game.player.hit();
+                    game.gameState.updateUI(game);
+                    
+                    if (game.player.lives <= 0) {
+                        game.gameState.gameOver(game);
+                    }
+                }
             }
         }
     }
@@ -229,58 +237,26 @@ export class EnemyManager {
     }
 
     checkCollision(enemy, player) {
-        // Увеличиваем padding для более точного определения столкновений
-        const padding = 8;
-        
-        // Получаем границы объектов
-        const enemyBounds = {
-            left: enemy.x + padding,
-            right: enemy.x + enemy.width - padding,
-            top: enemy.y + padding,
-            bottom: enemy.y + enemy.height - padding
-        };
-        
-        const playerBounds = {
-            left: player.x + padding,
-            right: player.x + player.width - padding,
-            top: player.y + padding,
-            bottom: player.y + player.height - padding
-        };
-        
-        // Проверяем пересечение границ
+        // Более точная проверка столкновений
+        const padding = 5; // Уменьшаем padding для более точного определения
+
         return !(
-            enemyBounds.left >= playerBounds.right ||
-            enemyBounds.right <= playerBounds.left ||
-            enemyBounds.top >= playerBounds.bottom ||
-            enemyBounds.bottom <= playerBounds.top
+            enemy.x + padding >= player.x + player.width - padding ||
+            enemy.x + enemy.width - padding <= player.x + padding ||
+            enemy.y + padding >= player.y + player.height - padding ||
+            enemy.y + enemy.height - padding <= player.y + padding
         );
     }
 
     checkBulletCollision(bullet, player) {
-        // Уменьшаем padding для пуль
-        const padding = 4;
-        
-        // Получаем границы объектов
-        const bulletBounds = {
-            left: bullet.x + padding,
-            right: bullet.x + bullet.width - padding,
-            top: bullet.y + padding,
-            bottom: bullet.y + bullet.height - padding
-        };
-        
-        const playerBounds = {
-            left: player.x + padding,
-            right: player.x + player.width - padding,
-            top: player.y + padding,
-            bottom: player.y + player.height - padding
-        };
-        
-        // Проверяем пересечение границ
+        // Более точная проверка столкновений для пуль
+        const padding = 2; // Минимальный padding для пуль
+
         return !(
-            bulletBounds.left >= playerBounds.right ||
-            bulletBounds.right <= playerBounds.left ||
-            bulletBounds.top >= playerBounds.bottom ||
-            bulletBounds.bottom <= playerBounds.top
+            bullet.x + padding >= player.x + player.width - padding ||
+            bullet.x + bullet.width - padding <= player.x + padding ||
+            bullet.y + padding >= player.y + player.height - padding ||
+            bullet.y + bullet.height - padding <= player.y + padding
         );
     }
 
