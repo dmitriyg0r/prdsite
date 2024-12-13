@@ -340,7 +340,7 @@ function createAttachmentElement(attachmentUrl) {
     // Очищаем и нормализуем путь к файлу
     let fullUrl = attachmentUrl;
     
-    // Удаляем дублирование ути
+    // Удаляем дублирование ��ти
     if (attachmentUrl.includes('/uploads/messages')) {
         fullUrl = `https://adminflow.ru:5003${attachmentUrl}`;
     } else {
@@ -480,49 +480,105 @@ function setupEventListeners() {
     const sendButton = document.getElementById('sendMessage');
     const messageInput = document.getElementById('messageInput');
     
-   
-    if(sendButton) sendButton.removeEventListener('click', sendMessage);
-    if(messageInput) messageInput.removeEventListener('keypress', handleEnterPress);
-  
-    if (sendButton)  sendButton.addEventListener('click', sendMessage);
-    if (messageInput) messageInput.addEventListener('keypress', handleEnterPress);
-
-    if(messageInput){
+    // Удаляем старые обработчики
+    if(sendButton) {
+        sendButton.removeEventListener('click', handleSendMessage);
+        sendButton.addEventListener('click', handleSendMessage);
+    }
+    
+    if(messageInput) {
+        messageInput.removeEventListener('keypress', handleEnterPress);
+        messageInput.addEventListener('keypress', handleEnterPress);
+        
+        // Обработчик набора текста
         messageInput.addEventListener('input', () => {
-        if (typingTimeout) clearTimeout(typingTimeout);
-        
-        // Отправляем статус "печатает"
-        fetch('https://adminflow.ru:5003/api/messages/typing', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                userId: currentUser.id,
-                friendId: currentChatPartner.id,
-                isTyping: true
-            })
-        });
-        
-        // Сбрасываем статус через 2 секунды
-        typingTimeout = setTimeout(() => {
+            if (typingTimeout) clearTimeout(typingTimeout);
+            
+            // Отправляем статус "печатает"
             fetch('https://adminflow.ru:5003/api/messages/typing', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     userId: currentUser.id,
                     friendId: currentChatPartner.id,
-                    isTyping: false
+                    isTyping: true
                 })
             });
-        }, 2000);
-    });
+            
+            // Сбрасываем статус через 2 секунды
+            typingTimeout = setTimeout(() => {
+                fetch('https://adminflow.ru:5003/api/messages/typing', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: currentUser.id,
+                        friendId: currentChatPartner.id,
+                        isTyping: false
+                    })
+                });
+            }, 2000);
+        });
     }
 }
 
-// Выносим обработчик Enter в отдельную функцию
+// Выносим логику отправки в отдельную функцию
+async function handleSendMessage() {
+    const messageInput = document.getElementById('messageInput');
+    
+    if (!messageInput || !currentChatPartner) {
+        return;
+    }
+
+    const messageText = messageInput.value.trim();
+    if (!messageText) {
+        return;
+    }
+
+    try {
+        messageInput.value = ''; // Очищаем поле сразу
+        
+        const response = await fetch('https://adminflow.ru:5003/api/messages/send', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                senderId: currentUser.id,
+                receiverId: currentChatPartner.id,
+                message: messageText,
+                replyToMessageId: replyToMessageId || null
+            })
+        });
+
+        const responseData = await response.json();
+
+        if (!response.ok) {
+            throw new Error(responseData.details || responseData.error || 'Ошибка при отправке сообщения');
+        }
+
+        if (responseData.success) {
+            if (replyToMessageId) {
+                cancelReply();
+            }
+            
+            const messageElement = createMessageElement(responseData.message);
+            const messagesContainer = document.getElementById('messages');
+            if (messagesContainer) {
+                messagesContainer.appendChild(messageElement);
+                scrollToBottom();
+            }
+        }
+    } catch (error) {
+        console.error('Ошибка при отправке сообщения:', error);
+        alert(`Не удалось отправить сообщение: ${error.message}`);
+    }
+}
+
+// Обработчик нажатия Enter
 function handleEnterPress(e) {
     if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
-        sendMessage();
+        handleSendMessage();
     }
 }
 
@@ -857,7 +913,7 @@ function setupContextMenu() {
             
             selectedMessageId = messageElement.dataset.messageId;
             selectedMessageText = messageTextElement ? messageTextElement.textContent : 
-                                (messageImage ? 'Изображение' : 'Вложе��ие');
+                                (messageImage ? 'Изображение' : 'Вложениие');
             
             // Проверяем, является ли сообщение наим
             const isSentMessage = messageElement.classList.contains('message-sent');
@@ -887,7 +943,7 @@ function setupContextMenu() {
                 contextMenu.style.left = `${x}px`;
             }
 
-            // Проверяем и крректируем позицию по вертикали
+            // Проверем и крректируем позицию по вертикали
             if (y + menuRect.height > windowHeight) {
                 contextMenu.style.top = `${y - menuRect.height}px`;
             } else {
@@ -1428,5 +1484,73 @@ document.addEventListener('DOMContentLoaded', () => {
     const messageInput = document.getElementById('messageInput');
     if (messageInput) {
         messageInput.placeholder = 'Сообщение... (*курсив*, **жирный**, `код`, ```блок кода```, > цитата)';
+    }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Добавляем прямой обработчик для кнопки отправки
+    const sendButton = document.getElementById('sendMessage');
+    const messageInput = document.getElementById('messageInput');
+
+    if (sendButton) {
+        sendButton.onclick = async () => {
+            if (!messageInput || !currentChatPartner) {
+                return;
+            }
+
+            const messageText = messageInput.value.trim();
+            if (!messageText) {
+                return;
+            }
+
+            try {
+                messageInput.value = ''; // Очищаем поле сразу
+                
+                const response = await fetch('https://adminflow.ru:5003/api/messages/send', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        senderId: currentUser.id,
+                        receiverId: currentChatPartner.id,
+                        message: messageText,
+                        replyToMessageId: replyToMessageId || null
+                    })
+                });
+
+                const responseData = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(responseData.details || responseData.error || 'Ошибка при отправке сообщения');
+                }
+
+                if (responseData.success) {
+                    if (replyToMessageId) {
+                        cancelReply();
+                    }
+                    
+                    const messageElement = createMessageElement(responseData.message);
+                    const messagesContainer = document.getElementById('messages');
+                    if (messagesContainer) {
+                        messagesContainer.appendChild(messageElement);
+                        scrollToBottom();
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка при отправке сообщения:', error);
+                alert(`Не удалось отправить сообщение: ${error.message}`);
+            }
+        };
+    }
+
+    // Добавляем обработчик для клавиши Enter
+    if (messageInput) {
+        messageInput.onkeypress = async (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendButton.click();
+            }
+        };
     }
 });
