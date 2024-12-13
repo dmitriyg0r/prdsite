@@ -111,6 +111,7 @@ class ArcadeCollector {
             ArrowDown: false,
             KeyE: false,    // Для стрельбы
             KeyW: false,    // Для рывка
+            Space: false,   // Для запуска игры
             Escape: false
         };
         
@@ -172,7 +173,7 @@ class ArcadeCollector {
     bindEvents() {
         // Предотвращаем прокрутку страницы
         window.addEventListener('keydown', (e) => {
-            if(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyE', 'KeyW'].includes(e.code)) {
+            if(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyE', 'KeyW', 'Space'].includes(e.code)) {
                 e.preventDefault();
             }
         });
@@ -180,6 +181,11 @@ class ArcadeCollector {
         document.addEventListener('keydown', (e) => {
             if (this.keys.hasOwnProperty(e.code)) {
                 this.keys[e.code] = true;
+            }
+
+            // Запуск игры по пробелу
+            if (e.code === 'Space' && this.gameState === 'start') {
+                this.startGame();
             }
         });
         
@@ -650,7 +656,7 @@ class ArcadeCollector {
                 break;
 
             case 'boss':
-                // Сложная форма босс�� с градиентом
+                // Сложная форма босса с градиентом
                 const bossGradient = this.ctx.createRadialGradient(
                     enemy.x + enemy.width/2, enemy.y + enemy.height/2, 0,
                     enemy.x + enemy.width/2, enemy.y + enemy.height/2, enemy.width/2
@@ -750,7 +756,7 @@ class ArcadeCollector {
             this.ctx.fill();
         });
 
-        // Отрисовка частиц
+        // Отрисовка части��
         this.particles.forEach(particle => {
             if (particle.isFlash) {
                 const alpha = (1 - particle.time / particle.lifetime) * particle.alpha;
@@ -946,24 +952,19 @@ class ArcadeCollector {
     startGame() {
         this.gameState = 'playing';
         this.score = 0;
-        this.player.lives = 3;
-        this.difficulty = 1;
         this.gameTime = 0;
-        this.enemySpawnTimer = 0;
-        this.coinSpawnTimer = 0;
-        this.scoreElement.textContent = '0';
-        this.livesElement.textContent = '3';
-        this.levelElement.textContent = '1.0';
+        this.difficulty = 1;
+        this.player.lives = 5;
         
-        // Очищаем все массивы
-        this.coins = [];
-        this.enemies = [];
-        this.bullets = [];
-        this.enemyBullets = [];
+        // Обновляем UI
+        if (this.scoreElement) this.scoreElement.textContent = this.score;
+        if (this.livesElement) this.livesElement.textContent = this.player.lives;
+        if (this.levelElement) this.levelElement.textContent = this.difficulty;
         
-        // Сбрасываем позицию игрока
-        this.player.x = this.canvas.width / 2 - this.player.width / 2;
-        this.player.y = this.canvas.height - 50;
+        // Скрываем стартовое меню
+        if (this.startMenu) {
+            this.startMenu.style.display = 'none';
+        }
     }
 
     createDashEffect() {
