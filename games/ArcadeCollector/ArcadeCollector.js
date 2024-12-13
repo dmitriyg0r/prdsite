@@ -80,10 +80,10 @@ class ArcadeCollector {
         this.score = 0;
         
         // Параметры спавна
+        this.enemySpawnTimer = 0;
+        this.enemySpawnRate = 2000; // начальная частота появления врагов
         this.coinSpawnTimer = 0;
-        this.obstacleSpawnTimer = 0;
         this.coinSpawnRate = 1000;
-        this.obstacleSpawnRate = 2000;
         
         // UI элементы
         this.scoreElement = document.getElementById('score');
@@ -151,7 +151,7 @@ class ArcadeCollector {
         this.ctx.fillText('Нажмите ПРОБЕЛ чтобы начать', this.canvas.width / 2, this.canvas.height / 2 + 50);
         
         this.ctx.font = '18px Arial';
-        this.ctx.fillText('Управление: Стрелки для движения, ПРОБЕЛ для стрельбы', 
+        this.ctx.fillText('Управление: Стрелки для дви��ения, ПРОБЕЛ для стрельбы', 
             this.canvas.width / 2, this.canvas.height / 2 + 100);
     }
 
@@ -186,14 +186,8 @@ class ArcadeCollector {
         this.difficulty += Math.floor(this.score / 100) * 0.1;
         
         // Обновляем частоту появления объектов
-        this.obstacleSpawnRate = Math.max(500, 2000 - this.difficulty * 200);
+        this.enemySpawnRate = Math.max(500, 2000 - this.difficulty * 200);
         this.coinSpawnRate = Math.max(400, 1000 - this.difficulty * 100);
-        
-        // Обновляем скорость объектов
-        const baseObstacleSpeed = 200;
-        const baseCoinSpeed = 150;
-        this.currentObstacleSpeed = baseObstacleSpeed * this.difficulty;
-        this.currentCoinSpeed = baseCoinSpeed * this.difficulty;
         
         // Обновляем UI
         if (this.levelElement) {
@@ -385,18 +379,18 @@ class ArcadeCollector {
     }
 
     updateSpawnTimers(dt) {
-        // Обновление таймера монет
+        // Спавн врагов
+        this.enemySpawnTimer += dt * 1000;
+        if (this.enemySpawnTimer >= this.enemySpawnRate) {
+            this.spawnEnemy();
+            this.enemySpawnTimer = 0;
+        }
+
+        // Спавн монет
         this.coinSpawnTimer += dt * 1000;
         if (this.coinSpawnTimer >= this.coinSpawnRate) {
             this.spawnCoin();
             this.coinSpawnTimer = 0;
-        }
-        
-        // Обновление таймера препятств��й
-        this.obstacleSpawnTimer += dt * 1000;
-        if (this.obstacleSpawnTimer >= this.obstacleSpawnRate) {
-            this.spawnObstacle();
-            this.obstacleSpawnTimer = 0;
         }
     }
 
@@ -721,15 +715,16 @@ class ArcadeCollector {
         this.player.lives = 3;
         this.difficulty = 1;
         this.gameTime = 0;
+        this.enemySpawnTimer = 0;
+        this.coinSpawnTimer = 0;
         this.scoreElement.textContent = '0';
         this.livesElement.textContent = '3';
         this.levelElement.textContent = '1.0';
         
         // Очищаем все массивы
         this.coins = [];
-        this.obstacles = [];
-        this.bullets = [];
         this.enemies = [];
+        this.bullets = [];
         this.enemyBullets = [];
         
         // Сбрасываем позицию игрока
