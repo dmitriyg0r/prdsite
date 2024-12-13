@@ -3,27 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Игры</title>
-    <link rel="icon" type="image/x-icon" href="../flow.ico">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&family=Montserrat:wght@300&display=swap">
+    <title>Игры - AdminFlow</title>
     <link rel="stylesheet" href="../style.css">
-    <link rel="stylesheet" href="../games/games.css">
+    <link rel="stylesheet" href="games.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="../mobile.css">
-    <script>
-        if (!localStorage.getItem('user')) {
-            window.location.href = '../authreg/authreg.html';
-        }
-    </script>
+    <link rel="icon" type="image/x-icon" href="../flow.ico">
 </head>
 <body>
-    <!-- Добавляем боковое меню -->
+    <!-- Боковое меню -->
     <nav class="sidebar glass-effect">
         <div class="sidebar-logo hover-lift">
             <img src="../flow.ico" alt="Flow Logo" class="sidebar-icon">
         </div>
         <div class="sidebar-nav">
-            <a href="../profile/profile.html" class="sidebar-link active">
+            <a href="../profile/profile.html" class="sidebar-link">
                 <i class="fas fa-user"></i>
                 <span>Профиль</span>
             </a>
@@ -31,7 +24,7 @@
                 <i class="fas fa-stream"></i>
                 <span>Лента</span>
             </a>
-            <a href="../games/games.html" class="sidebar-link">
+            <a href="../games/games.html" class="sidebar-link active">
                 <i class="fas fa-gamepad"></i>
                 <span>Игры</span>
             </a>
@@ -59,38 +52,134 @@
             </div>
         </div>
     </nav>
-    <div class="overlay"></div>
-    <h1 class="zagolovok">Игры</h1>
-    <main>
-        <div class="game-wrapper">
-            <div class="game-container">
-                <canvas id="game" width="600" height="150"></canvas>
-                <div class="game-info">
-                    <span class="score">Счёт: 0</span>
-                    <span class="high-score">Рекорд: 0</span>
+
+    <!-- Мобильное меню -->
+    <nav class="mobile-nav">
+        <ul>
+            <li>
+                <a href="../index.html">
+                    <i class="fas fa-home"></i>
+                    <span>Главная</span>
+                </a>
+            </li>
+            <li>
+                <a href="../home/homework.html">
+                    <i class="fas fa-tasks"></i>
+                    <span>Задания</span>
+                </a>
+            </li>
+            <li>
+                <a href="../downloads/downloads.html">
+                    <i class="fas fa-download"></i>
+                    <span>Загрузки</span>
+                </a>
+            </li>
+            <li>
+                <a href="../profile/profile.html">
+                    <i class="fas fa-user"></i>
+                    <span>Профиль</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Основной контент -->
+    <div class="games-layout">
+        <!-- Боковая панель с фильтрами -->
+        <aside class="games-sidebar">
+            <div class="filter-card">
+                <div class="filter-header">
+                    <h3>Фильтры</h3>
+                    <button class="clear-filters-btn">
+                        <i class="fas fa-times"></i>
+                        Сбросить
+                    </button>
                 </div>
-                <div class="game-start">
-                    Нажмите пробел чтобы начать
+                
+                <!-- Поиск -->
+                <div class="search-box">
+                    <input type="text" placeholder="Поиск игр..." class="search-input">
+                    <i class="fas fa-search"></i>
+                </div>
+
+                <!-- Категории -->
+                <div class="filter-section">
+                    <h4>Категории</h4>
+                    <div class="category-list">
+                        <label class="category-item">
+                            <input type="checkbox" name="category" value="action">
+                            <span>Экшен</span>
+                            <span class="count">(12)</span>
+                        </label>
+                        <label class="category-item">
+                            <input type="checkbox" name="category" value="strategy">
+                            <span>Стратегии</span>
+                            <span class="count">(8)</span>
+                        </label>
+                        <!-- Добавьте другие категории -->
+                    </div>
+                </div>
+
+                <!-- Сортировка -->
+                <div class="filter-section">
+                    <h4>Сортировка</h4>
+                    <select class="sort-select">
+                        <option value="popular">По популярности</option>
+                        <option value="new">Сначала новые</option>
+                        <option value="rating">По рейтингу</option>
+                    </select>
                 </div>
             </div>
-            <div class="leaderboard">
-                <h2>Таблица рекордов</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Место</th>
-                            <th>Имя</th>
-                            <th>Счёт</th>
-                        </tr>
-                    </thead>
-                    <tbody id="leaderboardBody">
-                        <!-- Здесь будут рекорды -->
-                    </tbody>
-                </table>
+        </aside>
+
+        <!-- Основной контент -->
+        <main class="games-content">
+            <div class="games-header">
+                <h2>Все игры</h2>
+                <div class="view-options">
+                    <button class="view-btn active" data-view="grid">
+                        <i class="fas fa-th-large"></i>
+                    </button>
+                    <button class="view-btn" data-view="list">
+                        <i class="fas fa-list"></i>
+                    </button>
+                </div>
             </div>
-        </div>
-    </main>
+
+            <!-- Сетка игр -->
+            <div class="games-grid">
+                <!-- Карточка игры -->
+                <div class="game-card">
+                    <div class="game-image">
+                        <img src="game1.jpg" alt="Game Name">
+                        <div class="game-overlay">
+                            <button class="play-btn">
+                                <i class="fas fa-play"></i>
+                                Играть
+                            </button>
+                        </div>
+                    </div>
+                    <div class="game-info">
+                        <h3 class="game-title">Название игры</h3>
+                        <div class="game-meta">
+                            <span class="game-category">Экшен</span>
+                            <div class="game-rating">
+                                <i class="fas fa-star"></i>
+                                <span>4.5</span>
+                            </div>
+                        </div>
+                        <div class="game-stats">
+                            <span><i class="fas fa-users"></i> 1.2K</span>
+                            <span><i class="fas fa-gamepad"></i> 5.3K</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Повторите карточку для других игр -->
+            </div>
+        </main>
+    </div>
+
+    <script src="games.js"></script>
     <script src="../main.js"></script>
-    <script src="../games/games.js"></script>
 </body>
 </html>
