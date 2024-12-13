@@ -26,23 +26,20 @@ class ArcadeCollector {
             velocityX: 0,
             velocityY: 0,
             baseSpeed: 300,
-            horizontalSpeedMultiplier: 1.2, // Уменьшаем с 1.5 до 1.2
-            lives: 5, // Увеличиваем с 3 до 5 для большей выживаемости
-            color: '#6366f1',
-            shootCooldown: 0,
-            shootRate: 350, // Увеличиваем с 250 до 350 мс
-            // Обновленные параметры рывка
-            dashForce: 2000, // Сила импульса рывка
+            // Параметры рывка
+            dashForce: 2000,
             dashDuration: 0.15,
             dashCooldown: 0.8,
             dashTimer: 0,
             dashCooldownTimer: 0,
             isDashing: false,
-            // Добавляем след от рывка
-            dashGhosts: [], // Массив для хранения "призрачных" копий
-            ghostInterval: 0.02, // Интервал создания призраков
+            // Параметры стрельбы
+            shootCooldown: 0,
+            shootRate: 350,
+            // Эффекты
+            dashGhosts: [],
+            ghostInterval: 0.02,
             ghostTimer: 0,
-            // Добавляем трение для плавного замедления
             friction: 0.92
         };
         
@@ -76,7 +73,7 @@ class ArcadeCollector {
                 speed: 60, // Уменьшаем с 80 до 60
                 color: '#dc2626',
                 health: 8, // Увеличиваем с 5 до 8
-                points: 75, // Увеличи��аем с 50 до 75
+                points: 75, // Увеличиваем с 50 до 75
                 shootRate: 1500, // Увеличиваем с 1000 до 1500
                 bulletSpeed: 300,
                 behavior: 'sine'
@@ -112,9 +109,9 @@ class ArcadeCollector {
             ArrowRight: false,
             ArrowUp: false,
             ArrowDown: false,
-            Space: false,
-            Escape: false,
-            Shift: false
+            KeyE: false,    // Для стрельбы
+            KeyW: false,    // Для рывка
+            Escape: false
         };
         
         // Добавляем стартовое меню
@@ -173,9 +170,9 @@ class ArcadeCollector {
     }
 
     bindEvents() {
-        // Предотвращаем прокрутку страницы стрелками и Shift
+        // Предотвращаем прокрутку страницы
         window.addEventListener('keydown', (e) => {
-            if(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space', 'Shift'].includes(e.code)) {
+            if(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyE', 'KeyW'].includes(e.code)) {
                 e.preventDefault();
             }
         });
@@ -183,10 +180,6 @@ class ArcadeCollector {
         document.addEventListener('keydown', (e) => {
             if (this.keys.hasOwnProperty(e.code)) {
                 this.keys[e.code] = true;
-                if (e.code === 'Escape') this.togglePause();
-                if (e.code === 'Space' && this.gameState === 'start') {
-                    this.startGame();
-                }
             }
         });
         
@@ -449,9 +442,10 @@ class ArcadeCollector {
         this.updateBullets(dt);
         this.updateEnemies(dt);
         this.updateEnemyBullets(dt);
-        this.updateParticles(dt); // Добавляем обновление частиц
+        this.updateParticles(dt);
         
-        if (this.keys.Space) {
+        // Стрельба на клавишу E
+        if (this.keys.KeyE) {
             this.shoot();
         }
     }
@@ -473,8 +467,9 @@ class ArcadeCollector {
             moveY *= normalizer;
         }
 
-        // Проверяем возможность рывка
-        if (this.keys.Shift && this.player.dashCooldownTimer <= 0 && !this.player.isDashing && (moveX !== 0 || moveY !== 0)) {
+        // Рывок на клавишу W
+        if (this.keys.KeyW && this.player.dashCooldownTimer <= 0 && !this.player.isDashing && (moveX !== 0 || moveY !== 0)) {
+            console.log('Dash activated!'); // Для отладки
             this.player.isDashing = true;
             this.player.dashTimer = this.player.dashDuration;
             this.player.dashCooldownTimer = this.player.dashCooldown;
@@ -516,7 +511,7 @@ class ArcadeCollector {
         this.player.velocityX *= this.player.friction;
         this.player.velocityY *= this.player.friction;
 
-        // Обновляем позицию на основе скорости
+        // Обновляем позицию
         this.player.x += this.player.velocityX * dt;
         this.player.y += this.player.velocityY * dt;
 
@@ -655,7 +650,7 @@ class ArcadeCollector {
                 break;
 
             case 'boss':
-                // Сложная форма босса с градиентом
+                // Сложная форма босс�� с градиентом
                 const bossGradient = this.ctx.createRadialGradient(
                     enemy.x + enemy.width/2, enemy.y + enemy.height/2, 0,
                     enemy.x + enemy.width/2, enemy.y + enemy.height/2, enemy.width/2
