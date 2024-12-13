@@ -27,7 +27,7 @@ class ArcadeCollector {
             velocityY: 0,
             baseSpeed: 300, // Уменьшаем с 400 до 300 для лучшего контроля
             horizontalSpeedMultiplier: 1.2, // Уменьшаем с 1.5 до 1.2
-            lives: 5, // Увеличиваем с 3 до 5 для большей выживаемости
+            lives: 5, // Увеличиваем с 3 до 5 для большей выж��ваемости
             color: '#6366f1',
             shootCooldown: 0,
             shootRate: 350, // Увеличиваем с 250 до 350 мс
@@ -125,7 +125,7 @@ class ArcadeCollector {
     animate(currentTime) {
         // Расчет deltaTime в секундах
         this.deltaTime = (currentTime - this.lastTime) / 1000;
-        // Ограничиваем deltaTime для предотвращения больших скач��ов
+        // Ограничиваем deltaTime для предотвращения больших скачков
         this.deltaTime = Math.min(this.deltaTime, 0.1);
         this.lastTime = currentTime;
 
@@ -167,9 +167,9 @@ class ArcadeCollector {
     }
 
     bindEvents() {
-        // Предотвращаем прокрутку страницы стрелками
+        // Предотвращаем прокрутку страницы стрелками и Shift
         window.addEventListener('keydown', (e) => {
-            if(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {
+            if(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space', 'Shift'].includes(e.code)) {
                 e.preventDefault();
             }
         });
@@ -506,7 +506,7 @@ class ArcadeCollector {
     }
 
     updateSpawnTimers(dt) {
-        // Спа��н врагов
+        // Спавн врагов
         this.enemySpawnTimer += dt * 1000;
         if (this.enemySpawnTimer >= this.enemySpawnRate) {
             this.spawnEnemy();
@@ -587,7 +587,7 @@ class ArcadeCollector {
                 this.ctx.closePath();
                 this.ctx.fill();
 
-                // Добавляем свечение
+                // Добавляем св��чение
                 this.ctx.shadowColor = enemy.color;
                 this.ctx.shadowBlur = 10;
                 this.ctx.strokeStyle = '#fff';
@@ -858,7 +858,7 @@ class ArcadeCollector {
         this.enemySpawnTimer = 0;
         this.coinSpawnTimer = 0;
         
-        // ��чищаем все массивы
+        // чищаем все массивы
         this.coins = [];
         this.enemies = [];
         this.bullets = [];
