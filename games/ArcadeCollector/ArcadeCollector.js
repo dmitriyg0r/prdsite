@@ -7,7 +7,7 @@ class ArcadeCollector {
         this.canvas.height = 600;
         
         // Состояние игры
-        this.gameState = 'playing';
+        this.gameState = 'start';
         this.gameTime = 0; // Время игры в секундах
         this.difficulty = 1; // Множитель сложности
         
@@ -62,8 +62,56 @@ class ArcadeCollector {
             Escape: false
         };
         
+        // Добавляем стартовое меню
+        this.startMenu = document.getElementById('startMenu');
+        
         this.bindEvents();
-        this.animate(0);
+        this.lastTime = performance.now();
+        this.animate(this.lastTime);
+    }
+
+    animate(currentTime) {
+        // Расчет deltaTime в секундах
+        this.deltaTime = (currentTime - this.lastTime) / 1000;
+        // Ограничиваем deltaTime для предотвращения больших скачков
+        this.deltaTime = Math.min(this.deltaTime, 0.1);
+        this.lastTime = currentTime;
+
+        // Очистка canvas
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        if (this.gameState === 'playing') {
+            this.timeAccumulator += this.deltaTime * 1000;
+            
+            // Фиксированный временной шаг для физики
+            while (this.timeAccumulator >= this.fixedTimeStep) {
+                this.update(this.fixedTimeStep / 1000);
+                this.timeAccumulator -= this.fixedTimeStep;
+            }
+            
+            this.draw();
+        } else if (this.gameState === 'start') {
+            this.drawStartScreen();
+        }
+
+        requestAnimationFrame((time) => this.animate(time));
+    }
+
+    drawStartScreen() {
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+        this.ctx.fillStyle = '#fff';
+        this.ctx.font = 'bold 48px Arial';
+        this.ctx.textAlign = 'center';
+        this.ctx.fillText('Arcade Collector', this.canvas.width / 2, this.canvas.height / 2 - 50);
+
+        this.ctx.font = '24px Arial';
+        this.ctx.fillText('Нажмите ПРОБЕЛ чтобы начать', this.canvas.width / 2, this.canvas.height / 2 + 50);
+        
+        this.ctx.font = '18px Arial';
+        this.ctx.fillText('Управление: Стрелки для движения, ПРОБЕЛ для стрельбы', 
+            this.canvas.width / 2, this.canvas.height / 2 + 100);
     }
 
     bindEvents() {
@@ -71,6 +119,9 @@ class ArcadeCollector {
             if (this.keys.hasOwnProperty(e.code)) {
                 this.keys[e.code] = true;
                 if (e.code === 'Escape') this.togglePause();
+                if (e.code === 'Space' && this.gameState === 'start') {
+                    this.startGame();
+                }
             }
         });
         
@@ -317,6 +368,26 @@ class ArcadeCollector {
         // Возобновление игры
         this.gameState = 'playing';
         this.lastTime = performance.now();
+    }
+
+    startGame() {
+        this.gameState = 'playing';
+        this.score = 0;
+        this.player.lives = 3;
+        this.difficulty = 1;
+        this.gameTime = 0;
+        this.scoreElement.textContent = '0';
+        this.livesElement.textContent = '3';
+        this.levelElement.textContent = '1.0';
+        
+        // Очищаем все массивы
+        this.coins = [];
+        this.obstacles = [];
+        this.bullets = [];
+        
+        // Сбрасываем позицию игрока
+        this.player.x = this.canvas.width / 2 - this.player.width / 2;
+        this.player.y = this.canvas.height - 50;
     }
 }
 
