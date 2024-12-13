@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Загружаем список чатов
     await loadChatsList();
     
-    // Запускаем периодическое обновление списка чатов
+    // Запускаем периодическ��е обновление списка чатов
     setInterval(loadChatsList, 10000); // Обновляем каждые 10 секунд
 });
 
@@ -399,15 +399,15 @@ async function sendMessage() {
         return;
     }
 
+    // Сохраняем текст сообщения перед очисткой
+    const messageText = messageInput.value.trim();
+    
+    // Очищаем поле ввода сразу
+    messageInput.value = '';
+
     try {
         const endpoint = 'https://adminflow.ru:5003/api/messages/send';
         
-        console.log('Отправка сообщения:', {
-            senderId: currentUser.id,
-            receiverId: currentChatPartner.id,
-            message: messageInput.value.trim()
-        });
-
         const response = await fetch(endpoint, {
             method: 'POST',
             headers: {
@@ -416,20 +416,20 @@ async function sendMessage() {
             body: JSON.stringify({
                 senderId: currentUser.id,
                 receiverId: currentChatPartner.id,
-                message: messageInput.value.trim(),
+                message: messageText,
                 replyToMessageId: replyToMessageId || null
             })
         });
 
         const responseData = await response.json();
-        console.log('Ответ сервера:', responseData);
 
         if (!response.ok) {
+            // В случае ошибки возвращаем текст обратно в поле ввода
+            messageInput.value = messageText;
             throw new Error(responseData.details || responseData.error || 'Ошибка при отправке сообщения');
         }
 
         if (responseData.success) {
-            messageInput.value = '';
             if (replyToMessageId) {
                 cancelReply();
             }
@@ -503,7 +503,7 @@ function setupEventListeners() {
             })
         });
         
-        // Сбрасываем статус через 2 секунды
+        // ��брасываем статус через 2 секунды
         typingTimeout = setTimeout(() => {
             fetch('https://adminflow.ru:5003/api/messages/typing', {
                 method: 'POST',
@@ -626,7 +626,7 @@ function showImageModal(imageUrl) {
     };
     
     modalImage.onerror = () => {
-        console.error('Ошибка за��рузки изображения в модальном окне:', imageUrl);
+        console.error('Ошибка загрузки изображения в модальном окне:', imageUrl);
         if(modal) modal.style.display = 'none';
         alert('Ошибка при загрузке изображения');
     };
@@ -739,7 +739,7 @@ async function deleteMessage(messageId) {
     }
 
     try {
-        // Наход��м сообщение в DOM до его удаления
+        // Находм сообщение в DOM до его удаления
         const messageElement = document.querySelector(`.message[data-message-id="${messageId}"]`);
         if (!messageElement) {
             console.error('Сообщение не найдено в DOM');
@@ -1231,7 +1231,7 @@ async function selectChat(chat) {
             messagesContainer.innerHTML = '';
         }
 
-        // Останавливаем пр��дыдущие обновления
+        // Останавливаем прдыдущие обновления
         if (messageUpdateInterval) {
             clearInterval(messageUpdateInterval);
         }
@@ -1410,7 +1410,7 @@ async function sendMessage() {
     }
 }
 
-// Добавляем обработчик контекстного меню
+// Добавляем ��бработчик контекстного меню
 document.getElementById('replyMessageBtn').addEventListener('click', () => {
     const messageElement = document.querySelector(`.message[data-message-id="${selectedMessageId}"]`);
     if (messageElement) {
