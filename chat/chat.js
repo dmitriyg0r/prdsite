@@ -451,7 +451,7 @@ async function loadMessages(friendId) {
 
             const isAtBottom = isScrolledToBottom(messagesContainer);
             
-            // Получаем существующие сообщения
+            // Получаем сущест��ующие сообщения
             const existingMessages = new Set(
                 Array.from(messagesContainer.children).map(el => el.dataset.messageId)
             );
@@ -977,7 +977,7 @@ async function loadChatsList() {
     try {
         const now = Date.now();
         if (now - lastUpdateTime < UPDATE_INTERVAL) {
-            return; // Пропускаем обновление, если прошло мало времени
+            return;
         }
         lastUpdateTime = now;
 
@@ -986,84 +986,111 @@ async function loadChatsList() {
 
         if (data.success) {
             const friendsList = document.getElementById('friends-list');
-            if (!friendsList) {
-                console.error('Friends list container not found');
-                return;
-            }
+            if (!friendsList) return;
 
-            // Создаём фрагмент для оптимизации DOM-операций
-            const fragment = document.createDocumentFragment();
-            const currentChats = new Set();
+            // Создаём Map существующих чатов для быстрого поиска
+            const existingChats = new Map();
+            friendsList.querySelectorAll('.chat-partner').forEach(el => {
+                existingChats.set(el.dataset.friendId, el);
+            });
 
+            // Создаём Map новых позиций
+            const newPositions = new Map();
+            data.chats.forEach((chat, index) => {
+                newPositions.set(chat.id.toString(), index);
+            });
+
+            // Обновляем или создаём элементы чатов
             data.chats.forEach(chat => {
-                currentChats.add(chat.id.toString());
-                
-                // Проверяем, существует ли уже элемент чата
-                let chatElement = friendsList.querySelector(`.chat-partner[data-friend-id="${chat.id}"]`);
-                const needsUpdate = !chatElement || 
-                    chatElement.querySelector('.chat-last-message').textContent !== 
-                    (chat.last_message ? 
-                        (chat.is_own_message ? 'Вы: ' : '') + 
-                        (chat.last_message.length > 25 ? 
-                            chat.last_message.substring(0, 25) + '...' : 
-                            chat.last_message) : 
-                        'Нет сообщений');
+                const existingElement = existingChats.get(chat.id.toString());
+                const needsUpdate = !existingElement || shouldUpdateChat(existingElement, chat);
 
-                if (!chatElement || needsUpdate) {
-                    chatElement = document.createElement('div');
-                    chatElement.className = `chat-partner ${currentChatPartner?.id === chat.id ? 'active' : ''}`;
-                    chatElement.dataset.friendId = chat.id;
+                if (needsUpdate) {
+                    const chatElement = createChatElement(chat);
                     
-                    chatElement.innerHTML = `
-                        <div class="avatar-container">
-                            <img src="${chat.avatar_url || '../uploads/avatars/default.png'}" 
-                                 alt="${chat.username}" 
-                                 class="chat-avatar">
-                            <span class="status-indicator ${chat.is_online ? 'online' : 'offline'}"></span>
-                        </div>
-                        <div class="chat-info">
-                            <div class="chat-name">${chat.username}</div>
-                            <div class="chat-last-message" id="last-message-${chat.id}">
-                                ${chat.last_message ? 
-                                    (chat.is_own_message ? 'Вы: ' : '') + 
-                                    (chat.last_message.length > 25 ? 
-                                        chat.last_message.substring(0, 25) + '...' : 
-                                        chat.last_message) : 
-                                    'Нет сообщений'}
-                            </div>
-                        </div>
-                        ${chat.unread_count > 0 ? 
-                            `<span class="unread-count">${chat.unread_count}</span>` : 
-                            ''}
-                    `;
-
-                    // Добавляем обработчик клика
-                    chatElement.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        selectChat(chat);
-                    });
-
-                    if (!friendsList.querySelector(`.chat-partner[data-friend-id="${chat.id}"]`)) {
-                        fragment.appendChild(chatElement);
+                    if (existingElement) {
+                        // Обновляем существующий элемент без изменения позиции
+                        existingElement.replaceWith(chatElement);
                     } else {
-                        friendsList.replaceChild(chatElement, friendsList.querySelector(`.chat-partner[data-friend-id="${chat.id}"]`));
+                        // Вставляем новый элемент в правильную позицию
+                        const position = newPositions.get(chat.id.toString());
+                        const nextElement = friendsList.children[position];
+                        if (nextElement) {
+                            friendsList.insertBefore(chatElement, nextElement);
+                        } else {
+                            friendsList.appendChild(chatElement);
+                        }
                     }
                 }
+                
+                // Удаляем обработанный чат из Map существующих
+                existingChats.delete(chat.id.toString());
             });
 
             // Удаляем чаты, которых больше нет в списке
-            friendsList.querySelectorAll('.chat-partner').forEach(el => {
-                if (!currentChats.has(el.dataset.friendId)) {
-                    el.remove();
-                }
+            existingChats.forEach(element => {
+                element.remove();
             });
-
-            // Добавляем новые чаты
-            friendsList.appendChild(fragment);
         }
     } catch (error) {
         console.error('Ошибка при загрузке списка чатов:', error);
     }
+}
+
+// Вспомогательная функция для проверки необходимости обновления
+function shouldUpdateChat(element, chat) {
+    const lastMessage = element.querySelector('.chat-last-message');
+    const unreadCount = element.querySelector('.unread-count');
+    const statusIndicator = element.querySelector('.status-indicator');
+    
+    return (
+        lastMessage?.textContent !== formatLastMessage(chat) ||
+        (unreadCount?.textContent || '0') !== (chat.unread_count || '0').toString() ||
+        statusIndicator?.classList.contains('online') !== chat.is_online
+    );
+}
+
+// Вспомогательная функция для создания элемента чата
+function createChatElement(chat) {
+    const chatElement = document.createElement('div');
+    chatElement.className = `chat-partner ${currentChatPartner?.id === chat.id ? 'active' : ''}`;
+    chatElement.dataset.friendId = chat.id;
+    
+    chatElement.innerHTML = `
+        <div class="avatar-container">
+            <img src="${chat.avatar_url || '../uploads/avatars/default.png'}" 
+                 alt="${chat.username}" 
+                 class="chat-avatar">
+            <span class="status-indicator ${chat.is_online ? 'online' : 'offline'}"></span>
+        </div>
+        <div class="chat-info">
+            <div class="chat-name">${chat.username}</div>
+            <div class="chat-last-message" id="last-message-${chat.id}">
+                ${formatLastMessage(chat)}
+            </div>
+        </div>
+        ${chat.unread_count > 0 ? 
+            `<span class="unread-count">${chat.unread_count}</span>` : 
+            ''}
+    `;
+
+    chatElement.addEventListener('click', (e) => {
+        e.preventDefault();
+        selectChat(chat);
+    });
+
+    return chatElement;
+}
+
+// Вспомогательная функция для форматирования последнего сообщения
+function formatLastMessage(chat) {
+    if (!chat.last_message) return 'Нет сообщений';
+    
+    const messageText = chat.last_message.length > 25 
+        ? chat.last_message.substring(0, 25) + '...' 
+        : chat.last_message;
+        
+    return chat.is_own_message ? `Вы: ${messageText}` : messageText;
 }
 
 // Функция выбора чата
