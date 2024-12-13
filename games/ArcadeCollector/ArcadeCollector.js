@@ -1,10 +1,10 @@
+import { GameState } from './GameState.js';
 import { Player } from './Player.js';
 import { EnemyManager } from './Enemy.js';
 import { BulletManager } from './Bullet.js';
-import { ParticleSystem } from './Particle.js';
-import { GameState } from './GameState.js';
+import { Bullet } from './Bullet.js';
+import { ParticleSystem } from './ParticleSystem.js';
 import { Renderer } from './Renderer.js';
-import { Utils } from './Utils.js';
 
 class ArcadeCollector {
     constructor() {
