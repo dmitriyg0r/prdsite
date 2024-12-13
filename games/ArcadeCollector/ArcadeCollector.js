@@ -80,10 +80,10 @@ class ArcadeCollector {
         this.score = 0;
         
         // Параметры спавна
+        this.enemySpawnTimer = 0;
+        this.enemySpawnRate = 2000; // начальная частота появления врагов
         this.coinSpawnTimer = 0;
-        this.obstacleSpawnTimer = 0;
         this.coinSpawnRate = 1000;
-        this.obstacleSpawnRate = 2000;
         
         // UI элементы
         this.scoreElement = document.getElementById('score');
@@ -105,6 +105,9 @@ class ArcadeCollector {
         
         // Добавляем стартовое меню
         this.startMenu = document.getElementById('startMenu');
+        
+        // Добавляем массив для частиц
+        this.particles = [];
         
         this.bindEvents();
         this.lastTime = performance.now();
@@ -186,14 +189,8 @@ class ArcadeCollector {
         this.difficulty += Math.floor(this.score / 100) * 0.1;
         
         // Обновляем частоту появления объектов
-        this.obstacleSpawnRate = Math.max(500, 2000 - this.difficulty * 200);
+        this.enemySpawnRate = Math.max(500, 2000 - this.difficulty * 200);
         this.coinSpawnRate = Math.max(400, 1000 - this.difficulty * 100);
-        
-        // Обновляем скорость объектов
-        const baseObstacleSpeed = 200;
-        const baseCoinSpeed = 150;
-        this.currentObstacleSpeed = baseObstacleSpeed * this.difficulty;
-        this.currentCoinSpeed = baseCoinSpeed * this.difficulty;
         
         // Обновляем UI
         if (this.levelElement) {
@@ -221,19 +218,91 @@ class ArcadeCollector {
         this.bullets = this.bullets.filter(bullet => {
             bullet.y -= bullet.speed * dt;
             
-            // Проверяем столкновения с препятствиями
-            let hitObstacle = false;
-            this.obstacles = this.obstacles.filter(obstacle => {
-                if (!hitObstacle && this.checkCollision(bullet, obstacle)) {
-                    hitObstacle = true;
-                    this.score += 5;
-                    this.scoreElement.textContent = this.score;
-                    return false;
+            // Проверяем столкновения с противниками
+            let hitEnemy = false;
+            this.enemies.forEach(enemy => {
+                if (!hitEnemy && this.checkCollision(bullet, enemy)) {
+                    hitEnemy = true;
+                    enemy.health -= 1; // Уменьшаем здоровье противника
+                    
+                    // Если противник уничтожен
+                    if (enemy.health <= 0) {
+                        // Добавляем очки в зависимости от типа противника
+                        this.score += this.enemyTypes[enemy.type].points;
+                        this.scoreElement.textContent = this.score;
+                        
+                        // Удаляем противника
+                        this.enemies = this.enemies.filter(e => e !== enemy);
+                        
+                        // Эффект уничтожения (частицы)
+                        this.createDestroyEffect(enemy);
+                    } else {
+                        // Эффект попадания
+                        this.createHitEffect(enemy);
+                    }
                 }
-                return true;
             });
             
-            return !hitObstacle && bullet.y > 0;
+            return !hitEnemy && bullet.y > 0;
+        });
+    }
+
+    createDestroyEffect(enemy) {
+        // Создаем эффект взрыва
+        const particles = 12;
+        const colors = ['#fcd34d', '#f59e0b', '#dc2626', '#ffffff'];
+        
+        for (let i = 0; i < particles; i++) {
+            const angle = (Math.PI * 2 * i) / particles;
+            const speed = 100 + Math.random() * 100;
+            const size = 4 + Math.random() * 4;
+            const lifetime = 0.5 + Math.random() * 0.5;
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            
+            this.particles.push({
+                x: enemy.x + enemy.width / 2,
+                y: enemy.y + enemy.height / 2,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                size: size,
+                color: color,
+                lifetime: lifetime,
+                time: 0
+            });
+        }
+    }
+
+    createHitEffect(enemy) {
+        // Создаем эффект попадания
+        const particles = 6;
+        const colors = ['#ffffff', '#fcd34d'];
+        
+        for (let i = 0; i < particles; i++) {
+            const angle = -Math.PI/2 + (Math.random() - 0.5);
+            const speed = 50 + Math.random() * 50;
+            const size = 2 + Math.random() * 2;
+            const lifetime = 0.2 + Math.random() * 0.2;
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            
+            this.particles.push({
+                x: enemy.x + enemy.width / 2,
+                y: enemy.y + enemy.height / 2,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                size: size,
+                color: color,
+                lifetime: lifetime,
+                time: 0
+            });
+        }
+    }
+
+    updateParticles(dt) {
+        this.particles = this.particles.filter(particle => {
+            particle.x += particle.vx * dt;
+            particle.y += particle.vy * dt;
+            particle.time += dt;
+            return particle.time < particle.lifetime;
         });
     }
 
@@ -360,6 +429,7 @@ class ArcadeCollector {
         this.updateBullets(dt);
         this.updateEnemies(dt);
         this.updateEnemyBullets(dt);
+        this.updateParticles(dt); // Добавляем обновление частиц
         
         if (this.keys.Space) {
             this.shoot();
@@ -385,18 +455,18 @@ class ArcadeCollector {
     }
 
     updateSpawnTimers(dt) {
-        // Обновление таймера монет
+        // Спавн врагов
+        this.enemySpawnTimer += dt * 1000;
+        if (this.enemySpawnTimer >= this.enemySpawnRate) {
+            this.spawnEnemy();
+            this.enemySpawnTimer = 0;
+        }
+
+        // Спавн монет
         this.coinSpawnTimer += dt * 1000;
         if (this.coinSpawnTimer >= this.coinSpawnRate) {
             this.spawnCoin();
             this.coinSpawnTimer = 0;
-        }
-        
-        // Обновление таймера препятств��й
-        this.obstacleSpawnTimer += dt * 1000;
-        if (this.obstacleSpawnTimer >= this.obstacleSpawnRate) {
-            this.spawnObstacle();
-            this.obstacleSpawnTimer = 0;
         }
     }
 
@@ -665,6 +735,15 @@ class ArcadeCollector {
             );
             this.ctx.fill();
         });
+
+        // Отрисовка частиц
+        this.particles.forEach(particle => {
+            const alpha = 1 - (particle.time / particle.lifetime);
+            this.ctx.fillStyle = particle.color + Math.floor(alpha * 255).toString(16).padStart(2, '0');
+            this.ctx.beginPath();
+            this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+            this.ctx.fill();
+        });
     }
 
     checkCollision(rect1, rect2) {
@@ -721,15 +800,16 @@ class ArcadeCollector {
         this.player.lives = 3;
         this.difficulty = 1;
         this.gameTime = 0;
+        this.enemySpawnTimer = 0;
+        this.coinSpawnTimer = 0;
         this.scoreElement.textContent = '0';
         this.livesElement.textContent = '3';
         this.levelElement.textContent = '1.0';
         
         // Очищаем все массивы
         this.coins = [];
-        this.obstacles = [];
-        this.bullets = [];
         this.enemies = [];
+        this.bullets = [];
         this.enemyBullets = [];
         
         // Сбрасываем позицию игрока
