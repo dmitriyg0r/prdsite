@@ -26,6 +26,7 @@ class ArcadeCollector {
             velocityX: 0,
             velocityY: 0,
             baseSpeed: 300,
+            color: '#4ade80', // Зеленый цвет корабля
             // Параметры рывка
             dashForce: 2000,
             dashDuration: 0.15,
@@ -33,13 +34,11 @@ class ArcadeCollector {
             dashTimer: 0,
             dashCooldownTimer: 0,
             isDashing: false,
-            // Параметры стрельбы
-            shootCooldown: 0,
-            shootRate: 350,
-            // Эффекты
+            // Параметры следа
             dashGhosts: [],
             ghostInterval: 0.02,
             ghostTimer: 0,
+            ghostDuration: 0.3, // Длительность существования следа
             friction: 0.92
         };
         
@@ -208,7 +207,7 @@ class ArcadeCollector {
         // Уменьшаем влияние очков на сложность
         this.difficulty += Math.floor(this.score / 150) * 0.08; // Было 100 и 0.1
         
-        // Более плавное изменение частоты спавна
+        // Более плавное изменение част��ты спавна
         this.enemySpawnRate = Math.max(800, 2500 - this.difficulty * 150); // Корректируем значения
         this.coinSpawnRate = Math.max(600, 1500 - this.difficulty * 75);
         
@@ -242,7 +241,7 @@ class ArcadeCollector {
             this.enemies.forEach(enemy => {
                 if (!hitEnemy && this.checkCollision(bullet, enemy)) {
                     hitEnemy = true;
-                    enemy.health -= 1; // Уменьшаем здоровье противника
+                    enemy.health -= 1; // Уменьшаем здоровье про��ивника
                     
                     // Если противник уничтожен
                     if (enemy.health <= 0) {
@@ -454,6 +453,12 @@ class ArcadeCollector {
         if (this.keys.KeyE) {
             this.shoot();
         }
+
+        // Обновляем след рывка
+        this.player.dashGhosts = this.player.dashGhosts.filter(ghost => {
+            ghost.time += dt;
+            return ghost.time < ghost.lifetime;
+        });
     }
 
     updatePlayerPosition(dt) {
@@ -487,7 +492,7 @@ class ArcadeCollector {
             this.createDashEffect();
         }
 
-        // Обновление таймеров рывка
+        // Об��овление таймеров рывка
         if (this.player.dashCooldownTimer > 0) {
             this.player.dashCooldownTimer -= dt;
         }
@@ -744,10 +749,10 @@ class ArcadeCollector {
     }
 
     draw() {
-        // Отрисовка призрачного следа
+        // Сначала отрисовываем след
         this.player.dashGhosts.forEach(ghost => {
-            const alpha = 1 - (ghost.time / ghost.lifetime);
-            this.ctx.fillStyle = `rgba(99, 102, 241, ${alpha * 0.3})`;
+            const alpha = 0.3 * (1 - (ghost.time / ghost.lifetime));
+            this.ctx.fillStyle = `rgba(74, 222, 128, ${alpha})`; // Зеленый цвет с прозрачностью
             this.ctx.beginPath();
             this.ctx.moveTo(ghost.x + ghost.width / 2, ghost.y);
             this.ctx.lineTo(ghost.x + ghost.width, ghost.y + ghost.height);
@@ -756,7 +761,7 @@ class ArcadeCollector {
             this.ctx.fill();
         });
 
-        // Отрисовка части��
+        // Отрисовка частиц
         this.particles.forEach(particle => {
             if (particle.isFlash) {
                 const alpha = (1 - particle.time / particle.lifetime) * particle.alpha;
@@ -765,8 +770,8 @@ class ArcadeCollector {
                 this.ctx.arc(particle.x, particle.y, particle.size * (1 - particle.time / particle.lifetime), 0, Math.PI * 2);
                 this.ctx.fill();
             } else {
-                const alpha = (1 - particle.time / particle.lifetime) * (particle.alpha || 1);
-                this.ctx.fillStyle = particle.color + Math.floor(alpha * 255).toString(16).padStart(2, '0');
+                const alpha = (1 - particle.time / particle.lifetime);
+                this.ctx.fillStyle = `${particle.color}${Math.floor(alpha * 255).toString(16).padStart(2, '0')}`;
                 this.ctx.beginPath();
                 this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
                 this.ctx.fill();
@@ -774,7 +779,7 @@ class ArcadeCollector {
         });
 
         // Отрисовка игрока
-        this.ctx.fillStyle = this.player.isDashing ? '#818cf8' : this.player.color;
+        this.ctx.fillStyle = this.player.isDashing ? '#86efac' : this.player.color; // Светлее во время рывка
         this.ctx.beginPath();
         this.ctx.moveTo(this.player.x + this.player.width / 2, this.player.y);
         this.ctx.lineTo(this.player.x + this.player.width, this.player.y + this.player.height);
@@ -929,7 +934,7 @@ class ArcadeCollector {
         this.timeAccumulator = 0;
         this.lastTime = performance.now();
         
-        // Обновляем UI
+        // ��бновляем UI
         this.scoreElement.textContent = '0';
         this.livesElement.textContent = '3';
         this.levelElement.textContent = '1.0';
@@ -1012,7 +1017,7 @@ class ArcadeCollector {
             y: this.player.y,
             width: this.player.width,
             height: this.player.height,
-            lifetime: 0.3,
+            lifetime: this.player.ghostDuration,
             time: 0
         });
     }
