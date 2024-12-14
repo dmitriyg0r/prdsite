@@ -2315,3 +2315,23 @@ app.post('/api/messages/send', async (req, res) => {
     }
 });
 
+// Получение списка пользователей для сайдбара
+app.get('/api/users-list', async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT id, username, avatar_url
+            FROM users
+            ORDER BY created_at DESC
+            LIMIT 20
+        `);
+        
+        res.json({ 
+            success: true,
+            users: result.rows 
+        });
+    } catch (err) {
+        console.error('Error loading users list:', err);
+        res.status(500).json({ error: 'Ошибка при загрузке списка пользователей' });
+    }
+});
+
