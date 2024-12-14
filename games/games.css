@@ -326,6 +326,8 @@
     font-size: 16px;
     color: var(--text-primary);
     font-weight: 600;
+    padding: 20px;
+    text-align: center;
 }
 
 .game-meta {
