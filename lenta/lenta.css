@@ -5,12 +5,13 @@
     display: grid;
     grid-template-columns: 1fr 300px;
     gap: 24px;
+    position: relative;
 }
 
 .feed-container {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
+    max-width: 800px;
+    margin: 0 auto;
+    width: 100%;
 }
 
 .create-post-card {
@@ -621,4 +622,35 @@
 
 #posts-container {
     padding-bottom: 32px;
+}
+
+.users-sidebar {
+    position: sticky;
+    top: 20px;
+    right: 0;
+    height: calc(100vh - 40px);
+    width: 300px;
+    margin-left: auto;
+}
+
+/* Медиа-запрос для адаптивности */
+@media (max-width: 1024px) {
+    .lenta-layout {
+        grid-template-columns: 1fr;
+        max-width: 800px;
+    }
+
+    .users-sidebar {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .lenta-layout {
+        padding: 10px;
+    }
+
+    .feed-container {
+        max-width: 100%;
+    }
 }
