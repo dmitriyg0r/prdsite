@@ -354,31 +354,37 @@ async function login() {
         const username = document.getElementById('adminUsername').value;
         const password = document.getElementById('adminPassword').value;
 
+        // Проверяем, что поля не пустые
+        if (!username || !password) {
+            alert('Пожалуйста, заполните все поля');
+            return;
+        }
+
         const response = await fetch(`${API_URL}/api/login`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Basic ' + btoa(username + ':' + password)
+                'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ username, password }),
-            credentials: 'include'
+            body: JSON.stringify({
+                username: username.trim(),
+                password: password.trim()
+            })
         });
 
         const data = await response.json();
 
-        if (data.success && data.user.role === 'admin') {
+        if (response.ok && data.user && data.user.role === 'admin') {
             localStorage.setItem('adminId', data.user.id);
-            localStorage.setItem('adminToken', data.user.token); // Сохраняем токен если он есть
             document.getElementById('loginForm').style.display = 'none';
             document.querySelector('.admin-panel').style.display = 'block';
             loadStats();
             loadUsers();
         } else {
-            alert('Доступ запрещен');
+            alert('Неверное имя пользователя или пароль');
         }
     } catch (err) {
         console.error('Ошибка авторизации:', err);
-        alert('Ошибка авторизации');
+        alert('Ошибка при попытке входа. Пожалуйста, попробуйте позже.');
     }
 }
 
