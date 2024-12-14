@@ -632,6 +632,21 @@
     margin-left: auto;
 }
 
+.lenta-layout{
+    padding-right:350px;
+    transform:translatex(38px) translatey(-15px);
+   }
+   
+   /* Post Division */
+   #posts-container .post{
+    transform:translatex(-3px) translatey(-3px) !important;
+   }
+   
+   /* Posts container */
+   #posts-container{
+    transform:translatex(126px) translatey(-3px);
+   }
+   
 /* Медиа-запрос для адаптивности */
 @media (max-width: 1024px) {
     .lenta-layout {
