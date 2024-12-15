@@ -23,11 +23,11 @@ const player = {
     radius: 20,
     color: '#3498db',
     score: 0,
-    speed: 3,
+    speed: 5,
     velocityX: 0,
     velocityY: 0,
-    acceleration: 0.5,
-    friction: 0.95
+    acceleration: 0.3,
+    friction: 0.97
 };
 
 const foods = [];
@@ -93,17 +93,23 @@ function worldToScreen(x, y) {
 }
 
 function updatePlayer() {
-    // Обновление скорости на основе нажатых клавиш
+    const maxSpeed = player.speed / (player.radius / 20);
+    
     if (keys.w) player.velocityY -= player.acceleration;
     if (keys.s) player.velocityY += player.acceleration;
     if (keys.a) player.velocityX -= player.acceleration;
     if (keys.d) player.velocityX += player.acceleration;
     
-    // Применяем трение
+    const currentSpeed = Math.sqrt(player.velocityX * player.velocityX + player.velocityY * player.velocityY);
+    if (currentSpeed > maxSpeed) {
+        const ratio = maxSpeed / currentSpeed;
+        player.velocityX *= ratio;
+        player.velocityY *= ratio;
+    }
+    
     player.velocityX *= player.friction;
     player.velocityY *= player.friction;
     
-    // Обновляем позицию
     player.x = Math.max(player.radius, Math.min(mapSize - player.radius, player.x + player.velocityX));
     player.y = Math.max(player.radius, Math.min(mapSize - player.radius, player.y + player.velocityY));
 }
@@ -174,18 +180,33 @@ function update() {
 
 // Event listeners for WASD keys
 window.addEventListener('keydown', (e) => {
-    if (e.key === 'w' || e.key === 'W') keys.w = true;
-    if (e.key === 'a' || e.key === 'A') keys.a = true;
-    if (e.key === 's' || e.key === 'S') keys.s = true;
-    if (e.key === 'd' || e.key === 'D') keys.d = true;
+    switch(e.key.toLowerCase()) {
+        case 'w': keys.w = true; break;
+        case 'a': keys.a = true; break;
+        case 's': keys.s = true; break;
+        case 'd': keys.d = true; break;
+    }
 });
 
 window.addEventListener('keyup', (e) => {
-    if (e.key === 'w' || e.key === 'W') keys.w = false;
-    if (e.key === 'a' || e.key === 'A') keys.a = false;
-    if (e.key === 's' || e.key === 'S') keys.s = false;
-    if (e.key === 'd' || e.key === 'D') keys.d = false;
+    switch(e.key.toLowerCase()) {
+        case 'w': keys.w = false; break;
+        case 'a': keys.a = false; break;
+        case 's': keys.s = false; break;
+        case 'd': keys.d = false; break;
+    }
 });
+
+// Добавим управление мышью (опционально)
+let mouseX = 0;
+let mouseY = 0;
+
+canvas.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    mouseX = e.clientX - rect.left;
+    mouseY = e.clientY - rect.top;
+});
+
 
 player.speed = 5 / (player.radius / 20);
 
