@@ -77,6 +77,7 @@ function worldToScreen(x, y) {
 }
 
 function startGame() {
+    console.log('Функция startGame вызвана');
     const playerName = document.getElementById('playerName').value;
     player.name = playerName || 'Player';
     document.getElementById('startMenu').style.display = 'none';
@@ -182,6 +183,17 @@ document.getElementById('startButton').addEventListener('click', startGame);
 const minimap = document.getElementById('minimap');
 minimap.width = 150;
 minimap.height = 150;
+
+console.log('startButton:', document.getElementById('startButton'));
+console.log('startMenu:', document.getElementById('startMenu'));
+console.log('gameUI:', document.getElementById('gameUI'));
+
+document.addEventListener('DOMContentLoaded', () => {
+    const startButton = document.getElementById('startButton');
+    startButton.addEventListener('click', () => {
+        startGame();
+    });
+});
 
 update();
 
