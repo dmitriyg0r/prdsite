@@ -1,16 +1,14 @@
-// adagar.js
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const scoreElement = document.getElementById('scoreValue');
 
-// Устанавливаем размер canvas на полный экран
-function resizeCanvas() {
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+window.addEventListener('resize', () => {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-}
-
-resizeCanvas();
-window.addEventListener('resize', resizeCanvas);
+});
 
 const mapSize = 4000;
 const camera = {
@@ -20,87 +18,81 @@ const camera = {
 };
 
 const player = {
-    name: '',
     x: mapSize / 2,
     y: mapSize / 2,
     radius: 20,
     color: '#3498db',
     score: 0,
-    speed: 3,
-    maxRadius: 200 // Добавляем максимальный размер
+    speed: 3
 };
 
-// Улучшаем создание еды
+const foods = [];
+const foodCount = 500;
+
+const keys = {
+    w: false,
+    a: false,
+    s: false,
+    d: false
+};
+
 function createFood() {
-    const hue = Math.random() * 360;
     return {
         x: Math.random() * mapSize,
         y: Math.random() * mapSize,
-        radius: 3 + Math.random() * 4,
-        color: `hsl(${hue}, 70%, 50%)`
+        radius: 5 + Math.random() * 5,
+        color: `rgb(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255})`
     };
 }
 
-const foods = Array(500).fill().map(() => createFood());
+for (let i = 0; i < foodCount; i++) {
+    foods.push(createFood());
+}
 
-// Улучшаем отрисовку
-function drawCircle(x, y, radius, color, name = '') {
+function drawCircle(x, y, radius, color) {
     ctx.beginPath();
     ctx.arc(x, y, radius, 0, Math.PI * 2);
     ctx.fillStyle = color;
     ctx.fill();
-    
-    if (name) {
-        ctx.fillStyle = 'white';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.font = `${radius/2}px Arial`;
-        ctx.fillText(name, x, y);
-    }
+    ctx.closePath();
 }
 
-function startGame() {
-    const nameInput = document.getElementById('playerName');
-    player.name = nameInput.value.trim() || 'Player';
-    document.getElementById('startMenu').style.display = 'none';
-    document.getElementById('gameUI').style.display = 'block';
-    update();
+function updateCamera() {
+    camera.x = player.x - canvas.width / 2 / camera.zoom;
+    camera.y = player.y - canvas.height / 2 / camera.zoom;
+    camera.zoom = 1 / (player.radius / 20);
+}
+
+function worldToScreen(x, y) {
+    return {
+        x: (x - camera.x) * camera.zoom,
+        y: (y - camera.y) * camera.zoom
+    };
 }
 
 function update() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // Плавное движение
-    const acceleration = 0.5;
-    if (keys.w) player.y = Math.max(player.radius, player.y - player.speed);
-    if (keys.s) player.y = Math.min(mapSize - player.radius, player.y + player.speed);
-    if (keys.a) player.x = Math.max(player.radius, player.x - player.speed);
-    if (keys.d) player.x = Math.min(mapSize - player.radius, player.x + player.speed);
 
-    // Обновляем камеру
-    camera.zoom = Math.min(1, 40 / player.radius);
-    camera.x = player.x - canvas.width / (2 * camera.zoom);
-    camera.y = player.y - canvas.height / (2 * camera.zoom);
+    // Move player based on WASD keys
+    if (keys.w && player.y - player.speed > 0) player.y -= player.speed;
+    if (keys.s && player.y + player.speed < mapSize) player.y += player.speed;
+    if (keys.a && player.x - player.speed > 0) player.x -= player.speed;
+    if (keys.d && player.x + player.speed < mapSize) player.x += player.speed;
+
+    updateCamera();
 
     ctx.save();
     ctx.scale(camera.zoom, camera.zoom);
     ctx.translate(-camera.x, -camera.y);
 
-    // Отрисовка сетки
-    const gridSize = 100;
-    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
-    ctx.beginPath();
-    for (let x = 0; x <= mapSize; x += gridSize) {
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, mapSize);
-    }
-    for (let y = 0; y <= mapSize; y += gridSize) {
-        ctx.moveTo(0, y);
-        ctx.lineTo(mapSize, y);
-    }
-    ctx.stroke();
+    // Draw map border
+    ctx.strokeStyle = 'white';
+    ctx.strokeRect(0, 0, mapSize, mapSize);
 
-    // Обработка еды
+    // Draw player
+    drawCircle(player.x, player.y, player.radius, player.color);
+
+    // Draw and check collision with food
     for (let i = foods.length - 1; i >= 0; i--) {
         const food = foods[i];
         drawCircle(food.x, food.y, food.radius, food.color);
@@ -110,23 +102,35 @@ function update() {
         const distance = Math.sqrt(dx * dx + dy * dy);
 
         if (distance < player.radius + food.radius) {
-            const growth = food.radius / 5;
-            if (player.radius < player.maxRadius) {
-                player.radius += growth;
-                player.score += Math.floor(food.radius);
-            }
-            foods[i] = createFood();
+            player.radius += food.radius / 10;
+            player.score += Math.floor(food.radius);
+            foods.splice(i, 1);
+            foods.push(createFood());
         }
     }
 
-    // Отрисовка игрока
-    drawCircle(player.x, player.y, player.radius, player.color, player.name);
-
     ctx.restore();
 
-    // Обновление UI
+    // Update score
     scoreElement.textContent = player.score;
-    document.getElementById('sizeValue').textContent = Math.round(player.radius);
-    
+
     requestAnimationFrame(update);
 }
+
+// Event listeners for WASD keys
+window.addEventListener('keydown', (e) => {
+    if (e.key === 'w' || e.key === 'W') keys.w = true;
+    if (e.key === 'a' || e.key === 'A') keys.a = true;
+    if (e.key === 's' || e.key === 'S') keys.s = true;
+    if (e.key === 'd' || e.key === 'D') keys.d = true;
+});
+
+window.addEventListener('keyup', (e) => {
+    if (e.key === 'w' || e.key === 'W') keys.w = false;
+    if (e.key === 'a' || e.key === 'A') keys.a = false;
+    if (e.key === 's' || e.key === 'S') keys.s = false;
+    if (e.key === 'd' || e.key === 'D') keys.d = false;
+});
+
+update();
+
