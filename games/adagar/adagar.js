@@ -2,19 +2,32 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const scoreElement = document.getElementById('scoreValue');
 
-canvas.width = 800;
-canvas.height = 600;
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+});
 
 const player = {
     x: canvas.width / 2,
     y: canvas.height / 2,
     radius: 20,
     color: '#3498db',
-    score: 0
+    score: 0,
+    speed: 3
 };
 
 const foods = [];
-const foodCount = 50;
+const foodCount = 100;
+
+const keys = {
+    w: false,
+    a: false,
+    s: false,
+    d: false
+};
 
 function createFood() {
     return {
@@ -40,21 +53,11 @@ function drawCircle(x, y, radius, color) {
 function update() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Move player towards mouse
-    canvas.addEventListener('mousemove', (event) => {
-        const rect = canvas.getBoundingClientRect();
-        const mouseX = event.clientX - rect.left;
-        const mouseY = event.clientY - rect.top;
-
-        const dx = mouseX - player.x;
-        const dy = mouseY - player.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-
-        if (distance > 0) {
-            player.x += dx / distance;
-            player.y += dy / distance;
-        }
-    });
+    // Move player based on WASD keys
+    if (keys.w && player.y - player.speed > 0) player.y -= player.speed;
+    if (keys.s && player.y + player.speed < canvas.height) player.y += player.speed;
+    if (keys.a && player.x - player.speed > 0) player.x -= player.speed;
+    if (keys.d && player.x + player.speed < canvas.width) player.x += player.speed;
 
     // Draw player
     drawCircle(player.x, player.y, player.radius, player.color);
@@ -81,6 +84,21 @@ function update() {
 
     requestAnimationFrame(update);
 }
+
+// Event listeners for WASD keys
+window.addEventListener('keydown', (e) => {
+    if (e.key === 'w' || e.key === 'W') keys.w = true;
+    if (e.key === 'a' || e.key === 'A') keys.a = true;
+    if (e.key === 's' || e.key === 'S') keys.s = true;
+    if (e.key === 'd' || e.key === 'D') keys.d = true;
+});
+
+window.addEventListener('keyup', (e) => {
+    if (e.key === 'w' || e.key === 'W') keys.w = false;
+    if (e.key === 'a' || e.key === 'A') keys.a = false;
+    if (e.key === 's' || e.key === 'S') keys.s = false;
+    if (e.key === 'd' || e.key === 'D') keys.d = false;
+});
 
 update();
 
