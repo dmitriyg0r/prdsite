@@ -5,6 +5,7 @@ const sortSelect = document.querySelector('.sort-select');
 const clearFiltersBtn = document.querySelector('.clear-filters-btn');
 const gamesGrid = document.querySelector('.games-grid');
 const viewButtons = document.querySelectorAll('.view-btn');
+const gameCards = document.querySelectorAll('.game-card');
 
 // Состояние фильтров
 let filters = {
@@ -25,7 +26,9 @@ categoryCheckboxes?.forEach(checkbox => {
         if (e.target.checked) {
             filters.categories.push(e.target.value.toLowerCase());
         } else {
-            filters.categories = filters.categories.filter(cat => cat !== e.target.value.toLowerCase());
+            filters.categories = filters.categories.filter(cat => 
+                cat !== e.target.value.toLowerCase()
+            );
         }
         updateGames();
     });
@@ -45,7 +48,6 @@ clearFiltersBtn?.addEventListener('click', () => {
         sort: 'popular'
     };
     
-    // Сброс UI элементов
     if (searchInput) searchInput.value = '';
     categoryCheckboxes?.forEach(checkbox => checkbox.checked = false);
     if (sortSelect) sortSelect.value = 'popular';
@@ -56,9 +58,7 @@ clearFiltersBtn?.addEventListener('click', () => {
 // Переключение вида отображения
 viewButtons?.forEach(btn => {
     btn.addEventListener('click', () => {
-        // Удаляем активный класс у всех кнопок
         viewButtons.forEach(b => b.classList.remove('active'));
-        // Добавляем активный класс нажатой кнопке
         btn.classList.add('active');
         
         const viewType = btn.dataset.view;
@@ -96,26 +96,21 @@ function updateGames() {
     // Сортировка
     const sortedCards = Array.from(gameCards);
     sortedCards.sort((a, b) => {
-        try {
-            switch(filters.sort) {
-                case 'popular':
-                    const usersA = parseInt(a.querySelector('.fa-users')?.nextSibling?.textContent || '0');
-                    const usersB = parseInt(b.querySelector('.fa-users')?.nextSibling?.textContent || '0');
-                    return usersB - usersA;
-                case 'new':
-                    const dateA = new Date(a.dataset.date || 0);
-                    const dateB = new Date(b.dataset.date || 0);
-                    return dateB - dateA;
-                case 'rating':
-                    const ratingA = parseFloat(a.querySelector('.game-rating span')?.textContent || '0');
-                    const ratingB = parseFloat(b.querySelector('.game-rating span')?.textContent || '0');
-                    return ratingB - ratingA;
-                default:
-                    return 0;
-            }
-        } catch (error) {
-            console.error('Ошибка сортировки:', error);
-            return 0;
+        switch(filters.sort) {
+            case 'popular':
+                const usersA = parseInt(a.querySelector('.fa-users')?.nextSibling?.textContent || '0');
+                const usersB = parseInt(b.querySelector('.fa-users')?.nextSibling?.textContent || '0');
+                return usersB - usersA;
+            case 'new':
+                const dateA = new Date(a.dataset.date || 0);
+                const dateB = new Date(b.dataset.date || 0);
+                return dateB - dateA;
+            case 'rating':
+                const ratingA = parseFloat(a.querySelector('.game-rating span')?.textContent || '0');
+                const ratingB = parseFloat(b.querySelector('.game-rating span')?.textContent || '0');
+                return ratingB - ratingA;
+            default:
+                return 0;
         }
     });
     
@@ -133,18 +128,7 @@ function animateCards() {
     });
 }
 
-// Инициализация при загрузке страницы
-document.addEventListener('DOMContentLoaded', () => {
-    try {
-        animateCards();
-        updateGames();
-    } catch (error) {
-        console.error('Ошибка инициализации:', error);
-    }
-});
-
 // Обработка наведения на карточки
-const gameCards = document.querySelectorAll('.game-card');
 gameCards.forEach(card => {
     const overlay = card.querySelector('.game-overlay');
     if (!overlay) return;
@@ -156,4 +140,14 @@ gameCards.forEach(card => {
     card.addEventListener('mouseleave', () => {
         overlay.style.opacity = '0';
     });
+});
+
+// Инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', () => {
+    try {
+        animateCards();
+        updateGames();
+    } catch (error) {
+        console.error('Ошибка инициализации:', error);
+    }
 });
