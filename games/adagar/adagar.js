@@ -114,7 +114,7 @@ function drawCircle(x, y, radius, color) {
 function updateCamera() {
     camera.x = player.x - canvas.width / 2 / camera.zoom;
     camera.y = player.y - canvas.height / 2 / camera.zoom;
-    camera.zoom = 1 / (player.radius / 20);
+    camera.zoom = 1 / (player.radius / 40);
 }
 
 function worldToScreen(x, y) {
@@ -233,8 +233,8 @@ function createParticle(x, y, color) {
         y: y,
         color: color,
         velocity: {
-            x: (Math.random() - 0.5) * 5,
-            y: (Math.random() - 0.5) * 5
+            x: (Math.random() - 0.5) * 2,
+            y: (Math.random() - 0.5) * 2
         },
         life: 1,
         decay: 0.02
@@ -299,6 +299,7 @@ function update() {
     
     updatePlayer();
     checkFoodCollisions();
+    checkBotCollisions();
     updateBots();
     updateCamera();
     updateParticles();
@@ -442,7 +443,7 @@ function checkFoodCollisions() {
         const distance = Math.sqrt(dx * dx + dy * dy);
         
         if (distance < player.radius + food.radius) {
-            for (let j = 0; j < 5; j++) {
+            for (let j = 0; j < 3; j++) {
                 particles.push(createParticle(food.x, food.y, food.color));
             }
             
@@ -458,6 +459,28 @@ function checkFoodCollisions() {
             
             foods.splice(i, 1);
             foods.push(createFood());
+        }
+    }
+}
+
+function checkBotCollisions() {
+    for (let i = bots.length - 1; i >= 0; i--) {
+        const bot = bots[i];
+        const dx = player.x - bot.x;
+        const dy = player.y - bot.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        if (distance < player.radius + bot.radius) {
+            if (player.radius > bot.radius * 1.1) {
+                // Игрок поглощает бота
+                player.radius += bot.radius * 0.3;
+                player.score += Math.floor(bot.radius);
+                bots.splice(i, 1);
+                bots.push(createBot());
+            } else if (bot.radius > player.radius * 1.1) {
+                // Бот поглощ��ет игрока
+                gameOver();
+            }
         }
     }
 }
