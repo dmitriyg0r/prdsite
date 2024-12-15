@@ -17,7 +17,13 @@ const camera = {
     zoom: 1
 };
 
+const game = {
+    started: false,
+    paused: false
+};
+
 const player = {
+    name: '',
     x: mapSize / 2,
     y: mapSize / 2,
     radius: 20,
@@ -70,8 +76,42 @@ function worldToScreen(x, y) {
     };
 }
 
+function startGame() {
+    const playerName = document.getElementById('playerName').value;
+    player.name = playerName || 'Player';
+    document.getElementById('startMenu').style.display = 'none';
+    document.getElementById('gameUI').style.display = 'block';
+    game.started = true;
+}
+
+function drawMinimap() {
+    const minimap = document.getElementById('minimap');
+    const minimapCtx = minimap.getContext('2d');
+    const scale = minimap.width / mapSize;
+
+    minimapCtx.clearRect(0, 0, minimap.width, minimap.height);
+    
+    // Рисуем еду
+    foods.forEach(food => {
+        minimapCtx.fillStyle = food.color;
+        minimapCtx.fillRect(food.x * scale, food.y * scale, 2, 2);
+    });
+
+    // Рисуем игрока
+    minimapCtx.fillStyle = player.color;
+    minimapCtx.beginPath();
+    minimapCtx.arc(player.x * scale, player.y * scale, 3, 0, Math.PI * 2);
+    minimapCtx.fill();
+}
+
 function update() {
+    if (!game.started) return;
+    
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Обновляем скорость в зависимости от размера
+    player.speed = 5 - (player.radius / 100);
+    player.speed = Math.max(player.speed, 0.5);
 
     // Move player based on WASD keys
     if (keys.w && player.y - player.speed > 0) player.y -= player.speed;
@@ -113,6 +153,9 @@ function update() {
 
     // Update score
     scoreElement.textContent = player.score;
+    document.getElementById('scoreValue').textContent = player.score;
+    document.getElementById('sizeValue').textContent = Math.round(player.radius);
+    drawMinimap();
 
     requestAnimationFrame(update);
 }
@@ -131,6 +174,14 @@ window.addEventListener('keyup', (e) => {
     if (e.key === 's' || e.key === 'S') keys.s = false;
     if (e.key === 'd' || e.key === 'D') keys.d = false;
 });
+
+// Добавляем обработчики событий
+document.getElementById('startButton').addEventListener('click', startGame);
+
+// Инициализация
+const minimap = document.getElementById('minimap');
+minimap.width = 150;
+minimap.height = 150;
 
 update();
 

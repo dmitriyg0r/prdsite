@@ -4,6 +4,7 @@ body, html {
     width: 100%;
     height: 100%;
     overflow: hidden;
+    background-color: #1a1a1a;
 }
 
 #gameCanvas {
@@ -12,13 +13,59 @@ body, html {
     height: 100%;
 }
 
-#score {
+#startMenu {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    background-color: rgba(0, 0, 0, 0.8);
+    padding: 20px;
+    border-radius: 10px;
+    z-index: 20;
+}
+
+#startMenu h1 {
+    color: white;
+    margin-bottom: 20px;
+}
+
+#playerName {
+    padding: 10px;
+    margin-bottom: 10px;
+    width: 200px;
+}
+
+#startButton {
+    padding: 10px 20px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#gameUI {
+    display: none;
     position: absolute;
     top: 10px;
     left: 10px;
     font-family: Arial, sans-serif;
-    font-size: 20px;
     color: white;
-    z-index: 10;
+}
+
+#score, #playerSize {
+    margin-bottom: 10px;
+    font-size: 20px;
+}
+
+#minimap {
+    width: 150px;
+    height: 150px;
+    background-color: rgba(0, 0, 0, 0.5);
+    border: 2px solid white;
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
 }
 

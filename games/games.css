@@ -234,92 +234,41 @@
 /* Улучшенная сетка игр */
 .games-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 24px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    padding: 20px;
 }
 
 /* Улучшенная карточка игры */
 .game-card {
-    background: var(--surface-color);
-    border-radius: var(--radius-lg);
+    background: var(--bg-secondary);
+    border-radius: 10px;
     overflow: hidden;
-    border: 1px solid var(--border-light);
-    transition: all 0.3s ease;
-    position: relative;
+    transition: transform 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .game-card:hover {
-    transform: translateY(-8px);
-    box-shadow: var(--shadow-lg);
+    transform: translateY(-5px);
 }
 
 .game-image {
     position: relative;
-    aspect-ratio: 16/9;
-    overflow: hidden;
+    width: 100%;
+    padding-top: 56.25%; /* Соотношение сторон 16:9 */
 }
 
 .game-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.3s ease;
-}
-
-.game-card:hover .game-image img {
-    transform: scale(1.05);
-}
-
-.game-overlay {
     position: absolute;
     top: 0;
     left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(4px);
-}
-
-.game-card:hover .game-overlay {
-    opacity: 1;
-}
-
-.play-btn {
-    padding: 12px 32px;
-    background: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: var(--radius-md);
-    font-size: 16px;
-    font-weight: 500;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.3s ease;
-    transform: translateY(20px);
-    opacity: 0;
-}
-
-.game-card:hover .play-btn {
-    transform: translateY(0);
-    opacity: 1;
-}
-
-.play-btn:hover {
-    background: var(--primary-dark);
-    transform: scale(1.05) !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .game-info {
-    padding: var(--spacing-md);
-    border-top: 1px solid var(--border-light);
+    padding: 15px;
 }
 
 .game-title {
@@ -401,6 +350,9 @@
         grid-template-columns: 250px 1fr;
         gap: 24px;
     }
+    .games-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 @media (max-width: 992px) {
@@ -423,8 +375,7 @@
     }
     
     .games-grid {
-        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-        gap: 16px;
+        grid-template-columns: 1fr;
     }
 
     .game-title {

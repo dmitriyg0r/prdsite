@@ -7,8 +7,17 @@
     <link rel="stylesheet" href="adagar.css">
 </head>
 <body>
+    <div id="startMenu">
+        <h1>Adagar.io</h1>
+        <input type="text" id="playerName" placeholder="Введите ваше имя">
+        <button id="startButton">Начать игру</button>
+    </div>
+    <div id="gameUI">
+        <div id="score">Очки: <span id="scoreValue">0</span></div>
+        <div id="playerSize">Размер: <span id="sizeValue">20</span></div>
+        <div id="minimap"></div>
+    </div>
     <canvas id="gameCanvas"></canvas>
-    <div id="score">Score: <span id="scoreValue">0</span></div>
     <script src="adagar.js"></script>
 </body>
 </html>
