@@ -422,3 +422,45 @@
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
 }
+
+/* Добавьте эти стили в games.css */
+
+.game-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.game-card:hover .game-overlay {
+    opacity: 1;
+}
+
+.play-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 32px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: var(--radius-full);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.play-btn:hover {
+    transform: scale(1.05);
+    background: var(--primary-dark);
+}
+
+.play-btn i {
+    font-size: 16px;
+}
