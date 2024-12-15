@@ -33,11 +33,11 @@ const player = {
     radius: 20,
     color: '#3498db',
     score: 0,
-    speed: 5,
+    speed: 3,
     velocityX: 0,
     velocityY: 0,
-    acceleration: 0.3,
-    friction: 0.97,
+    acceleration: 0.2,
+    friction: 0.98,
     name: 'Player',
     level: 1,
     experience: 0,
@@ -148,31 +148,82 @@ function updatePlayer() {
 
 function updateBots() {
     bots.forEach(bot => {
-        if (!bot.target || Math.random() < 0.02) {
-            bot.target = [...foods, ...bots, player]
-                .filter(target => target !== bot && target.radius < bot.radius)
-                .sort((a, b) => {
-                    const distA = Math.hypot(bot.x - a.x, bot.y - a.y);
-                    const distB = Math.hypot(bot.x - b.x, bot.y - b.y);
-                    return distA - distB;
-                })[0];
+        const distanceToPlayer = Math.hypot(player.x - bot.x, player.y - bot.y);
+        
+        if (distanceToPlayer < 300) {
+            if (bot.radius > player.radius * 1.2) {
+                bot.state = 'hunting';
+                bot.target = player;
+            } else if (bot.radius * 1.2 < player.radius) {
+                bot.state = 'fleeing';
+                bot.target = player;
+            }
+        } else {
+            bot.state = 'wandering';
         }
-
-        if (bot.target) {
-            const angle = Math.atan2(bot.target.y - bot.y, bot.target.x - bot.x);
-            bot.velocityX += Math.cos(angle) * 0.2;
-            bot.velocityY += Math.sin(angle) * 0.2;
+        
+        switch (bot.state) {
+            case 'hunting':
+                if (bot.target) {
+                    const angle = Math.atan2(bot.target.y - bot.y, bot.target.x - bot.x);
+                    bot.velocityX += Math.cos(angle) * 0.2;
+                    bot.velocityY += Math.sin(angle) * 0.2;
+                }
+                break;
+                
+            case 'fleeing':
+                if (bot.target) {
+                    const angle = Math.atan2(bot.target.y - bot.y, bot.target.x - bot.x);
+                    bot.velocityX -= Math.cos(angle) * 0.3;
+                    bot.velocityY -= Math.sin(angle) * 0.3;
+                }
+                break;
+                
+            case 'wandering':
+                let nearestFood = null;
+                let minDistance = Infinity;
+                
+                foods.forEach(food => {
+                    const dist = Math.hypot(food.x - bot.x, food.y - bot.y);
+                    if (dist < minDistance && dist < 200) {
+                        minDistance = dist;
+                        nearestFood = food;
+                    }
+                });
+                
+                if (nearestFood) {
+                    const angle = Math.atan2(nearestFood.y - bot.y, nearestFood.x - bot.x);
+                    bot.velocityX += Math.cos(angle) * 0.1;
+                    bot.velocityY += Math.sin(angle) * 0.1;
+                }
+                break;
         }
-
-        const maxSpeed = 3;
+        
+        const maxSpeed = 2 / (bot.radius / 20);
         const speed = Math.hypot(bot.velocityX, bot.velocityY);
         if (speed > maxSpeed) {
-            bot.velocityX = (bot.velocityX / speed) * maxSpeed;
-            bot.velocityY = (bot.velocityY / speed) * maxSpeed;
+            const ratio = maxSpeed / speed;
+            bot.velocityX *= ratio;
+            bot.velocityY *= ratio;
         }
-
+        
+        bot.velocityX *= 0.98;
+        bot.velocityY *= 0.98;
+        
         bot.x = Math.max(bot.radius, Math.min(mapSize - bot.radius, bot.x + bot.velocityX));
         bot.y = Math.max(bot.radius, Math.min(mapSize - bot.radius, bot.y + bot.velocityY));
+        
+        foods.forEach((food, index) => {
+            const dx = bot.x - food.x;
+            const dy = bot.y - food.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance < bot.radius + food.radius) {
+                bot.radius += food.radius * 0.1;
+                foods.splice(index, 1);
+                foods.push(createFood());
+            }
+        });
     });
 }
 
@@ -247,6 +298,7 @@ function update() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
     updatePlayer();
+    checkFoodCollisions();
     updateBots();
     updateCamera();
     updateParticles();
@@ -379,6 +431,34 @@ function resetGame() {
     bots.length = 0;
     for (let i = 0; i < botCount; i++) {
         bots.push(createBot());
+    }
+}
+
+function checkFoodCollisions() {
+    for (let i = foods.length - 1; i >= 0; i--) {
+        const food = foods[i];
+        const dx = player.x - food.x;
+        const dy = player.y - food.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        if (distance < player.radius + food.radius) {
+            for (let j = 0; j < 5; j++) {
+                particles.push(createParticle(food.x, food.y, food.color));
+            }
+            
+            player.radius += food.radius * 0.1;
+            player.score += Math.floor(food.radius);
+            player.experience += Math.floor(food.radius);
+            
+            if (player.experience >= player.maxExperience) {
+                player.level++;
+                player.experience = 0;
+                player.maxExperience *= 1.2;
+            }
+            
+            foods.splice(i, 1);
+            foods.push(createFood());
+        }
     }
 }
 
