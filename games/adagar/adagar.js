@@ -51,7 +51,6 @@ function createFood() {
     };
 }
 
-// Создаем еду
 for (let i = 0; i < foodCount; i++) {
     foods.push(createFood());
 }
@@ -68,6 +67,21 @@ function updateCamera() {
     camera.x = player.x - canvas.width / 2 / camera.zoom;
     camera.y = player.y - canvas.height / 2 / camera.zoom;
     camera.zoom = 1 / (player.radius / 20);
+}
+
+function worldToScreen(x, y) {
+    return {
+        x: (x - camera.x) * camera.zoom,
+        y: (y - camera.y) * camera.zoom
+    };
+}
+
+function startGame() {
+    const playerName = document.getElementById('playerName').value;
+    player.name = playerName || 'Player';
+    document.getElementById('startMenu').style.display = 'none';
+    document.getElementById('gameUI').style.display = 'block';
+    game.started = true;
 }
 
 function drawMinimap() {
@@ -90,19 +104,16 @@ function drawMinimap() {
     minimapCtx.fill();
 }
 
-function gameLoop() {
-    if (!game.started || game.paused) {
-        requestAnimationFrame(gameLoop);
-        return;
-    }
-
+function update() {
+    if (!game.started) return;
+    
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Обновляем скорость в зависимости от размера
     player.speed = 5 - (player.radius / 100);
     player.speed = Math.max(player.speed, 0.5);
 
-    // Движение игрока
+    // Move player based on WASD keys
     if (keys.w && player.y - player.speed > 0) player.y -= player.speed;
     if (keys.s && player.y + player.speed < mapSize) player.y += player.speed;
     if (keys.a && player.x - player.speed > 0) player.x -= player.speed;
@@ -114,14 +125,14 @@ function gameLoop() {
     ctx.scale(camera.zoom, camera.zoom);
     ctx.translate(-camera.x, -camera.y);
 
-    // Рисуем границу карты
+    // Draw map border
     ctx.strokeStyle = 'white';
     ctx.strokeRect(0, 0, mapSize, mapSize);
 
-    // Рисуем игрока
+    // Draw player
     drawCircle(player.x, player.y, player.radius, player.color);
 
-    // Рисуем еду и проверяем столкновения
+    // Draw and check collision with food
     for (let i = foods.length - 1; i >= 0; i--) {
         const food = foods[i];
         drawCircle(food.x, food.y, food.radius, food.color);
@@ -140,42 +151,37 @@ function gameLoop() {
 
     ctx.restore();
 
-    // Обновляем интерфейс
+    // Update score
+    scoreElement.textContent = player.score;
     document.getElementById('scoreValue').textContent = player.score;
     document.getElementById('sizeValue').textContent = Math.round(player.radius);
     drawMinimap();
 
-    requestAnimationFrame(gameLoop);
+    requestAnimationFrame(update);
 }
 
-function startGame() {
-    const playerName = document.getElementById('playerName').value;
-    player.name = playerName || 'Player';
-    document.getElementById('startMenu').style.display = 'none';
-    document.getElementById('gameUI').style.display = 'block';
-    game.started = true;
-    gameLoop(); // Запускаем игровой цикл
-}
-
-// Обработчики событий
-document.getElementById('startButton').addEventListener('click', startGame);
-
+// Event listeners for WASD keys
 window.addEventListener('keydown', (e) => {
-    if (e.key.toLowerCase() === 'w') keys.w = true;
-    if (e.key.toLowerCase() === 'a') keys.a = true;
-    if (e.key.toLowerCase() === 's') keys.s = true;
-    if (e.key.toLowerCase() === 'd') keys.d = true;
+    if (e.key === 'w' || e.key === 'W') keys.w = true;
+    if (e.key === 'a' || e.key === 'A') keys.a = true;
+    if (e.key === 's' || e.key === 'S') keys.s = true;
+    if (e.key === 'd' || e.key === 'D') keys.d = true;
 });
 
 window.addEventListener('keyup', (e) => {
-    if (e.key.toLowerCase() === 'w') keys.w = false;
-    if (e.key.toLowerCase() === 'a') keys.a = false;
-    if (e.key.toLowerCase() === 's') keys.s = false;
-    if (e.key.toLowerCase() === 'd') keys.d = false;
+    if (e.key === 'w' || e.key === 'W') keys.w = false;
+    if (e.key === 'a' || e.key === 'A') keys.a = false;
+    if (e.key === 's' || e.key === 'S') keys.s = false;
+    if (e.key === 'd' || e.key === 'D') keys.d = false;
 });
 
-// Инициализация миникарты
+// Добавляем обработчики событий
+document.getElementById('startButton').addEventListener('click', startGame);
+
+// Инициализация
 const minimap = document.getElementById('minimap');
 minimap.width = 150;
 minimap.height = 150;
+
+update();
 
