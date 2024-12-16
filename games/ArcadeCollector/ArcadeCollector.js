@@ -140,6 +140,37 @@ class ArcadeCollector {
         // Добавим в конструктор массив для частиц двигателя
         this.engineParticles = [];
         
+        // Добавляем массив для перков
+        this.perks = [];
+        
+        // Добавляем типы перков
+        this.perkTypes = {
+            health: {
+                width: 30,
+                height: 30,
+                color: '#ef4444', // Красный цвет для аптечки
+                effect: () => this.applyHealthPerk(),
+                spawnRate: 15000, // Раз в 15 секунд
+                lastSpawn: 0
+            },
+            weapon: {
+                width: 30,
+                height: 30,
+                color: '#3b82f6', // Синий цвет для оружия
+                effect: () => this.applyWeaponPerk(),
+                duration: 10, // Длительность эффекта в секундах
+                spawnRate: 20000, // Раз в 20 секунд
+                lastSpawn: 0
+            }
+        };
+        
+        // Изменяем параметры улучшения оружия
+        this.weaponPowerup = {
+            active: false,
+            timeLeft: 0,
+            type: 'normal' // 'normal' или 'shotgun'
+        };
+        
         this.bindEvents();
         this.lastTime = performance.now();
         this.animate(this.lastTime);
@@ -237,22 +268,47 @@ class ArcadeCollector {
     }
 
     shoot() {
-        const bulletWidth = 10;
-        const bulletHeight = 20;
-        
-        this.bullets.push({
-            x: this.player.x + (this.player.width - bulletWidth) / 2,
-            y: this.player.y,
-            width: bulletWidth,
-            height: bulletHeight,
-            speed: -800,
-            color: '#4ade80'
-        });
+        if (this.weaponPowerup.type === 'shotgun') {
+            // Стрельба дробью (5 пуль веером)
+            const bulletCount = 5;
+            const spreadAngle = Math.PI / 6; // 30 градусов общий разброс
+            
+            for (let i = 0; i < bulletCount; i++) {
+                const angle = (i - (bulletCount - 1) / 2) * (spreadAngle / (bulletCount - 1));
+                const speed = 500;
+                
+                this.bullets.push({
+                    x: this.player.x + this.player.width/2 - 2,
+                    y: this.player.y,
+                    width: 4,
+                    height: 8,
+                    speedX: Math.sin(angle) * speed,
+                    speedY: -Math.cos(angle) * speed,
+                    color: '#4ade80',
+                    damage: 10
+                });
+            }
+        } else {
+            // Обычная стрельба
+            this.bullets.push({
+                x: this.player.x + this.player.width/2 - 2,
+                y: this.player.y,
+                width: 4,
+                height: 8,
+                speedX: 0,
+                speedY: -500,
+                color: '#4ade80',
+                damage: 15
+            });
+        }
+
+        // Создаем эффект вспышки выстрела
+        this.createShootEffect();
     }
 
     updateBullets(dt) {
         this.bullets = this.bullets.filter(bullet => {
-            bullet.y += bullet.speed * dt;
+            bullet.y += bullet.speedY * dt;
             
             // Проверяем столкновения с врагами
             for (let i = this.enemies.length - 1; i >= 0; i--) {
@@ -452,6 +508,8 @@ class ArcadeCollector {
         this.updateEnemyBullets(dt);
         this.updateParticles(dt);
         this.updateEngineParticles(dt);
+        this.updatePerks(dt);
+        this.updateWeaponPowerup(dt);
         
         // Обновляем след рывка
         this.player.dashGhosts = this.player.dashGhosts.filter(ghost => {
@@ -637,7 +695,7 @@ class ArcadeCollector {
                 this.ctx.closePath();
                 this.ctx.fill();
 
-                // Добавляем свчение
+                // Добавляем свечение
                 this.ctx.shadowColor = enemy.color;
                 this.ctx.shadowBlur = 10;
                 this.ctx.strokeStyle = '#fff';
@@ -774,7 +832,7 @@ class ArcadeCollector {
             this.ctx.restore();
         });
 
-        // Отрисовка частиц
+        // От��исовка частиц
         this.particles.forEach(particle => {
             if (particle.isFlash) {
                 const alpha = (1 - particle.time / particle.lifetime) * particle.alpha;
@@ -912,6 +970,18 @@ class ArcadeCollector {
             this.ctx.fill();
             this.ctx.restore();
         });
+
+        // Отрисовка перков
+        this.perks.forEach(perk => {
+            this.ctx.fillStyle = perk.color;
+            this.ctx.fillRect(perk.x, perk.y, perk.width, perk.height);
+            
+            // Добавляем свечение
+            this.ctx.shadowColor = perk.color;
+            this.ctx.shadowBlur = 10;
+            this.ctx.fillRect(perk.x, perk.y, perk.width, perk.height);
+            this.ctx.shadowBlur = 0;
+        });
     }
 
     checkCollision(rect1, rect2) {
@@ -1016,7 +1086,7 @@ class ArcadeCollector {
         const particles = 30;
         // Используем оттенки зеленого, соответствующие цвету корабля
         const colors = ['#4ade80', '#86efac', '#22c55e', '#ffffff'];
-        const angleSpread = Math.PI / 3; // 60 градусов разброс
+        const angleSpread = Math.PI / 3; // 60 градусов ра��брос
         
         // Определяем направление движения
         const angle = Math.atan2(this.player.velocityY, this.player.velocityX);
@@ -1151,6 +1221,127 @@ class ArcadeCollector {
         // Добавляем новые частицы
         if (this.gameState === 'playing') {
             this.createEngineParticles();
+        }
+    }
+
+    // Добавляем метод создания перка
+    spawnPerk(type) {
+        const perkType = this.perkTypes[type];
+        this.perks.push({
+            x: Math.random() * (this.canvas.width - perkType.width),
+            y: -perkType.height,
+            width: perkType.width,
+            height: perkType.height,
+            type: type,
+            color: perkType.color,
+            speed: 100
+        });
+    }
+
+    // Обновление перков
+    updatePerks(dt) {
+        // Спавн перков
+        Object.entries(this.perkTypes).forEach(([type, perk]) => {
+            if (this.gameTime * 1000 - perk.lastSpawn > perk.spawnRate) {
+                this.spawnPerk(type);
+                perk.lastSpawn = this.gameTime * 1000;
+            }
+        });
+        
+        // Движение и коллизии перков
+        this.perks = this.perks.filter(perk => {
+            perk.y += perk.speed * dt;
+            
+            // Проверка коллизии с игроком
+            if (this.checkCollision(this.player, perk)) {
+                this.perkTypes[perk.type].effect();
+                return false;
+            }
+            
+            return perk.y < this.canvas.height;
+        });
+        
+        // Обновление длительности эффекта оружия
+        if (this.weaponPowerup.active) {
+            this.weaponPowerup.timeLeft -= dt;
+            if (this.weaponPowerup.timeLeft <= 0) {
+                this.weaponPowerup.active = false;
+                this.weaponPowerup.type = 'normal';
+            }
+        }
+    }
+
+    // Эффект аптечки
+    applyHealthPerk() {
+        const healAmount = 30; // Количество восстанавливаемого здоровья
+        this.player.health = Math.min(this.player.maxHealth, this.player.health + healAmount);
+        
+        // Создаем эффект лечения
+        this.createHealEffect();
+    }
+
+    // Эффект улучшения оружия
+    applyWeaponPerk() {
+        this.weaponPowerup.active = true;
+        this.weaponPowerup.timeLeft = this.perkTypes.weapon.duration;
+        this.weaponPowerup.type = 'shotgun';
+        
+        // Создаем эффект получения улучшения
+        this.createWeaponPowerupEffect();
+    }
+
+    // Визуальный эффект лечения
+    createHealEffect() {
+        const particles = 20;
+        const colors = ['#22c55e', '#4ade80', '#ffffff'];
+        
+        for (let i = 0; i < particles; i++) {
+            const angle = (Math.PI * 2 * i) / particles;
+            const speed = 100 + Math.random() * 50;
+            
+            this.particles.push({
+                x: this.player.x + this.player.width / 2,
+                y: this.player.y + this.player.height / 2,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                size: 3 + Math.random() * 2,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                lifetime: 0.5,
+                time: 0
+            });
+        }
+    }
+
+    // Визуальный эффект улучшения оружия
+    createWeaponPowerupEffect() {
+        const particles = 20;
+        const colors = ['#3b82f6', '#60a5fa', '#ffffff'];
+        
+        for (let i = 0; i < particles; i++) {
+            const angle = (Math.PI * 2 * i) / particles;
+            const speed = 100 + Math.random() * 50;
+            
+            this.particles.push({
+                x: this.player.x + this.player.width / 2,
+                y: this.player.y + this.player.height / 2,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                size: 3 + Math.random() * 2,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                lifetime: 0.5,
+                time: 0
+            });
+        }
+    }
+
+    // В методе update или updateWeaponPowerup
+    updateWeaponPowerup(dt) {
+        if (this.weaponPowerup.active) {
+            this.weaponPowerup.timeLeft -= dt;
+            if (this.weaponPowerup.timeLeft <= 0) {
+                this.weaponPowerup.active = false;
+                this.weaponPowerup.type = 'normal';
+            }
         }
     }
 }
