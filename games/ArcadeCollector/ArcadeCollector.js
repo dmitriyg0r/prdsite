@@ -430,7 +430,7 @@ class ArcadeCollector {
 
     updateEnemies(dt) {
         this.enemies = this.enemies.filter(enemy => {
-            // Обновление времени для поведения
+            // Обновление времени для поведен��я
             enemy.time += dt;
 
             // Обновление позиции в зависимости от поведения
@@ -549,7 +549,7 @@ class ArcadeCollector {
         if (this.keys.ArrowUp) moveY -= 1;
         if (this.keys.ArrowDown) moveY += 1;
 
-        // Нормализация диагонального движения
+        // ��ормализация диагонального движения
         if (moveX !== 0 && moveY !== 0) {
             const normalizer = 1 / Math.sqrt(2);
             moveX *= normalizer;
@@ -759,7 +759,7 @@ class ArcadeCollector {
                 this.ctx.lineWidth = 2;
                 this.ctx.stroke();
 
-                // Полоса здоровья
+                // ��олоса здоровья
                 const healthPercentage = enemy.health / this.enemyTypes.boss.health;
                 const healthBarWidth = enemy.width * 1.2;
                 const healthBarHeight = 8;
@@ -1101,7 +1101,7 @@ class ArcadeCollector {
 
     createDashEffect() {
         const particles = 30;
-        // Используем оттенки зелен��го, соответствующие цвету корабля
+        // Используем оттенки зеленого, соответствующие цвету корабля
         const colors = ['#4ade80', '#86efac', '#22c55e', '#ffffff'];
         const angleSpread = Math.PI / 3; // 60 градусов раброс
         
@@ -1316,12 +1316,31 @@ class ArcadeCollector {
 
     // Эффект улучшения оружия
     applyWeaponPerk() {
-        this.weaponPowerup.active = true;
-        this.weaponPowerup.timeLeft = this.perkTypes.weapon.duration;
-        this.weaponPowerup.type = 'shotgun';
+        this.weaponPowerup = {
+            active: true,
+            timeLeft: this.perkTypes.weapon.duration,
+            type: 'shotgun'
+        };
         
-        // Создаем эффект получения улучшения
-        this.createWeaponPowerupEffect();
+        // Создаем визуальный эффект получения улучшения
+        const particles = 20;
+        const colors = ['#3b82f6', '#60a5fa', '#ffffff'];
+        
+        for (let i = 0; i < particles; i++) {
+            const angle = (Math.PI * 2 * i) / particles;
+            const speed = 100 + Math.random() * 50;
+            
+            this.particles.push({
+                x: this.player.x + this.player.width / 2,
+                y: this.player.y + this.player.height / 2,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                size: 3 + Math.random() * 2,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                lifetime: 0.5,
+                time: 0
+            });
+        }
     }
 
     // Визуальный эффект лечения
@@ -1373,8 +1392,11 @@ class ArcadeCollector {
         if (this.weaponPowerup.active) {
             this.weaponPowerup.timeLeft -= dt;
             if (this.weaponPowerup.timeLeft <= 0) {
-                this.weaponPowerup.active = false;
-                this.weaponPowerup.type = 'normal';
+                this.weaponPowerup = {
+                    active: false,
+                    timeLeft: 0,
+                    type: 'normal'
+                };
             }
         }
     }
