@@ -1045,7 +1045,6 @@ body[data-theme="dark"] {
 /* Стилизация ползунка для элементов с прокруткой (например, текстовых областей) */
 body[data-theme="dark"] *::-webkit-scrollbar {
     width: 8px;
-    background-color: #121214;
 }
 
 body[data-theme="dark"] *::-webkit-scrollbar-thumb {
