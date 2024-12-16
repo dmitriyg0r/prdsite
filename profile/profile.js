@@ -524,7 +524,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             friendsHeaderCount.textContent = friends.length;
         }
 
-        // Обновляем с��етчик в модальном окне
+        // Обновляем счетчик в модальном окне
         const modalFriendCount = document.querySelector('.modal-tabs .friend-count');
         if (modalFriendCount) {
             modalFriendCount.textContent = friends.length;
@@ -576,7 +576,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             `).join('');
         }
 
-        // Добав��яем обработчики для кнопок удаления
+        // Добавляем обработчики для кнопок удаления
         if (isCurrentUser) {
             document.querySelectorAll('.remove-friend-btn').forEach(btn => {
                 btn.addEventListener('click', () => removeFriend(btn.dataset.userId));
@@ -892,17 +892,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const now = Date.now();
         
-        // Пропускаем обновление, если прошло слишком мало времени с последнего обновления
         if (!force && now - lastStatusUpdate < MIN_UPDATE_INTERVAL) {
             return;
         }
 
-        // Отменяем предыдущий отложенный запрос
         if (statusUpdateTimeout) {
             clearTimeout(statusUpdateTimeout);
         }
 
-        // Откладываем выполнение запроса
         statusUpdateTimeout = setTimeout(async () => {
             try {
                 const response = await fetch('https://adminflow.ru:5003/api/users/update-status', {
@@ -914,21 +911,24 @@ document.addEventListener('DOMContentLoaded', async () => {
                         userId: currentUser.id,
                         is_online: true,
                         last_activity: new Date().toISOString()
-                    })
+                    }),
+                    credentials: 'include'
                 });
 
-                if (!response.ok) {
-                    throw new Error('Failed to update status');
+                const data = await response.json();
+
+                if (!data.success) {
+                    throw new Error(data.error || 'Failed to update status');
                 }
 
                 lastStatusUpdate = now;
             } catch (err) {
                 console.error('Error updating user status:', err);
             }
-        }, 100); // Небольшая задержка для группировки обновлений
+        }, 100);
     }
 
-    // Оптимизированная функция отслеживания активности
+    // Оп��имизированная функция отслеживания активности
     function startStatusUpdates() {
         let lastActivity = new Date();
         let activityTimeout = null;
@@ -1282,7 +1282,7 @@ async function createPost() {
         formData.append('content', content);
         
         if (file) {
-            // Проверяем размер файла (например, 10MB м��ксимум)
+            // Проверяем размер файла (например, 10MB максимум)
             const maxSize = 10 * 1024 * 1024; // 10MB в байтах
             if (file.size > maxSize) {
                 alert('Файл слишком большой. Максимальный размер: 10MB');
@@ -1355,18 +1355,31 @@ async function createPost() {
 async function loadPosts() {
     try {
         const userId = new URLSearchParams(window.location.search).get('id') || currentUser.id;
-        console.log('Loading posts for userId:', userId); // Отладочная информация
+        console.log('Loading posts for userId:', userId);
         
-        const response = await fetch(`https://adminflow.ru:5003/api/posts/${userId}?currentUserId=${currentUser.id}`);
+        const response = await fetch(`https://adminflow.ru:5003/api/posts/${userId}?currentUserId=${currentUser.id}`, {
+            credentials: 'include'
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Ошибка при загрузке постов');
+        }
+        
         const data = await response.json();
-        
-        console.log('Posts response:', data); // Отладочная информация
+        console.log('Posts response:', data);
 
         if (data.success) {
             displayPosts(data.posts);
+        } else {
+            throw new Error(data.error || 'Ошибка при загрузке постов');
         }
     } catch (err) {
         console.error('Error loading posts:', err);
+        const postsContainer = document.querySelector('.posts-container');
+        if (postsContainer) {
+            postsContainer.innerHTML = `<div class="error-message">Не удалось загрузить посты: ${err.message}</div>`;
+        }
     }
 }
 
@@ -1777,14 +1790,28 @@ async function toggleComments(postId) {
 
 async function loadComments(postId) {
     try {
-        const response = await fetch(`https://adminflow.ru:5003/api/posts/${postId}/comments`);
-        if (!response.ok) throw new Error('Ошибка при загрузке комментариев');
+        const response = await fetch(`https://adminflow.ru:5003/api/posts/${postId}/comments`, {
+            credentials: 'include'
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Ошибка при загрузке комментариев');
+        }
         
         const data = await response.json();
+        if (!data.success) {
+            throw new Error(data.error || 'Ошибка при загрузке комментариев');
+        }
+        
         displayComments(postId, data.comments);
     } catch (err) {
         console.error('Error loading comments:', err);
-        alert('Ошибка при загрузке комментариев');
+        // Показываем более информативное сообщение об ошибке
+        const errorContainer = document.getElementById(`comments-container-${postId}`);
+        if (errorContainer) {
+            errorContainer.innerHTML = `<div class="error-message">Не удалось загрузить комментарии: ${err.message}</div>`;
+        }
     }
 }
 
