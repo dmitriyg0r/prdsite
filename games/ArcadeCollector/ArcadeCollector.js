@@ -84,7 +84,7 @@ class ArcadeCollector {
                 color: '#dc2626',
                 health: 8, // Увеличиваем с 5 до 8
                 points: 75, // Увеличиваем с 50 до 75
-                shootRate: 1500, // Увеличиваем �� 1000 до 1500
+                shootRate: 1500, // Увеличиваем с 1000 до 1500
                 bulletSpeed: 300,
                 behavior: 'sine',
                 damage: 25, // Сильный урон при столкновении
@@ -758,13 +758,16 @@ class ArcadeCollector {
         // Сначала отрисовываем след
         this.player.dashGhosts.forEach(ghost => {
             const alpha = 0.3 * (1 - (ghost.time / ghost.lifetime));
-            this.ctx.fillStyle = `rgba(74, 222, 128, ${alpha})`; // Зеленый цвет �� прозрачностью
-            this.ctx.beginPath();
-            this.ctx.moveTo(ghost.x + ghost.width / 2, ghost.y);
-            this.ctx.lineTo(ghost.x + ghost.width, ghost.y + ghost.height);
-            this.ctx.lineTo(ghost.x, ghost.y + ghost.height);
-            this.ctx.closePath();
-            this.ctx.fill();
+            this.ctx.save();
+            this.ctx.globalAlpha = alpha;
+            this.ctx.drawImage(
+                this.playerImage,
+                ghost.x,
+                ghost.y,
+                ghost.width,
+                ghost.height
+            );
+            this.ctx.restore();
         });
 
         // Отрисовка частиц
@@ -785,7 +788,7 @@ class ArcadeCollector {
         });
 
         // Отрисовка игрока
-        if (this.playerImage.complete) { // Проверяем, загрузилось ли из��бражение
+        if (this.playerImage.complete) { // Проверяем, загрузилось ли изображение
             this.ctx.save();
             if (this.player.isDashing) {
                 // Добавляем свечение во время рывка
@@ -1018,7 +1021,7 @@ class ArcadeCollector {
             });
         }
 
-        // Добавляем ��спышку в цвет корабля
+        // Добавляем вспышку в цвет корабля
         this.particles.push({
             x: this.player.x + this.player.width / 2,
             y: this.player.y + this.player.height / 2,
@@ -1040,7 +1043,8 @@ class ArcadeCollector {
             width: this.player.width,
             height: this.player.height,
             lifetime: this.player.ghostDuration,
-            time: 0
+            time: 0,
+            image: this.playerImage // Добавляем ссылку на изображение
         });
     }
 
