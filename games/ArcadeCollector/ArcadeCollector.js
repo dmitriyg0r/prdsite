@@ -146,20 +146,20 @@ class ArcadeCollector {
         // Добавляем типы перков
         this.perkTypes = {
             health: {
-                width: 30,
-                height: 30,
-                color: '#ef4444', // Красный цвет для аптечки
+                width: 40,  // Увеличиваем размер
+                height: 40, // Увеличиваем размер
+                color: '#ef4444',
                 effect: () => this.applyHealthPerk(),
-                spawnRate: 15000, // Раз в 15 секунд
+                spawnRate: 15000,
                 lastSpawn: 0
             },
             weapon: {
-                width: 30,
-                height: 30,
-                color: '#3b82f6', // Синий цвет для оружия
+                width: 40,  // Увеличиваем размер
+                height: 40, // Увеличиваем размер
+                color: '#3b82f6',
                 effect: () => this.applyWeaponPerk(),
-                duration: 10, // Длительность эффекта в секундах
-                spawnRate: 20000, // Раз в 20 секунд
+                duration: 10,
+                spawnRate: 20000,
                 lastSpawn: 0
             }
         };
@@ -229,7 +229,7 @@ class ArcadeCollector {
     }
 
     bindEvents() {
-        // Предотврщаем прокрутку страницы
+        // Предотврщ��ем прокрутку страницы
         window.addEventListener('keydown', (e) => {
             if(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyE', 'KeyW', 'Space'].includes(e.code)) {
                 e.preventDefault();
@@ -280,13 +280,13 @@ class ArcadeCollector {
             // Стрельба дробью (7 пуль веером)
             const bulletCount = 7;
             const spreadAngle = Math.PI / 3; // 60 градусов общий разброс
+            const speed = 500;
             
             for (let i = 0; i < bulletCount; i++) {
-                const angle = (i - (bulletCount - 1) / 2) * (spreadAngle / (bulletCount - 1));
-                const speed = 500;
+                const angle = -Math.PI/2 + (i - (bulletCount - 1) / 2) * (spreadAngle / (bulletCount - 1));
                 
                 const speedX = Math.sin(angle) * speed;
-                const speedY = -Math.cos(angle) * speed;
+                const speedY = Math.cos(angle) * speed;
                 
                 this.bullets.push({
                     x: this.player.x + this.player.width/2 - 2,
@@ -294,7 +294,7 @@ class ArcadeCollector {
                     width: 4,
                     height: 8,
                     speedX: speedX,
-                    speedY: speedY,
+                    speedY: -speedY, // Инвертируем Y скорость для правильного направления
                     color: '#4ade80',
                     damage: 8 // Уменьшенный урон для каждой пули дроби
                 });
@@ -521,7 +521,7 @@ class ArcadeCollector {
         this.updatePerks(dt);
         this.updateWeaponPowerup(dt);
         
-        // О��новляем след рывка
+        // Оновляем след рывка
         this.player.dashGhosts = this.player.dashGhosts.filter(ghost => {
             ghost.time += dt;
             return ghost.time < ghost.lifetime;
@@ -590,7 +590,7 @@ class ArcadeCollector {
             }
         }
 
-        // Применяем обычное движение, если не в рывке
+        // Применяем обычное движение, если не в р��вке
         if (!this.player.isDashing) {
             this.player.velocityX = moveX * this.player.baseSpeed;
             this.player.velocityY = moveY * this.player.baseSpeed;
@@ -987,7 +987,7 @@ class ArcadeCollector {
                 this.ctx.save();
                 // Добавляем свечение
                 this.ctx.shadowColor = perk.color;
-                this.ctx.shadowBlur = 10;
+                this.ctx.shadowBlur = 15; // Увеличиваем свечение
                 // Отрисовываем изображение
                 this.ctx.drawImage(
                     this.perkImages[perk.type],
@@ -1101,7 +1101,7 @@ class ArcadeCollector {
 
     createDashEffect() {
         const particles = 30;
-        // Используем оттенки зеленого, соответствующие цвету корабля
+        // Используем оттенки зелен��го, соответствующие цвету корабля
         const colors = ['#4ade80', '#86efac', '#22c55e', '#ffffff'];
         const angleSpread = Math.PI / 3; // 60 градусов раброс
         
@@ -1200,7 +1200,7 @@ class ArcadeCollector {
         // Определяем интенсивность на основе движения
         const movingUp = this.keys.ArrowUp;
         const particleCount = movingUp ? 3 : 2; // Больше частиц при движении вверх
-        const baseSpeed = movingUp ? 200 : 150; // Быстрее при дв��жении вверх
+        const baseSpeed = movingUp ? 200 : 150; // Быстрее при двжении вверх
 
         // Корректируем позиции двигателей в соответствии со спрайтом
         const enginePositions = [
@@ -1265,7 +1265,7 @@ class ArcadeCollector {
             }
         });
         
-        // ��вижение и коллизии перков
+        // движение и коллизии перков
         this.perks = this.perks.filter(perk => {
             perk.y += perk.speed * dt;
             
@@ -1290,11 +1290,28 @@ class ArcadeCollector {
 
     // Эффект аптечки
     applyHealthPerk() {
-        const healAmount = 30; // Количество восстанавливаемого здоровья
+        const healAmount = 30;
         this.player.health = Math.min(this.player.maxHealth, this.player.health + healAmount);
         
-        // Создаем эффект лечения
-        this.createHealEffect();
+        // Создаем визуальный эффект лечения
+        const particles = 20;
+        const colors = ['#22c55e', '#4ade80', '#ffffff'];
+        
+        for (let i = 0; i < particles; i++) {
+            const angle = (Math.PI * 2 * i) / particles;
+            const speed = 100 + Math.random() * 50;
+            
+            this.particles.push({
+                x: this.player.x + this.player.width / 2,
+                y: this.player.y + this.player.height / 2,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                size: 3 + Math.random() * 2,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                lifetime: 0.5,
+                time: 0
+            });
+        }
     }
 
     // Эффект улучшения оружия
