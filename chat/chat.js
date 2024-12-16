@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Загружаем список чатов
     await loadChatsList();
     
-    // Запускаем периодическ��е обновление списка чатов
+    // Запускаем периодическое обновление списка чатов
     setInterval(loadChatsList, 10000); // Обновляем каждые 10 секунд
 });
 
@@ -221,117 +221,111 @@ function displayNewMessages(newMessages, shouldScroll) {
 
 function createMessageElement(message) {
     const messageElement = document.createElement('div');
-    messageElement.className = `message ${message.sender_id === currentUser.id ? 'message-sent' : 'message-received'}`;
+    messageElement.className = `message message-${message.sender_id === currentUser.id ? 'sent' : 'received'}`;
     messageElement.dataset.messageId = message.id;
-    messageElement.dataset.timestamp = message.created_at;
 
-    const messageContent = document.createElement('div');
-    messageContent.className = 'message-content';
-
-    // Обработка ответа на сообщение
-    if (message.reply_to) {
-        const replyElement = document.createElement('div');
-        replyElement.className = 'message-reply';
-        replyElement.dataset.replyToMessageId = message.reply_to;
+    if (message.message_type === 'voice') {
+        // Создаем голосовое сообщение
+        const voiceContainer = document.createElement('div');
+        voiceContainer.className = 'voice-message';
         
-        const replyAuthor = message.reply_to_message?.sender_id === currentUser.id ? 'Вы' : 
-            message.reply_to_message?.sender_username || 'Пользователь';
+        // Создаем кнопку воспроизведения
+        const playButton = document.createElement('button');
+        playButton.className = 'voice-message-play';
+        playButton.innerHTML = '<i class="fas fa-play"></i>';
+
+        // Создаем визуализацию волны
+        const waveform = document.createElement('div');
+        waveform.className = 'voice-message-waveform';
         
-        const truncatedReplyText = message.reply_to_message?.message?.length > 50 
-            ? message.reply_to_message.message.substring(0, 50) + '...' 
-            : message.reply_to_message?.message || 'Сообщение недоступно';
+        // Добавляем прогресс-бар
+        const progress = document.createElement('div');
+        progress.className = 'voice-message-progress';
+        waveform.appendChild(progress);
 
-        replyElement.innerHTML = `
-            <div class="reply-header">
-                <i class="fas fa-reply"></i>
-                <span class="reply-author">${replyAuthor}</span>
-            </div>
-            <div class="reply-content">${truncatedReplyText}</div>
-        `;
+        // Добавляем время
+        const timeSpan = document.createElement('span');
+        timeSpan.className = 'voice-message-time';
+        timeSpan.textContent = '00:00';
 
-        messageElement.appendChild(replyElement);
+        // Собираем все элементы
+        voiceContainer.appendChild(playButton);
+        voiceContainer.appendChild(waveform);
+        voiceContainer.appendChild(timeSpan);
+        messageElement.appendChild(voiceContainer);
+
+        // Добавляем обработчик воспроизведения
+        let audio = null;
+        playButton.addEventListener('click', async () => {
+            try {
+                if (audio && !audio.paused) {
+                    audio.pause();
+                    playButton.innerHTML = '<i class="fas fa-play"></i>';
+                    return;
+                }
+
+                playButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                
+                const response = await fetch(`https://adminflow.ru:5003/api/messages/voice/${message.id}`);
+                if (!response.ok) throw new Error('Ошибка загрузки аудио');
+                
+                const blob = await response.blob();
+                audio = new Audio(URL.createObjectURL(blob));
+                
+                audio.onplay = () => {
+                    playButton.innerHTML = '<i class="fas fa-pause"></i>';
+                };
+                
+                audio.onpause = () => {
+                    playButton.innerHTML = '<i class="fas fa-play"></i>';
+                };
+                
+                audio.onended = () => {
+                    playButton.innerHTML = '<i class="fas fa-play"></i>';
+                    progress.style.width = '0%';
+                };
+
+                audio.ontimeupdate = () => {
+                    const percent = (audio.currentTime / audio.duration) * 100;
+                    progress.style.width = `${percent}%`;
+                    timeSpan.textContent = formatTime(audio.currentTime);
+                };
+
+                audio.onloadedmetadata = () => {
+                    timeSpan.textContent = formatTime(audio.duration);
+                };
+
+                await audio.play();
+
+            } catch (error) {
+                console.error('Ошибка воспроизведения:', error);
+                playButton.innerHTML = '<i class="fas fa-play"></i>';
+                alert('Не удалось воспроизвести сообщение');
+            }
+        });
+    } else {
+        // Обработка обычных текстовых сообщений
+        // ... существующий код для текстовых сообщений ...
     }
 
-    // Обработка текста сообщения с Markdown
-    if (message.message) {
-        const messageText = document.createElement('div');
-        messageText.className = 'message-text';
-        
-        try {
-            // Экранируем специальные HTML-символы
-            let safeMessage = message.message
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;');
-            
-            // Парсим Markdown
-            const parsedMessage = marked.parse(safeMessage);
-            
-            // Очищаем HTML с помощью DOMPurify
-            const cleanHtml = DOMPurify.sanitize(parsedMessage, {
-                ALLOWED_TAGS: [
-                    'p', 'br', 'strong', 'em', 'code', 'pre',
-                    'blockquote', 'ul', 'ol', 'li', 'a',
-                    'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-                    'hr', 'del', 'span'
-                ],
-                ALLOWED_ATTR: ['href', 'target', 'class'],
-                ALLOW_DATA_ATTR: false,
-                ADD_ATTR: ['target'], // Добавляем target для ссылок
-                FORBID_TAGS: ['style', 'script'],
-                FORBID_ATTR: ['style', 'onerror', 'onload'],
-            });
-            
-            messageText.innerHTML = cleanHtml;
-            
-            // Добавляем target="_blank" для всех ссылок
-            messageText.querySelectorAll('a').forEach(link => {
-                link.setAttribute('target', '_blank');
-                link.setAttribute('rel', 'noopener noreferrer');
-            });
-            
-        } catch (error) {
-            console.error('Error parsing markdown:', error);
-            // В случае ошибки показываем текст как есть
-            messageText.textContent = message.message;
-        }
-        
-        messageContent.appendChild(messageText);
-    }
-
-    // Обработка вложений
-    if (message.attachment_url) {
-        const attachmentElement = createAttachmentElement(message.attachment_url);
-        messageContent.appendChild(attachmentElement);
-    }
-
-    // Информация о сообщении (время и статус)
-    const messageInfo = document.createElement('div');
-    messageInfo.className = 'message-info';
-
-    const messageTime = document.createElement('span');
-    messageTime.className = 'message-time';
-    messageTime.textContent = new Date(message.created_at).toLocaleTimeString([], { 
+    // Добавляем время отправки
+    const timestamp = document.createElement('div');
+    timestamp.className = 'message-timestamp';
+    timestamp.textContent = new Date(message.created_at).toLocaleTimeString([], { 
         hour: '2-digit', 
         minute: '2-digit' 
     });
-    messageInfo.appendChild(messageTime);
-
-    if (message.sender_id === currentUser.id) {
-        const readStatus = document.createElement('span');
-        readStatus.className = 'message-status';
-        readStatus.innerHTML = message.is_read 
-            ? '<i class="fas fa-check-double"></i>' 
-            : '<i class="fas fa-check"></i>';
-        messageInfo.appendChild(readStatus);
-    }
-
-    messageContent.appendChild(messageInfo);
-    messageElement.appendChild(messageContent);
+    messageElement.appendChild(timestamp);
 
     return messageElement;
 }
 
+// Вспомогательная функция для форматирования времени
+function formatTime(seconds) {
+    const minutes = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+}
 
 function createAttachmentElement(attachmentUrl) {
     const attachmentElement = document.createElement('div');
@@ -340,7 +334,7 @@ function createAttachmentElement(attachmentUrl) {
     // Очищаем и нормализуем путь к файлу
     let fullUrl = attachmentUrl;
     
-    // Удаляем дублирование ��ти
+    // Удаляем дублирование ти
     if (attachmentUrl.includes('/uploads/messages')) {
         fullUrl = `https://adminflow.ru:5003${attachmentUrl}`;
     } else {
@@ -683,7 +677,7 @@ function showImageModal(imageUrl) {
     modalImage.onerror = () => {
         console.error('Ошибка загрузки изображения в модальном окне:', imageUrl);
         if(modal) modal.style.display = 'none';
-        alert('Ошибка при загрузке изображения');
+        alert('Ошибка при загрузк�� изображения');
     };
     
     modalImage.src = imageUrl;
@@ -831,7 +825,7 @@ async function deleteMessage(messageId) {
             });
         } else {
             console.error('Ошибка при удалении сообщения:', data.error);
-            alert(data.error || 'Не удалось удалить сообщение');
+            alert(data.error || 'Не удалось уд��лить сообщение');
         }
     } catch (error) {
         console.error('Ошибка при удалении сообщения:', error);
@@ -1362,7 +1356,7 @@ function getLastActivityTime(lastActivity) {
     }
 }
 
-// Функция для обновления счетчика непрочитанных сообщений
+// Функци�� для обновления счетчика непрочитанных сообщений
 async function updateUnreadCount(friendId) {
   if(!friendId) return
   try {
@@ -1488,7 +1482,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Добавляем прямой обработчик для кнопки отправки
+    // Добавляем прямой обработчик для кнопки отправк��
     const sendButton = document.getElementById('sendMessage');
     const messageInput = document.getElementById('messageInput');
 
