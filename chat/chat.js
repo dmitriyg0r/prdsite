@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Загружаем список чатов
     await loadChatsList();
     
-    // Запускаем периодическ��е обновление списка чатов
+    // Запускаем периодическое обновление списка чатов
     setInterval(loadChatsList, 10000); // Обновляем каждые 10 секунд
 });
 
@@ -306,6 +306,34 @@ function createMessageElement(message) {
                 alert('Не удалось воспроизвести сообщение');
             }
         });
+
+        // Добавляем контекстное меню для голосовых сообщений
+        if (message.sender_id === currentUser.id) {
+            voiceContainer.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                showContextMenu(e, [
+                    {
+                        text: 'Удалить сообщение',
+                        onClick: async () => {
+                            try {
+                                const response = await fetch(`https://adminflow.ru:5003/api/messages/${message.id}`, {
+                                    method: 'DELETE'
+                                });
+
+                                if (response.ok) {
+                                    messageElement.remove();
+                                } else {
+                                    throw new Error('Ошибка при удалении сообщения');
+                                }
+                            } catch (error) {
+                                console.error('Ошибка:', error);
+                                alert('Не удалось удалить сообщение');
+                            }
+                        }
+                    }
+                ]);
+            });
+        }
     } else {
         // Обработка текстовых сообщений
         const messageContent = document.createElement('div');
@@ -444,7 +472,7 @@ async function sendMessage() {
         const responseData = await response.json();
 
         if (!response.ok) {
-            throw new Error(responseData.details || responseData.error || 'Ошиб��а при отправке сообщения');
+            throw new Error(responseData.details || responseData.error || 'Ошибка при отправке сообщения');
         }
 
         if (responseData.success) {
@@ -485,7 +513,7 @@ async function markMessagesAsRead(friendId) {
 
         const data = await response.json();
         if (data.success) {
-            // Обновляем счетчик ��олько если успешно обновили статус
+            // Обновляем счетчик олько если успешно обновили статус
             await updateUnreadCount(friendId);
         } else {
             console.error('Ошибка при обновлении статуса сообщений:', data.error);
@@ -820,7 +848,7 @@ async function deleteMessage(messageId) {
             return;
         }
 
-        // Прове��яем, есть ли вложение
+        // Проверяем, есть ли вложение
         const attachmentElement = messageElement.querySelector('.message-attachment');
         let attachmentUrl = null;
         if (attachmentElement) {
@@ -955,7 +983,7 @@ function setupContextMenu() {
             const windowWidth = window.innerWidth;
             const windowHeight = window.innerHeight;
 
-            // Проверяем и корректируем позицию п�� горизонтали
+            // Проверяем и корректируем позицию по горизонтали
             if (x + menuRect.width > windowWidth) {
                 contextMenu.style.left = `${x - menuRect.width}px`;
             } else {
@@ -1299,7 +1327,7 @@ async function selectChat(chat) {
             newActive.classList.add('active');
         }
 
-        // Очищае�� предыдущие сообщения
+        // Очищаем предыдущие сообщения
         const messagesContainer = document.getElementById('messages');
         if (messagesContainer) {
             messagesContainer.innerHTML = '';
@@ -1541,7 +1569,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const responseData = await response.json();
 
                 if (!response.ok) {
-                    throw new Error(responseData.details || responseData.error || 'Ошибка при отправке с��общения');
+                    throw new Error(responseData.details || responseData.error || 'Ошибка при отправке сообщения');
                 }
 
                 if (responseData.success) {
