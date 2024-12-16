@@ -1080,7 +1080,7 @@ class ArcadeCollector {
     }
 
     createDamageEffect() {
-        // Визуальный эффект получения урона
+        // Визуальный эффект получения ��рона
         const particles = 15;
         const colors = ['#ef4444', '#dc2626', '#ffffff'];
         
@@ -1136,26 +1136,6 @@ class ArcadeCollector {
                 });
             }
         });
-
-        // Добавляем центральный двигатель
-        const centerEngine = {
-            x: this.player.x + (this.player.width / 2),
-            y: this.player.y + this.player.height - 20
-        };
-
-        for (let i = 0; i < particleCount; i++) {
-            const spread = (Math.random() - 0.5) * 4;
-            this.engineParticles.push({
-                x: centerEngine.x + spread,
-                y: centerEngine.y,
-                vx: (Math.random() - 0.5) * 15,
-                vy: baseSpeed + Math.random() * 50,
-                size: 2 + Math.random() * 2,
-                lifetime: 0.2 + Math.random() * 0.1,
-                time: 0,
-                color: Math.random() > 0.5 ? '#4ade80' : '#22c55e'
-            });
-        }
     }
 
     // Добавим метод обновления частиц двигателя
