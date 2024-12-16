@@ -795,7 +795,7 @@ class ArcadeCollector {
         if (this.playerImage.complete) { // Проверяем, загрузилось ли изображение
             this.ctx.save();
             if (this.player.isDashing) {
-                // Добавляем свечен��е во время рывка
+                // Добавляем свечение во время рывка
                 this.ctx.shadowColor = '#86efac';
                 this.ctx.shadowBlur = 20;
             }
@@ -1117,8 +1117,8 @@ class ArcadeCollector {
 
         // Корректируем позиции двигателей в соответствии со спрайтом
         const enginePositions = [
-            { x: this.player.x + 20, y: this.player.y + this.player.height - 25 },  // Левый двигатель
-            { x: this.player.x + this.player.width - 20, y: this.player.y + this.player.height - 25 }  // Правый двигатель (сместили правее)
+            { x: this.player.x + 10, y: this.player.y + this.player.height - 20 },  // Левый двигатель (сместили левее)
+            { x: this.player.x + this.player.width - 15, y: this.player.y + this.player.height - 20 }  // Правый двигатель
         ];
 
         enginePositions.forEach(pos => {
