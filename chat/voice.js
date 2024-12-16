@@ -21,9 +21,17 @@ class VoiceRecorder {
         this.startTimer = this.startTimer.bind(this);
         this.stopTimer = this.stopTimer.bind(this);
         this.visualize = this.visualize.bind(this);
+        this.formatTime = this.formatTime.bind(this);
 
         // Инициализация UI и обработчиков
         this.init();
+    }
+
+    // Вспомогательная функция для форматирования времени
+    formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
     }
 
     init() {
@@ -209,30 +217,68 @@ class VoiceRecorder {
         messageElement.className = `message message-${message.sender_id === currentUser.id ? 'sent' : 'received'}`;
         messageElement.dataset.messageId = message.id;
         
-        const duration = message.duration || '00:00';
+        // Создаем контейнер для голосового сообщения
+        const voiceContainer = document.createElement('div');
+        voiceContainer.className = 'voice-message';
         
-        messageElement.innerHTML = `
-            <div class="voice-message">
-                <button class="voice-message-play" data-file-path="${message.file_path}">
-                    <i class="fas fa-play"></i>
-                </button>
-                <div class="voice-message-waveform">
-                    <div class="voice-message-progress"></div>
-                </div>
-                <span class="voice-message-time">${duration}</span>
-            </div>
-        `;
-    
+        // Добавляем информацию об отправителе для полученных сообщений
+        if (message.sender_id !== currentUser.id) {
+            const senderInfo = document.createElement('div');
+            senderInfo.className = 'message-sender';
+            senderInfo.textContent = message.sender_name || 'Пользователь';
+            messageElement.appendChild(senderInfo);
+        }
+
+        // Создаем кнопку воспроизведения
+        const playButton = document.createElement('button');
+        playButton.className = 'voice-message-play';
+        playButton.innerHTML = '<i class="fas fa-play"></i>';
+
+        // Создаем визуализацию волны
+        const waveform = document.createElement('div');
+        waveform.className = 'voice-message-waveform';
+        
+        // Добавляем прогресс-бар
+        const progress = document.createElement('div');
+        progress.className = 'voice-message-progress';
+        waveform.appendChild(progress);
+
+        // Добавляем время
+        const timeSpan = document.createElement('span');
+        timeSpan.className = 'voice-message-time';
+        timeSpan.textContent = '00:00';
+
+        // Собираем все элементы
+        voiceContainer.appendChild(playButton);
+        voiceContainer.appendChild(waveform);
+        voiceContainer.appendChild(timeSpan);
+        messageElement.appendChild(voiceContainer);
+
+        // Добавляем время отправки
+        const timestamp = document.createElement('div');
+        timestamp.className = 'message-timestamp';
+        timestamp.textContent = new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        messageElement.appendChild(timestamp);
+
         // Добавляем обработчик воспроизведения
-        const playButton = messageElement.querySelector('.voice-message-play');
+        let audio = null;
         playButton.addEventListener('click', async () => {
             try {
+                if (audio && !audio.paused) {
+                    audio.pause();
+                    playButton.innerHTML = '<i class="fas fa-play"></i>';
+                    return;
+                }
+
+                playButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                
                 const response = await fetch(`https://adminflow.ru:5003/api/messages/voice/${message.id}`);
                 if (!response.ok) throw new Error('Ошибка загрузки аудио');
                 
                 const blob = await response.blob();
-                const audio = new Audio(URL.createObjectURL(blob));
+                audio = new Audio(URL.createObjectURL(blob));
                 
+                // Обработчики событий аудио
                 audio.onplay = () => {
                     playButton.innerHTML = '<i class="fas fa-pause"></i>';
                 };
@@ -243,19 +289,31 @@ class VoiceRecorder {
                 
                 audio.onended = () => {
                     playButton.innerHTML = '<i class="fas fa-play"></i>';
+                    progress.style.width = '0%';
                 };
-                
-                if (audio.paused) {
-                    audio.play();
-                } else {
-                    audio.pause();
-                }
+
+                // Обновление прогресса воспроизведения
+                audio.ontimeupdate = () => {
+                    const percent = (audio.currentTime / audio.duration) * 100;
+                    progress.style.width = `${percent}%`;
+                    timeSpan.textContent = this.formatTime(audio.currentTime);
+                };
+
+                // Обработка загрузки метаданных
+                audio.onloadedmetadata = () => {
+                    timeSpan.textContent = this.formatTime(audio.duration);
+                };
+
+                await audio.play();
+
             } catch (error) {
                 console.error('Ошибка воспроизведения:', error);
+                playButton.innerHTML = '<i class="fas fa-play"></i>';
                 alert('Не удалось воспроизвести сообщение');
             }
         });
-    
+
+        // Добавляем сообщение в контейнер
         const messagesContainer = document.getElementById('messages');
         messagesContainer.appendChild(messageElement);
         scrollToBottom();
@@ -326,6 +384,7 @@ class VoiceRecorder {
                 context.fillRect(x, canvas.height - y, barWidth, y);
                 x += barWidth;
             });
+            x = 0;
         };
 
         draw();

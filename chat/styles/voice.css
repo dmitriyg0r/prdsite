@@ -98,11 +98,15 @@
 .voice-message {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px 12px;
-    background: var(--surface-color);
-    border-radius: 16px;
-    margin-top: 4px;
+    gap: 12px;
+    padding: 8px;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.05);
+    margin: 4px 0;
+}
+
+.message-sent .voice-message {
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .voice-message-play {
@@ -116,19 +120,56 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.voice-message-play:hover {
+    transform: scale(1.1);
 }
 
 .voice-message-waveform {
     flex: 1;
     height: 24px;
-    background: var(--background-color);
+    background: rgba(0, 0, 0, 0.1);
     border-radius: 12px;
     position: relative;
+    overflow: hidden;
+    min-width: 100px;
+}
+
+.message-sent .voice-message-waveform {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.voice-message-progress {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    background: rgba(var(--primary-color-rgb), 0.3);
+    width: 0;
+    transition: width 0.1s linear;
 }
 
 .voice-message-time {
     font-size: 12px;
     color: var(--text-secondary);
+    min-width: 45px;
+}
+
+.message-sent .voice-message-time {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.message-timestamp {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+    text-align: right;
+}
+
+.message-sent .message-timestamp {
+    color: rgba(255, 255, 255, 0.7);
 }
 
 .voice-message .fa-spinner {
@@ -143,15 +184,4 @@
 
 .fa-spin {
     animation: spin 1s linear infinite;
-}
-
-.voice-message-progress {
-    position: absolute;
-    left: 0;
-    top: 0;
-    height: 100%;
-    background: rgba(var(--primary-color-rgb), 0.2);
-    border-radius: 12px;
-    width: 0;
-    transition: width 0.1s linear;
 }
