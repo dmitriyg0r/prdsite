@@ -21,8 +21,10 @@ class ArcadeCollector {
         this.player = {
             x: this.canvas.width / 2,
             y: this.canvas.height - 50,
-            width: 40,
-            height: 40,
+            width: 80,
+            height: 80,
+            hitboxWidth: 60,
+            hitboxHeight: 60,
             velocityX: 0,
             velocityY: 0,
             baseSpeed: 300,
@@ -43,6 +45,8 @@ class ArcadeCollector {
             // Параметры стрельбы
             shootCooldown: 0,
             shootRate: 250, // Уменьшим задержку между выстрелами
+            maxHealth: 100,
+            health: 100,
         };
         
         // Типы противников
@@ -56,18 +60,22 @@ class ArcadeCollector {
                 points: 15, // Увеличиваем с 10 до 15
                 shootRate: 2500, // Увеличиваем с 2000 до 2500
                 bulletSpeed: 200,
-                behavior: 'straight'
+                behavior: 'straight',
+                damage: 10, // Базовый урон
+                bulletDamage: 5, // Урон от пуль
             },
             shooter: {
                 width: 40,
                 height: 40,
-                speed: 80, // Уменьшаем с 100 до 80
+                speed: 90, // Уменьшаем с 100 до 80
                 color: '#fb923c',
                 health: 3, // Увеличиваем с 2 до 3
                 points: 25, // Увеличиваем с 20 до 25
                 shootRate: 2000, // Увеличиваем с 1500 до 2000
                 bulletSpeed: 250,
-                behavior: 'strafe'
+                behavior: 'strafe',
+                damage: 15, // Повышенный урон при столкновении
+                bulletDamage: 8, // Повышенный урон от пуль
             },
             boss: {
                 width: 60,
@@ -75,10 +83,12 @@ class ArcadeCollector {
                 speed: 60, // Уменьшаем с 80 до 60
                 color: '#dc2626',
                 health: 8, // Увеличиваем с 5 до 8
-                points: 75, // Увели��иваем с 50 до 75
+                points: 75, // Увеличиваем с 50 до 75
                 shootRate: 1500, // Увеличиваем с 1000 до 1500
                 bulletSpeed: 300,
-                behavior: 'sine'
+                behavior: 'sine',
+                damage: 25, // Сильный урон при столкновении
+                bulletDamage: 12, // Сильный урон от пуль
             }
         };
 
@@ -123,9 +133,157 @@ class ArcadeCollector {
         // Добавляем массив для частиц
         this.particles = [];
         
+        // Загрузка изображения корабля
+        this.playerImage = new Image();
+        this.playerImage.src = 'assets/Frendly_ship.png'; // Путь к вашему изображению
+        
+        // Добавим в конструктор массив для частиц двигателя
+        this.engineParticles = [];
+        
+        // Добавляем массив для перков
+        this.perks = [];
+        
+        // Добавляем типы перков
+        this.perkTypes = {
+            health: {
+                width: 80,  // Увеличиваем с 40 до 50
+                height: 80, // Увеличиваем с 40 до 50
+                color: '#ef4444',
+                effect: () => this.applyHealthPerk(),
+                spawnRate: 15000,
+                lastSpawn: 0
+            },
+            weapon: {
+                width: 70,  // Увеличиваем с 40 до 50
+                height: 70, // Увеличиваем с 40 до 50
+                color: '#3b82f6',
+                effect: () => this.applyWeaponPerk('shotgun'),
+                duration: 10,
+                spawnRate: 20000,
+                lastSpawn: 0
+            },
+            weapon2: {
+                width: 70,  // Увеличиваем с 40 до 50
+                height: 70, // Увеличиваем с 40 до 50
+                color: '#22c55e',
+                effect: () => this.applyWeaponPerk('triple'),
+                duration: 10,
+                spawnRate: 20000,
+                lastSpawn: 0
+            }
+        };
+        
+        // Загружаем изображения для перков
+        this.perkImages = {
+            health: new Image(),
+            weapon: new Image(),
+            weapon2: new Image()  // Новый перк
+        };
+        this.perkImages.health.src = '../ArcadeCollector/assets/med_perk.png';
+        this.perkImages.weapon.src = '../ArcadeCollector/assets/w3_perk.png';
+        this.perkImages.weapon2.src = '../ArcadeCollector/assets/w2_perk.png';  // Путь к новому изображению
+        
+        // Добавляем обработчики ошибок загрузки изображений
+        this.perkImages.health.onerror = () => console.error('Error loading health perk image');
+        this.perkImages.weapon.onerror = () => console.error('Error loading weapon perk image');
+        this.perkImages.weapon2.onerror = () => console.error('Error loading weapon2 perk image');
+        
+        // Добавляем проверку загрузки изображений
+        this.perkImages.health.onload = () => console.log('Health perk image loaded');
+        this.perkImages.weapon.onload = () => console.log('Weapon perk image loaded');
+        this.perkImages.weapon2.onload = () => console.log('Weapon2 perk image loaded');
+        
+        // Изменяем параметры улучшения оружия
+        this.weaponPowerup = {
+            active: false,
+            timeLeft: 0,
+            type: 'normal' // 'normal' или 'shotgun'
+        };
+        
+        // Добавляем параметры для боссов
+        this.bossConfig = {
+            scoreThreshold: 1000, // Первый босс появляется при 1000 очках
+            subsequentThreshold: 1500, // Последующие боссы появляются каждые 1500 очков
+            active: false,
+            lastBossScore: 0,
+            boss: null
+        };
+        
+        // Обновляем типы боссов
+        this.bossTypes = {
+            basic: {
+                width: 120,
+                height: 120,
+                maxHealth: 150,
+                health: 150,
+                color: '#dc2626',
+                points: 500,
+                shootRate: 2000,
+                lastShot: 0,
+                currentPattern: 0,
+                bulletPatterns: ['circle', 'spiral', 'wave', 'cross'],
+                bulletSpeed: 200,
+                bulletDamage: 15,
+                name: 'Красный страж'
+            },
+            laser: {
+                width: 140,
+                height: 140,
+                maxHealth: 200,
+                health: 200,
+                color: '#3b82f6',
+                points: 750,
+                shootRate: 2500,
+                lastShot: 0,
+                currentPattern: 0,
+                bulletPatterns: ['laser', 'crossLaser', 'spinningLaser'],
+                bulletSpeed: 250,
+                bulletDamage: 20,
+                name: 'Лазерный титан'
+            },
+            swarm: {
+                width: 100,
+                height: 100,
+                maxHealth: 180,
+                health: 180,
+                color: '#8b5cf6',
+                points: 650,
+                shootRate: 1800,
+                lastShot: 0,
+                currentPattern: 0,
+                bulletPatterns: ['swarm', 'multiSwarm', 'chaosSwarm'],
+                bulletSpeed: 180,
+                bulletDamage: 12,
+                name: 'Повелитель роя'
+            },
+            tank: {
+                width: 160,
+                height: 160,
+                maxHealth: 300,
+                health: 300,
+                color: '#f59e0b',
+                points: 1000,
+                shootRate: 3000,
+                lastShot: 0,
+                currentPattern: 0,
+                bulletPatterns: ['heavyShot', 'artillery', 'bombard'],
+                bulletSpeed: 150,
+                bulletDamage: 25,
+                name: 'Тяжелый разрушитель'
+            }
+        };
+        
+        // Добавим порядок появления боссов
+        this.bossOrder = ['basic']; // Первый босс всегда basic
+        this.currentBossIndex = 0;
+        
         this.bindEvents();
         this.lastTime = performance.now();
         this.animate(this.lastTime);
+        
+        // Инициализация здоровья игрока
+        this.player.health = this.player.maxHealth;
+        this.updateHealthDisplay(); // Устанавливаем начальное значение
     }
 
     animate(currentTime) {
@@ -173,7 +331,7 @@ class ArcadeCollector {
     }
 
     bindEvents() {
-        // Предотврщаем прокрутку страницы
+        // Предотврщем прокрутку страницы
         window.addEventListener('keydown', (e) => {
             if(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyE', 'KeyW', 'Space'].includes(e.code)) {
                 e.preventDefault();
@@ -205,7 +363,7 @@ class ArcadeCollector {
     updateDifficulty(dt) {
         this.gameTime += dt;
         // Замедляем рост сложности
-        this.difficulty = 1 + Math.floor(this.gameTime / 45) * 0.15; // ��ыло 30 сек и 0.2
+        this.difficulty = 1 + Math.floor(this.gameTime / 45) * 0.15; // ыло 30 сек и 0.2
         
         // Уменьшаем влияние очков на сложность
         this.difficulty += Math.floor(this.score / 150) * 0.08; // Было 100 и 0.1
@@ -220,22 +378,91 @@ class ArcadeCollector {
     }
 
     shoot() {
-        const bulletWidth = 10;
-        const bulletHeight = 20;
-        
-        this.bullets.push({
-            x: this.player.x + (this.player.width - bulletWidth) / 2,
-            y: this.player.y,
-            width: bulletWidth,
-            height: bulletHeight,
-            speed: -800,
-            color: '#4ade80'
-        });
+        if (this.weaponPowerup.type === 'shotgun') {
+            // Стрельба дробью (7 пуль веером)
+            const bulletCount = 7;
+            const spreadAngle = Math.PI / 6; // Уменьшаем разброс до 30 градусов
+            const speed = 500;
+            
+            for (let i = 0; i < bulletCount; i++) {
+                // Центрируем веер относительно направления ввер����������
+                const angle = (i - (bulletCount - 1) / 2) * (spreadAngle / (bulletCount - 1));
+                
+                // Рассчитываем компоненты скорости
+                const speedX = Math.sin(angle) * speed;
+                const speedY = -Math.cos(angle) * speed;
+                
+                this.bullets.push({
+                    x: this.player.x + this.player.width/2 - 2,
+                    y: this.player.y,
+                    width: 4,
+                    height: 8,
+                    speedX: speedX,
+                    speedY: speedY,
+                    color: '#4ade80',
+                    damage: 8
+                });
+            }
+        } else if (this.weaponPowerup.type === 'triple') {
+            // Тройной выстрел (3 пули)
+            const bulletCount = 3;
+            const spreadAngle = Math.PI / 8; // Мен��ш��й разброс
+            const speed = 500;
+            
+            for (let i = 0; i < bulletCount; i++) {
+                const angle = (i - (bulletCount - 1) / 2) * (spreadAngle / (bulletCount - 1));
+                const speedX = Math.sin(angle) * speed;
+                const speedY = -Math.cos(angle) * speed;
+                
+                this.bullets.push({
+                    x: this.player.x + this.player.width/2 - 2,
+                    y: this.player.y,
+                    width: 4,
+                    height: 8,
+                    speedX: speedX,
+                    speedY: speedY,
+                    color: '#4ade80',
+                    damage: 12 // Больше урона чем у дроби
+                });
+            }
+        } else {
+            // Обычная стрельба
+            this.bullets.push({
+                x: this.player.x + this.player.width/2 - 2,
+                y: this.player.y,
+                width: 4,
+                height: 8,
+                speedX: 0,
+                speedY: -500,
+                color: '#4ade80',
+                damage: 15
+            });
+        }
+
+        this.createShootEffect();
     }
 
     updateBullets(dt) {
         this.bullets = this.bullets.filter(bullet => {
-            bullet.y += bullet.speed * dt;
+            bullet.x += bullet.speedX * dt;
+            bullet.y += bullet.speedY * dt;
+            
+            // Проверяем попадание в босса
+            if (this.bossConfig.active && this.bossConfig.boss) {
+                if (this.checkCollision(bullet, this.bossConfig.boss)) {
+                    this.bossConfig.boss.health -= bullet.damage;
+                    this.createHitEffect(this.bossConfig.boss);
+                    
+                    if (this.bossConfig.boss.health <= 0) {
+                        this.score += this.bossConfig.boss.points;
+                        this.scoreElement.textContent = this.score;
+                        this.createDestroyEffect(this.bossConfig.boss);
+                        this.bossConfig.active = false;
+                        this.bossConfig.boss = null;
+                    }
+                    return false;
+                }
+            }
             
             // Проверяем столкновения с врагами
             for (let i = this.enemies.length - 1; i >= 0; i--) {
@@ -246,12 +473,19 @@ class ArcadeCollector {
                         this.score += enemy.points;
                         this.scoreElement.textContent = this.score;
                         this.enemies.splice(i, 1);
+                        this.createDestroyEffect(enemy);
+                    } else {
+                        this.createHitEffect(enemy);
                     }
                     return false;
                 }
             }
             
-            return bullet.y > -bullet.height;
+            // Удаляем пули, вышедшие за пределы экрана
+            return bullet.y > -bullet.height && 
+                   bullet.y < this.canvas.height && 
+                   bullet.x > -bullet.width && 
+                   bullet.x < this.canvas.width;
         });
     }
 
@@ -281,7 +515,7 @@ class ArcadeCollector {
     }
 
     createHitEffect(enemy) {
-        // Создаем эффект попадания
+        // Создаем эффект поадания
         const particles = 6;
         const colors = ['#ffffff', '#fcd34d'];
         
@@ -350,7 +584,7 @@ class ArcadeCollector {
             // Обновление времени для поведения
             enemy.time += dt;
 
-            // Обновление позиции в зависимости от поведения
+            // Обновление позиции в зависиости от поведения
             switch(enemy.behavior) {
                 case 'straight':
                     enemy.y += enemy.speed * dt;
@@ -402,7 +636,8 @@ class ArcadeCollector {
             height: 12,
             speedX: speedX,
             speedY: speedY,
-            color: enemy.color
+            color: enemy.color,
+            damage: enemy.bulletDamage
         });
     }
 
@@ -413,12 +648,7 @@ class ArcadeCollector {
 
             // Проверка столкновения с игроком
             if (this.checkCollision(this.player, bullet)) {
-                this.player.lives--;
-                this.livesElement.textContent = this.player.lives;
-                
-                if (this.player.lives <= 0) {
-                    this.gameOver();
-                }
+                this.damagePlayer(bullet.damage); // Используем урон из пули
                 return false;
             }
 
@@ -430,6 +660,21 @@ class ArcadeCollector {
     update(dt) {
         if (this.gameState !== 'playing') return;
         
+        // Проверяем, нужно ��и создать босса
+        if (!this.bossConfig.active) {
+            const threshold = this.currentBossIndex === 0 
+                ? this.bossConfig.scoreThreshold 
+                : this.bossConfig.lastBossScore + this.bossConfig.subsequentThreshold;
+            
+            if (this.score >= threshold) {
+                this.createBoss();
+                this.bossConfig.lastBossScore = this.score;
+            }
+        }
+        
+        // Обновляем босса
+        this.updateBoss(dt);
+        
         this.updateDifficulty(dt);
         this.updatePlayerPosition(dt);
         this.updateSpawnTimers(dt);
@@ -438,8 +683,11 @@ class ArcadeCollector {
         this.updateEnemies(dt);
         this.updateEnemyBullets(dt);
         this.updateParticles(dt);
+        this.updateEngineParticles(dt);
+        this.updatePerks(dt);
+        this.updateWeaponPowerup(dt);
         
-        // Обновляем след рывка
+        // Оновляем след рывка
         this.player.dashGhosts = this.player.dashGhosts.filter(ghost => {
             ghost.time += dt;
             return ghost.time < ghost.lifetime;
@@ -467,7 +715,7 @@ class ArcadeCollector {
         if (this.keys.ArrowUp) moveY -= 1;
         if (this.keys.ArrowDown) moveY += 1;
 
-        // Нормализация диагонального движения
+        // ормализация диагонального движения
         if (moveX !== 0 && moveY !== 0) {
             const normalizer = 1 / Math.sqrt(2);
             moveX *= normalizer;
@@ -488,7 +736,7 @@ class ArcadeCollector {
             this.createDashEffect();
         }
 
-        // Обновление таймеров рывка
+        // Обновление таймеро�� рывка
         if (this.player.dashCooldownTimer > 0) {
             this.player.dashCooldownTimer -= dt;
         }
@@ -508,7 +756,7 @@ class ArcadeCollector {
             }
         }
 
-        // Применяем обычное движение, если не в рывке
+        // Применяем бычное движение, если не в рвке
         if (!this.player.isDashing) {
             this.player.velocityX = moveX * this.player.baseSpeed;
             this.player.velocityY = moveY * this.player.baseSpeed;
@@ -542,14 +790,16 @@ class ArcadeCollector {
     }
 
     updateSpawnTimers(dt) {
-        // Спавн врагов
-        this.enemySpawnTimer += dt * 1000;
-        if (this.enemySpawnTimer >= this.enemySpawnRate) {
-            this.spawnEnemy();
-            this.enemySpawnTimer = 0;
+        // Обновляем таймер спавна врагов только если нет активного босса
+        if (!this.bossConfig.active) {
+            this.enemySpawnTimer += dt * 1000;
+            if (this.enemySpawnTimer >= this.enemySpawnRate) {
+                this.spawnEnemy();
+                this.enemySpawnTimer = 0;
+            }
         }
-
-        // Спавн монет
+        
+        // Обновл��ем ���аймер ����павна монет
         this.coinSpawnTimer += dt * 1000;
         if (this.coinSpawnTimer >= this.coinSpawnRate) {
             this.spawnCoin();
@@ -623,7 +873,7 @@ class ArcadeCollector {
                 this.ctx.closePath();
                 this.ctx.fill();
 
-                // Добавляем свчение
+                // Добавляем свечение
                 this.ctx.shadowColor = enemy.color;
                 this.ctx.shadowBlur = 10;
                 this.ctx.strokeStyle = '#fff';
@@ -657,7 +907,7 @@ class ArcadeCollector {
                 break;
 
             case 'boss':
-                // Сложная форма босса с градиентом
+                // Сложна форма босса с градиентом
                 const bossGradient = this.ctx.createRadialGradient(
                     enemy.x + enemy.width/2, enemy.y + enemy.height/2, 0,
                     enemy.x + enemy.width/2, enemy.y + enemy.height/2, enemy.width/2
@@ -677,7 +927,7 @@ class ArcadeCollector {
                 this.ctx.lineWidth = 2;
                 this.ctx.stroke();
 
-                // Полоса здоровья
+                // олоса здоровья
                 const healthPercentage = enemy.health / this.enemyTypes.boss.health;
                 const healthBarWidth = enemy.width * 1.2;
                 const healthBarHeight = 8;
@@ -748,13 +998,16 @@ class ArcadeCollector {
         // Сначала отрисовываем след
         this.player.dashGhosts.forEach(ghost => {
             const alpha = 0.3 * (1 - (ghost.time / ghost.lifetime));
-            this.ctx.fillStyle = `rgba(74, 222, 128, ${alpha})`; // Зеленый цвет с прозрачностью
-            this.ctx.beginPath();
-            this.ctx.moveTo(ghost.x + ghost.width / 2, ghost.y);
-            this.ctx.lineTo(ghost.x + ghost.width, ghost.y + ghost.height);
-            this.ctx.lineTo(ghost.x, ghost.y + ghost.height);
-            this.ctx.closePath();
-            this.ctx.fill();
+            this.ctx.save();
+            this.ctx.globalAlpha = alpha;
+            this.ctx.drawImage(
+                this.playerImage,
+                ghost.x,
+                ghost.y,
+                ghost.width,
+                ghost.height
+            );
+            this.ctx.restore();
         });
 
         // Отрисовка частиц
@@ -775,13 +1028,22 @@ class ArcadeCollector {
         });
 
         // Отрисовка игрока
-        this.ctx.fillStyle = this.player.isDashing ? '#86efac' : this.player.color; // Светлее во время рывка
-        this.ctx.beginPath();
-        this.ctx.moveTo(this.player.x + this.player.width / 2, this.player.y);
-        this.ctx.lineTo(this.player.x + this.player.width, this.player.y + this.player.height);
-        this.ctx.lineTo(this.player.x, this.player.y + this.player.height);
-        this.ctx.closePath();
-        this.ctx.fill();
+        if (this.playerImage.complete) { // Проверяем, загрузилось ли изображение
+            this.ctx.save();
+            if (this.player.isDashing) {
+                // Добавляем свечение во время рывка
+                this.ctx.shadowColor = '#86efac';
+                this.ctx.shadowBlur = 20;
+            }
+            this.ctx.drawImage(
+                this.playerImage,
+                this.player.x,
+                this.player.y,
+                this.player.width,
+                this.player.height
+            );
+            this.ctx.restore();
+        }
 
         // Отрисовка пуль
         this.bullets.forEach(bullet => {
@@ -840,7 +1102,7 @@ class ArcadeCollector {
             );
             this.ctx.fill();
 
-            // Блик на монете
+            // Бик на монете
             this.ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
             this.ctx.beginPath();
             this.ctx.arc(
@@ -874,13 +1136,94 @@ class ArcadeCollector {
                 dashBarHeight
             );
         }
+
+        // Сначала отрисовываем частицы двигателя
+        this.engineParticles.forEach(particle => {
+            const alpha = (1 - particle.time / particle.lifetime) * 0.7;
+            this.ctx.save();
+            this.ctx.globalAlpha = alpha;
+            this.ctx.fillStyle = particle.color;
+            this.ctx.beginPath();
+            this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+            this.ctx.fill();
+            this.ctx.restore();
+        });
+
+        // Отрисовка перков
+        this.perks.forEach(perk => {
+            const perkImage = this.perkImages[perk.type];
+            if (perkImage && perkImage.complete && perkImage.naturalWidth !== 0) {
+                this.ctx.save();
+                // Добавляем свечение
+                this.ctx.shadowColor = perk.color;
+                this.ctx.shadowBlur = 15;
+                // Отрисовываем изображение
+                this.ctx.drawImage(
+                    perkImage,
+                    perk.x,
+                    perk.y,
+                    perk.width,
+                    perk.height
+                );
+                this.ctx.restore();
+            } else {
+                // Fallback: рисуем цветной прямоугольник, если изображение не загрузилось
+                this.ctx.fillStyle = perk.color;
+                this.ctx.fillRect(perk.x, perk.y, perk.width, perk.height);
+            }
+        });
+
+        // Отрисовка босса
+        if (this.bossConfig.active && this.bossConfig.boss) {
+            const boss = this.bossConfig.boss;
+            
+            // Добавляем эффект свечения
+            this.ctx.save();
+            this.ctx.shadowColor = boss.color;
+            this.ctx.shadowBlur = 20;
+            
+            // Рисуем босса
+            this.ctx.fillStyle = boss.color;
+            this.ctx.fillRect(boss.x, boss.y, boss.width, boss.height);
+            
+            // Полоска здоровья
+            const healthBarWidth = boss.width;
+            const healthBarHeight = 10;
+            const healthPercentage = boss.health / boss.maxHealth;
+            
+            // Фон полоски здоровья
+            this.ctx.fillStyle = '#ef4444';
+            this.ctx.fillRect(
+                boss.x,
+                boss.y - healthBarHeight - 5,
+                healthBarWidth,
+                healthBarHeight
+            );
+            
+            // Текущее здоровье
+            this.ctx.fillStyle = '#22c55e';
+            this.ctx.fillRect(
+                boss.x,
+                boss.y - healthBarHeight - 5,
+                healthBarWidth * healthPercentage,
+                healthBarHeight
+            );
+            
+            this.ctx.restore();
+        }
     }
 
     checkCollision(rect1, rect2) {
-        return rect1.x < rect2.x + rect2.width &&
-               rect1.x + rect1.width > rect2.x &&
-               rect1.y < rect2.y + rect2.height &&
-               rect1.y + rect1.height > rect2.y;
+        // Если первый объект - игрок, используем его хитбокс
+        const rect1X = rect1 === this.player ? rect1.x + (rect1.width - rect1.hitboxWidth) / 2 : rect1.x;
+        const rect1Y = rect1 === this.player ? rect1.y + (rect1.height - rect1.hitboxHeight) / 2 : rect1.y;
+        const rect1Width = rect1 === this.player ? rect1.hitboxWidth : rect1.width;
+        const rect1Height = rect1 === this.player ? rect1.hitboxHeight : rect1.height;
+
+        return rect1X < rect2.x + rect2.width &&
+               rect1X + rect1Width > rect2.x &&
+               rect1Y < rect2.y + rect2.height &&
+               rect1Y + rect1Height > rect2.y;
     }
 
     togglePause() {
@@ -914,7 +1257,7 @@ class ArcadeCollector {
         this.enemySpawnTimer = 0;
         this.coinSpawnTimer = 0;
         
-        // чищаем все массивы
+        // чищ��ем все массивы
         this.coins = [];
         this.enemies = [];
         this.bullets = [];
@@ -935,11 +1278,11 @@ class ArcadeCollector {
         this.livesElement.textContent = '3';
         this.levelElement.textContent = '1.0';
         
-        // Скрываем все меню
+        // Скрывам все меню
         this.pauseMenu.style.display = 'none';
         this.gameOverMenu.style.display = 'none';
         
-        // Сбрасываем состояни�� клавиш
+        // Сбрасываем состояни клавиш
         Object.keys(this.keys).forEach(key => {
             this.keys[key] = false;
         });
@@ -948,6 +1291,10 @@ class ArcadeCollector {
         this.player.dashTimer = 0;
         this.player.dashCooldownTimer = 0;
         this.player.isDashing = false;
+        
+        // Иициализация здоровья игрока
+        this.player.health = this.player.maxHealth;
+        this.updateHealthDisplay(); // Обновляем отображение при рестарте
     }
 
     startGame() {
@@ -966,13 +1313,17 @@ class ArcadeCollector {
         if (this.startMenu) {
             this.startMenu.style.display = 'none';
         }
+        
+        // Инициализация здоровья игрока
+        this.player.health = this.player.maxHealth;
+        this.updateHealthDisplay(); // Обновляем отображение при старте игры
     }
 
     createDashEffect() {
         const particles = 30;
         // Используем оттенки зеленого, соответствующие цвету корабля
         const colors = ['#4ade80', '#86efac', '#22c55e', '#ffffff'];
-        const angleSpread = Math.PI / 3; // 60 градусов разброс
+        const angleSpread = Math.PI / 3; // 60 градусов раброс
         
         // Определяем направление движения
         const angle = Math.atan2(this.player.velocityY, this.player.velocityX);
@@ -1015,12 +1366,624 @@ class ArcadeCollector {
             width: this.player.width,
             height: this.player.height,
             lifetime: this.player.ghostDuration,
-            time: 0
+            time: 0,
+            image: this.playerImage // Добавляем ссылку на изображение
         });
     }
+
+    damagePlayer(damage) {
+        this.player.health -= damage;
+        this.updateHealthDisplay(); // Обновляем отображение после получения урона
+        
+        if (this.player.health <= 0) {
+            this.gameOver();
+        }
+    }
+
+    createDamageEffect() {
+        // Визуальный эффект получения рона
+        const particles = 15;
+        const colors = ['#ef4444', '#dc2626', '#ffffff'];
+        
+        for (let i = 0; i < particles; i++) {
+            const angle = (Math.PI * 2 * i) / particles;
+            const speed = 100 + Math.random() * 100;
+            
+            this.particles.push({
+                x: this.player.x + this.player.width / 2,
+                y: this.player.y + this.player.height / 2,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                size: 3 + Math.random() * 3,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                lifetime: 0.3 + Math.random() * 0.2,
+                time: 0
+            });
+        }
+    }
+
+    updateHealthDisplay() {
+        if (this.livesElement) {
+            this.livesElement.textContent = Math.ceil(this.player.health);
+        }
+    }
+
+    // Добавим новый метод для создания частиц двигателя
+    createEngineParticles() {
+        // Определяем интенсивность на основе движения
+        const movingUp = this.keys.ArrowUp;
+        const particleCount = movingUp ? 3 : 2; // Больше частиц при двжении вверх
+        const baseSpeed = movingUp ? 200 : 150; // Быстрее при двжении вверх
+
+        // Корректируем позиции двигателей в соответствии со спрайтом
+        const enginePositions = [
+            { x: this.player.x + 10, y: this.player.y + this.player.height - 20 },  // Левый двигатель (сместили левее)
+            { x: this.player.x + this.player.width - 15, y: this.player.y + this.player.height - 20 }  // Правый двигатель
+        ];
+
+        enginePositions.forEach(pos => {
+            for (let i = 0; i < particleCount; i++) {
+                const spread = (Math.random() - 0.5) * 4; // Уменьшаем разброс
+                this.engineParticles.push({
+                    x: pos.x + spread,
+                    y: pos.y,
+                    vx: (Math.random() - 0.5) * 15,
+                    vy: baseSpeed + Math.random() * 50,
+                    size: 2 + Math.random() * 2, // Немного уменьшаем размер частиц
+                    lifetime: 0.2 + Math.random() * 0.1,
+                    time: 0,
+                    color: Math.random() > 0.5 ? '#4ade80' : '#22c55e'
+                });
+            }
+        });
+    }
+
+    // Добавим метод обновления частиц двигателя
+    updateEngineParticles(dt) {
+        this.engineParticles = this.engineParticles.filter(particle => {
+            particle.x += particle.vx * dt;
+            particle.y += particle.vy * dt;
+            particle.time += dt;
+            particle.size -= dt * 3; // Замедляем уменьшение рзмера частиц
+            return particle.time < particle.lifetime && particle.size > 0;
+        });
+
+        // Добавляем новые частицы
+        if (this.gameState === 'playing') {
+            this.createEngineParticles();
+        }
+    }
+
+    // Добавляем метод создания перка
+    spawnPerk(type) {
+        const perkType = this.perkTypes[type];
+        this.perks.push({
+            x: Math.random() * (this.canvas.width - perkType.width),
+            y: -perkType.height,
+            width: perkType.width,
+            height: perkType.height,
+            type: type,
+            color: perkType.color,
+            speed: 100
+        });
+    }
+
+    // Обновление перков
+    updatePerks(dt) {
+        // Спавн перков
+        Object.entries(this.perkTypes).forEach(([type, perk]) => {
+            if (this.gameTime * 1000 - perk.lastSpawn > perk.spawnRate) {
+                this.spawnPerk(type);
+                perk.lastSpawn = this.gameTime * 1000;
+            }
+        });
+        
+        // движение и коллизии перков
+        this.perks = this.perks.filter(perk => {
+            perk.y += perk.speed * dt;
+            
+            // Проверка коллизии с игроком
+            if (this.checkCollision(this.player, perk)) {
+                this.perkTypes[perk.type].effect();
+                return false;
+            }
+            
+            return perk.y < this.canvas.height;
+        });
+        
+        // Обновление длительности эффекта оружия
+        if (this.weaponPowerup.active) {
+            this.weaponPowerup.timeLeft -= dt;
+            if (this.weaponPowerup.timeLeft <= 0) {
+                this.weaponPowerup.active = false;
+                this.weaponPowerup.type = 'normal';
+            }
+        }
+    }
+
+    // Эффект аптечки
+    applyHealthPerk() {
+        const healAmount = 30;
+        this.player.health = Math.min(this.player.maxHealth, this.player.health + healAmount);
+        this.updateHealthDisplay(); // Обновляем отображение после лечения
+        
+        // Создаем визуальный эффект лечения
+        const particles = 20;
+        const colors = ['#22c55e', '#4ade80', '#ffffff'];
+        
+        for (let i = 0; i < particles; i++) {
+            const angle = (Math.PI * 2 * i) / particles;
+            const speed = 100 + Math.random() * 50;
+            
+            this.particles.push({
+                x: this.player.x + this.player.width / 2,
+                y: this.player.y + this.player.height / 2,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                size: 3 + Math.random() * 2,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                lifetime: 0.5,
+                time: 0
+            });
+        }
+    }
+
+    // Эффект улучшения ор��жия
+    applyWeaponPerk(type) {
+        this.weaponPowerup = {
+            active: true,
+            timeLeft: this.perkTypes[type === 'shotgun' ? 'weapon' : 'weapon2'].duration,
+            type: type
+        };
+        
+        // Создаем визуальный эффект получения улучшения
+        const particles = 20;
+        const colors = type === 'shotgun' ? 
+            ['#3b82f6', '#60a5fa', '#ffffff'] : 
+            ['#22c55e', '#4ade80', '#ffffff'];
+        
+        for (let i = 0; i < particles; i++) {
+            const angle = (Math.PI * 2 * i) / particles;
+            const speed = 100 + Math.random() * 50;
+            
+            this.particles.push({
+                x: this.player.x + this.player.width / 2,
+                y: this.player.y + this.player.height / 2,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                size: 3 + Math.random() * 2,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                lifetime: 0.5,
+                time: 0
+            });
+        }
+    }
+
+    // Визуальный эффект лечения
+    createHealEffect() {
+        const particles = 20;
+        const colors = ['#22c55e', '#4ade80', '#ffffff'];
+        
+        for (let i = 0; i < particles; i++) {
+            const angle = (Math.PI * 2 * i) / particles;
+            const speed = 100 + Math.random() * 50;
+            
+            this.particles.push({
+                x: this.player.x + this.player.width / 2,
+                y: this.player.y + this.player.height / 2,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                size: 3 + Math.random() * 2,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                lifetime: 0.5,
+                time: 0
+            });
+        }
+    }
+
+    // Визуальный эффект улучшения оружия
+    createWeaponPowerupEffect() {
+        const particles = 20;
+        const colors = ['#3b82f6', '#60a5fa', '#ffffff'];
+        
+        for (let i = 0; i < particles; i++) {
+            const angle = (Math.PI * 2 * i) / particles;
+            const speed = 100 + Math.random() * 50;
+            
+            this.particles.push({
+                x: this.player.x + this.player.width / 2,
+                y: this.player.y + this.player.height / 2,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                size: 3 + Math.random() * 2,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                lifetime: 0.5,
+                time: 0
+            });
+        }
+    }
+
+    // В методе update или updateWeaponPowerup
+updateWeaponPowerup(dt) {
+    if (this.weaponPowerup.active) {
+        this.weaponPowerup.timeLeft -= dt;
+        if (this.weaponPowerup.timeLeft <= 0) {
+            this.weaponPowerup = {
+                active: false,
+                timeLeft: 0,
+                type: 'normal'
+            };  // Добавляем точку с запятой
+        }
+    }
 }
+
+    // Добавляем метод создания эффекта выстрела
+    createShootEffect() {
+        const muzzleFlash = {
+            x: this.player.x + this.player.width/2,
+            y: this.player.y,
+            size: 15,
+            lifetime: 0.1,
+            time: 0,
+            isFlash: true,
+            alpha: 0.8,
+            color: '#4ade80'
+        };  // Добавляем точку с запятой
+        
+        const particleCount = this.weaponPowerup.type === 'shotgun' ? 10 : 5;
+        const spreadAngle = this.weaponPowerup.type === 'shotgun' ? Math.PI/4 : Math.PI/8;
+        
+        for (let i = 0; i < particleCount; i++) {
+            const angle = -Math.PI/2 + (Math.random() - 0.5) * spreadAngle;
+            const speed = 200 + Math.random() * 100;
+            
+            this.particles.push({
+                x: this.player.x + this.player.width/2,
+                y: this.player.y,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                size: 2 + Math.random() * 2,
+                color: '#4ade80',
+                lifetime: 0.2 + Math.random() * 0.1,
+                time: 0
+            });
+        }
+        
+        this.particles.push(muzzleFlash);
+    }
+
+    // Добавляем метод создания босса
+    createBoss() {
+        let bossType;
+        
+        if (this.currentBossIndex === 0) {
+            // Первый босс всегда basic
+            bossType = this.bossTypes.basic;
+        } else {
+            // Для последующих боссов выбираем случайного из доступных (кроме basic)
+            const availableBossTypes = Object.entries(this.bossTypes)
+                .filter(([key]) => key !== 'basic')
+                .map(([key, value]) => value);
+            bossType = availableBossTypes[Math.floor(Math.random() * availableBossTypes.length)];
+        }
+        
+        this.enemies = []; // Очищаем врагов
+        
+        this.bossConfig.boss = {
+            ...bossType,
+            x: this.canvas.width / 2 - bossType.width / 2,
+            y: 50,
+            health: bossType.maxHealth,
+            lastShot: 0,
+            currentPattern: 0
+        };
+        
+        this.bossConfig.active = true;
+        this.currentBossIndex++;
+        
+        // Создаем эффект появления босса
+        this.createBossSpawnEffect();
+        
+        // Показываем имя босса
+        this.showBossName(bossType.name);
+    }
+
+    // Добавим метод для отображения имени босса
+    showBossName(name) {
+        const bossNameDiv = document.createElement('div');
+        bossNameDiv.style.position = 'absolute';
+        bossNameDiv.style.top = '20%';
+        bossNameDiv.style.left = '50%';
+        bossNameDiv.style.transform = 'translate(-50%, -50%)';
+        bossNameDiv.style.color = '#ffffff';
+        bossNameDiv.style.fontSize = '24px';
+        bossNameDiv.style.fontWeight = 'bold';
+        bossNameDiv.style.textShadow = '2px 2px 4px rgba(0, 0, 0, 0.5)';
+        bossNameDiv.textContent = name;
+        
+        document.body.appendChild(bossNameDiv);
+        
+        // Удаляем элемент через 3 секунды
+        setTimeout(() => {
+            bossNameDiv.remove();
+        }, 3000);
+    }
+
+    // Добавляем метод для эффекта появления босса
+    createBossSpawnEffect() {
+        const particles = 30;
+        const colors = ['#dc2626', '#ef4444', '#ffffff'];
+        
+        for (let i = 0; i < particles; i++) {
+            const angle = (Math.PI * 2 * i) / particles;
+            const speed = 150 + Math.random() * 100;
+            
+            this.particles.push({
+                x: this.bossConfig.boss.x + this.bossConfig.boss.width / 2,
+                y: this.bossConfig.boss.y + this.bossConfig.boss.height / 2,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                size: 4 + Math.random() * 4,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                lifetime: 1,
+                time: 0
+            });
+        }
+    }
+
+    // Добавляем метод обновления босса
+    updateBoss(dt) {
+        if (!this.bossConfig.active || !this.bossConfig.boss) return;
+        
+        const boss = this.bossConfig.boss;
+        
+        // Обновляем таймер стрельбы
+        boss.lastShot += dt * 1000;
+        
+        // Стреляем, если прошло достаточно времени
+        if (boss.lastShot >= boss.shootRate) {
+            this.bossShooting(boss);
+            boss.lastShot = 0;
+        }
+    }
+
+    // Добавляем метод стрельбы босса с разными паттернами
+    bossShooting(boss) {
+        const pattern = boss.bulletPatterns[boss.currentPattern];
+        
+        switch(pattern) {
+            // Базовые атаки
+            case 'circle': this.bossCircleShot(boss); break;
+            case 'spiral': this.bossSpiralShot(boss); break;
+            case 'wave': this.bossWaveShot(boss); break;
+            case 'cross': this.bossCrossShot(boss); break;
+            
+            // Лазерные атаки
+            case 'laser': this.bossLaserShot(boss); break;
+            case 'crossLaser': this.bossCrossLaserShot(boss); break;
+            case 'spinningLaser': this.bossSpinningLaserShot(boss); break;
+            
+            // Атаки роя
+            case 'swarm': this.bossSwarmShot(boss); break;
+            case 'multiSwarm': this.bossMultiSwarmShot(boss); break;
+            case 'chaosSwarm': this.bossChaosSwarmShot(boss); break;
+            
+            // Атаки танка
+            case 'heavyShot': this.bossHeavyShot(boss); break;
+            case 'artillery': this.bossArtilleryShot(boss); break;
+            case 'bombard': this.bossBombardShot(boss); break;
+        }
+        
+        // Меняем паттерн атаки
+        boss.currentPattern = (boss.currentPattern + 1) % boss.bulletPatterns.length;
+    }
+
+    // Круговая атака
+    bossCircleShot(boss) {
+        const bulletCount = 16;
+        const angleStep = (Math.PI * 2) / bulletCount;
+        
+        for (let i = 0; i < bulletCount; i++) {
+            const angle = i * angleStep;
+            const speedX = Math.cos(angle) * boss.bulletSpeed;
+            const speedY = Math.sin(angle) * boss.bulletSpeed;
+            
+            this.createBossBullet(boss, speedX, speedY);
+        }
+    }
+
+    // Спиральная атака
+    bossSpiralShot(boss) {
+        const bulletCount = 8;
+        const spiralCount = 3; // Количество спиралей
+        
+        for (let i = 0; i < bulletCount; i++) {
+            for (let j = 0; j < spiralCount; j++) {
+                const angle = (i / bulletCount) * Math.PI * 2 + (j * (Math.PI * 2) / spiralCount);
+                const speedX = Math.cos(angle) * boss.bulletSpeed;
+                const speedY = Math.sin(angle) * boss.bulletSpeed;
+                
+                this.createBossBullet(boss, speedX, speedY);
+            }
+        }
+    }
+
+    // Волновая атака
+    bossWaveShot(boss) {
+        const bulletCount = 12;
+        const waveAmplitude = 100;
+        const waveFrequency = 0.2;
+        
+        for (let i = 0; i < bulletCount; i++) {
+            const angle = -Math.PI/2 + (Math.PI / (bulletCount-1)) * i;
+            const speedX = Math.cos(angle) * boss.bulletSpeed;
+            const speedY = Math.sin(angle) * boss.bulletSpeed;
+            
+            this.createBossBullet(boss, speedX, speedY + Math.sin(i * waveFrequency) * waveAmplitude);
+        }
+    }
+
+    // Крестообразная атака
+    bossCrossShot(boss) {
+        const directions = [
+            {x: 1, y: 0}, {x: -1, y: 0},
+            {x: 0, y: 1}, {x: 0, y: -1},
+            {x: 1, y: 1}, {x: -1, y: -1},
+            {x: 1, y: -1}, {x: -1, y: 1}
+        ];
+        
+        directions.forEach(dir => {
+            const speedX = dir.x * boss.bulletSpeed;
+            const speedY = dir.y * boss.bulletSpeed;
+            
+            this.createBossBullet(boss, speedX, speedY);
+        });
+    }
+
+    // Метод создания пули босса
+createBossBullet(boss, speedX, speedY, isHeavy = false) {
+    this.enemyBullets.push({
+        x: boss.x + boss.width/2,
+        y: boss.y + boss.height/2,
+        width: isHeavy ? 12 : 8,
+        height: isHeavy ? 12 : 8,
+        speedX: speedX,
+        speedY: speedY,
+        color: boss.color,
+        damage: isHeavy ? boss.bulletDamage * 1.5 : boss.bulletDamage
+    });  // Добавляем точку с запятой
+}
+
+    // Добавим новые методы для атак лазерного босса
+    bossLaserShot(boss) {
+        // Прямой лазерный луч
+        const angle = Math.atan2(this.player.y - boss.y, this.player.x - boss.x);
+        for(let i = 0; i < 5; i++) {
+            const speedX = Math.cos(angle) * boss.bulletSpeed;
+            const speedY = Math.sin(angle) * boss.bulletSpeed;
+            setTimeout(() => {
+                this.createBossBullet(boss, speedX, speedY);
+            }, i * 100);
+        }
+    }
+
+    bossCrossLaserShot(boss) {
+        // Крестообразные лазерные лучи
+        const angles = [0, Math.PI/2, Math.PI, Math.PI*3/2];
+        angles.forEach(angle => {
+            for(let i = 0; i < 3; i++) {
+                const speedX = Math.cos(angle) * boss.bulletSpeed;
+                const speedY = Math.sin(angle) * boss.bulletSpeed;
+                setTimeout(() => {
+                    this.createBossBullet(boss, speedX, speedY);
+                }, i * 100);
+            }
+        });
+    }
+
+    bossSpinningLaserShot(boss) {
+        // Вращающийся лазер
+        const bulletCount = 8;
+        const rotationSpeed = Math.PI / 32;
+        let currentAngle = 0;
+        
+        const interval = setInterval(() => {
+            if(!this.bossConfig.active) {
+                clearInterval(interval);
+                return;
+            }
+            
+            for(let i = 0; i < bulletCount; i++) {
+                const angle = currentAngle + (i * Math.PI * 2 / bulletCount);
+                const speedX = Math.cos(angle) * boss.bulletSpeed;
+                const speedY = Math.sin(angle) * boss.bulletSpeed;
+                this.createBossBullet(boss, speedX, speedY);
+            }
+            
+            currentAngle += rotationSpeed;
+        }, 200);
+        
+        setTimeout(() => clearInterval(interval), 2000);
+    }
+
+    // Добавим методы для атак босса роя
+    bossSwarmShot(boss) {
+        // Выпускает группу маленьких пуль
+        const bulletCount = 12;
+        for(let i = 0; i < bulletCount; i++) {
+            const angle = (Math.PI * 2 * i / bulletCount) + Math.random() * 0.5;
+            const speed = boss.bulletSpeed * (0.8 + Math.random() * 0.4);
+            const speedX = Math.cos(angle) * speed;
+            const speedY = Math.sin(angle) * speed;
+            this.createBossBullet(boss, speedX, speedY);
+        }
+    }
+
+    bossMultiSwarmShot(boss) {
+        // Несколько волн роя
+        for(let wave = 0; wave < 3; wave++) {
+            setTimeout(() => {
+                this.bossSwarmShot(boss);
+            }, wave * 300);
+        }
+    }
+
+    bossChaosSwarmShot(boss) {
+        // Хаотичная атака роем
+        const bulletCount = 20;
+        for(let i = 0; i < bulletCount; i++) {
+            setTimeout(() => {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = boss.bulletSpeed * (0.6 + Math.random() * 0.8);
+                const speedX = Math.cos(angle) * speed;
+                const speedY = Math.sin(angle) * speed;
+                this.createBossBullet(boss, speedX, speedY);
+            }, i * 100);
+        }
+    }
+
+    // Добавим методы для атак танка-босса
+    bossHeavyShot(boss) {
+        // Мощный одиночный выстрел
+        const angle = Math.atan2(this.player.y - boss.y, this.player.x - boss.x);
+        const speedX = Math.cos(angle) * boss.bulletSpeed * 1.5;
+        const speedY = Math.sin(angle) * boss.bulletSpeed * 1.5;
+        
+        this.createBossBullet(boss, speedX, speedY, true); // true для увеличенного урона
+    }
+
+    bossArtilleryShot(boss) {
+        // Залп снарядов по дуге
+        const bulletCount = 5;
+        for(let i = 0; i < bulletCount; i++) {
+            const angle = -Math.PI/3 + (Math.PI/3 * 2 * i/(bulletCount-1));
+            const speedX = Math.cos(angle) * boss.bulletSpeed;
+            const speedY = Math.sin(angle) * boss.bulletSpeed;
+            this.createBossBullet(boss, speedX, speedY);
+        }
+    }
+
+    bossBombardShot(boss) {
+        // Бомбардировка области
+        const targetX = this.player.x;
+        const targetY = this.player.y;
+        
+        for(let i = 0; i < 3; i++) {
+            setTimeout(() => {
+                const spread = 100;
+                const offsetX = (Math.random() - 0.5) * spread;
+                const offsetY = (Math.random() - 0.5) * spread;
+                const angle = Math.atan2(targetY + offsetY - boss.y, targetX + offsetX - boss.x);
+                const speedX = Math.cos(angle) * boss.bulletSpeed;
+                const speedY = Math.sin(angle) * boss.bulletSpeed;
+                this.createBossBullet(boss, speedX, speedY);
+            }, i * 200);
+        }
+    }
+
+} // Закрывающая скобка класса
 
 // Создание экземпляра игры при загрузке страницы
 window.addEventListener('load', () => {
     new ArcadeCollector();
-}); 
+}); // Добавляем точку с запятой
