@@ -72,13 +72,6 @@ app.get('/api/test', async (req, res) => {
 // Login route
 app.post('/api/login', async (req, res) => {
     try {
-        console.log('Получен запрос на вход:', {
-            headers: req.headers,
-            body: req.body,
-            ip: req.ip,
-            origin: req.get('origin')
-        });
-        
         const { username, password } = req.body;
 
         if (!username || !password) {
@@ -87,7 +80,6 @@ app.post('/api/login', async (req, res) => {
             });
         }
 
-        // Изменяем запрос, используя правильное имя колонки password_hash
         const result = await pool.query(`
             SELECT id, username, password_hash, role, avatar_url, email, created_at, last_login 
             FROM users 
@@ -95,6 +87,14 @@ app.post('/api/login', async (req, res) => {
         `, [username]);
 
         if (result.rows.length === 0) {
+            return res.status(401).json({ error: 'Неверное имя пользователя или пароль' });
+        }
+
+        const user = result.rows[0]; // Добавляем эту строку
+
+        // Проверяем пароль
+        const isValidPassword = await bcrypt.compare(password, user.password_hash);
+        if (!isValidPassword) {
             return res.status(401).json({ error: 'Неверное имя пользователя или пароль' });
         }
 
@@ -961,7 +961,7 @@ app.post('/api/messages/send-with-file', messageUpload.single('file'), async (re
 // Обновляем middleware checkAdmin
 const checkAdmin = async (req, res, next) => {
     try {
-        // Проверяем adminId в query параметрах или в теле зпроса
+        // Проверяем adminId в query пара��етрах или в теле зпроса
         const adminId = req.query.adminId || req.body.adminId;
         
         console.log('Checking admin rights for:', adminId); // Добавляем лог
