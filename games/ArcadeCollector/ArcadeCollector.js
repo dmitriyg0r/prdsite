@@ -169,8 +169,8 @@ class ArcadeCollector {
             health: new Image(),
             weapon: new Image()
         };
-        this.perkImages.health.src = '../games/ArcadeCollector/assets/med_perk.png';
-        this.perkImages.weapon.src = '../games/ArcadeCollector/assets/w3_perk.png';
+        this.perkImages.health.src = '../ArcadeCollector/assets/med_perk.png';
+        this.perkImages.weapon.src = '../ArcadeCollector/assets/w3_perk.png';
         
         // Изменяем параметры улучшения оружия
         this.weaponPowerup = {
