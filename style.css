@@ -1039,7 +1039,6 @@ body[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
 /* Для Firefox */
 body[data-theme="dark"] {
     scrollbar-width: thin;
-    scrollbar-color: #1E1F22 #121214;
 }
 
 /* Стилизация ползунка для элементов с прокруткой (например, текстовых областей) */
