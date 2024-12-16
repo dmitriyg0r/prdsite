@@ -1,0 +1,132 @@
+/* Стили для записи голосовых сообщений */
+.voice-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.voice-button {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.voice-button:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+}
+
+.voice-button.recording {
+    background: var(--error-color);
+    animation: pulseRecord 2s infinite;
+}
+
+.voice-recording-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--background-color);
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid var(--border-light);
+}
+
+.voice-timer {
+    color: var(--text-primary);
+    font-size: 14px;
+    min-width: 50px;
+}
+
+.voice-waveform {
+    flex: 1;
+    height: 32px;
+    background: var(--surface-color);
+    border-radius: 16px;
+    position: relative;
+    overflow: hidden;
+}
+
+.voice-waveform-canvas {
+    width: 100%;
+    height: 100%;
+}
+
+.voice-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.voice-cancel-button,
+.voice-send-button {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.voice-cancel-button {
+    background: var(--error-color);
+    color: white;
+}
+
+.voice-send-button {
+    background: var(--success-color);
+    color: white;
+}
+
+@keyframes pulseRecord {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+/* Стили для голосовых сообщений */
+.voice-message {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: var(--surface-color);
+    border-radius: 16px;
+    margin-top: 4px;
+}
+
+.voice-message-play {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.voice-message-waveform {
+    flex: 1;
+    height: 24px;
+    background: var(--background-color);
+    border-radius: 12px;
+    position: relative;
+}
+
+.voice-message-time {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
