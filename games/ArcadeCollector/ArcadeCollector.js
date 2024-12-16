@@ -832,7 +832,7 @@ class ArcadeCollector {
             this.ctx.restore();
         });
 
-        // От��исовка частиц
+        // Отрисовка частиц
         this.particles.forEach(particle => {
             if (particle.isFlash) {
                 const alpha = (1 - particle.time / particle.lifetime) * particle.alpha;
@@ -971,7 +971,7 @@ class ArcadeCollector {
             this.ctx.restore();
         });
 
-        // Отрисовка перков
+        // Отрисовка пер��ов
         this.perks.forEach(perk => {
             this.ctx.fillStyle = perk.color;
             this.ctx.fillRect(perk.x, perk.y, perk.width, perk.height);
@@ -1084,7 +1084,7 @@ class ArcadeCollector {
 
     createDashEffect() {
         const particles = 30;
-        // Используем оттенки зеленого, соответствующие цвету корабля
+        // Используем оттенки зелен��го, соответствующие цвету корабля
         const colors = ['#4ade80', '#86efac', '#22c55e', '#ffffff'];
         const angleSpread = Math.PI / 3; // 60 градусов ра��брос
         
@@ -1343,6 +1343,43 @@ class ArcadeCollector {
                 this.weaponPowerup.type = 'normal';
             }
         }
+    }
+
+    // Добавляем метод создания эффекта выстрела
+    createShootEffect() {
+        // Создаем вспышку выстрела
+        const muzzleFlash = {
+            x: this.player.x + this.player.width/2,
+            y: this.player.y,
+            size: 15,
+            lifetime: 0.1,
+            time: 0,
+            isFlash: true,
+            alpha: 0.8,
+            color: '#4ade80'
+        };
+        
+        // Добавляем частицы выстрела
+        const particleCount = this.weaponPowerup.type === 'shotgun' ? 10 : 5;
+        const spreadAngle = this.weaponPowerup.type === 'shotgun' ? Math.PI/4 : Math.PI/8;
+        
+        for (let i = 0; i < particleCount; i++) {
+            const angle = -Math.PI/2 + (Math.random() - 0.5) * spreadAngle;
+            const speed = 200 + Math.random() * 100;
+            
+            this.particles.push({
+                x: this.player.x + this.player.width/2,
+                y: this.player.y,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                size: 2 + Math.random() * 2,
+                color: '#4ade80',
+                lifetime: 0.2 + Math.random() * 0.1,
+                time: 0
+            });
+        }
+        
+        this.particles.push(muzzleFlash);
     }
 }
 
