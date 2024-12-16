@@ -102,121 +102,128 @@ class VoiceRecorder {
     }
 
     async sendVoiceMessage() {
-        if (this.audioChunks.length === 0) return;
-
-        const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
-        const formData = new FormData();
-        formData.append('audio', audioBlob);
-        formData.append('senderId', currentUser.id);
-        formData.append('receiverId', currentChatPartner.id);
-
         try {
+            // Сначала останавливаем запись
+            this.stopRecording();
+            
+            // Ждем, пока все чанки будут доступны
+            await new Promise(resolve => setTimeout(resolve, 200));
+    
+            if (this.audioChunks.length === 0) {
+                console.error('Нет аудио данных для отправки');
+                return;
+            }
+    
+            // Создаем blob из записанных чанков
+            const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
+            
+            // Создаем FormData для отправки файла
+            const formData = new FormData();
+            formData.append('audio', audioBlob, 'voice.webm');
+            formData.append('senderId', currentUser.id);
+            formData.append('receiverId', currentChatPartner.id);
+    
+            // Добавляем индикатор загрузки
+            const messageContainer = document.getElementById('messages');
+            const loadingMessage = document.createElement('div');
+            loadingMessage.className = 'message message-sent';
+            loadingMessage.innerHTML = `
+                <div class="voice-message">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <span>Отправка голосового сообщения...</span>
+                </div>
+            `;
+            messageContainer.appendChild(loadingMessage);
+            scrollToBottom();
+    
+            // Отправляем запрос
             const response = await fetch('https://adminflow.ru:5003/api/messages/voice', {
                 method: 'POST',
                 body: formData
             });
-
+    
             if (!response.ok) {
                 throw new Error('Ошибка при отправке голосового сообщения');
             }
-
+    
             const data = await response.json();
-            this.addVoiceMessageToChat(data.message);
-            this.resetUI();
+            
+            // Удаляем сообщение о загрузке
+            messageContainer.removeChild(loadingMessage);
+    
+            if (data.success) {
+                // Добавляем сообщение в чат
+                this.addVoiceMessageToChat(data.message);
+                
+                // Очищаем данные записи
+                this.audioChunks = [];
+                this.resetUI();
+            } else {
+                throw new Error(data.error || 'Ошибка при отправке');
+            }
+    
         } catch (error) {
             console.error('Ошибка при отправке голосового сообщения:', error);
-            alert('Не удалось отправить голосовое сообщение');
+            alert('Не удалось отправить голосовое сообщение: ' + error.message);
+        } finally {
+            // Всегда сбрасываем UI в исходное состояние
+            this.resetUI();
         }
     }
-
-    updateUI(isRecording) {
-        const voiceButton = document.getElementById('voiceButton');
-        const inputControls = document.querySelector('.input-controls');
-        
-        if (isRecording) {
-            voiceButton.classList.add('recording');
-            inputControls.style.display = 'none';
-            this.recordingContainer.style.display = 'flex';
-        } else {
-            voiceButton.classList.remove('recording');
-        }
-    }
-
-    resetUI() {
-        const inputControls = document.querySelector('.input-controls');
-        inputControls.style.display = 'flex';
-        this.recordingContainer.style.display = 'none';
-        document.getElementById('voiceButton').classList.remove('recording');
-    }
-
-    startTimer() {
-        const timerElement = this.recordingContainer.querySelector('.voice-timer');
-        this.timerInterval = setInterval(() => {
-            const elapsed = Date.now() - this.startTime;
-            const seconds = Math.floor(elapsed / 1000);
-            const minutes = Math.floor(seconds / 60);
-            timerElement.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
-        }, 1000);
-    }
-
-    stopTimer() {
-        if (this.timerInterval) {
-            clearInterval(this.timerInterval);
-            this.timerInterval = null;
-        }
-    }
-
-    visualize() {
-        const canvas = this.recordingContainer.querySelector('.voice-waveform-canvas');
-        const canvasCtx = canvas.getContext('2d');
-        const bufferLength = this.analyser.frequencyBinCount;
-        const dataArray = new Uint8Array(bufferLength);
-
-        const draw = () => {
-            if (!this.isRecording) return;
-
-            requestAnimationFrame(draw);
-            this.analyser.getByteFrequencyData(dataArray);
-
-            canvasCtx.fillStyle = 'rgb(200, 200, 200)';
-            canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
-
-            const barWidth = (canvas.width / bufferLength) * 2.5;
-            let barHeight;
-            let x = 0;
-
-            for (let i = 0; i < bufferLength; i++) {
-                barHeight = dataArray[i] / 2;
-                canvasCtx.fillStyle = `rgb(${barHeight + 100},50,50)`;
-                canvasCtx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
-                x += barWidth + 1;
-            }
-        };
-
-        draw();
-    }
-
-    toggleRecording() {
-        if (!this.isRecording) {
-            this.startRecording();
-        } else {
-            this.stopRecording();
-        }
-    }
-
+    
+    // Обновляем метод addVoiceMessageToChat
     addVoiceMessageToChat(message) {
         const messageElement = document.createElement('div');
-        messageElement.className = `message message-${message.senderId === currentUser.id ? 'sent' : 'received'}`;
+        messageElement.className = `message message-${message.sender_id === currentUser.id ? 'sent' : 'received'}`;
+        messageElement.dataset.messageId = message.id;
+        
+        const duration = message.duration || '00:00';
+        
         messageElement.innerHTML = `
             <div class="voice-message">
-                <button class="voice-message-play">
+                <button class="voice-message-play" data-file-path="${message.file_path}">
                     <i class="fas fa-play"></i>
                 </button>
-                <div class="voice-message-waveform"></div>
-                <span class="voice-message-time">${message.duration}</span>
+                <div class="voice-message-waveform">
+                    <div class="voice-message-progress"></div>
+                </div>
+                <span class="voice-message-time">${duration}</span>
             </div>
         `;
-
+    
+        // Добавляем обработчик воспроизведения
+        const playButton = messageElement.querySelector('.voice-message-play');
+        playButton.addEventListener('click', async () => {
+            try {
+                const response = await fetch(`https://adminflow.ru:5003/api/messages/voice/${message.id}`);
+                if (!response.ok) throw new Error('Ошибка загрузки аудио');
+                
+                const blob = await response.blob();
+                const audio = new Audio(URL.createObjectURL(blob));
+                
+                audio.onplay = () => {
+                    playButton.innerHTML = '<i class="fas fa-pause"></i>';
+                };
+                
+                audio.onpause = () => {
+                    playButton.innerHTML = '<i class="fas fa-play"></i>';
+                };
+                
+                audio.onended = () => {
+                    playButton.innerHTML = '<i class="fas fa-play"></i>';
+                };
+                
+                if (audio.paused) {
+                    audio.play();
+                } else {
+                    audio.pause();
+                }
+            } catch (error) {
+                console.error('Ошибка воспроизведения:', error);
+                alert('Не удалось воспроизвести сообщение');
+            }
+        });
+    
         const messagesContainer = document.getElementById('messages');
         messagesContainer.appendChild(messageElement);
         scrollToBottom();

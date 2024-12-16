@@ -130,3 +130,28 @@
     font-size: 12px;
     color: var(--text-secondary);
 }
+
+.voice-message .fa-spinner {
+    color: var(--primary-color);
+    margin-right: 8px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.fa-spin {
+    animation: spin 1s linear infinite;
+}
+
+.voice-message-progress {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    background: rgba(var(--primary-color-rgb), 0.2);
+    border-radius: 12px;
+    width: 0;
+    transition: width 0.1s linear;
+}
