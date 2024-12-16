@@ -2482,7 +2482,7 @@ app.get('/api/users-list', async (req, res) => {
     }
 });
 
-// Периодическая очистка устаревших записей кэша
+// Периодическая очистка уста��евших записей кэша
 setInterval(() => {
     const now = Date.now();
     for (const [userId, timestamp] of STATUS_UPDATE_CACHE.entries()) {
@@ -2612,67 +2612,74 @@ app.delete('/api/messages/:messageId', async (req, res) => {
         // Начинаем транзакцию
         await pool.query('BEGIN');
 
-        // Проверяем тип сообщения
-        const messageTypeResult = await pool.query(
-            'SELECT message_type FROM messages WHERE id = $1',
-            [messageId]
-        );
+        try {
+            // Сначала проверяем тип сообщения
+            const messageTypeResult = await pool.query(
+                'SELECT message_type FROM messages WHERE id = $1',
+                [messageId]
+            );
 
-        if (messageTypeResult.rows.length > 0) {
-            const messageType = messageTypeResult.rows[0].message_type;
+            if (messageTypeResult.rows.length > 0) {
+                const messageType = messageTypeResult.rows[0].message_type;
 
-            // Если это голосовое сообщение, удаляем сначала запись из voice_messages
-            if (messageType === 'voice') {
-                // Получаем путь к файлу перед удалением
-                const voiceResult = await pool.query(
-                    'SELECT file_path FROM voice_messages WHERE message_id = $1',
-                    [messageId]
-                );
-
-                if (voiceResult.rows.length > 0) {
-                    const filePath = voiceResult.rows[0].file_path;
-                    
-                    // Удаляем файл
-                    try {
-                        fs.unlinkSync(filePath);
-                    } catch (fileError) {
-                        console.error('Ошибка при удалении файла:', fileError);
-                    }
-
-                    // Удаляем запись из voice_messages
-                    await pool.query(
-                        'DELETE FROM voice_messages WHERE message_id = $1',
+                // Если это голосовое сообщение
+                if (messageType === 'voice') {
+                    // Получаем путь к файлу перед удалением
+                    const voiceResult = await pool.query(
+                        'SELECT file_path FROM voice_messages WHERE message_id = $1',
                         [messageId]
                     );
+
+                    if (voiceResult.rows.length > 0) {
+                        const filePath = voiceResult.rows[0].file_path;
+                        
+                        // Сначала удаляем запись из voice_messages
+                        await pool.query(
+                            'DELETE FROM voice_messages WHERE message_id = $1',
+                            [messageId]
+                        );
+
+                        // Затем удаляем файл
+                        try {
+                            fs.unlinkSync(filePath);
+                        } catch (fileError) {
+                            console.error('Ошибка при удалении файла:', fileError);
+                            // Продолжаем выполнение даже если файл не удалось удалить
+                        }
+                    }
                 }
             }
-        }
 
-        // Удаляем само сообщение
-        const result = await pool.query(
-            'DELETE FROM messages WHERE id = $1 RETURNING *',
-            [messageId]
-        );
+            // Теперь удаляем само сообщение
+            const result = await pool.query(
+                'DELETE FROM messages WHERE id = $1 RETURNING *',
+                [messageId]
+            );
 
-        // Завершаем транзакцию
-        await pool.query('COMMIT');
+            // Если сообщение не найдено
+            if (result.rows.length === 0) {
+                await pool.query('ROLLBACK');
+                return res.status(404).json({
+                    success: false,
+                    error: 'Сообщение не найдено'
+                });
+            }
 
-        if (result.rows.length === 0) {
-            return res.status(404).json({
-                success: false,
-                error: 'Сообщение не найдено'
+            // Фиксируем транзакцию
+            await pool.query('COMMIT');
+
+            res.json({
+                success: true,
+                message: 'Сообщение успешно удалено'
             });
-        }
 
-        res.json({
-            success: true,
-            message: 'Сообщение успешно удалено'
-        });
+        } catch (err) {
+            // В случае ошибки откатываем транзакцию
+            await pool.query('ROLLBACK');
+            throw err;
+        }
 
     } catch (err) {
-        // В случае ошибки откатываем транзакцию
-        await pool.query('ROLLBACK');
-        
         console.error('Error deleting message:', err);
         res.status(500).json({
             success: false,
