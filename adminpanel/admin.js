@@ -8,12 +8,36 @@ function getAdminId() {
     return localStorage.getItem('adminId');
 }
 
+// Добавим функцию проверки авторизации
+function checkAuth() {
+    const adminId = localStorage.getItem('adminId');
+    if (!adminId) {
+        document.getElementById('loginForm').style.display = 'block';
+        document.querySelector('.admin-panel').style.display = 'none';
+        return false;
+    }
+    return true;
+}
+
 async function loadStats() {
+    if (!checkAuth()) return;
+    
     try {
-        const adminId = getAdminId();
+        const adminId = localStorage.getItem('adminId');
         const response = await fetch(`${API_URL}/api/admin/stats?adminId=${adminId}`, {
-            credentials: 'include'
+            credentials: 'include',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+            }
         });
+
+        if (response.status === 401) {
+            localStorage.removeItem('adminId');
+            localStorage.removeItem('adminToken');
+            location.reload();
+            return;
+        }
+
         const data = await response.json();
         
         if (data.success) {
@@ -43,6 +67,11 @@ async function loadStats() {
         }
     } catch (err) {
         console.error('Ошибка загрузки статистики:', err);
+        if (err.message.includes('401')) {
+            localStorage.removeItem('adminId');
+            localStorage.removeItem('adminToken');
+            location.reload();
+        }
     }
 }
 
@@ -196,11 +225,24 @@ function createCharts(stats) {
 }
 
 async function loadUsers(page = 1, search = '') {
+    if (!checkAuth()) return;
+
     try {
-        const adminId = getAdminId();
+        const adminId = localStorage.getItem('adminId');
         const response = await fetch(`${API_URL}/api/admin/users?adminId=${adminId}&page=${page}&search=${search}`, {
-            credentials: 'include'
+            credentials: 'include',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+            }
         });
+
+        if (response.status === 401) {
+            localStorage.removeItem('adminId');
+            localStorage.removeItem('adminToken');
+            location.reload();
+            return;
+        }
+
         const data = await response.json();
         
         if (data.success) {
@@ -241,7 +283,11 @@ async function loadUsers(page = 1, search = '') {
         }
     } catch (err) {
         console.error('Ошибка загрузки пользователей:', err);
-        alert('Ошибка загрузки пользователей');
+        if (err.message.includes('401')) {
+            localStorage.removeItem('adminId');
+            localStorage.removeItem('adminToken');
+            location.reload();
+        }
     }
 }
 
@@ -249,7 +295,7 @@ function updatePagination() {
     const pagination = document.getElementById('pagination');
     pagination.innerHTML = '';
 
-    // Кнопк�� "Назад"
+    // Кнопка "Назад"
     const prevButton = document.createElement('button');
     prevButton.textContent = 'Назад';
     prevButton.disabled = currentPage === 1;
@@ -302,33 +348,43 @@ async function deleteUser(id) {
     }
 }
 
+// Модифицируем функцию login
 async function login() {
-    const username = document.getElementById('adminUsername').value;
-    const password = document.getElementById('adminPassword').value;
-
     try {
+        const username = document.getElementById('adminUsername').value;
+        const password = document.getElementById('adminPassword').value;
+
+        // Проверяем, что поля не пустые
+        if (!username || !password) {
+            alert('Пожалуйста, заполните все поля');
+            return;
+        }
+
         const response = await fetch(`${API_URL}/api/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ username, password }),
-            credentials: 'include'
+            body: JSON.stringify({
+                username: username.trim(),
+                password: password.trim()
+            })
         });
+
         const data = await response.json();
 
-        if (data.success && data.user.role === 'admin') {
+        if (response.ok && data.user && data.user.role === 'admin') {
             localStorage.setItem('adminId', data.user.id);
             document.getElementById('loginForm').style.display = 'none';
             document.querySelector('.admin-panel').style.display = 'block';
             loadStats();
             loadUsers();
         } else {
-            alert('Доступ запрещен');
+            alert('Неверное имя пользователя или пароль');
         }
     } catch (err) {
         console.error('Ошибка авторизации:', err);
-        alert('Ошибка авторизации');
+        alert('Ошибка при попытке входа. Пожалуйста, попробуйте позже.');
     }
 }
 
@@ -502,18 +558,19 @@ function createUserActivityChart(data) {
 
 // Инициализация
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM loaded, checking admin status');
-    const adminId = localStorage.getItem('adminId');
-    if (adminId) {
-        console.log('Admin logged in, initializing panel');
-        document.getElementById('loginForm').style.display = 'none';
-        document.querySelector('.admin-panel').style.display = 'block';
-        loadStats();
-        loadUsers();
-        // Добавляем небольшую задержку перед загрузкой графиков
-        setTimeout(loadCharts, 100);
+    if (!checkAuth()) {
+        console.log('Требуется авторизация');
+        return;
     }
 
+    console.log('Admin logged in, initializing panel');
+    document.getElementById('loginForm').style.display = 'none';
+    document.querySelector('.admin-panel').style.display = 'block';
+    loadStats();
+    loadUsers();
+    setTimeout(loadCharts, 100);
+
+    // Добавляем обработчик поиска
     const searchInput = document.getElementById('searchUsers');
     let searchTimeout;
 
@@ -524,4 +581,20 @@ document.addEventListener('DOMContentLoaded', () => {
             loadUsers(1, e.target.value);
         }, 300);
     });
+});
+
+// Добавим функцию выхода
+function logout() {
+    localStorage.removeItem('adminId');
+    localStorage.removeItem('adminToken');
+    location.reload();
+}
+
+// Добавим обработчик ошибок для всех fetch запросов
+window.addEventListener('unhandledrejection', function(event) {
+    if (event.reason && event.reason.message && event.reason.message.includes('401')) {
+        localStorage.removeItem('adminId');
+        localStorage.removeItem('adminToken');
+        location.reload();
+    }
 });
