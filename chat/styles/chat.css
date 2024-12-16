@@ -362,7 +362,6 @@ body {
 
 .message-content {
     position: relative;
-    display: flex;
     flex-direction: column;
     gap: 4px;
 }
