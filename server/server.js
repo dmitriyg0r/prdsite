@@ -854,7 +854,7 @@ app.get('/api/users/:id', async (req, res) => {
     }
 });
 
-// Об���овле����ие п��о��иля пользователя
+// О�����овле����ие п��о��иля пользователя
 app.post('/api/users/update-profile', async (req, res) => {
     try {
         const { userId, username, email } = req.body;
@@ -1603,46 +1603,25 @@ app.get('/api/feed', async (req, res) => {
 // Получение комментариев к посту
 app.get('/api/posts/:postId/comments', async (req, res) => {
     try {
-        console.log('Loading comments for post:', req.params.postId);
-        
         const { postId } = req.params;
         
-        // Проверяем существование поста
-        const postExists = await pool.query(
-            'SELECT id FROM posts WHERE id = $1 AND type = $2',
-            [postId, 'post']
-        );
-
-        if (postExists.rows.length === 0) {
-            return res.status(404).json({
-                success: false,
-                error: 'Пост не найден'
-            });
-        }
-
         const comments = await pool.query(`
-            SELECT 
-                p.*,
-                u.username as author_name,
-                u.avatar_url as author_avatar
+            SELECT p.*, u.username as author_name, u.avatar_url as author_avatar
             FROM posts p
             JOIN users u ON p.user_id = u.id
             WHERE p.parent_id = $1 AND p.type = 'comment'
             ORDER BY p.created_at ASC
         `, [postId]);
 
-        console.log('Found comments:', comments.rows.length);
-        
-        res.json({ 
-            success: true, 
-            comments: comments.rows 
+        res.json({
+            success: true,
+            comments: comments.rows
         });
     } catch (err) {
-        console.error('Error loading comments:', err);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Ошибка при загрузке комментариев',
-            details: err.message 
+        console.error('Ошибка при получении комментариев:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при получении комментариев'
         });
     }
 });

@@ -887,48 +887,34 @@ document.addEventListener('DOMContentLoaded', async () => {
     let lastStatusUpdate = 0;
     const MIN_UPDATE_INTERVAL = 10000; // Минимальный интервал между обновлениями (10 секунд)
 
-    async function updateUserStatus(force = false) {
-        if (!currentUser) return;
+    async function updateUserStatus() {
+        try {
+            const response = await fetch('https://adminflow.ru:5003/api/users/update-status', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    userId: currentUser.id,
+                    is_online: true,
+                    last_activity: new Date().toISOString()
+                })
+            });
 
-        const now = Date.now();
-        
-        if (!force && now - lastStatusUpdate < MIN_UPDATE_INTERVAL) {
-            return;
-        }
-
-        if (statusUpdateTimeout) {
-            clearTimeout(statusUpdateTimeout);
-        }
-
-        statusUpdateTimeout = setTimeout(async () => {
-            try {
-                const response = await fetch('https://adminflow.ru:5003/api/users/update-status', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        userId: currentUser.id,
-                        is_online: true,
-                        last_activity: new Date().toISOString()
-                    }),
-                    credentials: 'include'
-                });
-
-                const data = await response.json();
-
-                if (!data.success) {
-                    throw new Error(data.error || 'Failed to update status');
-                }
-
-                lastStatusUpdate = now;
-            } catch (err) {
-                console.error('Error updating user status:', err);
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Ошибка при обновлении статуса');
             }
-        }, 100);
+
+            const data = await response.json();
+            return data;
+        } catch (err) {
+            console.error('Ошибка обновления статуса:', err);
+            // Не выбрасываем ошибку дальше, чтобы не прерывать работу приложения
+        }
     }
 
-    // Оп��имизированная функция отслеживания активности
+    // Оптимизированная функция отслеживания активности
     function startStatusUpdates() {
         let lastActivity = new Date();
         let activityTimeout = null;
@@ -1790,28 +1776,27 @@ async function toggleComments(postId) {
 
 async function loadComments(postId) {
     try {
-        const response = await fetch(`https://adminflow.ru:5003/api/posts/${postId}/comments`, {
-            credentials: 'include'
-        });
+        if (!postId) {
+            console.warn('ID поста не указан');
+            return;
+        }
+
+        const response = await fetch(`https://adminflow.ru:5003/api/posts/${postId}/comments`);
         
+        if (response.status === 404) {
+            console.log('Комментарии не найдены для поста:', postId);
+            return [];
+        }
+
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Ошибка при загрузке комментариев');
+            throw new Error('Ошибка при загрузке комментариев');
         }
-        
+
         const data = await response.json();
-        if (!data.success) {
-            throw new Error(data.error || 'Ошибка при загрузке комментариев');
-        }
-        
-        displayComments(postId, data.comments);
+        return data.comments || [];
     } catch (err) {
-        console.error('Error loading comments:', err);
-        // Показываем более информативное сообщение об ошибке
-        const errorContainer = document.getElementById(`comments-container-${postId}`);
-        if (errorContainer) {
-            errorContainer.innerHTML = `<div class="error-message">Не удалось загрузить комментарии: ${err.message}</div>`;
-        }
+        console.error('Ошибка загрузки комментариев:', err);
+        return [];
     }
 }
 
