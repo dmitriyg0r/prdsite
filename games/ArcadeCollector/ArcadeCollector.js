@@ -169,8 +169,8 @@ class ArcadeCollector {
             health: new Image(),
             weapon: new Image()
         };
-        this.perkImages.health.src = 'images/health_perk.png';
-        this.perkImages.weapon.src = 'images/weapon_perk.png';
+        this.perkImages.health.src = './games/ArcadeCollector/assets/med_perk.png';
+        this.perkImages.weapon.src = './games/ArcadeCollector/assets/w3_perk.png';
         
         // Изменяем параметры улучшения оружия
         this.weaponPowerup = {
@@ -521,7 +521,7 @@ class ArcadeCollector {
         this.updatePerks(dt);
         this.updateWeaponPowerup(dt);
         
-        // Обновляем след рывка
+        // О��новляем след рывка
         this.player.dashGhosts = this.player.dashGhosts.filter(ghost => {
             ghost.time += dt;
             return ghost.time < ghost.lifetime;
@@ -739,7 +739,7 @@ class ArcadeCollector {
                 break;
 
             case 'boss':
-                // Сложна�� форма босса с градиентом
+                // Сложна форма босса с градиентом
                 const bossGradient = this.ctx.createRadialGradient(
                     enemy.x + enemy.width/2, enemy.y + enemy.height/2, 0,
                     enemy.x + enemy.width/2, enemy.y + enemy.height/2, enemy.width/2
@@ -983,7 +983,7 @@ class ArcadeCollector {
 
         // Отрисовка перков
         this.perks.forEach(perk => {
-            if (this.perkImages[perk.type].complete) { // Проверяем, загрузилось ли изображение
+            if (this.perkImages[perk.type] && this.perkImages[perk.type].complete) {
                 this.ctx.save();
                 // Добавляем свечение
                 this.ctx.shadowColor = perk.color;
@@ -1200,7 +1200,7 @@ class ArcadeCollector {
         // Определяем интенсивность на основе движения
         const movingUp = this.keys.ArrowUp;
         const particleCount = movingUp ? 3 : 2; // Больше частиц при движении вверх
-        const baseSpeed = movingUp ? 200 : 150; // Быстрее при движении вверх
+        const baseSpeed = movingUp ? 200 : 150; // Быстрее при дв��жении вверх
 
         // Корректируем позиции двигателей в соответствии со спрайтом
         const enginePositions = [
@@ -1265,7 +1265,7 @@ class ArcadeCollector {
             }
         });
         
-        // Движение и коллизии перков
+        // ��вижение и коллизии перков
         this.perks = this.perks.filter(perk => {
             perk.y += perk.speed * dt;
             
