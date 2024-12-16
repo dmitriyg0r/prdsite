@@ -182,6 +182,10 @@ class ArcadeCollector {
         this.bindEvents();
         this.lastTime = performance.now();
         this.animate(this.lastTime);
+        
+        // Инициализация здоровья игрока
+        this.player.health = this.player.maxHealth;
+        this.updateHealthDisplay(); // Устанавливаем начальное значение
     }
 
     animate(currentTime) {
@@ -443,7 +447,7 @@ class ArcadeCollector {
             // Обновление времени для поведения
             enemy.time += dt;
 
-            // Обновление позиции в зависи��ости от поведения
+            // Обновление позиции в зависиости от поведения
             switch(enemy.behavior) {
                 case 'straight':
                     enemy.y += enemy.speed * dt;
@@ -1089,6 +1093,10 @@ class ArcadeCollector {
         this.player.dashTimer = 0;
         this.player.dashCooldownTimer = 0;
         this.player.isDashing = false;
+        
+        // Инициализация здоровья игрока
+        this.player.health = this.player.maxHealth;
+        this.updateHealthDisplay(); // Обновляем отображение при рестарте
     }
 
     startGame() {
@@ -1107,6 +1115,10 @@ class ArcadeCollector {
         if (this.startMenu) {
             this.startMenu.style.display = 'none';
         }
+        
+        // Инициализация здоровья игрока
+        this.player.health = this.player.maxHealth;
+        this.updateHealthDisplay(); // Обновляем отображение при старте игры
     }
 
     createDashEffect() {
@@ -1163,14 +1175,8 @@ class ArcadeCollector {
 
     damagePlayer(damage) {
         this.player.health -= damage;
+        this.updateHealthDisplay(); // Обновляем отображение после получения урона
         
-        // Создаем эффект получения урона
-        this.createDamageEffect();
-        
-        // Обновляем отображение здоровья
-        this.updateHealthDisplay();
-        
-        // Проверяем условие смерти
         if (this.player.health <= 0) {
             this.gameOver();
         }
@@ -1199,9 +1205,8 @@ class ArcadeCollector {
     }
 
     updateHealthDisplay() {
-        // Обновляем отображение здоровья в UI
         if (this.livesElement) {
-            this.livesElement.textContent = Math.max(0, Math.ceil(this.player.health));
+            this.livesElement.textContent = Math.ceil(this.player.health);
         }
     }
 
@@ -1302,6 +1307,7 @@ class ArcadeCollector {
     applyHealthPerk() {
         const healAmount = 30;
         this.player.health = Math.min(this.player.maxHealth, this.player.health + healAmount);
+        this.updateHealthDisplay(); // Обновляем отображение после лечения
         
         // Создаем визуальный эффект лечения
         const particles = 20;
