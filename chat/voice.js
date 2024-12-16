@@ -10,6 +10,11 @@ class VoiceRecorder {
         
         this.setupUI();
         this.setupEventListeners();
+
+        // Привязываем методы к контексту класса
+        this.toggleRecording = this.toggleRecording.bind(this);
+        this.cancelRecording = this.cancelRecording.bind(this);
+        this.sendVoiceMessage = this.sendVoiceMessage.bind(this);
     }
 
     setupUI() {
@@ -47,9 +52,18 @@ class VoiceRecorder {
         const cancelButton = this.recordingContainer.querySelector('.voice-cancel-button');
         const sendButton = this.recordingContainer.querySelector('.voice-send-button');
 
-        voiceButton.addEventListener('click', () => this.toggleRecording());
-        cancelButton.addEventListener('click', () => this.cancelRecording());
-        sendButton.addEventListener('click', () => this.sendVoiceMessage());
+        // Используем привязанные методы
+        voiceButton.addEventListener('click', this.toggleRecording);
+        cancelButton.addEventListener('click', this.cancelRecording);
+        sendButton.addEventListener('click', this.sendVoiceMessage);
+    }
+
+    toggleRecording() {
+        if (!this.isRecording) {
+            this.startRecording();
+        } else {
+            this.stopRecording();
+        }
     }
 
     async startRecording() {
