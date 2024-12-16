@@ -65,7 +65,7 @@ class ArcadeCollector {
             shooter: {
                 width: 40,
                 height: 40,
-                speed: 80, // Уменьшаем с 100 до 80
+                speed: 90, // Уменьшаем с 100 до 80
                 color: '#fb923c',
                 health: 3, // Увеличиваем с 2 до 3
                 points: 25, // Увеличиваем с 20 до 25
@@ -128,8 +128,12 @@ class ArcadeCollector {
         // Добавляем стартовое меню
         this.startMenu = document.getElementById('startMenu');
         
-        // Добавляем ма��сив для частиц
+        // Добавляем массив для частиц
         this.particles = [];
+        
+        // Загрузка изображения корабля
+        this.playerImage = new Image();
+        this.playerImage.src = 'assets/Frendly_ship.png'; // Путь к вашему изображению
         
         this.bindEvents();
         this.lastTime = performance.now();
@@ -779,13 +783,22 @@ class ArcadeCollector {
         });
 
         // Отрисовка игрока
-        this.ctx.fillStyle = this.player.isDashing ? '#86efac' : this.player.color; // Светлее во время рывка
-        this.ctx.beginPath();
-        this.ctx.moveTo(this.player.x + this.player.width / 2, this.player.y);
-        this.ctx.lineTo(this.player.x + this.player.width, this.player.y + this.player.height);
-        this.ctx.lineTo(this.player.x, this.player.y + this.player.height);
-        this.ctx.closePath();
-        this.ctx.fill();
+        if (this.playerImage.complete) { // Проверяем, загрузилось ли изображение
+            this.ctx.save();
+            if (this.player.isDashing) {
+                // Добавляем свечение во время рывка
+                this.ctx.shadowColor = '#86efac';
+                this.ctx.shadowBlur = 20;
+            }
+            this.ctx.drawImage(
+                this.playerImage,
+                this.player.x,
+                this.player.y,
+                this.player.width,
+                this.player.height
+            );
+            this.ctx.restore();
+        }
 
         // Отрисовка пуль
         this.bullets.forEach(bullet => {
