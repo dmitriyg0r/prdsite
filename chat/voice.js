@@ -1,5 +1,6 @@
 class VoiceRecorder {
     constructor() {
+        // Инициализация свойств
         this.mediaRecorder = null;
         this.audioChunks = [];
         this.isRecording = false;
@@ -7,19 +8,34 @@ class VoiceRecorder {
         this.timerInterval = null;
         this.audioContext = null;
         this.analyser = null;
-        
-        this.setupUI();
-        this.setupEventListeners();
+        this.recordingContainer = null;
 
-        // Привязываем методы к контексту класса
+        // Привязка методов к контексту
+        this.startRecording = this.startRecording.bind(this);
+        this.stopRecording = this.stopRecording.bind(this);
         this.toggleRecording = this.toggleRecording.bind(this);
         this.cancelRecording = this.cancelRecording.bind(this);
         this.sendVoiceMessage = this.sendVoiceMessage.bind(this);
+        this.updateUI = this.updateUI.bind(this);
+        this.resetUI = this.resetUI.bind(this);
+        this.startTimer = this.startTimer.bind(this);
+        this.stopTimer = this.stopTimer.bind(this);
+        this.visualize = this.visualize.bind(this);
+
+        // Инициализация UI и обработчиков
+        this.init();
+    }
+
+    init() {
+        this.setupUI();
+        this.setupEventListeners();
     }
 
     setupUI() {
-        // Добавляем кнопку записи голоса в контролы ввода
+        // Добавляем кнопку записи голоса
         const inputControls = document.querySelector('.input-controls');
+        if (!inputControls) return;
+
         const voiceButton = document.createElement('button');
         voiceButton.className = 'voice-button';
         voiceButton.innerHTML = '<i class="fas fa-microphone"></i>';
@@ -49,13 +65,15 @@ class VoiceRecorder {
 
     setupEventListeners() {
         const voiceButton = document.getElementById('voiceButton');
+        if (!voiceButton || !this.recordingContainer) return;
+
         const cancelButton = this.recordingContainer.querySelector('.voice-cancel-button');
         const sendButton = this.recordingContainer.querySelector('.voice-send-button');
 
-        // Используем привязанные методы
-        voiceButton.addEventListener('click', this.toggleRecording);
-        cancelButton.addEventListener('click', this.cancelRecording);
-        sendButton.addEventListener('click', this.sendVoiceMessage);
+        // Используем стрелочные функции для сохранения контекста
+        voiceButton.addEventListener('click', () => this.toggleRecording());
+        cancelButton.addEventListener('click', () => this.cancelRecording());
+        sendButton.addEventListener('click', () => this.sendVoiceMessage());
     }
 
     toggleRecording() {
@@ -242,9 +260,79 @@ class VoiceRecorder {
         messagesContainer.appendChild(messageElement);
         scrollToBottom();
     }
+
+    updateUI(isRecording) {
+        const voiceButton = document.getElementById('voiceButton');
+        const inputControls = document.querySelector('.input-controls');
+        
+        if (isRecording) {
+            voiceButton?.classList.add('recording');
+            inputControls.style.display = 'none';
+            this.recordingContainer.style.display = 'flex';
+        } else {
+            voiceButton?.classList.remove('recording');
+        }
+    }
+
+    resetUI() {
+        const inputControls = document.querySelector('.input-controls');
+        if (inputControls && this.recordingContainer) {
+            inputControls.style.display = 'flex';
+            this.recordingContainer.style.display = 'none';
+            document.getElementById('voiceButton')?.classList.remove('recording');
+        }
+    }
+
+    startTimer() {
+        this.timerInterval = setInterval(() => {
+            const elapsedTime = Date.now() - this.startTime;
+            const minutes = Math.floor(elapsedTime / 60000);
+            const seconds = Math.floor((elapsedTime % 60000) / 1000);
+            const formattedTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            const timerElement = document.querySelector('.voice-timer');
+            if (timerElement) {
+                timerElement.textContent = formattedTime;
+            }
+        }, 100);
+    }
+
+    stopTimer() {
+        clearInterval(this.timerInterval);
+    }
+
+    visualize() {
+        const canvas = document.querySelector('.voice-waveform-canvas');
+        if (!canvas) return;
+
+        const context = canvas.getContext('2d');
+        const analyser = this.audioContext.createAnalyser();
+        const source = this.audioContext.createMediaStreamSource(this.mediaRecorder.stream);
+        source.connect(analyser);
+        analyser.fftSize = 256;
+
+        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+        const barWidth = canvas.width / dataArray.length;
+        let x = 0;
+
+        const draw = () => {
+            requestAnimationFrame(draw);
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            analyser.getByteFrequencyData(dataArray);
+            context.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            context.fillStyle = 'rgba(0, 0, 255, 0.5)';
+            dataArray.forEach(value => {
+                const y = (value / 255) * canvas.height;
+                context.fillRect(x, canvas.height - y, barWidth, y);
+                x += barWidth;
+            });
+        };
+
+        draw();
+    }
 }
 
-// Инициализация при загрузке страницы
+// Создаем экземпляр класса только после полной загрузки DOM
 document.addEventListener('DOMContentLoaded', () => {
     window.voiceRecorder = new VoiceRecorder();
 });
