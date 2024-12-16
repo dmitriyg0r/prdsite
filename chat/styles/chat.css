@@ -324,16 +324,6 @@ body {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
-/* Полученные сообщения */
-.message-received {
-    align-self: flex-start;
-    margin-right: auto;
-    background: var(--surface-color);
-    border: 1px solid var(--border-light);
-    border-bottom-left-radius: 4px;
-    color: var(--text-primary);
-}
-
 /* Полученные сообщения в тёмной теме */
 [data-theme="dark"] .message-received {
     background: rgba(149, 117, 205, 0.15);
