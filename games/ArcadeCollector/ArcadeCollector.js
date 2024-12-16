@@ -157,7 +157,16 @@ class ArcadeCollector {
                 width: 40,  // Увеличиваем размер
                 height: 40, // Увеличиваем размер
                 color: '#3b82f6',
-                effect: () => this.applyWeaponPerk(),
+                effect: () => this.applyWeaponPerk('shotgun'),
+                duration: 10,
+                spawnRate: 20000,
+                lastSpawn: 0
+            },
+            weapon2: {
+                width: 40,
+                height: 40,
+                color: '#22c55e',
+                effect: () => this.applyWeaponPerk('triple'),
                 duration: 10,
                 spawnRate: 20000,
                 lastSpawn: 0
@@ -167,10 +176,22 @@ class ArcadeCollector {
         // Загружаем изображения для перков
         this.perkImages = {
             health: new Image(),
-            weapon: new Image()
+            weapon: new Image(),
+            weapon2: new Image()  // Новый перк
         };
         this.perkImages.health.src = '../ArcadeCollector/assets/med_perk.png';
         this.perkImages.weapon.src = '../ArcadeCollector/assets/w3_perk.png';
+        this.perkImages.weapon2.src = '../ArcadeCollector/assets/w2_perk.png';  // Путь к новому изображению
+        
+        // Добавляем обработчики ошибок загрузки изображений
+        this.perkImages.health.onerror = () => console.error('Error loading health perk image');
+        this.perkImages.weapon.onerror = () => console.error('Error loading weapon perk image');
+        this.perkImages.weapon2.onerror = () => console.error('Error loading weapon2 perk image');
+        
+        // Добавляем проверку загрузки изображений
+        this.perkImages.health.onload = () => console.log('Health perk image loaded');
+        this.perkImages.weapon.onload = () => console.log('Weapon perk image loaded');
+        this.perkImages.weapon2.onload = () => console.log('Weapon2 perk image loaded');
         
         // Изменяем параметры улучшения оружия
         this.weaponPowerup = {
@@ -303,6 +324,28 @@ class ArcadeCollector {
                     speedY: speedY,
                     color: '#4ade80',
                     damage: 8
+                });
+            }
+        } else if (this.weaponPowerup.type === 'triple') {
+            // Тройной выстрел (3 пули)
+            const bulletCount = 3;
+            const spreadAngle = Math.PI / 8; // Меньший разброс
+            const speed = 500;
+            
+            for (let i = 0; i < bulletCount; i++) {
+                const angle = (i - (bulletCount - 1) / 2) * (spreadAngle / (bulletCount - 1));
+                const speedX = Math.sin(angle) * speed;
+                const speedY = -Math.cos(angle) * speed;
+                
+                this.bullets.push({
+                    x: this.player.x + this.player.width/2 - 2,
+                    y: this.player.y,
+                    width: 4,
+                    height: 8,
+                    speedX: speedX,
+                    speedY: speedY,
+                    color: '#4ade80',
+                    damage: 12 // Больше урона чем у дроби
                 });
             }
         } else {
@@ -997,20 +1040,25 @@ class ArcadeCollector {
 
         // Отрисовка перков
         this.perks.forEach(perk => {
-            if (this.perkImages[perk.type] && this.perkImages[perk.type].complete) {
+            const perkImage = this.perkImages[perk.type];
+            if (perkImage && perkImage.complete && perkImage.naturalWidth !== 0) {
                 this.ctx.save();
                 // Добавляем свечение
                 this.ctx.shadowColor = perk.color;
-                this.ctx.shadowBlur = 15; // Увеличиваем свечение
+                this.ctx.shadowBlur = 15;
                 // Отрисовываем изображение
                 this.ctx.drawImage(
-                    this.perkImages[perk.type],
+                    perkImage,
                     perk.x,
                     perk.y,
                     perk.width,
                     perk.height
                 );
                 this.ctx.restore();
+            } else {
+                // Fallback: рисуем цветной прямоугольник, если изображение не загрузилось
+                this.ctx.fillStyle = perk.color;
+                this.ctx.fillRect(perk.x, perk.y, perk.width, perk.height);
             }
         });
     }
@@ -1214,7 +1262,7 @@ class ArcadeCollector {
     createEngineParticles() {
         // Определяем интенсивность на основе движения
         const movingUp = this.keys.ArrowUp;
-        const particleCount = movingUp ? 3 : 2; // Больше частиц при движении вверх
+        const particleCount = movingUp ? 3 : 2; // Больше частиц при дв��жении вверх
         const baseSpeed = movingUp ? 200 : 150; // Быстрее при двжении вверх
 
         // Корректируем позиции двигателей в соответствии со спрайтом
@@ -1331,16 +1379,18 @@ class ArcadeCollector {
     }
 
     // Эффект улучшения оружия
-    applyWeaponPerk() {
+    applyWeaponPerk(type) {
         this.weaponPowerup = {
             active: true,
-            timeLeft: this.perkTypes.weapon.duration,
-            type: 'shotgun'
+            timeLeft: this.perkTypes[type === 'shotgun' ? 'weapon' : 'weapon2'].duration,
+            type: type
         };
         
         // Создаем визуальный эффект получения улучшения
         const particles = 20;
-        const colors = ['#3b82f6', '#60a5fa', '#ffffff'];
+        const colors = type === 'shotgun' ? 
+            ['#3b82f6', '#60a5fa', '#ffffff'] : 
+            ['#22c55e', '#4ade80', '#ffffff'];
         
         for (let i = 0; i < particles; i++) {
             const angle = (Math.PI * 2 * i) / particles;
