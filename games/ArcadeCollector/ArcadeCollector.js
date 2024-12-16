@@ -522,7 +522,7 @@ class ArcadeCollector {
             }
         }
 
-        // Применяем обыч��ое движение, если не в рывке
+        // Применяем обычное движение, если не в рывке
         if (!this.player.isDashing) {
             this.player.velocityX = moveX * this.player.baseSpeed;
             this.player.velocityY = moveY * this.player.baseSpeed;
@@ -556,7 +556,7 @@ class ArcadeCollector {
     }
 
     updateSpawnTimers(dt) {
-        // Спавн врагов
+        // Спавн враов
         this.enemySpawnTimer += dt * 1000;
         if (this.enemySpawnTimer >= this.enemySpawnRate) {
             this.spawnEnemy();
@@ -1110,29 +1110,52 @@ class ArcadeCollector {
 
     // Добавим новый метод для создания частиц двигателя
     createEngineParticles() {
-        // Создаем частицы для двух двигателей (левого и правого)
+        // Определяем интенсивность на основе движения
+        const movingUp = this.keys.ArrowUp;
+        const particleCount = movingUp ? 3 : 2; // Больше частиц при движении вверх
+        const baseSpeed = movingUp ? 200 : 150; // Быстрее при движении вверх
+
+        // Корректируем позиции двигателей в соответствии со спрайтом
         const enginePositions = [
-            { x: this.player.x + 15, y: this.player.y + this.player.height - 5 }, // Левый двигатель
-            { x: this.player.x + this.player.width - 25, y: this.player.y + this.player.height - 5 } // Правый двигатель
+            { x: this.player.x + 20, y: this.player.y + this.player.height - 25 },  // Левый двигатель
+            { x: this.player.x + this.player.width - 30, y: this.player.y + this.player.height - 25 }  // Правый двигатель
         ];
 
         enginePositions.forEach(pos => {
-            // Создаем несколько частиц для каждого двигателя
-            for (let i = 0; i < 2; i++) {
-                const spread = (Math.random() - 0.5) * 6; // Разброс частиц по горизонтали
+            for (let i = 0; i < particleCount; i++) {
+                const spread = (Math.random() - 0.5) * 4; // Уменьшаем разброс
                 this.engineParticles.push({
                     x: pos.x + spread,
                     y: pos.y,
-                    vx: (Math.random() - 0.5) * 20, // Небольшой разброс по горизонтали
-                    vy: 150 + Math.random() * 50, // Скорость движения вниз
-                    size: 3 + Math.random() * 2,
+                    vx: (Math.random() - 0.5) * 15,
+                    vy: baseSpeed + Math.random() * 50,
+                    size: 2 + Math.random() * 2, // Немного уменьшаем размер частиц
                     lifetime: 0.2 + Math.random() * 0.1,
                     time: 0,
-                    // Градиент от ярко-зеленого к темно-зеленому
                     color: Math.random() > 0.5 ? '#4ade80' : '#22c55e'
                 });
             }
         });
+
+        // Добавляем центральный двигатель
+        const centerEngine = {
+            x: this.player.x + (this.player.width / 2),
+            y: this.player.y + this.player.height - 20
+        };
+
+        for (let i = 0; i < particleCount; i++) {
+            const spread = (Math.random() - 0.5) * 4;
+            this.engineParticles.push({
+                x: centerEngine.x + spread,
+                y: centerEngine.y,
+                vx: (Math.random() - 0.5) * 15,
+                vy: baseSpeed + Math.random() * 50,
+                size: 2 + Math.random() * 2,
+                lifetime: 0.2 + Math.random() * 0.1,
+                time: 0,
+                color: Math.random() > 0.5 ? '#4ade80' : '#22c55e'
+            });
+        }
     }
 
     // Добавим метод обновления частиц двигателя
@@ -1141,7 +1164,7 @@ class ArcadeCollector {
             particle.x += particle.vx * dt;
             particle.y += particle.vy * dt;
             particle.time += dt;
-            particle.size -= dt * 5; // Уменьшаем размер частицы со временем
+            particle.size -= dt * 3; // Замедляем уменьшение размера частиц
             return particle.time < particle.lifetime && particle.size > 0;
         });
 
