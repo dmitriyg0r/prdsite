@@ -12,6 +12,8 @@ const { Server } = require('socket.io');
 
 const app = express();
 const PORT = 5003;
+const STATUS_UPDATE_CACHE = new Map();
+const STATUS_UPDATE_INTERVAL = 30000; // 30 секунд
 
 // Middleware
 app.use(cors({
@@ -1530,17 +1532,25 @@ app.get('/api/feed', async (req, res) => {
 });
 
 // Получение комментариев к посту
+// Обновленный обработчик для комментариев
 app.get('/api/posts/:postId/comments', async (req, res) => {
     try {
         const { postId } = req.params;
         
+        if (!postId) {
+            return res.status(400).json({
+                success: false,
+                error: 'ID поста не указан'
+            });
+        }
+
         // Проверяем существование поста
-        const postExists = await pool.query(
-            'SELECT id FROM posts WHERE id = $1',
+        const postCheck = await pool.query(
+            'SELECT EXISTS(SELECT 1 FROM posts WHERE id = $1)',
             [postId]
         );
 
-        if (postExists.rows.length === 0) {
+        if (!postCheck.rows[0].exists) {
             return res.status(404).json({
                 success: false,
                 error: 'Пост не найден'
@@ -1548,29 +1558,43 @@ app.get('/api/posts/:postId/comments', async (req, res) => {
         }
 
         // Получаем комментарии
-        const comments = await pool.query(`
+        const result = await pool.query(`
             SELECT 
-                p.*,
+                c.id,
+                c.content,
+                c.created_at,
+                c.user_id,
                 u.username as author_name,
                 u.avatar_url as author_avatar
-            FROM posts p
-            JOIN users u ON p.user_id = u.id
-            WHERE p.parent_id = $1 
-            AND p.type = 'comment'
-            ORDER BY p.created_at ASC
+            FROM comments c
+            JOIN users u ON c.user_id = u.id
+            WHERE c.post_id = $1
+            ORDER BY c.created_at ASC
         `, [postId]);
 
+        // Всегда возвращаем JSON
         res.json({
             success: true,
-            comments: comments.rows
+            comments: result.rows
         });
+
     } catch (err) {
         console.error('Ошибка при получении комментариев:', err);
+        // Убедимся, что всегда возвращаем JSON
         res.status(500).json({
             success: false,
             error: 'Ошибка при получении комментариев'
         });
     }
+});
+
+// Добавим обработчик ошибок для express
+app.use((err, req, res, next) => {
+    console.error('Express error:', err);
+    res.status(500).json({
+        success: false,
+        error: 'Внутренняя ошибка сервера'
+    });
 });
 
 // Создание комментария

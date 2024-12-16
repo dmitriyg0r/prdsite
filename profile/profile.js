@@ -1766,22 +1766,42 @@ async function toggleComments(postId) {
 
 async function loadComments(postId) {
     try {
-        const response = await fetch(`https://adminflow.ru:5003/api/posts/${postId}/comments`);
+        if (!postId) {
+            console.warn('ID поста не указан');
+            return [];
+        }
+
+        const response = await fetch(`https://adminflow.ru:5003/api/posts/${postId}/comments`, {
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
+
+        // Проверяем тип контента
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            throw new Error('Получен неверный формат ответа от сервера');
+        }
+
         const data = await response.json();
 
         if (!response.ok) {
             throw new Error(data.error || 'Ошибка при загрузке комментариев');
         }
 
+        if (!data.success) {
+            throw new Error(data.error || 'Ошибка при загрузке комментариев');
+        }
+
         // Отображаем комментарии
         displayComments(postId, data.comments);
-        
         return data.comments;
+
     } catch (err) {
         console.error('Ошибка загрузки комментариев:', err);
         const container = document.getElementById(`comments-container-${postId}`);
         if (container) {
-            container.innerHTML = '<div class="error-message">Ошибка при загрузке комментариев</div>';
+            container.innerHTML = `<div class="error-message">Ошибка: ${err.message}</div>`;
         }
         return [];
     }
