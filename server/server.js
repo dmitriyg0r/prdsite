@@ -1317,7 +1317,7 @@ app.delete('/api/posts/delete/:postId', async (req, res) => {
             return res.status(403).json({ error: 'У вас нет прав на удаление этого поста' });
         }
 
-        // Удаляем все связанные записи (лайки, комментарии)
+        // Удаляем все связанные зап��си (лайки, комментарии)
         await pool.query('DELETE FROM posts WHERE parent_id = $1', [postId]);
         // Удаляем сам пост
         await pool.query('DELETE FROM posts WHERE id = $1', [postId]);
@@ -2528,8 +2528,8 @@ app.post('/api/messages/voice', uploadVoice.single('audio'), async (req, res) =>
         // Сначала создаем запись в таблице messages
         const messageResult = await pool.query(`
             INSERT INTO messages 
-            (sender_id, receiver_id, message_type, created_at, is_read)
-            VALUES ($1, $2, 'voice', NOW(), false)
+            (sender_id, receiver_id, message_type, message, created_at, is_read)
+            VALUES ($1, $2, 'voice', '[Голосовое сообщение]', NOW(), false)
             RETURNING id, created_at
         `, [senderId, receiverId]);
 
@@ -2547,6 +2547,7 @@ app.post('/api/messages/voice', uploadVoice.single('audio'), async (req, res) =>
             sender_id: senderId,
             receiver_id: receiverId,
             message_type: 'voice',
+            message: '[Голосовое сообщение]',
             file_path: req.file.path,
             created_at: messageResult.rows[0].created_at,
             is_read: false
