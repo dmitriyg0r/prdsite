@@ -202,7 +202,8 @@ class ArcadeCollector {
         
         // Добавляем параметры для боссов
         this.bossConfig = {
-            scoreThreshold: 1000, // Каждые 1000 очков появляется босс
+            scoreThreshold: 1000, // Первый босс появляется при 1000 очках
+            subsequentThreshold: 1500, // Последующие боссы появляются каждые 1500 очков
             active: false,
             lastBossScore: 0,
             boss: null
@@ -213,18 +214,68 @@ class ArcadeCollector {
             basic: {
                 width: 120,
                 height: 120,
-                maxHealth: 150, // Увеличиваем здоровье
+                maxHealth: 150,
                 health: 150,
                 color: '#dc2626',
                 points: 500,
-                shootRate: 2000, // Увеличиваем интервал между атаками
+                shootRate: 2000,
                 lastShot: 0,
-                currentPattern: 0, // Индекс текущего паттерна атаки
-                bulletPatterns: ['circle', 'spiral', 'wave', 'cross'], // Разные паттерны атак
+                currentPattern: 0,
+                bulletPatterns: ['circle', 'spiral', 'wave', 'cross'],
                 bulletSpeed: 200,
-                bulletDamage: 15
+                bulletDamage: 15,
+                name: 'Красный страж'
+            },
+            laser: {
+                width: 140,
+                height: 140,
+                maxHealth: 200,
+                health: 200,
+                color: '#3b82f6',
+                points: 750,
+                shootRate: 2500,
+                lastShot: 0,
+                currentPattern: 0,
+                bulletPatterns: ['laser', 'crossLaser', 'spinningLaser'],
+                bulletSpeed: 250,
+                bulletDamage: 20,
+                name: 'Лазерный титан'
+            },
+            swarm: {
+                width: 100,
+                height: 100,
+                maxHealth: 180,
+                health: 180,
+                color: '#8b5cf6',
+                points: 650,
+                shootRate: 1800,
+                lastShot: 0,
+                currentPattern: 0,
+                bulletPatterns: ['swarm', 'multiSwarm', 'chaosSwarm'],
+                bulletSpeed: 180,
+                bulletDamage: 12,
+                name: 'Повелитель роя'
+            },
+            tank: {
+                width: 160,
+                height: 160,
+                maxHealth: 300,
+                health: 300,
+                color: '#f59e0b',
+                points: 1000,
+                shootRate: 3000,
+                lastShot: 0,
+                currentPattern: 0,
+                bulletPatterns: ['heavyShot', 'artillery', 'bombard'],
+                bulletSpeed: 150,
+                bulletDamage: 25,
+                name: 'Тяжелый разрушитель'
             }
         };
+        
+        // Добавим порядок появления боссов
+        this.bossOrder = ['basic']; // Первый босс всегда basic
+        this.currentBossIndex = 0;
         
         this.bindEvents();
         this.lastTime = performance.now();
@@ -334,7 +385,7 @@ class ArcadeCollector {
             const speed = 500;
             
             for (let i = 0; i < bulletCount; i++) {
-                // Центрируем веер относительно направления вверх
+                // Центрируем веер относительно направления ввер����������
                 const angle = (i - (bulletCount - 1) / 2) * (spreadAngle / (bulletCount - 1));
                 
                 // Рассчитываем компоненты скорости
@@ -355,7 +406,7 @@ class ArcadeCollector {
         } else if (this.weaponPowerup.type === 'triple') {
             // Тройной выстрел (3 пули)
             const bulletCount = 3;
-            const spreadAngle = Math.PI / 8; // Меньший разброс
+            const spreadAngle = Math.PI / 8; // Мен��ш��й разброс
             const speed = 500;
             
             for (let i = 0; i < bulletCount; i++) {
@@ -609,11 +660,16 @@ class ArcadeCollector {
     update(dt) {
         if (this.gameState !== 'playing') return;
         
-        // Проверяем, нужно ли создать босса
-        if (!this.bossConfig.active && 
-            this.score >= this.bossConfig.lastBossScore + this.bossConfig.scoreThreshold) {
-            this.createBoss();
-            this.bossConfig.lastBossScore = this.score;
+        // Проверяем, нужно ��и создать босса
+        if (!this.bossConfig.active) {
+            const threshold = this.currentBossIndex === 0 
+                ? this.bossConfig.scoreThreshold 
+                : this.bossConfig.lastBossScore + this.bossConfig.subsequentThreshold;
+            
+            if (this.score >= threshold) {
+                this.createBoss();
+                this.bossConfig.lastBossScore = this.score;
+            }
         }
         
         // Обновляем босса
@@ -680,7 +736,7 @@ class ArcadeCollector {
             this.createDashEffect();
         }
 
-        // Обновление таймеров рывка
+        // Обновление таймеро�� рывка
         if (this.player.dashCooldownTimer > 0) {
             this.player.dashCooldownTimer -= dt;
         }
@@ -700,7 +756,7 @@ class ArcadeCollector {
             }
         }
 
-        // Применяем обычное движение, если не в рвке
+        // Применяем бычное движение, если не в рвке
         if (!this.player.isDashing) {
             this.player.velocityX = moveX * this.player.baseSpeed;
             this.player.velocityY = moveY * this.player.baseSpeed;
@@ -743,7 +799,7 @@ class ArcadeCollector {
             }
         }
         
-        // Обновляем таймер спавна монет
+        // Обновл��ем ���аймер ����павна монет
         this.coinSpawnTimer += dt * 1000;
         if (this.coinSpawnTimer >= this.coinSpawnRate) {
             this.spawnCoin();
@@ -1201,7 +1257,7 @@ class ArcadeCollector {
         this.enemySpawnTimer = 0;
         this.coinSpawnTimer = 0;
         
-        // чищаем все массивы
+        // чищ��ем все массивы
         this.coins = [];
         this.enemies = [];
         this.bullets = [];
@@ -1236,7 +1292,7 @@ class ArcadeCollector {
         this.player.dashCooldownTimer = 0;
         this.player.isDashing = false;
         
-        // Инициализация здоровья игрока
+        // Иициализация здоровья игрока
         this.player.health = this.player.maxHealth;
         this.updateHealthDisplay(); // Обновляем отображение при рестарте
     }
@@ -1472,7 +1528,7 @@ class ArcadeCollector {
         }
     }
 
-    // Эффект улучшения оружия
+    // Эффект улучшения ор��жия
     applyWeaponPerk(type) {
         this.weaponPowerup = {
             active: true,
@@ -1548,22 +1604,21 @@ class ArcadeCollector {
     }
 
     // В методе update или updateWeaponPowerup
-    updateWeaponPowerup(dt) {
-        if (this.weaponPowerup.active) {
-            this.weaponPowerup.timeLeft -= dt;
-            if (this.weaponPowerup.timeLeft <= 0) {
-                this.weaponPowerup = {
-                    active: false,
-                    timeLeft: 0,
-                    type: 'normal'
-                };
-            }
+updateWeaponPowerup(dt) {
+    if (this.weaponPowerup.active) {
+        this.weaponPowerup.timeLeft -= dt;
+        if (this.weaponPowerup.timeLeft <= 0) {
+            this.weaponPowerup = {
+                active: false,
+                timeLeft: 0,
+                type: 'normal'
+            };  // Добавляем точку с запятой
         }
     }
+}
 
     // Добавляем метод создания эффекта выстрела
     createShootEffect() {
-        // Создаем вспышку выстрела
         const muzzleFlash = {
             x: this.player.x + this.player.width/2,
             y: this.player.y,
@@ -1573,9 +1628,8 @@ class ArcadeCollector {
             isFlash: true,
             alpha: 0.8,
             color: '#4ade80'
-        };
+        };  // Добавляем точку с запятой
         
-        // Добаляем частицы выстрела
         const particleCount = this.weaponPowerup.type === 'shotgun' ? 10 : 5;
         const spreadAngle = this.weaponPowerup.type === 'shotgun' ? Math.PI/4 : Math.PI/8;
         
@@ -1600,21 +1654,59 @@ class ArcadeCollector {
 
     // Добавляем метод создания босса
     createBoss() {
-        const bossType = this.bossTypes.basic;
+        let bossType;
+        
+        if (this.currentBossIndex === 0) {
+            // Первый босс всегда basic
+            bossType = this.bossTypes.basic;
+        } else {
+            // Для последующих боссов выбираем случайного из доступных (кроме basic)
+            const availableBossTypes = Object.entries(this.bossTypes)
+                .filter(([key]) => key !== 'basic')
+                .map(([key, value]) => value);
+            bossType = availableBossTypes[Math.floor(Math.random() * availableBossTypes.length)];
+        }
         
         this.enemies = []; // Очищаем врагов
         
         this.bossConfig.boss = {
             ...bossType,
             x: this.canvas.width / 2 - bossType.width / 2,
-            y: 50, // Размещаем выше
+            y: 50,
             health: bossType.maxHealth,
             lastShot: 0,
             currentPattern: 0
         };
         
         this.bossConfig.active = true;
+        this.currentBossIndex++;
+        
+        // Создаем эффект появления босса
         this.createBossSpawnEffect();
+        
+        // Показываем имя босса
+        this.showBossName(bossType.name);
+    }
+
+    // Добавим метод для отображения имени босса
+    showBossName(name) {
+        const bossNameDiv = document.createElement('div');
+        bossNameDiv.style.position = 'absolute';
+        bossNameDiv.style.top = '20%';
+        bossNameDiv.style.left = '50%';
+        bossNameDiv.style.transform = 'translate(-50%, -50%)';
+        bossNameDiv.style.color = '#ffffff';
+        bossNameDiv.style.fontSize = '24px';
+        bossNameDiv.style.fontWeight = 'bold';
+        bossNameDiv.style.textShadow = '2px 2px 4px rgba(0, 0, 0, 0.5)';
+        bossNameDiv.textContent = name;
+        
+        document.body.appendChild(bossNameDiv);
+        
+        // Удаляем элемент через 3 секунды
+        setTimeout(() => {
+            bossNameDiv.remove();
+        }, 3000);
     }
 
     // Добавляем метод для эффекта появления босса
@@ -1660,18 +1752,26 @@ class ArcadeCollector {
         const pattern = boss.bulletPatterns[boss.currentPattern];
         
         switch(pattern) {
-            case 'circle':
-                this.bossCircleShot(boss);
-                break;
-            case 'spiral':
-                this.bossSpiralShot(boss);
-                break;
-            case 'wave':
-                this.bossWaveShot(boss);
-                break;
-            case 'cross':
-                this.bossCrossShot(boss);
-                break;
+            // Базовые атаки
+            case 'circle': this.bossCircleShot(boss); break;
+            case 'spiral': this.bossSpiralShot(boss); break;
+            case 'wave': this.bossWaveShot(boss); break;
+            case 'cross': this.bossCrossShot(boss); break;
+            
+            // Лазерные атаки
+            case 'laser': this.bossLaserShot(boss); break;
+            case 'crossLaser': this.bossCrossLaserShot(boss); break;
+            case 'spinningLaser': this.bossSpinningLaserShot(boss); break;
+            
+            // Атаки роя
+            case 'swarm': this.bossSwarmShot(boss); break;
+            case 'multiSwarm': this.bossMultiSwarmShot(boss); break;
+            case 'chaosSwarm': this.bossChaosSwarmShot(boss); break;
+            
+            // Атаки танка
+            case 'heavyShot': this.bossHeavyShot(boss); break;
+            case 'artillery': this.bossArtilleryShot(boss); break;
+            case 'bombard': this.bossBombardShot(boss); break;
         }
         
         // Меняем паттерн атаки
@@ -1741,21 +1841,149 @@ class ArcadeCollector {
     }
 
     // Метод создания пули босса
-    createBossBullet(boss, speedX, speedY) {
-        this.enemyBullets.push({
-            x: boss.x + boss.width/2,
-            y: boss.y + boss.height/2,
-            width: 8,
-            height: 8,
-            speedX: speedX,
-            speedY: speedY,
-            color: boss.color,
-            damage: boss.bulletDamage
+createBossBullet(boss, speedX, speedY, isHeavy = false) {
+    this.enemyBullets.push({
+        x: boss.x + boss.width/2,
+        y: boss.y + boss.height/2,
+        width: isHeavy ? 12 : 8,
+        height: isHeavy ? 12 : 8,
+        speedX: speedX,
+        speedY: speedY,
+        color: boss.color,
+        damage: isHeavy ? boss.bulletDamage * 1.5 : boss.bulletDamage
+    });  // Добавляем точку с запятой
+}
+
+    // Добавим новые методы для атак лазерного босса
+    bossLaserShot(boss) {
+        // Прямой лазерный луч
+        const angle = Math.atan2(this.player.y - boss.y, this.player.x - boss.x);
+        for(let i = 0; i < 5; i++) {
+            const speedX = Math.cos(angle) * boss.bulletSpeed;
+            const speedY = Math.sin(angle) * boss.bulletSpeed;
+            setTimeout(() => {
+                this.createBossBullet(boss, speedX, speedY);
+            }, i * 100);
+        }
+    }
+
+    bossCrossLaserShot(boss) {
+        // Крестообразные лазерные лучи
+        const angles = [0, Math.PI/2, Math.PI, Math.PI*3/2];
+        angles.forEach(angle => {
+            for(let i = 0; i < 3; i++) {
+                const speedX = Math.cos(angle) * boss.bulletSpeed;
+                const speedY = Math.sin(angle) * boss.bulletSpeed;
+                setTimeout(() => {
+                    this.createBossBullet(boss, speedX, speedY);
+                }, i * 100);
+            }
         });
     }
-}
+
+    bossSpinningLaserShot(boss) {
+        // Вращающийся лазер
+        const bulletCount = 8;
+        const rotationSpeed = Math.PI / 32;
+        let currentAngle = 0;
+        
+        const interval = setInterval(() => {
+            if(!this.bossConfig.active) {
+                clearInterval(interval);
+                return;
+            }
+            
+            for(let i = 0; i < bulletCount; i++) {
+                const angle = currentAngle + (i * Math.PI * 2 / bulletCount);
+                const speedX = Math.cos(angle) * boss.bulletSpeed;
+                const speedY = Math.sin(angle) * boss.bulletSpeed;
+                this.createBossBullet(boss, speedX, speedY);
+            }
+            
+            currentAngle += rotationSpeed;
+        }, 200);
+        
+        setTimeout(() => clearInterval(interval), 2000);
+    }
+
+    // Добавим методы для атак босса роя
+    bossSwarmShot(boss) {
+        // Выпускает группу маленьких пуль
+        const bulletCount = 12;
+        for(let i = 0; i < bulletCount; i++) {
+            const angle = (Math.PI * 2 * i / bulletCount) + Math.random() * 0.5;
+            const speed = boss.bulletSpeed * (0.8 + Math.random() * 0.4);
+            const speedX = Math.cos(angle) * speed;
+            const speedY = Math.sin(angle) * speed;
+            this.createBossBullet(boss, speedX, speedY);
+        }
+    }
+
+    bossMultiSwarmShot(boss) {
+        // Несколько волн роя
+        for(let wave = 0; wave < 3; wave++) {
+            setTimeout(() => {
+                this.bossSwarmShot(boss);
+            }, wave * 300);
+        }
+    }
+
+    bossChaosSwarmShot(boss) {
+        // Хаотичная атака роем
+        const bulletCount = 20;
+        for(let i = 0; i < bulletCount; i++) {
+            setTimeout(() => {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = boss.bulletSpeed * (0.6 + Math.random() * 0.8);
+                const speedX = Math.cos(angle) * speed;
+                const speedY = Math.sin(angle) * speed;
+                this.createBossBullet(boss, speedX, speedY);
+            }, i * 100);
+        }
+    }
+
+    // Добавим методы для атак танка-босса
+    bossHeavyShot(boss) {
+        // Мощный одиночный выстрел
+        const angle = Math.atan2(this.player.y - boss.y, this.player.x - boss.x);
+        const speedX = Math.cos(angle) * boss.bulletSpeed * 1.5;
+        const speedY = Math.sin(angle) * boss.bulletSpeed * 1.5;
+        
+        this.createBossBullet(boss, speedX, speedY, true); // true для увеличенного урона
+    }
+
+    bossArtilleryShot(boss) {
+        // Залп снарядов по дуге
+        const bulletCount = 5;
+        for(let i = 0; i < bulletCount; i++) {
+            const angle = -Math.PI/3 + (Math.PI/3 * 2 * i/(bulletCount-1));
+            const speedX = Math.cos(angle) * boss.bulletSpeed;
+            const speedY = Math.sin(angle) * boss.bulletSpeed;
+            this.createBossBullet(boss, speedX, speedY);
+        }
+    }
+
+    bossBombardShot(boss) {
+        // Бомбардировка области
+        const targetX = this.player.x;
+        const targetY = this.player.y;
+        
+        for(let i = 0; i < 3; i++) {
+            setTimeout(() => {
+                const spread = 100;
+                const offsetX = (Math.random() - 0.5) * spread;
+                const offsetY = (Math.random() - 0.5) * spread;
+                const angle = Math.atan2(targetY + offsetY - boss.y, targetX + offsetX - boss.x);
+                const speedX = Math.cos(angle) * boss.bulletSpeed;
+                const speedY = Math.sin(angle) * boss.bulletSpeed;
+                this.createBossBullet(boss, speedX, speedY);
+            }, i * 200);
+        }
+    }
+
+} // Закрывающая скобка класса
 
 // Создание экземпляра игры при загрузке страницы
 window.addEventListener('load', () => {
     new ArcadeCollector();
-}); 
+}); // Добавляем точку с запятой
