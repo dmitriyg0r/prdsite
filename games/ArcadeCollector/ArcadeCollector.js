@@ -364,7 +364,7 @@ class ArcadeCollector {
 
     updateEnemies(dt) {
         this.enemies = this.enemies.filter(enemy => {
-            // Обновление времени для поведения
+            // Обновление времени для повед��ния
             enemy.time += dt;
 
             // Обновление позиции в зависимости от поведения
@@ -481,7 +481,7 @@ class ArcadeCollector {
         if (this.keys.ArrowUp) moveY -= 1;
         if (this.keys.ArrowDown) moveY += 1;
 
-        // Нормализация диагонального движения
+        // Нормализация диагонального движен��я
         if (moveX !== 0 && moveY !== 0) {
             const normalizer = 1 / Math.sqrt(2);
             moveX *= normalizer;
@@ -795,7 +795,7 @@ class ArcadeCollector {
         if (this.playerImage.complete) { // Проверяем, загрузилось ли изображение
             this.ctx.save();
             if (this.player.isDashing) {
-                // Добавляем свечен��е во время рывка
+                // Добавляем свечение во время рывка
                 this.ctx.shadowColor = '#86efac';
                 this.ctx.shadowBlur = 20;
             }
@@ -1117,8 +1117,8 @@ class ArcadeCollector {
 
         // Корректируем позиции двигателей в соответствии со спрайтом
         const enginePositions = [
-            { x: this.player.x + 20, y: this.player.y + this.player.height - 25 },  // Левый двигатель
-            { x: this.player.x + this.player.width - 20, y: this.player.y + this.player.height - 25 }  // Правый двигатель (сместили правее)
+            { x: this.player.x + 15, y: this.player.y + this.player.height - 15 },  // Левый двигатель
+            { x: this.player.x + this.player.width - 15, y: this.player.y + this.player.height - 15 }  // Правый двигатель
         ];
 
         enginePositions.forEach(pos => {
