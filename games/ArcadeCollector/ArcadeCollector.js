@@ -137,6 +137,9 @@ class ArcadeCollector {
         this.playerImage = new Image();
         this.playerImage.src = 'assets/Frendly_ship.png'; // Путь к вашему изображению
         
+        // Добавим в конструктор массив для частиц двигателя
+        this.engineParticles = [];
+        
         this.bindEvents();
         this.lastTime = performance.now();
         this.animate(this.lastTime);
@@ -448,6 +451,7 @@ class ArcadeCollector {
         this.updateEnemies(dt);
         this.updateEnemyBullets(dt);
         this.updateParticles(dt);
+        this.updateEngineParticles(dt);
         
         // Обновляем след рывка
         this.player.dashGhosts = this.player.dashGhosts.filter(ghost => {
@@ -518,7 +522,7 @@ class ArcadeCollector {
             }
         }
 
-        // Применяем обычное движение, если не в рывке
+        // Применяем обыч��ое движение, если не в рывке
         if (!this.player.isDashing) {
             this.player.velocityX = moveX * this.player.baseSpeed;
             this.player.velocityY = moveY * this.player.baseSpeed;
@@ -896,6 +900,18 @@ class ArcadeCollector {
                 dashBarHeight
             );
         }
+
+        // Сначала отрисовываем частицы двигателя
+        this.engineParticles.forEach(particle => {
+            const alpha = (1 - particle.time / particle.lifetime) * 0.7;
+            this.ctx.save();
+            this.ctx.globalAlpha = alpha;
+            this.ctx.fillStyle = particle.color;
+            this.ctx.beginPath();
+            this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+            this.ctx.fill();
+            this.ctx.restore();
+        });
     }
 
     checkCollision(rect1, rect2) {
@@ -1089,6 +1105,49 @@ class ArcadeCollector {
         // Обновляем отображение здоровья в UI
         if (this.livesElement) {
             this.livesElement.textContent = Math.max(0, Math.ceil(this.player.health));
+        }
+    }
+
+    // Добавим новый метод для создания частиц двигателя
+    createEngineParticles() {
+        // Создаем частицы для двух двигателей (левого и правого)
+        const enginePositions = [
+            { x: this.player.x + 15, y: this.player.y + this.player.height - 5 }, // Левый двигатель
+            { x: this.player.x + this.player.width - 25, y: this.player.y + this.player.height - 5 } // Правый двигатель
+        ];
+
+        enginePositions.forEach(pos => {
+            // Создаем несколько частиц для каждого двигателя
+            for (let i = 0; i < 2; i++) {
+                const spread = (Math.random() - 0.5) * 6; // Разброс частиц по горизонтали
+                this.engineParticles.push({
+                    x: pos.x + spread,
+                    y: pos.y,
+                    vx: (Math.random() - 0.5) * 20, // Небольшой разброс по горизонтали
+                    vy: 150 + Math.random() * 50, // Скорость движения вниз
+                    size: 3 + Math.random() * 2,
+                    lifetime: 0.2 + Math.random() * 0.1,
+                    time: 0,
+                    // Градиент от ярко-зеленого к темно-зеленому
+                    color: Math.random() > 0.5 ? '#4ade80' : '#22c55e'
+                });
+            }
+        });
+    }
+
+    // Добавим метод обновления частиц двигателя
+    updateEngineParticles(dt) {
+        this.engineParticles = this.engineParticles.filter(particle => {
+            particle.x += particle.vx * dt;
+            particle.y += particle.vy * dt;
+            particle.time += dt;
+            particle.size -= dt * 5; // Уменьшаем размер частицы со временем
+            return particle.time < particle.lifetime && particle.size > 0;
+        });
+
+        // Добавляем новые частицы
+        if (this.gameState === 'playing') {
+            this.createEngineParticles();
         }
     }
 }
