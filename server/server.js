@@ -1380,60 +1380,153 @@ app.post('/api/users/update-status', async (req, res) => {
     try {
         const { userId, is_online, last_activity } = req.body;
 
+        // Проверяем входные данные
+        if (!userId) {
+            console.error('Missing userId in request:', req.body);
+            return res.status(400).json({
+                success: false,
+                error: 'userId is required'
+            });
+        }
+
+        console.log('Updating status for user:', {
+            userId,
+            is_online,
+            last_activity,
+            timestamp: new Date().toISOString()
+        });
+
+        // Проверяем существование пользователя
+        const userExists = await pool.query(
+            'SELECT EXISTS(SELECT 1 FROM users WHERE id = $1)',
+            [userId]
+        );
+
+        if (!userExists.rows[0].exists) {
+            console.error('User not found:', userId);
+            return res.status(404).json({
+                success: false,
+                error: 'User not found'
+            });
+        }
+
         // Проверяем время последнего обновления из кэша
         const lastUpdate = STATUS_UPDATE_CACHE.get(userId);
         const now = Date.now();
 
         if (lastUpdate && (now - lastUpdate < STATUS_UPDATE_INTERVAL)) {
-            // Если прошло мало времени с последнего обновления, 
-            // отправляем успешный ответ без обновления БД
-            return res.json({ success: true, cached: true });
+            return res.json({ 
+                success: true, 
+                cached: true,
+                lastUpdate: new Date(lastUpdate).toISOString()
+            });
         }
 
         // Обновляем кэш
         STATUS_UPDATE_CACHE.set(userId, now);
 
-        // Используем batch-обновление
-        await pool.query(`
-            INSERT INTO user_status (user_id, is_online, last_activity)
-            VALUES ($1, $2, $3)
-            ON CONFLICT (user_id) DO UPDATE
-            SET 
-                is_online = EXCLUDED.is_online,
-                last_activity = EXCLUDED.last_activity,
-                updated_at = NOW()
-        `, [userId, is_online, last_activity]);
+        // Используем транзакцию для атомарного обновления
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
 
-        // Получаем список друзей пользователя
-        const friendsResult = await pool.query(`
-            SELECT friend_id as id FROM friendships 
-            WHERE user_id = $1 AND status = 'accepted'
-            UNION
-            SELECT user_id as id FROM friendships 
-            WHERE friend_id = $1 AND status = 'accepted'
-        `, [userId]);
+            // Проверяем существование записи в user_status
+            const statusExists = await client.query(
+                'SELECT EXISTS(SELECT 1 FROM user_status WHERE user_id = $1)',
+                [userId]
+            );
 
-        // Оповещаем друзей через WebSocket только если статус действительно изменился
-        for (const friend of friendsResult.rows) {
-            const friendSocketId = activeConnections.get(friend.id);
-            if (friendSocketId) {
-                io.to(friendSocketId).emit('user_status_update', {
-                    userId,
-                    isOnline: is_online,
-                    lastActivity: last_activity
-                });
+            if (!statusExists.rows[0].exists) {
+                // Если записи нет, создаем новую
+                await client.query(`
+                    INSERT INTO user_status (user_id, is_online, last_activity, updated_at)
+                    VALUES ($1, $2, $3, NOW())
+                `, [userId, is_online, last_activity]);
+            } else {
+                // Если запись есть, обновляем её
+                await client.query(`
+                    UPDATE user_status 
+                    SET is_online = $2,
+                        last_activity = $3,
+                        updated_at = NOW()
+                    WHERE user_id = $1
+                `, [userId, is_online, last_activity]);
             }
+
+            // Обновляем основную таблицу users
+            await client.query(`
+                UPDATE users 
+                SET is_online = $2,
+                    last_activity = $3
+                WHERE id = $1
+            `, [userId, is_online, last_activity]);
+
+            await client.query('COMMIT');
+
+            // Оповещаем друзей через WebSocket
+            const friendsResult = await pool.query(`
+                SELECT friend_id as id FROM friendships 
+                WHERE user_id = $1 AND status = 'accepted'
+                UNION
+                SELECT user_id as id FROM friendships 
+                WHERE friend_id = $1 AND status = 'accepted'
+            `, [userId]);
+
+            for (const friend of friendsResult.rows) {
+                const friendSocketId = activeConnections.get(friend.id);
+                if (friendSocketId) {
+                    io.to(friendSocketId).emit('user_status_update', {
+                        userId,
+                        isOnline: is_online,
+                        lastActivity: last_activity
+                    });
+                }
+            }
+
+            res.json({ 
+                success: true,
+                timestamp: new Date().toISOString()
+            });
+
+        } catch (err) {
+            await client.query('ROLLBACK');
+            throw err;
+        } finally {
+            client.release();
         }
 
-        res.json({ success: true });
-
     } catch (err) {
-        console.error('Error updating user status:', err);
+        console.error('Detailed error updating user status:', {
+            error: err.message,
+            stack: err.stack,
+            userId: req.body.userId,
+            timestamp: new Date().toISOString()
+        });
+
         res.status(500).json({ 
             success: false, 
-            error: 'Ошибка при обновлении статуса пользователя' 
+            error: 'Ошибка при обновлении статуса пользователя',
+            details: err.message
         });
     }
+});
+
+// Обновляем создание таблицы user_status с дополнительными индексами
+pool.query(`
+    CREATE TABLE IF NOT EXISTS user_status (
+        user_id INTEGER PRIMARY KEY REFERENCES users(id),
+        is_online BOOLEAN DEFAULT false,
+        last_activity TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    );
+    
+    CREATE INDEX IF NOT EXISTS idx_user_status_last_activity 
+    ON user_status(last_activity);
+    
+    CREATE INDEX IF NOT EXISTS idx_user_status_is_online 
+    ON user_status(is_online);
+`).catch(err => {
+    console.error('Error creating user_status table and indexes:', err);
 });
 
 // Добавьте периодическую очистку кэша
@@ -1445,18 +1538,6 @@ setInterval(() => {
         }
     }
 }, STATUS_UPDATE_INTERVAL * 2);
-
-// Добавьте в начало файла после подключения к БД создание таблицы user_status
-pool.query(`
-    CREATE TABLE IF NOT EXISTS user_status (
-        user_id INTEGER PRIMARY KEY REFERENCES users(id),
-        is_online BOOLEAN DEFAULT false,
-        last_activity TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-        updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-    )
-`).catch(err => {
-    console.error('Error creating user_status table:', err);
-});
 
 // Добавляем автоматическое обновение статуса каждые 5 минут
 setInterval(async () => {
@@ -1829,7 +1910,7 @@ app.post('/api/send-verification-code', async (req, res) => {
 
         const verificationCode = generateVerificationCode();
 
-        // Сохр��няем код в базу
+        // Сохрняем код в базу
         await pool.query(`
             INSERT INTO verification_codes (user_id, code, expires_at)
             VALUES ($1, $2, NOW() + INTERVAL '5 minutes')
@@ -1892,7 +1973,7 @@ app.post('/api/change-password', async (req, res) => {
             });
         }
 
-        // Хешируем нов��й пароль
+        // Хешируем новй пароль
         const hashedPassword = await bcrypt.hash(newPassword, 10);
 
         // Исправляем имя колонки с password на password_hash
