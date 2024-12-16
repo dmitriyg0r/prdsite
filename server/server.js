@@ -1531,70 +1531,37 @@ app.get('/api/feed', async (req, res) => {
     }
 });
 
-// Получение комментариев к посту
-// Обновленный обработчик для комментариев
+// Получение комментариев для поста
 app.get('/api/posts/:postId/comments', async (req, res) => {
     try {
         const { postId } = req.params;
         
-        if (!postId) {
-            return res.status(400).json({
-                success: false,
-                error: 'ID поста не указан'
-            });
-        }
-
-        // Проверяем существование поста
-        const postCheck = await pool.query(
-            'SELECT EXISTS(SELECT 1 FROM posts WHERE id = $1)',
-            [postId]
-        );
-
-        if (!postCheck.rows[0].exists) {
-            return res.status(404).json({
-                success: false,
-                error: 'Пост не найден'
-            });
-        }
-
-        // Получаем комментарии
         const result = await pool.query(`
             SELECT 
-                c.id,
-                c.content,
-                c.created_at,
-                c.user_id,
+                p.id,
+                p.content,
+                p.created_at,
+                p.user_id,
                 u.username as author_name,
                 u.avatar_url as author_avatar
-            FROM comments c
-            JOIN users u ON c.user_id = u.id
-            WHERE c.post_id = $1
-            ORDER BY c.created_at ASC
+            FROM posts p
+            JOIN users u ON p.user_id = u.id
+            WHERE p.parent_id = $1 
+            AND p.type = 'comment'
+            ORDER BY p.created_at DESC
         `, [postId]);
 
-        // Всегда возвращаем JSON
         res.json({
             success: true,
             comments: result.rows
         });
-
     } catch (err) {
-        console.error('Ошибка при получении комментариев:', err);
-        // Убедимся, что всегда возвращаем JSON
+        console.error('Error getting comments:', err);
         res.status(500).json({
             success: false,
             error: 'Ошибка при получении комментариев'
         });
     }
-});
-
-// Добавим обработчик ошибок для express
-app.use((err, req, res, next) => {
-    console.error('Express error:', err);
-    res.status(500).json({
-        success: false,
-        error: 'Внутренняя ошибка сервера'
-    });
 });
 
 // Создание комментария
@@ -1604,11 +1571,11 @@ app.post('/api/posts/comment', async (req, res) => {
 
         // Проверяем существование поста
         const postExists = await pool.query(
-            'SELECT id FROM posts WHERE id = $1',
+            'SELECT EXISTS(SELECT 1 FROM posts WHERE id = $1 AND type = \'post\')',
             [postId]
         );
 
-        if (postExists.rows.length === 0) {
+        if (!postExists.rows[0].exists) {
             return res.status(404).json({
                 success: false,
                 error: 'Пост не найден'
@@ -1617,33 +1584,109 @@ app.post('/api/posts/comment', async (req, res) => {
 
         // Создаем комментарий
         const result = await pool.query(`
-            INSERT INTO posts (user_id, parent_id, type, content)
-            VALUES ($1, $2, 'comment', $3)
-            RETURNING *
+            INSERT INTO posts (user_id, parent_id, type, content, created_at)
+            VALUES ($1, $2, 'comment', $3, CURRENT_TIMESTAMP)
+            RETURNING id, content, created_at
         `, [userId, postId, content]);
 
-        // Получаем информацию об авторе
-        const authorInfo = await pool.query(`
+        // Получаем информацию об авторе комментария
+        const userInfo = await pool.query(`
             SELECT username, avatar_url
             FROM users
             WHERE id = $1
         `, [userId]);
 
         const comment = {
-            ...result.rows[0],
-            author_name: authorInfo.rows[0].username,
-            author_avatar: authorInfo.rows[0].avatar_url
+            id: result.rows[0].id,
+            content: result.rows[0].content,
+            created_at: result.rows[0].created_at,
+            author_name: userInfo.rows[0].username,
+            author_avatar: userInfo.rows[0].avatar_url,
+            user_id: userId
         };
 
         res.json({
             success: true,
-            comment
+            comment: comment
         });
     } catch (err) {
-        console.error('Ошибка при создании комментария:', err);
+        console.error('Error creating comment:', err);
         res.status(500).json({
             success: false,
             error: 'Ошибка при создании комментария'
+        });
+    }
+});
+
+// Удаление комментария
+app.delete('/api/comments/:commentId', async (req, res) => {
+    try {
+        const { commentId } = req.params;
+        const { userId } = req.body;
+
+        // Проверяем, является ли пользователь автором комментария
+        const comment = await pool.query(
+            'SELECT parent_id FROM posts WHERE id = $1 AND user_id = $2 AND type = \'comment\'',
+            [commentId, userId]
+        );
+
+        if (comment.rows.length === 0) {
+            return res.status(403).json({
+                success: false,
+                error: 'Нет прав на удаление этого комментария'
+            });
+        }
+
+        // Удаляем комментарий
+        await pool.query('DELETE FROM posts WHERE id = $1', [commentId]);
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Error deleting comment:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при удалении комментария'
+        });
+    }
+});
+
+// Редактирование комментария
+app.put('/api/comments/:commentId', async (req, res) => {
+    try {
+        const { commentId } = req.params;
+        const { userId, content } = req.body;
+
+        // Проверяем, является ли пользователь автором комментария
+        const commentExists = await pool.query(
+            'SELECT EXISTS(SELECT 1 FROM posts WHERE id = $1 AND user_id = $2 AND type = \'comment\')',
+            [commentId, userId]
+        );
+
+        if (!commentExists.rows[0].exists) {
+            return res.status(403).json({
+                success: false,
+                error: 'Нет прав на редактирование этого комментария'
+            });
+        }
+
+        // Обновляем комментарий
+        const result = await pool.query(`
+            UPDATE posts 
+            SET content = $1, 
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = $2
+            RETURNING id, content, created_at, updated_at
+        `, [content, commentId]);
+
+        res.json({
+            success: true,
+            comment: result.rows[0]
+        });
+    } catch (err) {
+        console.error('Error updating comment:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при обновлении комментария'
         });
     }
 });
@@ -1863,7 +1906,7 @@ app.post('/api/send-verification-code', async (req, res) => {
 
         const verificationCode = generateVerificationCode();
 
-        // Сохрняем код в базу
+        // ��охрняем код в базу
         await pool.query(`
             INSERT INTO verification_codes (user_id, code, expires_at)
             VALUES ($1, $2, NOW() + INTERVAL '5 minutes')
