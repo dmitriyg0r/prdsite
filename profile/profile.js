@@ -876,7 +876,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Инициализация обработчиков для постов
+    // И��ициализация обработчиков для постов
     initializePostHandlers();
     
     // Загружаем посты
@@ -1526,7 +1526,7 @@ async function deletePost(postId) {
         }
     } catch (err) {
         console.error('Error deleting post:', err);
-        alert('Ошибка при удалении публикации');
+        alert('Ош��бка при удалении публикации');
     }
 }
 
@@ -1597,7 +1597,7 @@ window.openImageInFullscreen = function(imageSrc, postData) {
     // Закрытие по клику на кнопку
     modal.querySelector('.close-modal').onclick = closeModal;
     
-    // Закрытие по клику вне изображения
+    // Закрытие по кли��у вне изображения
     modal.onclick = (e) => {
         if (e.target === modal) {
             closeModal();

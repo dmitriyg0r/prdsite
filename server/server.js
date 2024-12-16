@@ -304,7 +304,7 @@ app.post('/api/upload-avatar', upload.single('avatar'), (req, res) => {
             return res.status(400).json({ error: 'Файл не был загружен' });
         }
 
-        // Формируем URL для доступа к файлу
+        // Формируем URL для доступа к ф��йлу
         const fileUrl = `/uploads/avatars/${req.file.filename}`;
         res.json({ success: true, avatarUrl: fileUrl });
 
@@ -470,7 +470,7 @@ app.get('/api/friend-requests', async (req, res) => {
         res.json({ requests: result.rows });
     } catch (err) {
         console.error('Get friend requests error:', err);
-        res.status(500).json({ error: 'Ошибка при получении заявок в друзья' });
+        res.status(500).json({ error: 'Ошибка пр�� получении заявок в друзья' });
     }
 });
 
@@ -492,7 +492,7 @@ app.post('/api/friend/remove', async (req, res) => {
     }
 });
 
-// Настройка хранилища для файлов сообщений
+// Настройка хран��лища для файлов сообщений
 const messageStorage = multer.diskStorage({
     destination: function (req, file, cb) {
         const uploadDir = path.join(__dirname, '../public/uploads/messages');
@@ -659,7 +659,7 @@ app.get('/api/messages/last/:userId/:friendId', async (req, res) => {
     }
 });
 
-// Получение количества непрочитанных сообщений
+// Получение количе��тва непрочитанных сообщений
 app.get('/api/messages/unread/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
