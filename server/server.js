@@ -96,13 +96,6 @@ app.post('/api/login', async (req, res) => {
             return res.status(401).json({ error: 'Неверное имя пользователя или пароль' });
         }
 
-        const user = result.rows[0];
-        const validPassword = await bcrypt.compare(password, user.password_hash);
-
-        if (!validPassword) {
-            return res.status(401).json({ error: 'Неверное имя пользователя или пароль' });
-        }
-
         // Обновляем last_login
         await pool.query(`
             UPDATE users 
@@ -1379,121 +1372,58 @@ app.get('/api/users/status/:userId', async (req, res) => {
 app.post('/api/users/update-status', async (req, res) => {
     try {
         const { userId, is_online, last_activity } = req.body;
-
+        
         // Проверяем входные данные
         if (!userId) {
-            console.error('Missing userId in request:', req.body);
             return res.status(400).json({
                 success: false,
-                error: 'userId is required'
+                error: 'Не указан ID пользователя'
             });
         }
 
-        console.log('Updating status for user:', {
-            userId,
-            is_online,
-            last_activity,
-            timestamp: new Date().toISOString()
-        });
-
-        // Проверяем существование пользователя
-        const userExists = await pool.query(
-            'SELECT EXISTS(SELECT 1 FROM users WHERE id = $1)',
-            [userId]
-        );
-
-        if (!userExists.rows[0].exists) {
-            console.error('User not found:', userId);
-            return res.status(404).json({
-                success: false,
-                error: 'User not found'
-            });
-        }
-
-        // Проверяем время последнего обновления из кэша
+        // Проверяем, не было ли недавнего обновления для этого пользователя
         const lastUpdate = STATUS_UPDATE_CACHE.get(userId);
         const now = Date.now();
-
-        if (lastUpdate && (now - lastUpdate < STATUS_UPDATE_INTERVAL)) {
-            return res.json({ 
-                success: true, 
-                cached: true,
-                lastUpdate: new Date(lastUpdate).toISOString()
-            });
+        
+        if (lastUpdate && (now - lastUpdate) < STATUS_UPDATE_INTERVAL) {
+            return res.json({ success: true, cached: true });
         }
+
+        // Обновляем статус в БД
+        await pool.query(`
+            UPDATE users 
+            SET is_online = $2,
+                last_activity = CURRENT_TIMESTAMP
+            WHERE id = $1
+        `, [userId, is_online]);
 
         // Обновляем кэш
         STATUS_UPDATE_CACHE.set(userId, now);
 
-        // Используем транзакцию для атомарного обновления
-        const client = await pool.connect();
-        try {
-            await client.query('BEGIN');
+        // Получаем список друзей пользователя для уведомления
+        const friendsResult = await pool.query(`
+            SELECT friend_id as id FROM friendships 
+            WHERE user_id = $1 AND status = 'accepted'
+            UNION
+            SELECT user_id as id FROM friendships 
+            WHERE friend_id = $1 AND status = 'accepted'
+        `, [userId]);
 
-            // Проверяем существование записи в user_status
-            const statusExists = await client.query(
-                'SELECT EXISTS(SELECT 1 FROM user_status WHERE user_id = $1)',
-                [userId]
-            );
-
-            if (!statusExists.rows[0].exists) {
-                // Если записи нет, создаем новую
-                await client.query(`
-                    INSERT INTO user_status (user_id, is_online, last_activity, updated_at)
-                    VALUES ($1, $2, $3, NOW())
-                `, [userId, is_online, last_activity]);
-            } else {
-                // Если запись есть, обновляем её
-                await client.query(`
-                    UPDATE user_status 
-                    SET is_online = $2,
-                        last_activity = $3,
-                        updated_at = NOW()
-                    WHERE user_id = $1
-                `, [userId, is_online, last_activity]);
-            }
-
-            // Обновляем основную таблицу users
-            await client.query(`
-                UPDATE users 
-                SET is_online = $2,
-                    last_activity = $3
-                WHERE id = $1
-            `, [userId, is_online, last_activity]);
-
-            await client.query('COMMIT');
-
-            // Оповещаем друзей через WebSocket
-            const friendsResult = await pool.query(`
-                SELECT friend_id as id FROM friendships 
-                WHERE user_id = $1 AND status = 'accepted'
-                UNION
-                SELECT user_id as id FROM friendships 
-                WHERE friend_id = $1 AND status = 'accepted'
-            `, [userId]);
-
-            for (const friend of friendsResult.rows) {
+        // Отправляем уведомление через Socket.IO
+        if (io) {
+            friendsResult.rows.forEach(friend => {
                 const friendSocketId = activeConnections.get(friend.id);
                 if (friendSocketId) {
                     io.to(friendSocketId).emit('user_status_update', {
                         userId,
                         isOnline: is_online,
-                        lastActivity: last_activity
+                        lastActivity: new Date()
                     });
                 }
-            }
-
-            res.json({ 
-                success: true,
-                timestamp: new Date().toISOString()
             });
-
-        } catch (err) {
-            await client.query('ROLLBACK');
-            throw err;
-        } finally {
-            client.release();
         }
+
+        res.json({ success: true });
 
     } catch (err) {
         console.error('Detailed error updating user status:', {
@@ -1503,10 +1433,9 @@ app.post('/api/users/update-status', async (req, res) => {
             timestamp: new Date().toISOString()
         });
 
-        res.status(500).json({ 
-            success: false, 
-            error: 'Ошибка при обновлении статуса пользователя',
-            details: err.message
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при обновлении статуса пользователя'
         });
     }
 });
@@ -1533,11 +1462,11 @@ pool.query(`
 setInterval(() => {
     const now = Date.now();
     for (const [userId, timestamp] of STATUS_UPDATE_CACHE.entries()) {
-        if (now - timestamp > STATUS_UPDATE_INTERVAL * 2) {
+        if (now - timestamp > STATUS_UPDATE_INTERVAL) {
             STATUS_UPDATE_CACHE.delete(userId);
         }
     }
-}, STATUS_UPDATE_INTERVAL * 2);
+}, STATUS_UPDATE_INTERVAL);
 
 // Добавляем автоматическое обновение статуса каждые 5 минут
 setInterval(async () => {
