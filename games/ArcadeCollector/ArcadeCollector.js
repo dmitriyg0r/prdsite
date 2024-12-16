@@ -795,7 +795,7 @@ class ArcadeCollector {
         if (this.playerImage.complete) { // Проверяем, загрузилось ли изображение
             this.ctx.save();
             if (this.player.isDashing) {
-                // Добавляем свечение во время рывка
+                // Добавляем свечен��е во время рывка
                 this.ctx.shadowColor = '#86efac';
                 this.ctx.shadowBlur = 20;
             }
@@ -1080,7 +1080,7 @@ class ArcadeCollector {
     }
 
     createDamageEffect() {
-        // Визуальный эффект получения ��рона
+        // Визуальный эффект получения рона
         const particles = 15;
         const colors = ['#ef4444', '#dc2626', '#ffffff'];
         
@@ -1118,7 +1118,7 @@ class ArcadeCollector {
         // Корректируем позиции двигателей в соответствии со спрайтом
         const enginePositions = [
             { x: this.player.x + 20, y: this.player.y + this.player.height - 25 },  // Левый двигатель
-            { x: this.player.x + this.player.width - 30, y: this.player.y + this.player.height - 25 }  // Правый двигатель
+            { x: this.player.x + this.player.width - 20, y: this.player.y + this.player.height - 25 }  // Правый двигатель (сместили правее)
         ];
 
         enginePositions.forEach(pos => {
