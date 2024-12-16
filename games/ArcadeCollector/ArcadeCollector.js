@@ -279,15 +279,16 @@ class ArcadeCollector {
         if (this.weaponPowerup.type === 'shotgun') {
             // Стрельба дробью (7 пуль веером)
             const bulletCount = 7;
-            const spreadAngle = Math.PI / 3; // 60 градусов общий разброс
+            const spreadAngle = Math.PI / 6; // Уменьшаем разброс до 30 градусов
             const speed = 500;
             
             for (let i = 0; i < bulletCount; i++) {
-                // Изменяем расчет угла, чтобы веер был направлен вверх
-                const angle = -spreadAngle/2 + (i * spreadAngle / (bulletCount - 1));
+                // Центрируем веер относительно направления вверх
+                const angle = (i - (bulletCount - 1) / 2) * (spreadAngle / (bulletCount - 1));
                 
+                // Рассчитываем компоненты скорости
                 const speedX = Math.sin(angle) * speed;
-                const speedY = -Math.cos(angle) * speed; // Отрицательное значение для движения вверх
+                const speedY = -Math.cos(angle) * speed;
                 
                 this.bullets.push({
                     x: this.player.x + this.player.width/2 - 2,
@@ -442,7 +443,7 @@ class ArcadeCollector {
             // Обновление времени для поведения
             enemy.time += dt;
 
-            // Обновление позиции в зависимости от поведения
+            // Обновление позиции в зависи��ости от поведения
             switch(enemy.behavior) {
                 case 'straight':
                     enemy.y += enemy.speed * dt;
