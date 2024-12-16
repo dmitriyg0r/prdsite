@@ -318,6 +318,7 @@ class ArcadeCollector {
 
     updateBullets(dt) {
         this.bullets = this.bullets.filter(bullet => {
+            bullet.x += bullet.speedX * dt;
             bullet.y += bullet.speedY * dt;
             
             // Проверяем столкновения с врагами
@@ -329,12 +330,19 @@ class ArcadeCollector {
                         this.score += enemy.points;
                         this.scoreElement.textContent = this.score;
                         this.enemies.splice(i, 1);
+                        this.createDestroyEffect(enemy);
+                    } else {
+                        this.createHitEffect(enemy);
                     }
                     return false;
                 }
             }
             
-            return bullet.y > -bullet.height;
+            // Удаляем пули, вышедшие за пределы экрана
+            return bullet.y > -bullet.height && 
+                   bullet.y < this.canvas.height && 
+                   bullet.x > -bullet.width && 
+                   bullet.x < this.canvas.width;
         });
     }
 
@@ -430,7 +438,7 @@ class ArcadeCollector {
 
     updateEnemies(dt) {
         this.enemies = this.enemies.filter(enemy => {
-            // Обновление времени для поведен��я
+            // Обновление времени для поведения
             enemy.time += dt;
 
             // Обновление позиции в зависимости от поведения
@@ -1105,7 +1113,7 @@ class ArcadeCollector {
         const colors = ['#4ade80', '#86efac', '#22c55e', '#ffffff'];
         const angleSpread = Math.PI / 3; // 60 градусов раброс
         
-        // Определяем направление движения
+        // Определяем нап��авление движения
         const angle = Math.atan2(this.player.velocityY, this.player.velocityX);
         
         for (let i = 0; i < particles; i++) {
@@ -1231,7 +1239,7 @@ class ArcadeCollector {
             particle.x += particle.vx * dt;
             particle.y += particle.vy * dt;
             particle.time += dt;
-            particle.size -= dt * 3; // Замедляем уменьшение размера частиц
+            particle.size -= dt * 3; // Замедляем уменьшение р��змера частиц
             return particle.time < particle.lifetime && particle.size > 0;
         });
 
