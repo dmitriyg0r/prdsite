@@ -1,3 +1,43 @@
+// Добавьте в начало файла atention.js
+
+// Функция для обновления счетчика заявок
+function updateRequestsCount(count) {
+    const requestCountElement = document.querySelector('.request-count');
+    if (requestCountElement) {
+        requestCountElement.textContent = count;
+    }
+}
+
+// Функция для отображения заявок в друзья
+function displayFriendRequests(requests) {
+    const requestsList = document.querySelector('.requests-list');
+    if (!requestsList) return;
+
+    if (requests.length === 0) {
+        requestsList.innerHTML = '<div class="empty-state">Нет новых заявок в друзья</div>';
+        return;
+    }
+
+    requestsList.innerHTML = requests.map(request => `
+        <div class="friend-request-item">
+            <img src="${request.sender_avatar || '/uploads/avatars/default.png'}" 
+                 alt="${request.sender_name}" 
+                 class="friend-avatar">
+            <div class="friend-info">
+                <span class="friend-name">${request.sender_name}</span>
+                <div class="friend-actions">
+                    <button onclick="acceptFriendRequest(${request.id})" class="accept-btn">
+                        <i class="fas fa-check"></i> Принять
+                    </button>
+                    <button onclick="rejectFriendRequest(${request.id})" class="reject-btn">
+                        <i class="fas fa-times"></i> Отклонить
+                    </button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
 // Добавьте в profile.js
 
 // Функция для обновления индикатора уведомлений
