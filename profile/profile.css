@@ -287,16 +287,14 @@ body {
 }
 
 /* Стили для текстового поля */
-#post-content {
+.post-content {
     width: 100%;
-    min-height: 100px;
+    min-height: 50px;
     padding: 16px;
-    border: 1px solid var(--border-light);
     border-radius: 12px;
     background: var(--surface-color);
     color: var(--text-primary);
     resize: vertical;
-    margin-bottom: 16px;
     box-sizing: border-box;
     font-family: inherit;
     font-size: 14px;
