@@ -2186,6 +2186,21 @@ io.on('connection', async (socket) => {
             console.error('Error marking messages as read:', err);
         }
     });
+
+    socket.on('voice_message', async (data) => {
+        try {
+            const { senderId, receiverId, audioBlob } = data;
+            
+            // Сохраняем аудио и создаем сообщение
+            // Этот код будет вызываться через HTTP эндпоинт
+            
+        } catch (err) {
+            console.error('Error handling voice message:', err);
+            socket.emit('voice_message_error', { 
+                error: 'Ошибка при обработке голосового сообщения' 
+            });
+        }
+    });
 });
 
 // Добавляем проверочный endpoint для Socket.IO
@@ -2476,4 +2491,115 @@ setInterval(() => {
         }
     }
 }, STATUS_UPDATE_INTERVAL * 2);
+
+// Настройка хранилища для голосовых сообщений
+const voiceStorage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        const dir = 'uploads/voice';
+        if (!fs.existsSync(dir)){
+            fs.mkdirSync(dir, { recursive: true });
+        }
+        cb(null, dir);
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + '-' + Math.round(Math.random() * 1E9) + '.webm');
+    }
+});
+
+const uploadVoice = multer({ 
+    storage: voiceStorage,
+    limits: {
+        fileSize: 10 * 1024 * 1024 // Максимальный размер 10MB
+    }
+});
+
+// Эндпоинт для отправки голосовых сообщений
+app.post('/api/messages/voice', uploadVoice.single('audio'), async (req, res) => {
+    try {
+        const { senderId, receiverId } = req.body;
+        
+        if (!req.file) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'Аудиофайл не найден' 
+            });
+        }
+
+        // Сначала создаем запись в таблице messages
+        const messageResult = await pool.query(`
+            INSERT INTO messages 
+            (sender_id, receiver_id, message_type, created_at, is_read)
+            VALUES ($1, $2, 'voice', NOW(), false)
+            RETURNING id, created_at
+        `, [senderId, receiverId]);
+
+        const messageId = messageResult.rows[0].id;
+
+        // Затем создаем запись в таблице voice_messages
+        await pool.query(`
+            INSERT INTO voice_messages 
+            (message_id, duration, file_path)
+            VALUES ($1, $2, $3)
+        `, [messageId, 0, req.file.path]); // Длительность можно обновить позже
+
+        const message = {
+            id: messageId,
+            sender_id: senderId,
+            receiver_id: receiverId,
+            message_type: 'voice',
+            file_path: req.file.path,
+            created_at: messageResult.rows[0].created_at,
+            is_read: false
+        };
+
+        // Отправляем уведомление через Socket.IO
+        const receiverSocketId = activeConnections.get(receiverId);
+        if (receiverSocketId) {
+            io.to(receiverSocketId).emit('new_message', message);
+        }
+
+        res.json({ 
+            success: true, 
+            message 
+        });
+
+    } catch (err) {
+        console.error('Error sending voice message:', err);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Ошибка при отправке голосового сообщения' 
+        });
+    }
+});
+
+// Эндпоинт для получения голосового сообщения
+app.get('/api/messages/voice/:messageId', async (req, res) => {
+    try {
+        const { messageId } = req.params;
+
+        const result = await pool.query(`
+            SELECT vm.file_path
+            FROM voice_messages vm
+            JOIN messages m ON m.id = vm.message_id
+            WHERE m.id = $1
+        `, [messageId]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'Голосовое сообщение не найдено'
+            });
+        }
+
+        const filePath = result.rows[0].file_path;
+        res.sendFile(path.resolve(filePath));
+
+    } catch (err) {
+        console.error('Error getting voice message:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при получении голосового сообщения'
+        });
+    }
+});
 
