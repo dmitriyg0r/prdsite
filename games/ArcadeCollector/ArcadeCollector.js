@@ -279,14 +279,16 @@ class ArcadeCollector {
         if (this.weaponPowerup.type === 'shotgun') {
             // Стрельба дробью (7 пуль веером)
             const bulletCount = 7;
-            const spreadAngle = Math.PI / 3; // 60 градусов общий разброс
+            const spreadAngle = Math.PI / 6; // Уменьшаем разброс до 30 градусов
             const speed = 500;
             
             for (let i = 0; i < bulletCount; i++) {
-                const angle = -Math.PI/2 + (i - (bulletCount - 1) / 2) * (spreadAngle / (bulletCount - 1));
+                // Центрируем веер относительно направления вверх
+                const angle = (i - (bulletCount - 1) / 2) * (spreadAngle / (bulletCount - 1));
                 
+                // Рассчитываем компоненты скорости
                 const speedX = Math.sin(angle) * speed;
-                const speedY = Math.cos(angle) * speed;
+                const speedY = -Math.cos(angle) * speed;
                 
                 this.bullets.push({
                     x: this.player.x + this.player.width/2 - 2,
@@ -294,9 +296,9 @@ class ArcadeCollector {
                     width: 4,
                     height: 8,
                     speedX: speedX,
-                    speedY: -speedY, // Инвертируем Y скорость для правильного направления
+                    speedY: speedY,
                     color: '#4ade80',
-                    damage: 8 // Уменьшенный урон для каждой пули дроби
+                    damage: 8
                 });
             }
         } else {
@@ -441,7 +443,7 @@ class ArcadeCollector {
             // Обновление времени для поведения
             enemy.time += dt;
 
-            // Обновление позиции в зависимости от поведения
+            // Обновление позиции в зависи��ости от поведения
             switch(enemy.behavior) {
                 case 'straight':
                     enemy.y += enemy.speed * dt;
