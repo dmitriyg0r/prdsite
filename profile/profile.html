@@ -6,6 +6,7 @@
     <title>Профиль - AdminFlow</title>
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="profile.css">
+    <link rel="stylesheet" href="atention.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="icon" type="image/x-icon" href="../flow.ico">
 </head>
@@ -57,7 +58,7 @@
             <li>
                 <a href="../index.html">
                     <i class="fas fa-home"></i>
-                    <span>Главная</span>
+                    <span>Глав��ая</span>
                 </a>
             </li>
             <li>
@@ -125,11 +126,14 @@
 
                 <!-- Блок друзей -->
                 <div class="friends-section">
-                    <button class="friends-header-btn">
-                        <span>Друзья</span>
-                        <span class="friends-count">0</span>
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
+                    <div class="friends-header-btn-wrapper">
+                        <button class="friends-header-btn">
+                            <span>Друзья</span>
+                            <span class="friends-count">0</span>
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                        <div class="notification-dot" style="display: none;"></div>
+                    </div>
                     <div class="friends-grid">
                         <!-- Здесь будет список друзей -->
                     </div>
@@ -312,5 +316,6 @@
 
     <script src="profile.js"></script>
     <script src="../main.js"></script>
+    <script src="atention.js"></script>
 </body>
 </html> 

@@ -1,0 +1,36 @@
+/* Добавьте в profile.css */
+
+/* Стиль для индикатора уведомлений */
+.notification-dot {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 10px;
+    height: 10px;
+    background-color: var(--error-color);
+    border-radius: 50%;
+    border: 2px solid var(--surface-color);
+    animation: pulse 2s infinite;
+}
+
+/* Контейнер для кнопки с уведомлением */
+.friends-header-btn-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+/* Анимация пульсации */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 0.7;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
