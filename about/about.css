@@ -298,19 +298,20 @@ body {
     align-items: center;
     gap: 10px;
     padding: 15px 30px;
-    background: linear-gradient(45deg, #0000ff, #4b0082);
+    background: linear-gradient(45deg, #0000ff, #4b0082, #8b00ff, #007bff, #00bfff, #0000ff);
+    background-size: 400% 400%;
     color: white;
     text-decoration: none;
     border-radius: 30px;
     font-size: 18px;
     transition: all 0.3s ease;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    animation: gradient 10s ease infinite;
 }
 
 .contact-button:hover {
     transform: translateY(-3px);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-    background: linear-gradient(45deg, #4b0082, #8b00ff);
 }
 
 .contact-button i {
