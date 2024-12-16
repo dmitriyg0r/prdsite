@@ -183,7 +183,7 @@ class ArcadeCollector {
         this.perkImages.weapon.src = '../ArcadeCollector/assets/w3_perk.png';
         this.perkImages.weapon2.src = '../ArcadeCollector/assets/w2_perk.png';  // Путь к новому изображению
         
-        // Добавляем обработчики ошибок загрузки изображений
+        // Добавляем обработчики оши��ок загрузки изображений
         this.perkImages.health.onerror = () => console.error('Error loading health perk image');
         this.perkImages.weapon.onerror = () => console.error('Error loading weapon perk image');
         this.perkImages.weapon2.onerror = () => console.error('Error loading weapon2 perk image');
@@ -198,6 +198,31 @@ class ArcadeCollector {
             active: false,
             timeLeft: 0,
             type: 'normal' // 'normal' или 'shotgun'
+        };
+        
+        // Добавляем параметры для боссов
+        this.bossConfig = {
+            scoreThreshold: 1000, // Каждые 1000 очков появляется босс
+            active: false,
+            lastBossScore: 0,
+            boss: null
+        };
+        
+        // Добавляем типы боссов
+        this.bossTypes = {
+            basic: {
+                width: 120,
+                height: 120,
+                maxHealth: 100,
+                health: 100,
+                color: '#dc2626',
+                points: 500,
+                shootRate: 1000,
+                lastShot: 0,
+                bulletPattern: 'circle', // тип стрельбы
+                bulletSpeed: 200,
+                bulletDamage: 15
+            }
         };
         
         this.bindEvents();
@@ -369,6 +394,23 @@ class ArcadeCollector {
         this.bullets = this.bullets.filter(bullet => {
             bullet.x += bullet.speedX * dt;
             bullet.y += bullet.speedY * dt;
+            
+            // Проверяем попадание в босса
+            if (this.bossConfig.active && this.bossConfig.boss) {
+                if (this.checkCollision(bullet, this.bossConfig.boss)) {
+                    this.bossConfig.boss.health -= bullet.damage;
+                    this.createHitEffect(this.bossConfig.boss);
+                    
+                    if (this.bossConfig.boss.health <= 0) {
+                        this.score += this.bossConfig.boss.points;
+                        this.scoreElement.textContent = this.score;
+                        this.createDestroyEffect(this.bossConfig.boss);
+                        this.bossConfig.active = false;
+                        this.bossConfig.boss = null;
+                    }
+                    return false;
+                }
+            }
             
             // Проверяем столкновения с врагами
             for (let i = this.enemies.length - 1; i >= 0; i--) {
@@ -566,6 +608,16 @@ class ArcadeCollector {
     update(dt) {
         if (this.gameState !== 'playing') return;
         
+        // Проверяем, нужно ли создать босса
+        if (!this.bossConfig.active && 
+            this.score >= this.bossConfig.lastBossScore + this.bossConfig.scoreThreshold) {
+            this.createBoss();
+            this.bossConfig.lastBossScore = this.score;
+        }
+        
+        // Обновляем босса
+        this.updateBoss(dt);
+        
         this.updateDifficulty(dt);
         this.updatePlayerPosition(dt);
         this.updateSpawnTimers(dt);
@@ -681,14 +733,16 @@ class ArcadeCollector {
     }
 
     updateSpawnTimers(dt) {
-        // Спавн враов
-        this.enemySpawnTimer += dt * 1000;
-        if (this.enemySpawnTimer >= this.enemySpawnRate) {
-            this.spawnEnemy();
-            this.enemySpawnTimer = 0;
+        // Обновляем таймер спавна врагов только если нет активного босса
+        if (!this.bossConfig.active) {
+            this.enemySpawnTimer += dt * 1000;
+            if (this.enemySpawnTimer >= this.enemySpawnRate) {
+                this.spawnEnemy();
+                this.enemySpawnTimer = 0;
+            }
         }
-
-        // Спавн монет
+        
+        // Обновляем таймер спавна монет
         this.coinSpawnTimer += dt * 1000;
         if (this.coinSpawnTimer >= this.coinSpawnRate) {
             this.spawnCoin();
@@ -1061,6 +1115,38 @@ class ArcadeCollector {
                 this.ctx.fillRect(perk.x, perk.y, perk.width, perk.height);
             }
         });
+
+        // Отрисовка босса
+        if (this.bossConfig.active && this.bossConfig.boss) {
+            const boss = this.bossConfig.boss;
+            
+            // Рисуем босса
+            this.ctx.fillStyle = boss.color;
+            this.ctx.fillRect(boss.x, boss.y, boss.width, boss.height);
+            
+            // Рисуем полоску здоровья
+            const healthBarWidth = boss.width;
+            const healthBarHeight = 10;
+            const healthPercentage = boss.health / boss.maxHealth;
+            
+            // Фон полоски здоровья
+            this.ctx.fillStyle = '#ef4444';
+            this.ctx.fillRect(
+                boss.x,
+                boss.y - healthBarHeight - 5,
+                healthBarWidth,
+                healthBarHeight
+            );
+            
+            // Текущее здоровье
+            this.ctx.fillStyle = '#22c55e';
+            this.ctx.fillRect(
+                boss.x,
+                boss.y - healthBarHeight - 5,
+                healthBarWidth * healthPercentage,
+                healthBarHeight
+            );
+        }
     }
 
     checkCollision(rect1, rect2) {
@@ -1481,7 +1567,7 @@ class ArcadeCollector {
             color: '#4ade80'
         };
         
-        // Добавляем частицы выстрела
+        // Добаляем частицы выстрела
         const particleCount = this.weaponPowerup.type === 'shotgun' ? 10 : 5;
         const spreadAngle = this.weaponPowerup.type === 'shotgun' ? Math.PI/4 : Math.PI/8;
         
@@ -1502,6 +1588,91 @@ class ArcadeCollector {
         }
         
         this.particles.push(muzzleFlash);
+    }
+
+    // Добавляем метод создания босса
+    createBoss() {
+        const bossType = this.bossTypes.basic;
+        
+        // Удаляем всех обычных врагов с экрана
+        this.enemies = [];
+        
+        // Создаем босса
+        this.bossConfig.boss = {
+            ...bossType,
+            x: this.canvas.width / 2 - bossType.width / 2,
+            y: 100,
+            health: bossType.maxHealth,
+            lastShot: 0
+        };
+        
+        this.bossConfig.active = true;
+        
+        // Создаем эффект появления босса
+        this.createBossSpawnEffect();
+    }
+
+    // Добавляем метод для эффекта появления босса
+    createBossSpawnEffect() {
+        const particles = 30;
+        const colors = ['#dc2626', '#ef4444', '#ffffff'];
+        
+        for (let i = 0; i < particles; i++) {
+            const angle = (Math.PI * 2 * i) / particles;
+            const speed = 150 + Math.random() * 100;
+            
+            this.particles.push({
+                x: this.bossConfig.boss.x + this.bossConfig.boss.width / 2,
+                y: this.bossConfig.boss.y + this.bossConfig.boss.height / 2,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                size: 4 + Math.random() * 4,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                lifetime: 1,
+                time: 0
+            });
+        }
+    }
+
+    // Добавляем метод обновления босса
+    updateBoss(dt) {
+        if (!this.bossConfig.active || !this.bossConfig.boss) return;
+        
+        const boss = this.bossConfig.boss;
+        
+        // Обновляем таймер стрельбы
+        boss.lastShot += dt * 1000;
+        
+        // Стреляем, если прошло достаточно времени
+        if (boss.lastShot >= boss.shootRate) {
+            this.bossShooting(boss);
+            boss.lastShot = 0;
+        }
+    }
+
+    // Добавляем метод стрельбы босса
+    bossShooting(boss) {
+        if (boss.bulletPattern === 'circle') {
+            const bulletCount = 12; // Количество пуль в круге
+            const angleStep = (Math.PI * 2) / bulletCount;
+            
+            for (let i = 0; i < bulletCount; i++) {
+                const angle = i * angleStep;
+                const speedX = Math.cos(angle) * boss.bulletSpeed;
+                const speedY = Math.sin(angle) * boss.bulletSpeed;
+                
+                this.enemyBullets.push({
+                    x: boss.x + boss.width/2,
+                    y: boss.y + boss.height/2,
+                    width: 8,
+                    height: 8,
+                    speedX: speedX,
+                    speedY: speedY,
+                    color: boss.color,
+                    damage: boss.bulletDamage
+                });
+            }
+        }
     }
 }
 
