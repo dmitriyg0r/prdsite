@@ -533,9 +533,6 @@ table {
 
 /* Обновляем стили для актвных элементов */
 [data-theme="dark"] .active,
-[data-theme="dark"] .sidebar-link.active {
-    background: var(--primary-dark);
-}
 
 /* Обновляем стили для основного контейнера */
 [data-theme="dark"] body {
