@@ -283,10 +283,11 @@ class ArcadeCollector {
             const speed = 500;
             
             for (let i = 0; i < bulletCount; i++) {
-                const angle = -Math.PI/2 + (i - (bulletCount - 1) / 2) * (spreadAngle / (bulletCount - 1));
+                // Изменяем расчет угла, чтобы веер был направлен вверх
+                const angle = -spreadAngle/2 + (i * spreadAngle / (bulletCount - 1));
                 
                 const speedX = Math.sin(angle) * speed;
-                const speedY = Math.cos(angle) * speed;
+                const speedY = -Math.cos(angle) * speed; // Отрицательное значение для движения вверх
                 
                 this.bullets.push({
                     x: this.player.x + this.player.width/2 - 2,
@@ -294,9 +295,9 @@ class ArcadeCollector {
                     width: 4,
                     height: 8,
                     speedX: speedX,
-                    speedY: -speedY, // Инвертируем Y скорость для правильного направления
+                    speedY: speedY,
                     color: '#4ade80',
-                    damage: 8 // Уменьшенный урон для каждой пули дроби
+                    damage: 8
                 });
             }
         } else {
