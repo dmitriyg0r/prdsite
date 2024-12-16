@@ -795,7 +795,7 @@ class ArcadeCollector {
         if (this.playerImage.complete) { // Проверяем, загрузилось ли изображение
             this.ctx.save();
             if (this.player.isDashing) {
-                // Добавляем свечение во время рывка
+                // Добавляем свечен��е во время рывка
                 this.ctx.shadowColor = '#86efac';
                 this.ctx.shadowBlur = 20;
             }
@@ -1080,7 +1080,7 @@ class ArcadeCollector {
     }
 
     createDamageEffect() {
-        // Визуальный эффект получения урона
+        // Визуальный эффект получения рона
         const particles = 15;
         const colors = ['#ef4444', '#dc2626', '#ffffff'];
         
@@ -1118,7 +1118,7 @@ class ArcadeCollector {
         // Корректируем позиции двигателей в соответствии со спрайтом
         const enginePositions = [
             { x: this.player.x + 20, y: this.player.y + this.player.height - 25 },  // Левый двигатель
-            { x: this.player.x + this.player.width - 30, y: this.player.y + this.player.height - 25 }  // Правый двигатель
+            { x: this.player.x + this.player.width - 20, y: this.player.y + this.player.height - 25 }  // Правый двигатель (сместили правее)
         ];
 
         enginePositions.forEach(pos => {
@@ -1136,26 +1136,6 @@ class ArcadeCollector {
                 });
             }
         });
-
-        // Добавляем центральный двигатель
-        const centerEngine = {
-            x: this.player.x + (this.player.width / 2),
-            y: this.player.y + this.player.height - 20
-        };
-
-        for (let i = 0; i < particleCount; i++) {
-            const spread = (Math.random() - 0.5) * 4;
-            this.engineParticles.push({
-                x: centerEngine.x + spread,
-                y: centerEngine.y,
-                vx: (Math.random() - 0.5) * 15,
-                vy: baseSpeed + Math.random() * 50,
-                size: 2 + Math.random() * 2,
-                lifetime: 0.2 + Math.random() * 0.1,
-                time: 0,
-                color: Math.random() > 0.5 ? '#4ade80' : '#22c55e'
-            });
-        }
     }
 
     // Добавим метод обновления частиц двигателя
