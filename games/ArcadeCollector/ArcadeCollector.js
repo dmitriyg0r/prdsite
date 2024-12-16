@@ -21,8 +21,10 @@ class ArcadeCollector {
         this.player = {
             x: this.canvas.width / 2,
             y: this.canvas.height - 50,
-            width: 40,
-            height: 40,
+            width: 80,
+            height: 80,
+            hitboxWidth: 60,
+            hitboxHeight: 60,
             velocityX: 0,
             velocityY: 0,
             baseSpeed: 300,
@@ -82,7 +84,7 @@ class ArcadeCollector {
                 color: '#dc2626',
                 health: 8, // Увеличиваем с 5 до 8
                 points: 75, // Увеличиваем с 50 до 75
-                shootRate: 1500, // Увеличиваем с 1000 до 1500
+                shootRate: 1500, // Увеличиваем �� 1000 до 1500
                 bulletSpeed: 300,
                 behavior: 'sine',
                 damage: 25, // Сильный урон при столкновении
@@ -293,7 +295,7 @@ class ArcadeCollector {
     }
 
     createHitEffect(enemy) {
-        // Создаем эффект попадания
+        // Создаем эффект поадания
         const particles = 6;
         const colors = ['#ffffff', '#fcd34d'];
         
@@ -756,7 +758,7 @@ class ArcadeCollector {
         // Сначала отрисовываем след
         this.player.dashGhosts.forEach(ghost => {
             const alpha = 0.3 * (1 - (ghost.time / ghost.lifetime));
-            this.ctx.fillStyle = `rgba(74, 222, 128, ${alpha})`; // Зеленый цвет с прозрачностью
+            this.ctx.fillStyle = `rgba(74, 222, 128, ${alpha})`; // Зеленый цвет �� прозрачностью
             this.ctx.beginPath();
             this.ctx.moveTo(ghost.x + ghost.width / 2, ghost.y);
             this.ctx.lineTo(ghost.x + ghost.width, ghost.y + ghost.height);
@@ -783,7 +785,7 @@ class ArcadeCollector {
         });
 
         // Отрисовка игрока
-        if (this.playerImage.complete) { // Проверяем, загрузилось ли изображение
+        if (this.playerImage.complete) { // Проверяем, загрузилось ли из��бражение
             this.ctx.save();
             if (this.player.isDashing) {
                 // Добавляем свечение во время рывка
@@ -894,10 +896,16 @@ class ArcadeCollector {
     }
 
     checkCollision(rect1, rect2) {
-        return rect1.x < rect2.x + rect2.width &&
-               rect1.x + rect1.width > rect2.x &&
-               rect1.y < rect2.y + rect2.height &&
-               rect1.y + rect1.height > rect2.y;
+        // Если первый объект - игрок, используем его хитбокс
+        const rect1X = rect1 === this.player ? rect1.x + (rect1.width - rect1.hitboxWidth) / 2 : rect1.x;
+        const rect1Y = rect1 === this.player ? rect1.y + (rect1.height - rect1.hitboxHeight) / 2 : rect1.y;
+        const rect1Width = rect1 === this.player ? rect1.hitboxWidth : rect1.width;
+        const rect1Height = rect1 === this.player ? rect1.hitboxHeight : rect1.height;
+
+        return rect1X < rect2.x + rect2.width &&
+               rect1X + rect1Width > rect2.x &&
+               rect1Y < rect2.y + rect2.height &&
+               rect1Y + rect1Height > rect2.y;
     }
 
     togglePause() {
@@ -1010,7 +1018,7 @@ class ArcadeCollector {
             });
         }
 
-        // Добавляем вспышку в цвет корабля
+        // Добавляем ��спышку в цвет корабля
         this.particles.push({
             x: this.player.x + this.player.width / 2,
             y: this.player.y + this.player.height / 2,
