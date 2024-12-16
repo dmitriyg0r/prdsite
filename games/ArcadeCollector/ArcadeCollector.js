@@ -43,6 +43,8 @@ class ArcadeCollector {
             // Параметры стрельбы
             shootCooldown: 0,
             shootRate: 250, // Уменьшим задержку между выстрелами
+            maxHealth: 100,
+            health: 100,
         };
         
         // Типы противников
@@ -56,7 +58,9 @@ class ArcadeCollector {
                 points: 15, // Увеличиваем с 10 до 15
                 shootRate: 2500, // Увеличиваем с 2000 до 2500
                 bulletSpeed: 200,
-                behavior: 'straight'
+                behavior: 'straight',
+                damage: 10, // Базовый урон
+                bulletDamage: 5, // Урон от пуль
             },
             shooter: {
                 width: 40,
@@ -67,7 +71,9 @@ class ArcadeCollector {
                 points: 25, // Увеличиваем с 20 до 25
                 shootRate: 2000, // Увеличиваем с 1500 до 2000
                 bulletSpeed: 250,
-                behavior: 'strafe'
+                behavior: 'strafe',
+                damage: 15, // Повышенный урон при столкновении
+                bulletDamage: 8, // Повышенный урон от пуль
             },
             boss: {
                 width: 60,
@@ -75,10 +81,12 @@ class ArcadeCollector {
                 speed: 60, // Уменьшаем с 80 до 60
                 color: '#dc2626',
                 health: 8, // Увеличиваем с 5 до 8
-                points: 75, // Увели��иваем с 50 до 75
+                points: 75, // Увеличиваем с 50 до 75
                 shootRate: 1500, // Увеличиваем с 1000 до 1500
                 bulletSpeed: 300,
-                behavior: 'sine'
+                behavior: 'sine',
+                damage: 25, // Сильный урон при столкновении
+                bulletDamage: 12, // Сильный урон от пуль
             }
         };
 
@@ -120,7 +128,7 @@ class ArcadeCollector {
         // Добавляем стартовое меню
         this.startMenu = document.getElementById('startMenu');
         
-        // Добавляем массив для частиц
+        // Добавляем ма��сив для частиц
         this.particles = [];
         
         this.bindEvents();
@@ -205,7 +213,7 @@ class ArcadeCollector {
     updateDifficulty(dt) {
         this.gameTime += dt;
         // Замедляем рост сложности
-        this.difficulty = 1 + Math.floor(this.gameTime / 45) * 0.15; // ��ыло 30 сек и 0.2
+        this.difficulty = 1 + Math.floor(this.gameTime / 45) * 0.15; // ыло 30 сек и 0.2
         
         // Уменьшаем влияние очков на сложность
         this.difficulty += Math.floor(this.score / 150) * 0.08; // Было 100 и 0.1
@@ -402,7 +410,8 @@ class ArcadeCollector {
             height: 12,
             speedX: speedX,
             speedY: speedY,
-            color: enemy.color
+            color: enemy.color,
+            damage: enemy.bulletDamage
         });
     }
 
@@ -413,12 +422,7 @@ class ArcadeCollector {
 
             // Проверка столкновения с игроком
             if (this.checkCollision(this.player, bullet)) {
-                this.player.lives--;
-                this.livesElement.textContent = this.player.lives;
-                
-                if (this.player.lives <= 0) {
-                    this.gameOver();
-                }
+                this.damagePlayer(bullet.damage); // Используем урон из пули
                 return false;
             }
 
@@ -840,7 +844,7 @@ class ArcadeCollector {
             );
             this.ctx.fill();
 
-            // Блик на монете
+            // Бик на монете
             this.ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
             this.ctx.beginPath();
             this.ctx.arc(
@@ -935,11 +939,11 @@ class ArcadeCollector {
         this.livesElement.textContent = '3';
         this.levelElement.textContent = '1.0';
         
-        // Скрываем все меню
+        // Скрывам все меню
         this.pauseMenu.style.display = 'none';
         this.gameOverMenu.style.display = 'none';
         
-        // Сбрасываем состояни�� клавиш
+        // Сбрасываем состояни клавиш
         Object.keys(this.keys).forEach(key => {
             this.keys[key] = false;
         });
@@ -1017,6 +1021,50 @@ class ArcadeCollector {
             lifetime: this.player.ghostDuration,
             time: 0
         });
+    }
+
+    damagePlayer(damage) {
+        this.player.health -= damage;
+        
+        // Создаем эффект получения урона
+        this.createDamageEffect();
+        
+        // Обновляем отображение здоровья
+        this.updateHealthDisplay();
+        
+        // Проверяем условие смерти
+        if (this.player.health <= 0) {
+            this.gameOver();
+        }
+    }
+
+    createDamageEffect() {
+        // Визуальный эффект получения урона
+        const particles = 15;
+        const colors = ['#ef4444', '#dc2626', '#ffffff'];
+        
+        for (let i = 0; i < particles; i++) {
+            const angle = (Math.PI * 2 * i) / particles;
+            const speed = 100 + Math.random() * 100;
+            
+            this.particles.push({
+                x: this.player.x + this.player.width / 2,
+                y: this.player.y + this.player.height / 2,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                size: 3 + Math.random() * 3,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                lifetime: 0.3 + Math.random() * 0.2,
+                time: 0
+            });
+        }
+    }
+
+    updateHealthDisplay() {
+        // Обновляем отображение здоровья в UI
+        if (this.livesElement) {
+            this.livesElement.textContent = Math.max(0, Math.ceil(this.player.health));
+        }
     }
 }
 
