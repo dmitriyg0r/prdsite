@@ -1071,17 +1071,6 @@ body {
     color: rgba(255, 255, 255, 0.9);
 }
 
-/* Улучшаем стили сообщений */
-.message {
-    max-width: 65%;
-    margin-bottom: 12px;
-    padding: 12px 16px;
-    border-radius: 16px;
-    position: relative;
-    animation: messageAppear 0.3s ease-out;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
 /* Улучшаем стили для полученных сообщений */
 .message-received {
     align-self: flex-start;
