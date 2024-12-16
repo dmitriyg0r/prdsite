@@ -364,7 +364,7 @@ class ArcadeCollector {
 
     updateEnemies(dt) {
         this.enemies = this.enemies.filter(enemy => {
-            // Обновление времени для повед��ния
+            // Обновление времени для поведения
             enemy.time += dt;
 
             // Обновление позиции в зависимости от поведения
@@ -481,7 +481,7 @@ class ArcadeCollector {
         if (this.keys.ArrowUp) moveY -= 1;
         if (this.keys.ArrowDown) moveY += 1;
 
-        // Нормализация диагонального движен��я
+        // Нормализация диагонального движения
         if (moveX !== 0 && moveY !== 0) {
             const normalizer = 1 / Math.sqrt(2);
             moveX *= normalizer;
@@ -1117,8 +1117,8 @@ class ArcadeCollector {
 
         // Корректируем позиции двигателей в соответствии со спрайтом
         const enginePositions = [
-            { x: this.player.x + 15, y: this.player.y + this.player.height - 15 },  // Левый двигатель
-            { x: this.player.x + this.player.width - 15, y: this.player.y + this.player.height - 15 }  // Правый двигатель
+            { x: this.player.x + 10, y: this.player.y + this.player.height - 20 },  // Левый двигатель (сместили левее)
+            { x: this.player.x + this.player.width - 15, y: this.player.y + this.player.height - 20 }  // Правый двигатель
         ];
 
         enginePositions.forEach(pos => {
