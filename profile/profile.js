@@ -888,6 +888,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     const MIN_UPDATE_INTERVAL = 10000; // Минимальный интервал между обновлениями (10 секунд)
 
     async function updateUserStatus() {
+        if (!currentUser || !currentUser.id) {
+            console.warn('Пользователь не авторизован');
+            return;
+        }
+
         try {
             const response = await fetch('https://adminflow.ru:5003/api/users/update-status', {
                 method: 'POST',
@@ -896,62 +901,47 @@ document.addEventListener('DOMContentLoaded', async () => {
                 },
                 body: JSON.stringify({
                     userId: currentUser.id,
-                    is_online: true,
-                    last_activity: new Date().toISOString()
+                    is_online: true
                 })
             });
 
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Ошибка при обновлении статуса');
+                throw new Error('Ошибка сервера при обновлении статуса');
             }
 
             const data = await response.json();
             return data;
         } catch (err) {
             console.error('Ошибка обновления статуса:', err);
-            // Не выбрасываем ошибку дальше, чтобы не прерывать работу приложения
+            // Продолжаем работу без прерывания
         }
     }
 
-    // Оптимизированная функция отслеживания активности
+    // Функция периодического обновления активности
     function startStatusUpdates() {
-        let lastActivity = new Date();
-        let activityTimeout = null;
-        
-        const updateActivity = () => {
-            lastActivity = new Date();
-            
-            // Используем debouncing для обновления статуса
-            if (activityTimeout) {
-                clearTimeout(activityTimeout);
-            }
-            
-            activityTimeout = setTimeout(() => {
-                updateUserStatus(true);
-            }, 1000); // Задержка в 1 секунду
-        };
-        
-        // Оптимизированное отслеживание событий
-        const events = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
-        const throttledUpdateActivity = throttle(updateActivity, 5000); // Ограничиваем частоту вызовов
+        // Начальное обновление
+        updateUserStatus();
 
-        events.forEach(eventName => {
-            document.addEventListener(eventName, throttledUpdateActivity, { passive: true });
-        });
-        
-        // Проверка активности каждые 5 минут вместо каждой минуты
-        setInterval(() => {
-            const now = new Date();
-            const diffMinutes = Math.floor((now - lastActivity) / (1000 * 60));
-            
-            if (diffMinutes >= 5) {
-                updateUserStatus(true);
+        // Периодическое обновление каждые 30 секунд
+        setInterval(updateUserStatus, 30000);
+
+        // Обновление перед закрытием страницы
+        window.addEventListener('beforeunload', async () => {
+            try {
+                await fetch('https://adminflow.ru:5003/api/users/update-status', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userId: currentUser.id,
+                        is_online: false
+                    })
+                });
+            } catch (err) {
+                console.error('Ошибка при выходе:', err);
             }
-        }, 300000); // 5 минут
-        
-        // Начальное обновление статуса
-        updateActivity();
+        });
     }
 
     // Функция для throttling
@@ -1776,26 +1766,23 @@ async function toggleComments(postId) {
 
 async function loadComments(postId) {
     try {
-        if (!postId) {
-            console.warn('ID поста не указан');
-            return;
-        }
-
         const response = await fetch(`https://adminflow.ru:5003/api/posts/${postId}/comments`);
-        
-        if (response.status === 404) {
-            console.log('Комментарии не найдены для поста:', postId);
-            return [];
-        }
+        const data = await response.json();
 
         if (!response.ok) {
-            throw new Error('Ошибка при загрузке комментариев');
+            throw new Error(data.error || 'Ошибка при загрузке комментариев');
         }
 
-        const data = await response.json();
-        return data.comments || [];
+        // Отображаем комментарии
+        displayComments(postId, data.comments);
+        
+        return data.comments;
     } catch (err) {
         console.error('Ошибка загрузки комментариев:', err);
+        const container = document.getElementById(`comments-container-${postId}`);
+        if (container) {
+            container.innerHTML = '<div class="error-message">Ошибка при загрузке комментариев</div>';
+        }
         return [];
     }
 }

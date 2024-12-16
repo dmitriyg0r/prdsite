@@ -1534,11 +1534,29 @@ app.get('/api/posts/:postId/comments', async (req, res) => {
     try {
         const { postId } = req.params;
         
+        // Проверяем существование поста
+        const postExists = await pool.query(
+            'SELECT id FROM posts WHERE id = $1',
+            [postId]
+        );
+
+        if (postExists.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'Пост не найден'
+            });
+        }
+
+        // Получаем комментарии
         const comments = await pool.query(`
-            SELECT p.*, u.username as author_name, u.avatar_url as author_avatar
+            SELECT 
+                p.*,
+                u.username as author_name,
+                u.avatar_url as author_avatar
             FROM posts p
             JOIN users u ON p.user_id = u.id
-            WHERE p.parent_id = $1 AND p.type = 'comment'
+            WHERE p.parent_id = $1 
+            AND p.type = 'comment'
             ORDER BY p.created_at ASC
         `, [postId]);
 
@@ -1558,14 +1576,12 @@ app.get('/api/posts/:postId/comments', async (req, res) => {
 // Создание комментария
 app.post('/api/posts/comment', async (req, res) => {
     try {
-        console.log('Creating comment:', req.body);
-        
         const { userId, postId, content } = req.body;
 
         // Проверяем существование поста
         const postExists = await pool.query(
-            'SELECT id FROM posts WHERE id = $1 AND type = $2',
-            [postId, 'post']
+            'SELECT id FROM posts WHERE id = $1',
+            [postId]
         );
 
         if (postExists.rows.length === 0) {
@@ -1576,16 +1592,18 @@ app.post('/api/posts/comment', async (req, res) => {
         }
 
         // Создаем комментарий
-        const result = await pool.query(
-            'INSERT INTO posts (user_id, parent_id, type, content) VALUES ($1, $2, $3, $4) RETURNING *',
-            [userId, postId, 'comment', content]
-        );
+        const result = await pool.query(`
+            INSERT INTO posts (user_id, parent_id, type, content)
+            VALUES ($1, $2, 'comment', $3)
+            RETURNING *
+        `, [userId, postId, content]);
 
-        // Получаем информацию об авторе комментария
-        const authorInfo = await pool.query(
-            'SELECT username, avatar_url FROM users WHERE id = $1',
-            [userId]
-        );
+        // Получаем информацию об авторе
+        const authorInfo = await pool.query(`
+            SELECT username, avatar_url
+            FROM users
+            WHERE id = $1
+        `, [userId]);
 
         const comment = {
             ...result.rows[0],
@@ -1595,11 +1613,14 @@ app.post('/api/posts/comment', async (req, res) => {
 
         res.json({
             success: true,
-            comment: comment
+            comment
         });
     } catch (err) {
-        console.error('Error creating comment:', err);
-        res.status(500).json({ error: 'Ошибка при создании комментария' });
+        console.error('Ошибка при создании комментария:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при создании комментария'
+        });
     }
 });
 
