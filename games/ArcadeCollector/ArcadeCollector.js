@@ -164,6 +164,14 @@ class ArcadeCollector {
             }
         };
         
+        // Загружаем изображения для перков
+        this.perkImages = {
+            health: new Image(),
+            weapon: new Image()
+        };
+        this.perkImages.health.src = 'images/health_perk.png';
+        this.perkImages.weapon.src = 'images/weapon_perk.png';
+        
         // Изменяем параметры улучшения оружия
         this.weaponPowerup = {
             active: false,
@@ -269,23 +277,26 @@ class ArcadeCollector {
 
     shoot() {
         if (this.weaponPowerup.type === 'shotgun') {
-            // Стрельба дробью (5 пуль веером)
-            const bulletCount = 5;
-            const spreadAngle = Math.PI / 6; // 30 градусов общий разброс
+            // Стрельба дробью (7 пуль веером)
+            const bulletCount = 7;
+            const spreadAngle = Math.PI / 3; // 60 градусов общий разброс
             
             for (let i = 0; i < bulletCount; i++) {
                 const angle = (i - (bulletCount - 1) / 2) * (spreadAngle / (bulletCount - 1));
                 const speed = 500;
+                
+                const speedX = Math.sin(angle) * speed;
+                const speedY = -Math.cos(angle) * speed;
                 
                 this.bullets.push({
                     x: this.player.x + this.player.width/2 - 2,
                     y: this.player.y,
                     width: 4,
                     height: 8,
-                    speedX: Math.sin(angle) * speed,
-                    speedY: -Math.cos(angle) * speed,
+                    speedX: speedX,
+                    speedY: speedY,
                     color: '#4ade80',
-                    damage: 10
+                    damage: 8 // Уменьшенный урон для каждой пули дроби
                 });
             }
         } else {
@@ -302,7 +313,6 @@ class ArcadeCollector {
             });
         }
 
-        // Создаем эффект вспышки выстрела
         this.createShootEffect();
     }
 
@@ -729,7 +739,7 @@ class ArcadeCollector {
                 break;
 
             case 'boss':
-                // Сложная форма босса с градиентом
+                // Сложна�� форма босса с градиентом
                 const bossGradient = this.ctx.createRadialGradient(
                     enemy.x + enemy.width/2, enemy.y + enemy.height/2, 0,
                     enemy.x + enemy.width/2, enemy.y + enemy.height/2, enemy.width/2
@@ -971,16 +981,23 @@ class ArcadeCollector {
             this.ctx.restore();
         });
 
-        // Отрисовка пер��ов
+        // Отрисовка перков
         this.perks.forEach(perk => {
-            this.ctx.fillStyle = perk.color;
-            this.ctx.fillRect(perk.x, perk.y, perk.width, perk.height);
-            
-            // Добавляем свечение
-            this.ctx.shadowColor = perk.color;
-            this.ctx.shadowBlur = 10;
-            this.ctx.fillRect(perk.x, perk.y, perk.width, perk.height);
-            this.ctx.shadowBlur = 0;
+            if (this.perkImages[perk.type].complete) { // Проверяем, загрузилось ли изображение
+                this.ctx.save();
+                // Добавляем свечение
+                this.ctx.shadowColor = perk.color;
+                this.ctx.shadowBlur = 10;
+                // Отрисовываем изображение
+                this.ctx.drawImage(
+                    this.perkImages[perk.type],
+                    perk.x,
+                    perk.y,
+                    perk.width,
+                    perk.height
+                );
+                this.ctx.restore();
+            }
         });
     }
 
@@ -1084,9 +1101,9 @@ class ArcadeCollector {
 
     createDashEffect() {
         const particles = 30;
-        // Используем оттенки зелен��го, соответствующие цвету корабля
+        // Используем оттенки зеленого, соответствующие цвету корабля
         const colors = ['#4ade80', '#86efac', '#22c55e', '#ffffff'];
-        const angleSpread = Math.PI / 3; // 60 градусов ра��брос
+        const angleSpread = Math.PI / 3; // 60 градусов раброс
         
         // Определяем направление движения
         const angle = Math.atan2(this.player.velocityY, this.player.velocityX);
