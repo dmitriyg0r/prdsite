@@ -146,16 +146,16 @@ class ArcadeCollector {
         // Добавляем типы перков
         this.perkTypes = {
             health: {
-                width: 100,  // Увеличиваем с 40 до 50
-                height: 100, // Увеличиваем с 40 до 50
+                width: 80,  // Увеличиваем с 40 до 50
+                height: 80, // Увеличиваем с 40 до 50
                 color: '#ef4444',
                 effect: () => this.applyHealthPerk(),
                 spawnRate: 15000,
                 lastSpawn: 0
             },
             weapon: {
-                width: 100,  // Увеличиваем с 40 до 50
-                height: 100, // Увеличиваем с 40 до 50
+                width: 70,  // Увеличиваем с 40 до 50
+                height: 70, // Увеличиваем с 40 до 50
                 color: '#3b82f6',
                 effect: () => this.applyWeaponPerk('shotgun'),
                 duration: 10,
@@ -163,8 +163,8 @@ class ArcadeCollector {
                 lastSpawn: 0
             },
             weapon2: {
-                width: 100,  // Увеличиваем с 40 до 50
-                height: 100, // Увеличиваем с 40 до 50
+                width: 70,  // Увеличиваем с 40 до 50
+                height: 70, // Увеличиваем с 40 до 50
                 color: '#22c55e',
                 effect: () => this.applyWeaponPerk('triple'),
                 duration: 10,
