@@ -12,6 +12,8 @@ const { Server } = require('socket.io');
 
 const app = express();
 const PORT = 5003;
+const STATUS_UPDATE_CACHE = new Map();
+const STATUS_UPDATE_INTERVAL = 5000; // 5 секунд между обновлениями
 
 // Middleware
 app.use(cors({
@@ -70,13 +72,6 @@ app.get('/api/test', async (req, res) => {
 // Login route
 app.post('/api/login', async (req, res) => {
     try {
-        console.log('Получен запрос на вход:', {
-            headers: req.headers,
-            body: req.body,
-            ip: req.ip,
-            origin: req.get('origin')
-        });
-        
         const { username, password } = req.body;
 
         if (!username || !password) {
@@ -85,7 +80,6 @@ app.post('/api/login', async (req, res) => {
             });
         }
 
-        // Изменяем запрос, используя правильное имя колонки password_hash
         const result = await pool.query(`
             SELECT id, username, password_hash, role, avatar_url, email, created_at, last_login 
             FROM users 
@@ -93,6 +87,14 @@ app.post('/api/login', async (req, res) => {
         `, [username]);
 
         if (result.rows.length === 0) {
+            return res.status(401).json({ error: 'Неверное имя пользователя или пароль' });
+        }
+
+        const user = result.rows[0]; // Добавляем эту строку
+
+        // Проверяем пароль
+        const isValidPassword = await bcrypt.compare(password, user.password_hash);
+        if (!isValidPassword) {
             return res.status(401).json({ error: 'Неверное имя пользователя или пароль' });
         }
 
@@ -302,7 +304,7 @@ app.post('/api/upload-avatar', upload.single('avatar'), (req, res) => {
             return res.status(400).json({ error: 'Файл не был загружен' });
         }
 
-        // Формируем URL для доступа к файлу
+        // Формируем URL для доступа к ф��йлу
         const fileUrl = `/uploads/avatars/${req.file.filename}`;
         res.json({ success: true, avatarUrl: fileUrl });
 
@@ -468,7 +470,7 @@ app.get('/api/friend-requests', async (req, res) => {
         res.json({ requests: result.rows });
     } catch (err) {
         console.error('Get friend requests error:', err);
-        res.status(500).json({ error: 'Ошибка при получении заявок в друзья' });
+        res.status(500).json({ error: 'Ошибка пр�� получении заявок в друзья' });
     }
 });
 
@@ -490,7 +492,7 @@ app.post('/api/friend/remove', async (req, res) => {
     }
 });
 
-// Настройка хранилища для файлов сообщений
+// Настройка хран��лища для файлов сообщений
 const messageStorage = multer.diskStorage({
     destination: function (req, file, cb) {
         const uploadDir = path.join(__dirname, '../public/uploads/messages');
@@ -657,7 +659,7 @@ app.get('/api/messages/last/:userId/:friendId', async (req, res) => {
     }
 });
 
-// Получение количества непрочитанных сообщений
+// Получение количе��тва непрочитанных сообщений
 app.get('/api/messages/unread/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
@@ -901,7 +903,7 @@ app.post('/api/users/update-profile', async (req, res) => {
         if (updates.length === 0) {
             return res.status(400).json({
                 success: false,
-                error: 'Нет данных для обновления'
+                error: 'Нет данных для об��овления'
             });
         }
 
@@ -959,7 +961,7 @@ app.post('/api/messages/send-with-file', messageUpload.single('file'), async (re
 // Обновляем middleware checkAdmin
 const checkAdmin = async (req, res, next) => {
     try {
-        // Проверяем adminId в query параметрах или в теле зпроса
+        // Проверяем adminId в query пара��етрах или в теле зпроса
         const adminId = req.query.adminId || req.body.adminId;
         
         console.log('Checking admin rights for:', adminId); // Добавляем лог
@@ -1529,43 +1531,32 @@ app.get('/api/feed', async (req, res) => {
     }
 });
 
-// Получение комментариев к посту
+// Получение комментариев для поста
 app.get('/api/posts/:postId/comments', async (req, res) => {
     try {
         const { postId } = req.params;
         
-        // Проверяем существование поста
-        const postExists = await pool.query(
-            'SELECT id FROM posts WHERE id = $1',
-            [postId]
-        );
-
-        if (postExists.rows.length === 0) {
-            return res.status(404).json({
-                success: false,
-                error: 'Пост не найден'
-            });
-        }
-
-        // Получаем комментарии
-        const comments = await pool.query(`
+        const result = await pool.query(`
             SELECT 
-                p.*,
+                p.id,
+                p.content,
+                p.created_at,
+                p.user_id,
                 u.username as author_name,
                 u.avatar_url as author_avatar
             FROM posts p
             JOIN users u ON p.user_id = u.id
             WHERE p.parent_id = $1 
             AND p.type = 'comment'
-            ORDER BY p.created_at ASC
+            ORDER BY p.created_at DESC
         `, [postId]);
 
         res.json({
             success: true,
-            comments: comments.rows
+            comments: result.rows
         });
     } catch (err) {
-        console.error('Ошибка при получении комментариев:', err);
+        console.error('Error getting comments:', err);
         res.status(500).json({
             success: false,
             error: 'Ошибка при получении комментариев'
@@ -1580,11 +1571,11 @@ app.post('/api/posts/comment', async (req, res) => {
 
         // Проверяем существование поста
         const postExists = await pool.query(
-            'SELECT id FROM posts WHERE id = $1',
+            'SELECT EXISTS(SELECT 1 FROM posts WHERE id = $1 AND type = \'post\')',
             [postId]
         );
 
-        if (postExists.rows.length === 0) {
+        if (!postExists.rows[0].exists) {
             return res.status(404).json({
                 success: false,
                 error: 'Пост не найден'
@@ -1593,33 +1584,109 @@ app.post('/api/posts/comment', async (req, res) => {
 
         // Создаем комментарий
         const result = await pool.query(`
-            INSERT INTO posts (user_id, parent_id, type, content)
-            VALUES ($1, $2, 'comment', $3)
-            RETURNING *
+            INSERT INTO posts (user_id, parent_id, type, content, created_at)
+            VALUES ($1, $2, 'comment', $3, CURRENT_TIMESTAMP)
+            RETURNING id, content, created_at
         `, [userId, postId, content]);
 
-        // Получаем информацию об авторе
-        const authorInfo = await pool.query(`
+        // Получаем информацию об авторе комментария
+        const userInfo = await pool.query(`
             SELECT username, avatar_url
             FROM users
             WHERE id = $1
         `, [userId]);
 
         const comment = {
-            ...result.rows[0],
-            author_name: authorInfo.rows[0].username,
-            author_avatar: authorInfo.rows[0].avatar_url
+            id: result.rows[0].id,
+            content: result.rows[0].content,
+            created_at: result.rows[0].created_at,
+            author_name: userInfo.rows[0].username,
+            author_avatar: userInfo.rows[0].avatar_url,
+            user_id: userId
         };
 
         res.json({
             success: true,
-            comment
+            comment: comment
         });
     } catch (err) {
-        console.error('Ошибка при создании комментария:', err);
+        console.error('Error creating comment:', err);
         res.status(500).json({
             success: false,
             error: 'Ошибка при создании комментария'
+        });
+    }
+});
+
+// Удаление комментария
+app.delete('/api/comments/:commentId', async (req, res) => {
+    try {
+        const { commentId } = req.params;
+        const { userId } = req.body;
+
+        // Проверяем, является ли пользователь автором комментария
+        const comment = await pool.query(
+            'SELECT parent_id FROM posts WHERE id = $1 AND user_id = $2 AND type = \'comment\'',
+            [commentId, userId]
+        );
+
+        if (comment.rows.length === 0) {
+            return res.status(403).json({
+                success: false,
+                error: 'Нет прав на удаление этого комментария'
+            });
+        }
+
+        // Удаляем комментарий
+        await pool.query('DELETE FROM posts WHERE id = $1', [commentId]);
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Error deleting comment:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при удалении комментария'
+        });
+    }
+});
+
+// Редактирование комментария
+app.put('/api/comments/:commentId', async (req, res) => {
+    try {
+        const { commentId } = req.params;
+        const { userId, content } = req.body;
+
+        // Проверяем, является ли пользователь автором комментария
+        const commentExists = await pool.query(
+            'SELECT EXISTS(SELECT 1 FROM posts WHERE id = $1 AND user_id = $2 AND type = \'comment\')',
+            [commentId, userId]
+        );
+
+        if (!commentExists.rows[0].exists) {
+            return res.status(403).json({
+                success: false,
+                error: 'Нет прав на редактирование этого комментария'
+            });
+        }
+
+        // Обновляем комментарий
+        const result = await pool.query(`
+            UPDATE posts 
+            SET content = $1, 
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = $2
+            RETURNING id, content, created_at, updated_at
+        `, [content, commentId]);
+
+        res.json({
+            success: true,
+            comment: result.rows[0]
+        });
+    } catch (err) {
+        console.error('Error updating comment:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при обновлении комментария'
         });
     }
 });
@@ -1839,7 +1906,7 @@ app.post('/api/send-verification-code', async (req, res) => {
 
         const verificationCode = generateVerificationCode();
 
-        // Сохрняем код в базу
+        // ��охрняем код в базу
         await pool.query(`
             INSERT INTO verification_codes (user_id, code, expires_at)
             VALUES ($1, $2, NOW() + INTERVAL '5 minutes')
@@ -2399,4 +2466,14 @@ app.get('/api/users-list', async (req, res) => {
         res.status(500).json({ error: 'Ошибка при загрузке списка пользователей' });
     }
 });
+
+// Периодическая очистка устаревших записей кэша
+setInterval(() => {
+    const now = Date.now();
+    for (const [userId, timestamp] of STATUS_UPDATE_CACHE.entries()) {
+        if (now - timestamp > STATUS_UPDATE_INTERVAL * 2) {
+            STATUS_UPDATE_CACHE.delete(userId);
+        }
+    }
+}, STATUS_UPDATE_INTERVAL * 2);
 

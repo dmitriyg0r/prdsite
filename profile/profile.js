@@ -524,7 +524,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             friendsHeaderCount.textContent = friends.length;
         }
 
-        // Обновляем счетчик в модальном окне
+        // Обновляем с��етчик в модальном окне
         const modalFriendCount = document.querySelector('.modal-tabs .friend-count');
         if (modalFriendCount) {
             modalFriendCount.textContent = friends.length;
@@ -576,7 +576,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             `).join('');
         }
 
-        // Добавляем обработчики для кнопок удаления
+        // Добав��яем обработчики для кнопок удаления
         if (isCurrentUser) {
             document.querySelectorAll('.remove-friend-btn').forEach(btn => {
                 btn.addEventListener('click', () => removeFriend(btn.dataset.userId));
@@ -887,61 +887,85 @@ document.addEventListener('DOMContentLoaded', async () => {
     let lastStatusUpdate = 0;
     const MIN_UPDATE_INTERVAL = 10000; // Минимальный интервал между обновлениями (10 секунд)
 
-    async function updateUserStatus() {
-        if (!currentUser || !currentUser.id) {
-            console.warn('Пользователь не авторизован');
+    async function updateUserStatus(force = false) {
+        if (!currentUser) return;
+
+        const now = Date.now();
+        
+        // Пропускаем обновление, если прошло слишком мало времени с последнего обновления
+        if (!force && now - lastStatusUpdate < MIN_UPDATE_INTERVAL) {
             return;
         }
 
-        try {
-            const response = await fetch('https://adminflow.ru:5003/api/users/update-status', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    userId: currentUser.id,
-                    is_online: true
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error('Ошибка сервера при обновлении статуса');
-            }
-
-            const data = await response.json();
-            return data;
-        } catch (err) {
-            console.error('Ошибка обновления статуса:', err);
-            // Продолжаем работу без прерывания
+        // Отменяем предыдущий отложенный запрос
+        if (statusUpdateTimeout) {
+            clearTimeout(statusUpdateTimeout);
         }
-    }
 
-    // Функция периодического обновления активности
-    function startStatusUpdates() {
-        // Начальное обновление
-        updateUserStatus();
-
-        // Периодическое обновление каждые 30 секунд
-        setInterval(updateUserStatus, 30000);
-
-        // Обновление перед закрытием страницы
-        window.addEventListener('beforeunload', async () => {
+        // Откладываем выполнение запроса
+        statusUpdateTimeout = setTimeout(async () => {
             try {
-                await fetch('https://adminflow.ru:5003/api/users/update-status', {
+                const response = await fetch('https://adminflow.ru:5003/api/users/update-status', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
                         userId: currentUser.id,
-                        is_online: false
+                        is_online: true,
+                        last_activity: new Date().toISOString()
                     })
                 });
+
+                if (!response.ok) {
+                    throw new Error('Failed to update status');
+                }
+
+                lastStatusUpdate = now;
             } catch (err) {
-                console.error('Ошибка при выходе:', err);
+                console.error('Error updating user status:', err);
             }
+        }, 100); // Небольшая задержка для группировки обновлений
+    }
+
+    // Оптимизированная функция отслеживания активности
+    function startStatusUpdates() {
+        let lastActivity = new Date();
+        let activityTimeout = null;
+        
+        const updateActivity = () => {
+            lastActivity = new Date();
+            
+            // Используем debouncing для обновления статуса
+            if (activityTimeout) {
+                clearTimeout(activityTimeout);
+            }
+            
+            activityTimeout = setTimeout(() => {
+                updateUserStatus(true);
+            }, 1000); // Задержка в 1 секунду
+        };
+        
+        // Оптимизированное отслеживание событий
+        const events = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
+        const throttledUpdateActivity = throttle(updateActivity, 5000); // Ограничиваем частоту вызовов
+
+        events.forEach(eventName => {
+            document.addEventListener(eventName, throttledUpdateActivity, { passive: true });
         });
+        
+        // Проверка активности каждые 5 минут вместо каждой минуты
+        setInterval(() => {
+            const now = new Date();
+            const diffMinutes = Math.floor((now - lastActivity) / (1000 * 60));
+            
+            if (diffMinutes >= 5) {
+                updateUserStatus(true);
+            }
+        }, 300000); // 5 минут
+        
+        // Начальное обновление статуса
+        updateActivity();
     }
 
     // Функция для throttling
@@ -1258,7 +1282,7 @@ async function createPost() {
         formData.append('content', content);
         
         if (file) {
-            // Проверяем размер файла (например, 10MB максимум)
+            // Проверяем размер файла (например, 10MB м��ксимум)
             const maxSize = 10 * 1024 * 1024; // 10MB в байтах
             if (file.size > maxSize) {
                 alert('Файл слишком большой. Максимальный размер: 10MB');
@@ -1331,31 +1355,18 @@ async function createPost() {
 async function loadPosts() {
     try {
         const userId = new URLSearchParams(window.location.search).get('id') || currentUser.id;
-        console.log('Loading posts for userId:', userId);
+        console.log('Loading posts for userId:', userId); // Отладочная информация
         
-        const response = await fetch(`https://adminflow.ru:5003/api/posts/${userId}?currentUserId=${currentUser.id}`, {
-            credentials: 'include'
-        });
-        
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Ошибка при загрузке постов');
-        }
-        
+        const response = await fetch(`https://adminflow.ru:5003/api/posts/${userId}?currentUserId=${currentUser.id}`);
         const data = await response.json();
-        console.log('Posts response:', data);
+        
+        console.log('Posts response:', data); // Отладочная информация
 
         if (data.success) {
             displayPosts(data.posts);
-        } else {
-            throw new Error(data.error || 'Ошибка при загрузке постов');
         }
     } catch (err) {
         console.error('Error loading posts:', err);
-        const postsContainer = document.querySelector('.posts-container');
-        if (postsContainer) {
-            postsContainer.innerHTML = `<div class="error-message">Не удалось загрузить посты: ${err.message}</div>`;
-        }
     }
 }
 
@@ -1767,23 +1778,13 @@ async function toggleComments(postId) {
 async function loadComments(postId) {
     try {
         const response = await fetch(`https://adminflow.ru:5003/api/posts/${postId}/comments`);
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.error || 'Ошибка при загрузке комментариев');
-        }
-
-        // Отображаем комментарии
-        displayComments(postId, data.comments);
+        if (!response.ok) throw new Error('Ошибка при загрузке комментариев');
         
-        return data.comments;
+        const data = await response.json();
+        displayComments(postId, data.comments);
     } catch (err) {
-        console.error('Ошибка загрузки комментариев:', err);
-        const container = document.getElementById(`comments-container-${postId}`);
-        if (container) {
-            container.innerHTML = '<div class="error-message">Ошибка при загрузке комментариев</div>';
-        }
-        return [];
+        console.error('Error loading comments:', err);
+        alert('Ошибка при загрузке комментариев');
     }
 }
 
