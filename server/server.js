@@ -854,7 +854,7 @@ app.get('/api/users/:id', async (req, res) => {
     }
 });
 
-// Об��овле����ие п��о��иля пользователя
+// Об���овле����ие п��о��иля пользователя
 app.post('/api/users/update-profile', async (req, res) => {
     try {
         const { userId, username, email } = req.body;
@@ -1334,7 +1334,7 @@ app.delete('/api/posts/delete/:postId', async (req, res) => {
     }
 });
 
-// Добавляем раздачу статических файлов для постов
+// Добавляем раздачу статическ��х файлов для постов
 app.use('/uploads/posts', express.static('/var/www/html/uploads/posts')); 
 
 // Получение статуса пользователя
@@ -1378,22 +1378,55 @@ app.get('/api/users/status/:userId', async (req, res) => {
 // Обновление статуса пользователя
 app.post('/api/users/update-status', async (req, res) => {
     try {
-        const userId = parseInt(req.body.userId);
-        const is_online = req.body.is_online ?? true;
+        const { userId, is_online, last_activity } = req.body;
 
-        if (!userId || isNaN(userId)) {
-            return res.status(400).json({ 
-                success: false, 
-                error: 'Invalid user ID' 
-            });
+        // Проверяем время последнего обновления из кэша
+        const lastUpdate = STATUS_UPDATE_CACHE.get(userId);
+        const now = Date.now();
+
+        if (lastUpdate && (now - lastUpdate < STATUS_UPDATE_INTERVAL)) {
+            // Если прошло мало времени с последнего обновления, 
+            // отправляем успешный ответ без обновления БД
+            return res.json({ success: true, cached: true });
         }
 
-        await pool.query(
-            'UPDATE users SET is_online = $1, last_activity = CURRENT_TIMESTAMP WHERE id = $2',
-            [is_online, userId]
-        );
+        // Обновляем кэш
+        STATUS_UPDATE_CACHE.set(userId, now);
+
+        // Используем batch-обновление
+        await pool.query(`
+            INSERT INTO user_status (user_id, is_online, last_activity)
+            VALUES ($1, $2, $3)
+            ON CONFLICT (user_id) DO UPDATE
+            SET 
+                is_online = EXCLUDED.is_online,
+                last_activity = EXCLUDED.last_activity,
+                updated_at = NOW()
+        `, [userId, is_online, last_activity]);
+
+        // Получаем список друзей пользователя
+        const friendsResult = await pool.query(`
+            SELECT friend_id as id FROM friendships 
+            WHERE user_id = $1 AND status = 'accepted'
+            UNION
+            SELECT user_id as id FROM friendships 
+            WHERE friend_id = $1 AND status = 'accepted'
+        `, [userId]);
+
+        // Оповещаем друзей через WebSocket только если статус действительно изменился
+        for (const friend of friendsResult.rows) {
+            const friendSocketId = activeConnections.get(friend.id);
+            if (friendSocketId) {
+                io.to(friendSocketId).emit('user_status_update', {
+                    userId,
+                    isOnline: is_online,
+                    lastActivity: last_activity
+                });
+            }
+        }
 
         res.json({ success: true });
+
     } catch (err) {
         console.error('Error updating user status:', err);
         res.status(500).json({ 
@@ -1403,7 +1436,29 @@ app.post('/api/users/update-status', async (req, res) => {
     }
 });
 
-// Добавляем автоматическое обнов��ение статуса каждые 5 минут
+// Добавьте периодическую очистку кэша
+setInterval(() => {
+    const now = Date.now();
+    for (const [userId, timestamp] of STATUS_UPDATE_CACHE.entries()) {
+        if (now - timestamp > STATUS_UPDATE_INTERVAL * 2) {
+            STATUS_UPDATE_CACHE.delete(userId);
+        }
+    }
+}, STATUS_UPDATE_INTERVAL * 2);
+
+// Добавьте в начало файла после подключения к БД создание таблицы user_status
+pool.query(`
+    CREATE TABLE IF NOT EXISTS user_status (
+        user_id INTEGER PRIMARY KEY REFERENCES users(id),
+        is_online BOOLEAN DEFAULT false,
+        last_activity TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    )
+`).catch(err => {
+    console.error('Error creating user_status table:', err);
+});
+
+// Добавляем автоматическое обновение статуса каждые 5 минут
 setInterval(async () => {
     try {
         // Помечаем ользователей как оффлайн, если их последняя активность была более 5 минут назад
@@ -1837,7 +1892,7 @@ app.post('/api/change-password', async (req, res) => {
             });
         }
 
-        // Хешируем новый пароль
+        // Хешируем нов��й пароль
         const hashedPassword = await bcrypt.hash(newPassword, 10);
 
         // Исправляем имя колонки с password на password_hash

@@ -292,7 +292,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const tabButtons = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
 
-    // Обновляем селектор для кнопки открытия модального ��кна
+    // Обновляем селектор для кнопки открытия модального окна
     const friendsHeaderBtn = document.querySelector('.friends-header-btn');
     
     // Открытие модального окна при клике на заголовок "Дузья"
@@ -524,7 +524,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             friendsHeaderCount.textContent = friends.length;
         }
 
-        // Обновляем счетчик в модальном окне
+        // Обновляем с��етчик в модальном окне
         const modalFriendCount = document.querySelector('.modal-tabs .friend-count');
         if (modalFriendCount) {
             modalFriendCount.textContent = friends.length;
@@ -576,7 +576,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             `).join('');
         }
 
-        // Добавляем обработчики для кнопок удаления
+        // Добав��яем обработчики для кнопок удаления
         if (isCurrentUser) {
             document.querySelectorAll('.remove-friend-btn').forEach(btn => {
                 btn.addEventListener('click', () => removeFriend(btn.dataset.userId));
@@ -787,7 +787,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
 
             if (response.ok) {
-                // Обновляем реул��таты поиска
+                // Обновляем реултаты поиска
                 searchUsers(document.querySelector('.search-input').value.trim());
             }
         } catch (err) {
@@ -882,58 +882,101 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Загружаем посты
     loadPosts();
 
-    // Обновляем интервал обновления статуса для текущего пользователя
+    // Оптимизированная функция обновления статуса пользователя
+    let statusUpdateTimeout = null;
+    let lastStatusUpdate = 0;
+    const MIN_UPDATE_INTERVAL = 10000; // Минимальный интервал между обновлениями (10 секунд)
+
+    async function updateUserStatus(force = false) {
+        if (!currentUser) return;
+
+        const now = Date.now();
+        
+        // Пропускаем обновление, если прошло слишком мало времени с последнего обновления
+        if (!force && now - lastStatusUpdate < MIN_UPDATE_INTERVAL) {
+            return;
+        }
+
+        // Отменяем предыдущий отложенный запрос
+        if (statusUpdateTimeout) {
+            clearTimeout(statusUpdateTimeout);
+        }
+
+        // Откладываем выполнение запроса
+        statusUpdateTimeout = setTimeout(async () => {
+            try {
+                const response = await fetch('https://adminflow.ru:5003/api/users/update-status', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userId: currentUser.id,
+                        is_online: true,
+                        last_activity: new Date().toISOString()
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to update status');
+                }
+
+                lastStatusUpdate = now;
+            } catch (err) {
+                console.error('Error updating user status:', err);
+            }
+        }, 100); // Небольшая задержка для группировки обновлений
+    }
+
+    // Оптимизированная функция отслеживания активности
     function startStatusUpdates() {
         let lastActivity = new Date();
+        let activityTimeout = null;
         
-        // Функция обновления активности
         const updateActivity = () => {
             lastActivity = new Date();
-            updateUserStatus(true);
+            
+            // Используем debouncing для обновления статуса
+            if (activityTimeout) {
+                clearTimeout(activityTimeout);
+            }
+            
+            activityTimeout = setTimeout(() => {
+                updateUserStatus(true);
+            }, 1000); // Задержка в 1 секунду
         };
         
-        // Отслеживаем действия пользователя
-        ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'].forEach(eventName => {
-            document.addEventListener(eventName, updateActivity);
+        // Оптимизированное отслеживание событий
+        const events = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
+        const throttledUpdateActivity = throttle(updateActivity, 5000); // Ограничиваем частоту вызовов
+
+        events.forEach(eventName => {
+            document.addEventListener(eventName, throttledUpdateActivity, { passive: true });
         });
         
-        // Проверяем активность каждую минуту
+        // Проверка активности каждые 5 минут вместо каждой минуты
         setInterval(() => {
             const now = new Date();
             const diffMinutes = Math.floor((now - lastActivity) / (1000 * 60));
             
             if (diffMinutes >= 5) {
-                // Если нет активности 5+ минут, обновляем статус
-                updateUserStatus(true); // Всё ещё онлайн, но не активен
+                updateUserStatus(true);
             }
-        }, 60000);
+        }, 300000); // 5 минут
         
         // Начальное обновление статуса
         updateActivity();
     }
 
-    // Функция обновления статуса пользователя
-    async function updateUserStatus(force = false) {
-        if (!currentUser) return;
-
-        try {
-            const response = await fetch('https://adminflow.ru:5003/api/users/update-status', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    userId: currentUser.id,
-                    is_online: true,
-                    last_activity: new Date().toISOString()
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to update status');
+    // Функция для throttling
+    function throttle(func, limit) {
+        let inThrottle;
+        return function(...args) {
+            if (!inThrottle) {
+                func.apply(this, args);
+                inThrottle = true;
+                setTimeout(() => inThrottle = false, limit);
             }
-        } catch (err) {
-            console.error('Error updating user status:', err);
         }
     }
 
@@ -1239,14 +1282,14 @@ async function createPost() {
         formData.append('content', content);
         
         if (file) {
-            // Проверяем размер файла (например, 10MB максимум)
+            // Проверяем размер файла (например, 10MB м��ксимум)
             const maxSize = 10 * 1024 * 1024; // 10MB в байтах
             if (file.size > maxSize) {
                 alert('Файл слишком большой. Максимальный размер: 10MB');
                 return;
             }
 
-            // Ра��решенные типы файлов
+            // Рарешенные типы файлов
             const allowedTypes = [
                 'image/jpeg',
                 'image/png',
@@ -1542,7 +1585,7 @@ window.openImageInFullscreen = function(imageSrc, postData) {
         </div>
     `;
     
-    // Д��бавляем модальное окно в DOM
+    // Дбавляем модальное окно в DOM
     document.body.appendChild(modal);
     
     // Доавляем класс active после небольшой задержки для анимации
