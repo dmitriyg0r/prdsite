@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Загружаем список чатов
     await loadChatsList();
     
-    // Запускаем периодическое обновление списка чатов
+    // Запускаем периодическ��е обновление списка чатов
     setInterval(loadChatsList, 10000); // Обновляем каждые 10 секунд
 });
 
@@ -224,37 +224,40 @@ function createMessageElement(message) {
     messageElement.className = `message message-${message.sender_id === currentUser.id ? 'sent' : 'received'}`;
     messageElement.dataset.messageId = message.id;
 
+    // Добавляем информацию об отправителе для полученных сообщений
+    if (message.sender_id !== currentUser.id) {
+        const senderInfo = document.createElement('div');
+        senderInfo.className = 'message-sender';
+        senderInfo.textContent = message.sender_name || 'Пользователь';
+        messageElement.appendChild(senderInfo);
+    }
+
     if (message.message_type === 'voice') {
         // Создаем голосовое сообщение
         const voiceContainer = document.createElement('div');
         voiceContainer.className = 'voice-message';
         
-        // Создаем кнопку воспроизведения
         const playButton = document.createElement('button');
         playButton.className = 'voice-message-play';
         playButton.innerHTML = '<i class="fas fa-play"></i>';
 
-        // Создаем визуализацию волны
         const waveform = document.createElement('div');
         waveform.className = 'voice-message-waveform';
         
-        // Добавляем прогресс-бар
         const progress = document.createElement('div');
         progress.className = 'voice-message-progress';
         waveform.appendChild(progress);
 
-        // Добавляем время
         const timeSpan = document.createElement('span');
         timeSpan.className = 'voice-message-time';
         timeSpan.textContent = '00:00';
 
-        // Собираем все элементы
         voiceContainer.appendChild(playButton);
         voiceContainer.appendChild(waveform);
         voiceContainer.appendChild(timeSpan);
         messageElement.appendChild(voiceContainer);
 
-        // Добавляем обработчик воспроизведения
+        // Обработчик воспроизведения
         let audio = null;
         playButton.addEventListener('click', async () => {
             try {
@@ -304,8 +307,30 @@ function createMessageElement(message) {
             }
         });
     } else {
-        // Обработка обычных текстовых сообщений
-        // ... существующий код для текстовых сообщений ...
+        // Обработка текстовых сообщений
+        const messageContent = document.createElement('div');
+        messageContent.className = 'message-content';
+
+        // Добавляем ответ на сообщение, если есть
+        if (message.reply_to_message_id) {
+            const replyContent = document.createElement('div');
+            replyContent.className = 'message-reply';
+            // Здесь нужно добавить логику получения текста сообщения, на которое отвечают
+            messageContent.appendChild(replyContent);
+        }
+
+        // Создаем контейнер для текста сообщения
+        const messageText = document.createElement('div');
+        messageText.className = 'message-text';
+        
+        // Обрабатываем текст сообщения через marked и DOMPurify
+        if (message.message) {
+            const sanitizedHtml = DOMPurify.sanitize(marked.parse(message.message));
+            messageText.innerHTML = sanitizedHtml;
+        }
+
+        messageContent.appendChild(messageText);
+        messageElement.appendChild(messageContent);
     }
 
     // Добавляем время отправки
@@ -419,7 +444,7 @@ async function sendMessage() {
         const responseData = await response.json();
 
         if (!response.ok) {
-            throw new Error(responseData.details || responseData.error || 'Ошибка при отправке сообщения');
+            throw new Error(responseData.details || responseData.error || 'Ошиб��а при отправке сообщения');
         }
 
         if (responseData.success) {
@@ -460,7 +485,7 @@ async function markMessagesAsRead(friendId) {
 
         const data = await response.json();
         if (data.success) {
-            // Обновляем счетчик только если успешно обновили статус
+            // Обновляем счетчик ��олько если успешно обновили статус
             await updateUnreadCount(friendId);
         } else {
             console.error('Ошибка при обновлении статуса сообщений:', data.error);
@@ -677,7 +702,7 @@ function showImageModal(imageUrl) {
     modalImage.onerror = () => {
         console.error('Ошибка загрузки изображения в модальном окне:', imageUrl);
         if(modal) modal.style.display = 'none';
-        alert('Ошибка при загрузк�� изображения');
+        alert('Ошибка при загрузк изображения');
     };
     
     modalImage.src = imageUrl;
@@ -795,7 +820,7 @@ async function deleteMessage(messageId) {
             return;
         }
 
-        // Проверяем, есть ли вложение
+        // Прове��яем, есть ли вложение
         const attachmentElement = messageElement.querySelector('.message-attachment');
         let attachmentUrl = null;
         if (attachmentElement) {
@@ -825,7 +850,7 @@ async function deleteMessage(messageId) {
             });
         } else {
             console.error('Ошибка при удалении сообщения:', data.error);
-            alert(data.error || 'Не удалось уд��лить сообщение');
+            alert(data.error || 'Не удалось удлить сообщение');
         }
     } catch (error) {
         console.error('Ошибка при удалении сообщения:', error);
@@ -930,7 +955,7 @@ function setupContextMenu() {
             const windowWidth = window.innerWidth;
             const windowHeight = window.innerHeight;
 
-            // Проверяем и корректируем позицию по горизонтали
+            // Проверяем и корректируем позицию п�� горизонтали
             if (x + menuRect.width > windowWidth) {
                 contextMenu.style.left = `${x - menuRect.width}px`;
             } else {
@@ -1274,7 +1299,7 @@ async function selectChat(chat) {
             newActive.classList.add('active');
         }
 
-        // Очищаем предыдущие сообщения
+        // Очищае�� предыдущие сообщения
         const messagesContainer = document.getElementById('messages');
         if (messagesContainer) {
             messagesContainer.innerHTML = '';
@@ -1356,7 +1381,7 @@ function getLastActivityTime(lastActivity) {
     }
 }
 
-// Функци�� для обновления счетчика непрочитанных сообщений
+// Функция для обновления счетчика непрочитанных сообщений
 async function updateUnreadCount(friendId) {
   if(!friendId) return
   try {
@@ -1482,7 +1507,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Добавляем прямой обработчик для кнопки отправк��
+    // Добавляем прямой обработчик для кнопки отправк
     const sendButton = document.getElementById('sendMessage');
     const messageInput = document.getElementById('messageInput');
 
@@ -1516,7 +1541,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const responseData = await response.json();
 
                 if (!response.ok) {
-                    throw new Error(responseData.details || responseData.error || 'Ошибка при отправке сообщения');
+                    throw new Error(responseData.details || responseData.error || 'Ошибка при отправке с��общения');
                 }
 
                 if (responseData.success) {
