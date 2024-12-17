@@ -16,6 +16,8 @@ const STATUS_UPDATE_CACHE = new Map();
 const STATUS_UPDATE_INTERVAL = 5000; // 5 секунд между обновлениями
 
 // Middleware
+const cors = require('cors');
+
 app.use(cors({
     origin: [
         'https://adminflow.ru',
@@ -23,7 +25,7 @@ app.use(cors({
         'http://adminflow.ru',
         'http://www.adminflow.ru'
     ],
-    credentials: true,
+    credentials: true, // Разрешить отправку куки и заголовков авторизации
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
     exposedHeaders: ['Content-Length', 'Content-Type']
@@ -1990,9 +1992,7 @@ const httpsServer = https.createServer(sslOptions, app);
 const activeConnections = new Map();
 
 // Создаем экземпляр Socket.IO
-const io = new Server(httpServer, {  // Меняем httpsServer на httpServer
-    path: '/socket.io/',
-    transports: ['polling', 'websocket'],
+const io = new Server(httpServer, {
     cors: {
         origin: [
             'https://adminflow.ru',
@@ -2000,15 +2000,9 @@ const io = new Server(httpServer, {  // Меняем httpsServer на httpServer
             'http://adminflow.ru',
             'http://www.adminflow.ru'
         ],
-        methods: ["GET", "POST", "OPTIONS"],
-        credentials: true,
-        allowedHeaders: ["Content-Type", "Authorization", "Accept", "Origin", "X-Requested-With"],
-        exposedHeaders: ['Content-Length', 'Content-Type']
-    },
-    pingTimeout: 60000,
-    pingInterval: 25000,
-    allowEIO3: true,
-    maxHttpBufferSize: 1e8
+        methods: ['GET', 'POST'],
+        credentials: true
+    }
 });
 
 // Удаляем middleware для Socket.IO, так как теперь используем CORS настройки выше
