@@ -325,16 +325,9 @@ app.use((err, req, res, next) => {
     next(err);
 });
 
-// SSL configuration
-const sslOptions = {
-    key: fs.readFileSync('/etc/letsencrypt/live/adminflow.ru/privkey.pem'),
-    cert: fs.readFileSync('/etc/letsencrypt/live/adminflow.ru/fullchain.pem'),
-    ca: fs.readFileSync('/etc/letsencrypt/live/adminflow.ru/chain.pem')
-};
-
-// Create HTTPS server
-https.createServer(sslOptions, app).listen(PORT, () => {
-    console.log(`HTTPS Server running on port ${PORT}`);
+// Используем обычный HTTP для локального соединения
+http.createServer(app).listen(PORT, () => {
+    console.log(`HTTP Server running on port ${PORT}`);
 });
 
 // Error handling
@@ -776,7 +769,7 @@ app.use('/uploads', (req, res, next) => {
     if (['.jpg', '.jpeg', '.png', '.gif', '.webp'].includes(ext)) {
         next();
     } else {
-        // Перенаправляем на API скачивания
+        // Перенаправляем на API скач��вания
         const folder = req.path.split('/')[1];
         const filename = path.basename(req.path);
         res.redirect(`/api/download/${folder}/${filename}`);
@@ -1696,7 +1689,7 @@ app.post('/api/messages/typing', async (req, res) => {
     try {
         const { userId, friendId, isTyping } = req.body;
         
-        // Сохраняем статус в Redis или другом быстром хранилище
+        // Сохраняем ��татус в Redis или другом быстром хранилище
         // Здесь используем глобальную переменную для примера
         global.typingStatus = global.typingStatus || {};
         global.typingStatus[`${userId}-${friendId}`] = {
