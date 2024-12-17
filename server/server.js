@@ -16,7 +16,6 @@ const STATUS_UPDATE_CACHE = new Map();
 const STATUS_UPDATE_INTERVAL = 5000; // 5 секунд между обновлениями
 
 // Middleware
-const cors = require('cors');
 
 app.use(cors({
     origin: [
