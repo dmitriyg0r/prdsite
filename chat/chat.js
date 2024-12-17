@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Загружаем список чатов
     await loadChatsList();
     
-    // Запускаем периодическое обновление списка чатов
+    // Запускаем периодическ��е обновление списка чатов
     setInterval(loadChatsList, 10000); // Обновляем каждые 10 секунд
 });
 
@@ -224,7 +224,7 @@ function createMessageElement(message) {
     messageElement.className = `message message-${message.sender_id === currentUser.id ? 'sent' : 'received'}`;
     messageElement.dataset.messageId = message.id;
 
-    // Добавляем информацию об отправителе для полученных сообщений
+    // Добавляем информацию об отправителе ��ля полученных сообщений
     if (message.sender_id !== currentUser.id) {
         const senderInfo = document.createElement('div');
         senderInfo.className = 'message-sender';
@@ -978,7 +978,7 @@ function setupContextMenu() {
             // Показываем меню
             contextMenu.style.display = 'block';
 
-            // Получаем размеры меню и окна
+            // Получаем ра��меры меню и окна
             const menuRect = contextMenu.getBoundingClientRect();
             const windowWidth = window.innerWidth;
             const windowHeight = window.innerHeight;
@@ -1055,7 +1055,7 @@ function hideContextMenu() {
     }
 }
 
-// Функция показа предпросмотра ответа
+// Функция показа предп��осмотра ответа
 function showReplyPreview(messageText) {
     const replyPreview = document.getElementById('replyPreview');
     if (!replyPreview) {
@@ -1072,7 +1072,7 @@ function showReplyPreview(messageText) {
         ? messageText.substring(0, maxLength) + '...' 
         : messageText;
 
-    // Создаем элемент предпросмотра
+    // создаем элемент предпросмотра
     const previewContent = document.createElement('div');
     previewContent.className = 'reply-preview-content';
     previewContent.innerHTML = `
@@ -1111,7 +1111,7 @@ function cancelReply() {
     replyToMessageId = null;
 }
 
-// Добвляем обработчик видимости страницы
+// Добвляем обработчик видиости страницы
 document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && currentChatPartner) {
         loadMessages(currentChatPartner.id);
@@ -1184,7 +1184,15 @@ async function loadChatsList() {
         }
         lastUpdateTime = now;
 
-        const response = await fetch(`https://adminflow.ru:5003/api/chats/${currentUser.id}`);
+        const response = await fetch(`https://adminflow.ru:5003/api/chats/${currentUser.id}`, {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Origin': window.location.origin
+            }
+        });
         const data = await response.json();
 
         if (!data.success) return;
@@ -1499,6 +1507,7 @@ async function sendMessage() {
             headers: {
                 'Content-Type': 'application/json'
             },
+            credentials: 'include',
             body: JSON.stringify(messageData)
         });
 
@@ -1569,7 +1578,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const responseData = await response.json();
 
                 if (!response.ok) {
-                    throw new Error(responseData.details || responseData.error || 'Ошибка при отправке сообщения');
+                    throw new Error(responseData.details || responseData.error || 'Ошиб��а при отправке сооб��ения');
                 }
 
                 if (responseData.success) {
@@ -1599,5 +1608,72 @@ document.addEventListener('DOMContentLoaded', () => {
                 sendButton.click();
             }
         };
+    }
+});
+
+// Инициализация Socket.IO
+const socket = io('https://adminflow.ru:5003', {  // Меняем на HTTPS
+    path: '/socket.io/',
+    transports: ['polling', 'websocket'],
+    withCredentials: true,
+    secure: true,
+    rejectUnauthorized: false, // Добавляем для самоподписанных сертификатов
+    extraHeaders: {
+        'Origin': window.location.origin
+    }
+});
+
+// Обработчики Socket.IO событий
+socket.on('connect', () => {
+    console.log('Connected to Socket.IO server');
+    
+    // Отправляем ID пользователя после подключения
+    if (currentUser) {
+        socket.emit('user_connected', { userId: currentUser.id });
+    }
+});
+
+socket.on('disconnect', () => {
+    console.log('Disconnected from Socket.IO server');
+});
+
+socket.on('new_message', (message) => {
+    if (currentChatPartner && 
+        (message.sender_id === currentChatPartner.id || 
+         message.receiver_id === currentChatPartner.id)) {
+        const messageElement = createMessageElement(message);
+        const messagesContainer = document.getElementById('messages');
+        if (messagesContainer) {
+            messagesContainer.appendChild(messageElement);
+            if (isScrolledToBottom(messagesContainer)) {
+                scrollToBottom();
+            }
+        }
+        // Помечаем сообщение как прочитанное, если оно для текущего чата
+        if (message.sender_id === currentChatPartner.id) {
+            markMessagesAsRead(currentChatPartner.id);
+        }
+    }
+    // Обновляем список чатов для отображения последнего сообщения
+    loadChatsList();
+});
+
+socket.on('user_status_changed', ({ userId, isOnline, lastActivity }) => {
+    updateUserStatus(userId, isOnline, lastActivity);
+});
+
+socket.on('typing_status', ({ userId, isTyping }) => {
+    if (currentChatPartner && userId === currentChatPartner.id) {
+        const statusElement = document.getElementById('chat-header-status');
+        if (statusElement) {
+            if (isTyping) {
+                statusElement.textContent = 'печатает...';
+                statusElement.classList.add('typing');
+            } else {
+                statusElement.textContent = currentChatPartner.is_online ? 'онлайн' : 
+                    getLastActivityTime(currentChatPartner.last_activity);
+                statusElement.classList.remove('typing');
+            }
+        }
     }
 });
