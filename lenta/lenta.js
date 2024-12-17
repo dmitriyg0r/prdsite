@@ -88,7 +88,7 @@ function displayPosts(posts) {
 
 async function toggleLike(postId) {
     try {
-        const response = await fetch('https://adminflow.ru:5003/api/posts/like', {
+        const response = await fetch('https://adminflow.ru/api/posts/like', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -133,7 +133,7 @@ async function toggleComments(postId) {
 
 async function loadComments(postId) {
     try {
-        const response = await fetch(`https://adminflow.ru:5003/api/posts/${postId}/comments`);
+        const response = await fetch(`https://adminflow.ru/api/posts/${postId}/comments`);
         if (!response.ok) throw new Error('Ошибка при загрузке комментариев');
         
         const data = await response.json();
@@ -171,7 +171,7 @@ async function submitComment(postId, button) {
     if (!content) return;
     
     try {
-        const response = await fetch('https://adminflow.ru:5003/api/posts/comment', {
+        const response = await fetch('https://adminflow.ru/api/posts/comment', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
