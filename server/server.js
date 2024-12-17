@@ -19,7 +19,7 @@ const STATUS_UPDATE_INTERVAL = 5000; // 5 секунд между обновле
 
 // Обновляем настройки CORS и SSL
 const corsOptions = {
-    origin: ['https://adminflow.ru', 'http://adminflow.ru'],
+    origin: ['http://adminflow.ru', 'https://adminflow.ru'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
@@ -33,9 +33,6 @@ const sslOptions = {
     cert: fs.readFileSync('/etc/letsencrypt/live/adminflow.ru/fullchain.pem'),
     ca: fs.readFileSync('/etc/letsencrypt/live/adminflow.ru/chain.pem')
 };
-
-// Создаем HTTPS сервер
-const server = https.createServer(sslOptions, app);
 
 
 app.use(express.json());
@@ -396,7 +393,7 @@ app.post('/api/friend-request', async (req, res) => {
     }
 });
 
-// Принятие/отклонение заявки в друзья
+// Принятие/отклонение заявки в друзь��
 app.post('/api/friend-request/respond', async (req, res) => {
     try {
         const { userId, friendId, status } = req.body; // status: 'accepted' или 'rejected'
@@ -463,7 +460,7 @@ app.get('/api/friend-requests', async (req, res) => {
         res.json({ requests: result.rows });
     } catch (err) {
         console.error('Get friend requests error:', err);
-        res.status(500).json({ error: 'Ошибк�� при получении заявок в друзья' });
+        res.status(500).json({ error: 'Ош��бк�� при получении заявок в друзья' });
     }
 });
 
@@ -856,7 +853,7 @@ app.post('/api/users/update-profile', async (req, res) => {
             if (emailCheck.rows.length > 0) {
                 return res.status(400).json({
                     success: false,
-                    error: 'Это email уже используется другим пользователем'
+                    error: 'Это email уже используется другим пол��з��вателем'
                 });
             }
         }
@@ -1318,7 +1315,7 @@ app.delete('/api/posts/delete/:postId', async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         console.error('Error deleting post:', err);
-        res.status(500).json({ error: 'Ошибка при удалении поста' });
+        res.status(500).json({ error: 'Ошибка при удале��ии поста' });
     }
 });
 
@@ -1679,7 +1676,7 @@ app.put('/api/comments/:commentId', async (req, res) => {
         console.error('Error updating comment:', err);
         res.status(500).json({
             success: false,
-            error: 'Ошибка при обновлении коммента��ия'
+            error: 'Ошибка при обновлении комментария'
         });
     }
 });
@@ -1756,7 +1753,7 @@ app.get('/api/messages/unread/:userId/:friendId', async (req, res) => {
     }
 });
 
-// Endpoint для пометки сообщений как прочитанных
+// Endpoint д��я пометки сообщений как прочитанных
 app.post('/api/messages/mark-as-read', async (req, res) => {
     try {
         const { userId, friendId } = req.body;
@@ -1999,8 +1996,8 @@ const httpsServer = https.createServer(sslOptions, app);
 // Создаем Map для хранения активных соединений
 const activeConnections = new Map();
 
-// Создаем экземпляр Socket.IO
-const io = new Server(httpServer, {
+// Используем существующий httpsServer для Socket.IO
+const io = new Server(httpsServer, {
     cors: {
         origin: [
             'https://adminflow.ru',
@@ -2481,7 +2478,7 @@ app.get('/api/users-list', async (req, res) => {
         });
     } catch (err) {
         console.error('Error loading users list:', err);
-        res.status(500).json({ error: '��шибка при загрузке списка пользователей' });
+        res.status(500).json({ error: 'Ошибка при загрузке списка пользователей' });
     }
 });
 
