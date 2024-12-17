@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Загружаем список чатов
     await loadChatsList();
     
-    // Запускаем периодическое обновление списка чатов
+    // Запускаем периодическ��е обновление списка чатов
     setInterval(loadChatsList, 10000); // Обновляем каждые 10 секунд
 });
 
@@ -224,7 +224,7 @@ function createMessageElement(message) {
     messageElement.className = `message message-${message.sender_id === currentUser.id ? 'sent' : 'received'}`;
     messageElement.dataset.messageId = message.id;
 
-    // Добавляем информацию об отправителе для полученных сообщений
+    // Добавляем информацию об отправителе ��ля полученных сообщений
     if (message.sender_id !== currentUser.id) {
         const senderInfo = document.createElement('div');
         senderInfo.className = 'message-sender';
@@ -951,7 +951,7 @@ function setupContextMenu() {
     messagesArea.addEventListener('contextmenu', (e) => {
         e.preventDefault();
         
-        // Ищем ближайший элемент сообщения о места клика
+        // Ищем ближайший элемент сообщения о места кл��ка
         const messageElement = e.target.closest('.message');
         if (messageElement) {
             // Получаем текст сообщения (может быть в .message-text или в атрибуте alt избражения)
@@ -975,7 +975,7 @@ function setupContextMenu() {
             const x = e.pageX;
             const y = e.pageY;
             
-            // Показываем меню
+            // Пок��зываем меню
             contextMenu.style.display = 'block';
 
             // Получаем размеры меню и окна
@@ -1072,7 +1072,7 @@ function showReplyPreview(messageText) {
         ? messageText.substring(0, maxLength) + '...' 
         : messageText;
 
-    // Создаем элемент предпросмотра
+    // ��оздаем элемент предпросмотра
     const previewContent = document.createElement('div');
     previewContent.className = 'reply-preview-content';
     previewContent.innerHTML = `
@@ -1111,7 +1111,7 @@ function cancelReply() {
     replyToMessageId = null;
 }
 
-// Добвляем обработчик видимости страницы
+// Добвляем обработчик види��ости страницы
 document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && currentChatPartner) {
         loadMessages(currentChatPartner.id);
@@ -1321,7 +1321,7 @@ async function selectChat(chat) {
             previousActive.classList.remove('active');
         }
 
-        // Добавляем активный класс новому чату
+        // Добавляем активный класс н��вому чату
         const newActive = document.querySelector(`.chat-partner[data-friend-id="${chat.id}"]`);
         if (newActive) {
             newActive.classList.add('active');
@@ -1387,7 +1387,7 @@ async function selectChat(chat) {
     }
 }
 
-// Функция получения времени последней активност пользователя
+// Функц��я получения времени последней активност пользователя
 function getLastActivityTime(lastActivity) {
    if (!lastActivity) return 'неизвестно';
    
@@ -1599,5 +1599,67 @@ document.addEventListener('DOMContentLoaded', () => {
                 sendButton.click();
             }
         };
+    }
+});
+
+// Инициализация Socket.IO
+const socket = io('http://adminflow.ru:5003', {  // Меняем на HTTP
+    path: '/socket.io/',
+    transports: ['polling', 'websocket'],
+    withCredentials: true
+});
+
+// Обработчики Socket.IO событий
+socket.on('connect', () => {
+    console.log('Connected to Socket.IO server');
+    
+    // Отправляем ID пользователя после подключения
+    if (currentUser) {
+        socket.emit('user_connected', { userId: currentUser.id });
+    }
+});
+
+socket.on('disconnect', () => {
+    console.log('Disconnected from Socket.IO server');
+});
+
+socket.on('new_message', (message) => {
+    if (currentChatPartner && 
+        (message.sender_id === currentChatPartner.id || 
+         message.receiver_id === currentChatPartner.id)) {
+        const messageElement = createMessageElement(message);
+        const messagesContainer = document.getElementById('messages');
+        if (messagesContainer) {
+            messagesContainer.appendChild(messageElement);
+            if (isScrolledToBottom(messagesContainer)) {
+                scrollToBottom();
+            }
+        }
+        // Помечаем сообщение как прочитанное, если оно для текущего чата
+        if (message.sender_id === currentChatPartner.id) {
+            markMessagesAsRead(currentChatPartner.id);
+        }
+    }
+    // Обновляем список чатов для отображения последнего сообщения
+    loadChatsList();
+});
+
+socket.on('user_status_changed', ({ userId, isOnline, lastActivity }) => {
+    updateUserStatus(userId, isOnline, lastActivity);
+});
+
+socket.on('typing_status', ({ userId, isTyping }) => {
+    if (currentChatPartner && userId === currentChatPartner.id) {
+        const statusElement = document.getElementById('chat-header-status');
+        if (statusElement) {
+            if (isTyping) {
+                statusElement.textContent = 'печатает...';
+                statusElement.classList.add('typing');
+            } else {
+                statusElement.textContent = currentChatPartner.is_online ? 'онлайн' : 
+                    getLastActivityTime(currentChatPartner.last_activity);
+                statusElement.classList.remove('typing');
+            }
+        }
     }
 });
