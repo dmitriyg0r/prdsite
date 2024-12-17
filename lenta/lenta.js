@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function loadFeedPosts() {
     try {
-        const response = await fetch(`https://adminflow.ru:5003/api/feed?userId=${currentUser.id}`);
+        const response = await fetch(`https://adminflow.ru/api/feed?userId=${currentUser.id}`);
         if (!response.ok) {
             throw new Error('Ошибка при загрузке ленты');
         }

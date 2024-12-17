@@ -406,7 +406,7 @@ app.post('/api/friend-request/respond', async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         console.error('Friend response error:', err);
-        res.status(500).json({ error: 'Ошибка при обработке заявк��' });
+        res.status(500).json({ error: 'Ошибка при обработке заяв����' });
     }
 });
 
@@ -440,7 +440,7 @@ app.get('/api/friends', async (req, res) => {
         console.error('Get friends error:', err);
         res.status(500).json({ 
             success: false, 
-            error: 'Ошибка при получении списка друзей' 
+            error: 'Ошибка при получении ��писка друзей' 
         });
     }
 });
@@ -917,7 +917,7 @@ app.post('/api/users/update-profile', async (req, res) => {
         console.error('Update profile error:', err);
         res.status(500).json({
             success: false,
-            error: 'Ошибка при обновлении профиля'
+            error: 'Ошибка при обновлении профил��'
         });
     }
 });
@@ -1640,7 +1640,7 @@ app.delete('/api/comments/:commentId', async (req, res) => {
     }
 });
 
-// Редактирование комментария
+// Редактирование комментари��
 app.put('/api/comments/:commentId', async (req, res) => {
     try {
         const { commentId } = req.params;
@@ -1992,8 +1992,8 @@ const httpServer = http.createServer((req, res) => {
 });
 
 const httpsServer = https.createServer(sslOptions, app);
-httpsServer.listen(PORT, () => {
-    console.log(`HTTPS Server running on port ${PORT}`);
+httpsServer.listen(PORT, 'localhost', () => {
+    console.log(`HTTPS Server running on localhost:${PORT}`);
 });
 
 // Удаляем HTTP сервер, так как используем только HTTPS
@@ -2197,7 +2197,7 @@ io.on('connection', async (socket) => {
         try {
             const { senderId, receiverId, audioBlob } = data;
             
-            // Сохраняем аудио и создаем сообщение
+            // Сохраняе�� аудио и создаем сообщение
             // Этот код будет вызываться через HTTP эндпоинт
             
         } catch (err) {
