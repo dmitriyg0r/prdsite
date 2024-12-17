@@ -909,6 +909,10 @@ body {
 
 .modal-post-content {
     color: var(--text-primary);
+    height: 63.9844px;
+    width: 334px;
+    position: relative;
+    transition: none;
     line-height: 1.5;
     margin-top: 16px;
     white-space: pre-wrap;
@@ -955,6 +959,14 @@ body {
 
     .image-modal .modal-image-side img {
         max-height: 60vh;
+        width: 362px;
+        height: 356px;
+        transform: translate(0px, -172px);
+        position: relative;
+        left: 6px;
+        top: 147px;
+        transition: none;
+        cursor: move;
     }
 }
 
