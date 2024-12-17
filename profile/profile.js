@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Если есть id в URL, загружаем профиль друга
     if (profileId) {
         try {
-            const response = await fetch(`https://adminflow.ru:5003/api/users/${profileId}`);
+            const response = await fetch(`https://adminflow.ru/api/users/${profileId}`);
             if (!response.ok) {
                 throw new Error('Пользователь не найден');
             }
@@ -124,7 +124,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const email = document.getElementById('edit-email').value.trim();
 
             try {
-                const response = await fetch('https://adminflow.ru:5003/api/users/update-profile', {
+                const response = await fetch('https://adminflow.ru/api/users/update-profile', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -186,7 +186,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (email && isValidEmail(email)) {
             emailCheckTimeout = setTimeout(async () => {
                 try {
-                    const response = await fetch(`https://adminflow.ru:5003/api/users/check-email?email=${encodeURIComponent(email)}&userId=${currentUser.id}`);
+                    const response = await fetch(`https://adminflow.ru/api/users/check-email?email=${encodeURIComponent(email)}&userId=${currentUser.id}`);
                     const data = await response.json();
 
                     if (response.ok) {
@@ -255,7 +255,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         formData.append('userId', currentUser.id);
 
         try {
-            const response = await fetch('https://adminflow.ru:5003/api/upload-avatar', {
+            const response = await fetch('https://adminflow.ru/api/upload-avatar', {
                 method: 'POST',
                 body: formData,
                 credentials: 'include'
@@ -351,7 +351,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Функция поиска пользователей (заглушка)
     async function searchUsers(query) {
         try {
-            const response = await fetch(`https://adminflow.ru:5003/api/search-users?q=${query}`);
+            const response = await fetch(`https://adminflow.ru/api/search-users?q=${query}&userId=${currentUser.id}`);
             const data = await response.json();
             
             if (response.ok) {
@@ -481,7 +481,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         try {
-            const response = await fetch(`https://adminflow.ru:5003/api/friends?userId=${userId}`);
+            const response = await fetch(`https://adminflow.ru/api/friends?userId=${userId}`);
             if (!response.ok) {
                 throw new Error(`Failed to load friends: ${response.status}`);
             }
@@ -500,7 +500,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function loadFriendRequests() {
         try {
-            const response = await fetch(`https://adminflow.ru:5003/api/friend-requests?userId=${currentUser.id}`);
+            const response = await fetch(`https://adminflow.ru/api/friend-requests?userId=${currentUser.id}`);
             const data = await response.json();
             
             if (response.ok) {
@@ -524,7 +524,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             friendsHeaderCount.textContent = friends.length;
         }
 
-        // Обновляем с��етчик в модальном окне
+        // Обновляем счетчик в модальном окне
         const modalFriendCount = document.querySelector('.modal-tabs .friend-count');
         if (modalFriendCount) {
             modalFriendCount.textContent = friends.length;
@@ -576,7 +576,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             `).join('');
         }
 
-        // Добав��яем обработчики для кнопок удаления
+        // Добавляем обработчики для кнопок удаления
         if (isCurrentUser) {
             document.querySelectorAll('.remove-friend-btn').forEach(btn => {
                 btn.addEventListener('click', () => removeFriend(btn.dataset.userId));
@@ -650,7 +650,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function respondToFriendRequest(friendId, status) {
         try {
-            const response = await fetch('https://adminflow.ru:5003/api/friend-request/respond', {
+            const response = await fetch('https://adminflow.ru/api/friend-request/respond', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -676,7 +676,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Обновляем функцию поиска
     async function searchUsers(query) {
         try {
-            const response = await fetch(`https://adminflow.ru:5003/api/search-users?q=${query}&userId=${currentUser.id}`);
+            const response = await fetch(`https://adminflow.ru/api/search-users?q=${query}&userId=${currentUser.id}`);
             const data = await response.json();
             
             if (response.ok) {
@@ -775,7 +775,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function sendFriendRequest(friendId) {
         try {
-            const response = await fetch('https://adminflow.ru:5003/api/friend-request', {
+            const response = await fetch('https://adminflow.ru/api/friend-request', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -826,7 +826,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         try {
-            const response = await fetch('https://adminflow.ru:5003/api/friend/remove', {
+            const response = await fetch('https://adminflow.ru/api/friend/remove', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -852,7 +852,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function openFriendProfile(userId) {
         try {
-            const response = await fetch(`https://adminflow.ru:5003/api/users/${userId}`, {
+            const response = await fetch(`https://adminflow.ru/api/users/${userId}`, {
                 credentials: 'include'
             });
             
@@ -905,7 +905,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Откладываем выполнение запроса
         statusUpdateTimeout = setTimeout(async () => {
             try {
-                const response = await fetch('https://adminflow.ru:5003/api/users/update-status', {
+                const response = await fetch('https://adminflow.ru/api/users/update-status', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -984,7 +984,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.addEventListener('beforeunload', (event) => {
         if (currentUser && currentUser.id) {
             // Используем синхронный запрос для гарантированной отправки
-            navigator.sendBeacon('https://adminflow.ru:5003/api/users/update-status', JSON.stringify({
+            navigator.sendBeacon('https://adminflow.ru/api/users/update-status', JSON.stringify({
                 userId: currentUser.id,
                 is_online: false
             }));
@@ -999,7 +999,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         try {
-            const response = await fetch(`https://adminflow.ru:5003/api/users/status/${userId}`);
+            const response = await fetch(`https://adminflow.ru/api/users/status/${userId}`);
             if (!response.ok) {
                 throw new Error('Failed to fetch status');
             }
@@ -1065,7 +1065,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     `;
     document.head.appendChild(style);
 
-    // Обработчики для мены пароля
+    // Обрабо��чики для мены пароля
     const requestPasswordChangeBtn = document.getElementById('request-password-change');
     const passwordChangeModal = document.getElementById('password-change-modal');
     const sendVerificationCodeBtn = document.getElementById('send-verification-code');
@@ -1102,7 +1102,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             sendVerificationCodeBtn.disabled = true;
             sendVerificationCodeBtn.textContent = 'Отправка...';
 
-            const response = await fetch('https://adminflow.ru:5003/api/send-verification-code', {
+            const response = await fetch('https://adminflow.ru/api/send-verification-code', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1169,7 +1169,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         try {
-            const response = await fetch('https://adminflow.ru:5003/api/change-password', {
+            const response = await fetch('https://adminflow.ru/api/change-password', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1282,7 +1282,7 @@ async function createPost() {
         formData.append('content', content);
         
         if (file) {
-            // Проверяем размер файла (например, 10MB м��ксимум)
+            // Проверяем размер файла (например, 10MB максимум)
             const maxSize = 10 * 1024 * 1024; // 10MB в байтах
             if (file.size > maxSize) {
                 alert('Файл слишком большой. Максимальный размер: 10MB');
@@ -1313,7 +1313,7 @@ async function createPost() {
             formData.append('image', file);
         }
 
-        const response = await fetch('https://adminflow.ru:5003/api/posts/create', {
+        const response = await fetch('https://adminflow.ru/api/posts/create', {
             method: 'POST',
             body: formData
         });
@@ -1357,7 +1357,7 @@ async function loadPosts() {
         const userId = new URLSearchParams(window.location.search).get('id') || currentUser.id;
         console.log('Loading posts for userId:', userId); // Отладочная информация
         
-        const response = await fetch(`https://adminflow.ru:5003/api/posts/${userId}?currentUserId=${currentUser.id}`);
+        const response = await fetch(`https://adminflow.ru/api/posts/${userId}?currentUserId=${currentUser.id}`);
         const data = await response.json();
         
         console.log('Posts response:', data); // Отладочная информация
@@ -1464,7 +1464,7 @@ function displayPosts(posts) {
 
 async function toggleLike(postId) {
     try {
-        const response = await fetch('https://adminflow.ru:5003/api/posts/like', {
+        const response = await fetch('https://adminflow.ru/api/posts/like', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -1517,7 +1517,7 @@ async function deletePost(postId) {
     }
 
     try {
-        const response = await fetch(`https://adminflow.ru:5003/api/posts/delete/${postId}`, {
+        const response = await fetch(`https://adminflow.ru/api/posts/delete/${postId}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
@@ -1632,7 +1632,7 @@ window.closeImageModal = function(modal) {
     }, 300);
 };
 
-// Добавляем функцию в глобальную область видимости
+// ��обавляем функцию в глобальную область видимости
 window.openFriendsModal = function() {
     const friendsModal = document.getElementById('friends-modal');
     const friendsTab = document.querySelector('[data-tab="friends-tab"]');
@@ -1777,7 +1777,7 @@ async function toggleComments(postId) {
 
 async function loadComments(postId) {
     try {
-        const response = await fetch(`https://adminflow.ru:5003/api/posts/${postId}/comments`);
+        const response = await fetch(`https://adminflow.ru/api/posts/${postId}/comments`);
         if (!response.ok) throw new Error('Ошибка при загрузке комментариев');
         
         const data = await response.json();
@@ -1815,7 +1815,7 @@ async function submitComment(postId, button) {
     if (!content) return;
     
     try {
-        const response = await fetch('https://adminflow.ru:5003/api/posts/comment', {
+        const response = await fetch('https://adminflow.ru/api/posts/comment', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

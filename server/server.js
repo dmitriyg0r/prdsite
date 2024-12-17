@@ -17,26 +17,16 @@ const STATUS_UPDATE_INTERVAL = 5000; // 5 секунд между обновле
 
 // Middleware
 app.use(cors({
-    origin: function(origin, callback) {
-        // Разрешаем запросы без origin (например, от мобильных приложений)
-        if (!origin) return callback(null, true);
-        
-        const allowedOrigins = [
-            'http://adminflow.ru',
-            'https://adminflow.ru',
-            'http://www.adminflow.ru',
-            'https://www.adminflow.ru'
-        ];
-        
-        if (allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
+    origin: [
+        'https://adminflow.ru',
+        'https://www.adminflow.ru',
+        'http://adminflow.ru',
+        'http://www.adminflow.ru'
+    ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
+    exposedHeaders: ['Content-Length', 'Content-Type']
 }));
 app.use(express.json());
 
@@ -325,16 +315,9 @@ app.use((err, req, res, next) => {
     next(err);
 });
 
-// SSL configuration
-const sslOptions = {
-    key: fs.readFileSync('/etc/letsencrypt/live/adminflow.ru/privkey.pem'),
-    cert: fs.readFileSync('/etc/letsencrypt/live/adminflow.ru/fullchain.pem'),
-    ca: fs.readFileSync('/etc/letsencrypt/live/adminflow.ru/chain.pem')
-};
-
-// Create HTTPS server
-https.createServer(sslOptions, app).listen(PORT, () => {
-    console.log(`HTTPS Server running on port ${PORT}`);
+// Используем обычный HTTP для локального соединения
+http.createServer(app).listen(PORT, () => {
+    console.log(`HTTP Server running on port ${PORT}`);
 });
 
 // Error handling
@@ -776,7 +759,7 @@ app.use('/uploads', (req, res, next) => {
     if (['.jpg', '.jpeg', '.png', '.gif', '.webp'].includes(ext)) {
         next();
     } else {
-        // Перенаправляем на API скачивания
+        // Перенаправляем на API скач��вания
         const folder = req.path.split('/')[1];
         const filename = path.basename(req.path);
         res.redirect(`/api/download/${folder}/${filename}`);
@@ -961,7 +944,7 @@ app.post('/api/messages/send-with-file', messageUpload.single('file'), async (re
 // Обновляем middleware checkAdmin
 const checkAdmin = async (req, res, next) => {
     try {
-        // Проверяем adminId в query пара��етрах или в теле зпроса
+        // Проверя��м adminId в query пара��етрах или в теле зпроса
         const adminId = req.query.adminId || req.body.adminId;
         
         console.log('Checking admin rights for:', adminId); // Добавляем лог
@@ -1696,7 +1679,7 @@ app.post('/api/messages/typing', async (req, res) => {
     try {
         const { userId, friendId, isTyping } = req.body;
         
-        // Сохраняем статус в Redis или другом быстром хранилище
+        // Сохраняем ��татус в Redis или другом быстром хранилище
         // Здесь используем глобальную переменную для примера
         global.typingStatus = global.typingStatus || {};
         global.typingStatus[`${userId}-${friendId}`] = {
@@ -2007,14 +1990,20 @@ const httpsServer = https.createServer(sslOptions, app);
 const activeConnections = new Map();
 
 // Создаем экземпляр Socket.IO
-const io = new Server(httpsServer, {
+const io = new Server(httpServer, {  // Меняем httpsServer на httpServer
     path: '/socket.io/',
     transports: ['polling', 'websocket'],
     cors: {
-        origin: "*",  // Разрешаем все источники
-        methods: ["GET", "POST"],
-        credentials: false,  // Отключаем credentials
-        allowedHeaders: ["Content-Type"]
+        origin: [
+            'https://adminflow.ru',
+            'https://www.adminflow.ru',
+            'http://adminflow.ru',
+            'http://www.adminflow.ru'
+        ],
+        methods: ["GET", "POST", "OPTIONS"],
+        credentials: true,
+        allowedHeaders: ["Content-Type", "Authorization", "Accept", "Origin", "X-Requested-With"],
+        exposedHeaders: ['Content-Length', 'Content-Type']
     },
     pingTimeout: 60000,
     pingInterval: 25000,
@@ -2024,6 +2013,18 @@ const io = new Server(httpsServer, {
 
 // Удаляем middleware для Socket.IO, так как теперь используем CORS настройки выше
 app.use('/socket.io', (req, res, next) => {
+    next();
+});
+
+// Добавляем промежуточное ПО для предварительной проверки OPTIONS
+app.options('*', cors());
+
+// Добавляем заголовки безопасности
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Origin', req.headers.origin);
+    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With, Accept, Origin');
     next();
 });
 
