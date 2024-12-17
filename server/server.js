@@ -406,7 +406,7 @@ app.post('/api/friend-request/respond', async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         console.error('Friend response error:', err);
-        res.status(500).json({ error: 'Ошибка при обработке заявки' });
+        res.status(500).json({ error: 'Ошибка при обработке заявк��' });
     }
 });
 
@@ -1623,7 +1623,7 @@ app.delete('/api/comments/:commentId', async (req, res) => {
         if (comment.rows.length === 0) {
             return res.status(403).json({
                 success: false,
-                error: 'Нет прав на удаление этого комментария'
+                error: 'Нет прав на удаление этого коммента��ия'
             });
         }
 
@@ -1753,7 +1753,7 @@ app.get('/api/messages/unread/:userId/:friendId', async (req, res) => {
     }
 });
 
-// Endpoint д��я пометки сообщений как прочитанных
+// Endpoint для пометки сообщений как прочитанных
 app.post('/api/messages/mark-as-read', async (req, res) => {
     try {
         const { userId, friendId } = req.body;
@@ -1992,6 +1992,12 @@ const httpServer = http.createServer((req, res) => {
 });
 
 const httpsServer = https.createServer(sslOptions, app);
+httpsServer.listen(PORT, () => {
+    console.log(`HTTPS Server running on port ${PORT}`);
+});
+
+// Удаляем HTTP сервер, так как используем только HTTPS
+// http.createServer(app).listen(PORT);
 
 // Создаем Map для хранения активных соединений
 const activeConnections = new Map();
