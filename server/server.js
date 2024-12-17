@@ -18,17 +18,12 @@ const STATUS_UPDATE_INTERVAL = 5000; // 5 секунд между обновле
 // Middleware
 app.use(cors({
     origin: function(origin, callback) {
-        // Разрешаем запросы без origin (например, от мобильных приложений)
-        if (!origin) return callback(null, true);
-        
         const allowedOrigins = [
-            'http://adminflow.ru',
             'https://adminflow.ru',
-            'http://www.adminflow.ru',
             'https://www.adminflow.ru'
         ];
         
-        if (allowedOrigins.includes(origin)) {
+        if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
             callback(new Error('Not allowed by CORS'));
@@ -954,7 +949,7 @@ app.post('/api/messages/send-with-file', messageUpload.single('file'), async (re
 // Обновляем middleware checkAdmin
 const checkAdmin = async (req, res, next) => {
     try {
-        // Проверяем adminId в query пара��етрах или в теле зпроса
+        // Проверя��м adminId в query пара��етрах или в теле зпроса
         const adminId = req.query.adminId || req.body.adminId;
         
         console.log('Checking admin rights for:', adminId); // Добавляем лог
@@ -2005,9 +2000,7 @@ const io = new Server(httpServer, {  // Меняем httpsServer на httpServer
     transports: ['polling', 'websocket'],
     cors: {
         origin: [
-            'http://adminflow.ru',
             'https://adminflow.ru',
-            'http://www.adminflow.ru',
             'https://www.adminflow.ru'
         ],
         methods: ["GET", "POST"],

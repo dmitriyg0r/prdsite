@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Загружаем список чатов
     await loadChatsList();
     
-    // Запускаем периодическ��е обновление списка чатов
+    // Запускаем периодическое обновление списка чатов
     setInterval(loadChatsList, 10000); // Обновляем каждые 10 секунд
 });
 
@@ -224,7 +224,7 @@ function createMessageElement(message) {
     messageElement.className = `message message-${message.sender_id === currentUser.id ? 'sent' : 'received'}`;
     messageElement.dataset.messageId = message.id;
 
-    // Добавляем информацию об отправителе ��ля полученных сообщений
+    // Добавляем информацию об отправителе для полученных сообщений
     if (message.sender_id !== currentUser.id) {
         const senderInfo = document.createElement('div');
         senderInfo.className = 'message-sender';
@@ -659,7 +659,7 @@ async function loadMessages(friendId) {
             // Находим только новые сообщения
             const newMessages = data.messages.filter(msg => !existingMessages.has(msg.id.toString()));
             
-            // Если есть новые сообщения
+            // Если есть новые ��ообщения
             if (newMessages.length > 0) {
                 // Добавляем только новые сообщения
                 newMessages.forEach(message => {
@@ -691,7 +691,7 @@ async function loadMessages(friendId) {
     }
 }
 
-// Функция обновления статуса сообщения
+// Функция обновлен��я статуса сообщения
 function updateMessageStatus(messageElement, messageData) {
     const statusElement = messageElement.querySelector('.message-status');
     if (statusElement) {
@@ -951,7 +951,7 @@ function setupContextMenu() {
     messagesArea.addEventListener('contextmenu', (e) => {
         e.preventDefault();
         
-        // Ищем ближайший элемент сообщения о места кл��ка
+        // Ищем ближайший элемент сообщения о места клика
         const messageElement = e.target.closest('.message');
         if (messageElement) {
             // Получаем текст сообщения (может быть в .message-text или в атрибуте alt избражения)
@@ -975,7 +975,7 @@ function setupContextMenu() {
             const x = e.pageX;
             const y = e.pageY;
             
-            // Пок��зываем меню
+            // Показываем меню
             contextMenu.style.display = 'block';
 
             // Получаем размеры меню и окна
@@ -1072,7 +1072,7 @@ function showReplyPreview(messageText) {
         ? messageText.substring(0, maxLength) + '...' 
         : messageText;
 
-    // ��оздаем элемент предпросмотра
+    // создаем элемент предпросмотра
     const previewContent = document.createElement('div');
     previewContent.className = 'reply-preview-content';
     previewContent.innerHTML = `
@@ -1111,7 +1111,7 @@ function cancelReply() {
     replyToMessageId = null;
 }
 
-// Добвляем обработчик види��ости страницы
+// Добвляем обработчик видиости страницы
 document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible' && currentChatPartner) {
         loadMessages(currentChatPartner.id);
@@ -1184,7 +1184,9 @@ async function loadChatsList() {
         }
         lastUpdateTime = now;
 
-        const response = await fetch(`https://adminflow.ru:5003/api/chats/${currentUser.id}`);
+        const response = await fetch(`https://adminflow.ru:5003/api/chats/${currentUser.id}`, {
+            credentials: 'include'
+        });
         const data = await response.json();
 
         if (!data.success) return;
@@ -1321,7 +1323,7 @@ async function selectChat(chat) {
             previousActive.classList.remove('active');
         }
 
-        // Добавляем активный класс н��вому чату
+        // Добавляем активный класс новому чату
         const newActive = document.querySelector(`.chat-partner[data-friend-id="${chat.id}"]`);
         if (newActive) {
             newActive.classList.add('active');
@@ -1387,7 +1389,7 @@ async function selectChat(chat) {
     }
 }
 
-// Функц��я получения времени последней активност пользователя
+// Функция получения времени последней активност пользователя
 function getLastActivityTime(lastActivity) {
    if (!lastActivity) return 'неизвестно';
    
@@ -1499,6 +1501,7 @@ async function sendMessage() {
             headers: {
                 'Content-Type': 'application/json'
             },
+            credentials: 'include',
             body: JSON.stringify(messageData)
         });
 
@@ -1603,10 +1606,11 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Инициализация Socket.IO
-const socket = io('http://adminflow.ru:5003', {  // Меняем на HTTP
+const socket = io('https://adminflow.ru:5003', {  // Меняем на HTTPS
     path: '/socket.io/',
     transports: ['polling', 'websocket'],
-    withCredentials: true
+    withCredentials: true,
+    secure: true
 });
 
 // Обработчики Socket.IO событий
