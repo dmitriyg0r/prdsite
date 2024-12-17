@@ -17,18 +17,32 @@ const STATUS_UPDATE_INTERVAL = 5000; // 5 секунд между обновле
 
 // Middleware
 
-app.use(cors({
-    origin: [
-        'https://adminflow.ru',
-        'https://www.adminflow.ru',
-        'http://adminflow.ru',
-        'http://www.adminflow.ru'
-    ],
-    credentials: true, // Разрешить отправку куки и заголовков авторизации
+// Обновляем настройки CORS и SSL
+const corsOptions = {
+    origin: ['https://adminflow.ru', 'http://adminflow.ru'],
+    credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
-    exposedHeaders: ['Content-Length', 'Content-Type']
-}));
+    allowedHeaders: ['Content-Type', 'Authorization']
+};
+
+app.use(cors(corsOptions));
+
+// Обновляем конфигурацию SSL
+const sslOptions = {
+    key: fs.readFileSync('/etc/letsencrypt/live/adminflow.ru/privkey.pem'),
+    cert: fs.readFileSync('/etc/letsencrypt/live/adminflow.ru/fullchain.pem'),
+    ca: fs.readFileSync('/etc/letsencrypt/live/adminflow.ru/chain.pem')
+};
+
+// Создаем HTTPS сервер
+const server = https.createServer(sslOptions, app);
+
+// Обновляем настройки Socket.IO
+const io = new Server(server, {
+    path: '/socket.io/',
+    cors: corsOptions
+});
+
 app.use(express.json());
 
 // Test database connection on startup
@@ -81,7 +95,7 @@ app.post('/api/login', async (req, res) => {
             return res.status(401).json({ error: 'Неверное имя пользователя или пароль' });
         }
 
-        const user = result.rows[0]; // Добавляем эту строку
+        const user = result.rows[0];
 
         // Проверяем пароль
         const isValidPassword = await bcrypt.compare(password, user.password_hash);
@@ -243,7 +257,7 @@ const storage = multer.diskStorage({
         cb(null, uploadPath);
     },
     filename: function (req, file, cb) {
-        // Определяем префикс н основе типа загрузки
+        // Определяем префикс на основе типа загрузки
         let prefix = 'post-';
         if (req.path.includes('avatar')) {
             prefix = 'avatar-';
@@ -251,7 +265,7 @@ const storage = multer.diskStorage({
             prefix = 'message-';
         }
 
-        // Герируем уникальное имя файла
+        // Генерируем уникальное имя файла
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
         const ext = path.extname(file.originalname);
         cb(null, `${prefix}${uniqueSuffix}${ext}`);
@@ -295,7 +309,7 @@ app.post('/api/upload-avatar', upload.single('avatar'), (req, res) => {
             return res.status(400).json({ error: 'Файл не был загружен' });
         }
 
-        // Формируем URL для доступа к ф��йлу
+        // Формируем URL для доступа к файлу
         const fileUrl = `/uploads/avatars/${req.file.filename}`;
         res.json({ success: true, avatarUrl: fileUrl });
 
@@ -454,11 +468,11 @@ app.get('/api/friend-requests', async (req, res) => {
         res.json({ requests: result.rows });
     } catch (err) {
         console.error('Get friend requests error:', err);
-        res.status(500).json({ error: 'Ошибка пр�� получении заявок в друзья' });
+        res.status(500).json({ error: 'Ошибка при получении заявок в друзья' });
     }
 });
 
-// Добавьте новый endpoint для удаления из друзей
+// Добавляем новый endpoint для удаления из друзей
 app.post('/api/friend/remove', async (req, res) => {
     try {
         const { userId, friendId } = req.body;
@@ -476,7 +490,7 @@ app.post('/api/friend/remove', async (req, res) => {
     }
 });
 
-// Настройка хран��лища для файлов сообщений
+// Настройка хранилища для файлов сообщений
 const messageStorage = multer.diskStorage({
     destination: function (req, file, cb) {
         const uploadDir = path.join(__dirname, '../public/uploads/messages');
@@ -643,7 +657,7 @@ app.get('/api/messages/last/:userId/:friendId', async (req, res) => {
     }
 });
 
-// Получение количе��тва непрочитанных сообщений
+// Получение количества непрочитанных сообщений
 app.get('/api/messages/unread/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
@@ -753,21 +767,21 @@ app.get('/api/chat/friends', async (req, res) => {
     }
 });
 
-// Обновленная настройка статических путей
+// Обновляем настройки статических путей
 app.use('/uploads', (req, res, next) => {
     const ext = path.extname(req.path).toLowerCase();
     // Если это изображение - показываем, иначе отправляем через download API
     if (['.jpg', '.jpeg', '.png', '.gif', '.webp'].includes(ext)) {
         next();
     } else {
-        // Перенаправляем на API скач��вания
+        // Перенаправляем на API скачивания
         const folder = req.path.split('/')[1];
         const filename = path.basename(req.path);
         res.redirect(`/api/download/${folder}/${filename}`);
     }
 }, express.static('/var/www/html/uploads'));
 
-// ли более детально для каждой папки
+// или более детально для каждой папки
 app.use('/uploads/posts', express.static('/var/www/html/uploads/posts'));
 app.use('/uploads/avatars', express.static('/var/www/html/uploads/avatars'));
 app.use('/uploads/messages', express.static('/var/www/html/uploads/messages'));

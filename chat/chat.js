@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Загружаем список чатов
     await loadChatsList();
     
-    // Запускаем периодическ��е обновление списка чатов
+    // Запускаем периодическое обновление списка чатов
     setInterval(loadChatsList, 10000); // Обновляем каждые 10 секунд
 });
 
@@ -224,7 +224,7 @@ function createMessageElement(message) {
     messageElement.className = `message message-${message.sender_id === currentUser.id ? 'sent' : 'received'}`;
     messageElement.dataset.messageId = message.id;
 
-    // Добавляем информацию об отправителе ��ля полученных сообщений
+    // Добавляе�� информацию об отправителе для полученных сообщений
     if (message.sender_id !== currentUser.id) {
         const senderInfo = document.createElement('div');
         senderInfo.className = 'message-sender';
@@ -978,7 +978,7 @@ function setupContextMenu() {
             // Показываем меню
             contextMenu.style.display = 'block';
 
-            // Получаем ра��меры меню и окна
+            // Получаем рамеры меню и окна
             const menuRect = contextMenu.getBoundingClientRect();
             const windowWidth = window.innerWidth;
             const windowHeight = window.innerHeight;
@@ -1055,7 +1055,7 @@ function hideContextMenu() {
     }
 }
 
-// Функция показа предп��осмотра ответа
+// Функция п��каза предпросмотра ответа
 function showReplyPreview(messageText) {
     const replyPreview = document.getElementById('replyPreview');
     if (!replyPreview) {
@@ -1130,7 +1130,7 @@ function startMessageUpdates() {
         clearInterval(messageUpdateInterval);
     }
     
-    // Первая загрузка
+    // Первая загру��ка
     if(currentChatPartner) loadMessages(currentChatPartner.id);
     
     // Устанавливаем интервал обновления
@@ -1532,7 +1532,7 @@ document.getElementById('replyMessageBtn').addEventListener('click', () => {
     hideContextMenu();
 });
 
-// Инициализация
+// Иници��лизация
 setupReplyFunctionality();
 
 // Добавляем подсказку дл Markdown в placeholder
@@ -1578,7 +1578,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const responseData = await response.json();
 
                 if (!response.ok) {
-                    throw new Error(responseData.details || responseData.error || 'Ошиб��а при отправке сооб��ения');
+                    throw new Error(responseData.details || responseData.error || 'Ошибка при отправке сообщения');
                 }
 
                 if (responseData.success) {
@@ -1612,15 +1612,11 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Инициализация Socket.IO
-const socket = io('https://adminflow.ru:5003', {  // Меняем на HTTPS
+const socket = io('https://adminflow.ru', {
     path: '/socket.io/',
-    transports: ['polling', 'websocket'],
+    transports: ['websocket', 'polling'],
     withCredentials: true,
-    secure: true,
-    rejectUnauthorized: false, // Добавляем для самоподписанных сертификатов
-    extraHeaders: {
-        'Origin': window.location.origin
-    }
+    secure: true
 });
 
 // Обработчики Socket.IO событий
