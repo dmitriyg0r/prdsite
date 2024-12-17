@@ -1375,7 +1375,7 @@ app.post('/api/users/update-status', async (req, res) => {
     try {
         const { userId, is_online, last_activity } = req.body;
         
-        // Проверяем входные данные
+        // Проверяем вход��ые данные
         if (!userId) {
             return res.status(400).json({
                 success: false,
@@ -1391,7 +1391,7 @@ app.post('/api/users/update-status', async (req, res) => {
             return res.json({ success: true, cached: true });
         }
 
-        // Обновляем статус в БД
+        // Обновляем стату�� в БД
         await pool.query(`
             UPDATE users 
             SET is_online = $2,
