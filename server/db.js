@@ -5,7 +5,7 @@ const pool = new Pool({
     host: 'localhost',
     database: 'adminflow',
     password: 'sGLTccA_Na#9zC',
-    port: 5003,
+    port: 5432,
     max: 20,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 2000,
