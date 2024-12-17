@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Функция для загрузки информции о пользователе
 async function loadUserInfo(userId) {
     try {
-        const response = await fetch(`https://adminflow.ru:5003/api/users/${userId}?currentUserId=${currentUser.id}`);
+        const response = await fetch(`https://adminflow.ru/api/users/${userId}?currentUserId=${currentUser.id}`);
         if (!response.ok) {
             throw new Error('Пользователь не найден');
         }
@@ -133,7 +133,7 @@ async function loadChatHistory() {
     if (!currentChatPartner) return;
 
     try {
-        const response = await fetch(`https://adminflow.ru:5003/api/messages/history/${currentUser.id}/${currentChatPartner.id}`);
+        const response = await fetch(`https://adminflow.ru/api/messages/history/${currentUser.id}/${currentChatPartner.id}`);
         const data = await response.json();
 
         if (data.success) {
@@ -269,7 +269,7 @@ function createMessageElement(message) {
 
                 playButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
                 
-                const response = await fetch(`https://adminflow.ru:5003/api/messages/voice/${message.id}`);
+                const response = await fetch(`https://adminflow.ru/api/messages/voice/${message.id}`);
                 if (!response.ok) throw new Error('Ошибка загрузки аудио');
                 
                 const blob = await response.blob();
@@ -316,7 +316,7 @@ function createMessageElement(message) {
                         text: 'Удалить сообщение',
                         onClick: async () => {
                             try {
-                                const response = await fetch(`https://adminflow.ru:5003/api/messages/${message.id}`, {
+                                const response = await fetch(`https://adminflow.ru/api/messages/${message.id}`, {
                                     method: 'DELETE'
                                 });
 
@@ -389,9 +389,9 @@ function createAttachmentElement(attachmentUrl) {
     
     // Удаляем дублирование ти
     if (attachmentUrl.includes('/uploads/messages')) {
-        fullUrl = `https://adminflow.ru:5003${attachmentUrl}`;
+        fullUrl = `https://adminflow.ru${attachmentUrl}`;
     } else {
-        fullUrl = `https://adminflow.ru:5003/uploads/messages/${attachmentUrl}`;
+        fullUrl = `https://adminflow.ru/uploads/messages/${attachmentUrl}`;
     }
     
     // Удаляем возможные двойные слеши
@@ -456,7 +456,7 @@ async function sendMessage() {
         // Немедленно очищаем значение
         messageInput.value = '';
         
-        const response = await fetch('https://adminflow.ru:5003/api/messages/send', {
+        const response = await fetch('https://adminflow.ru/api/messages/send', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -500,7 +500,7 @@ async function markMessagesAsRead(friendId) {
     }
 
     try {
-        const response = await fetch(`https://adminflow.ru:5003/api/messages/mark-as-read`, {
+        const response = await fetch(`https://adminflow.ru/api/messages/mark-as-read`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -542,7 +542,7 @@ function setupEventListeners() {
             if (typingTimeout) clearTimeout(typingTimeout);
             
             // Отправляем статус "печатает"
-            fetch('https://adminflow.ru:5003/api/messages/typing', {
+            fetch('https://adminflow.ru/api/messages/typing', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -554,7 +554,7 @@ function setupEventListeners() {
             
             // Сбрасываем статус через 2 секунды
             typingTimeout = setTimeout(() => {
-                fetch('https://adminflow.ru:5003/api/messages/typing', {
+                fetch('https://adminflow.ru/api/messages/typing', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -584,7 +584,7 @@ async function handleSendMessage() {
     try {
         messageInput.value = ''; // Очищаем поле сразу
         
-        const response = await fetch('https://adminflow.ru:5003/api/messages/send', {
+        const response = await fetch('https://adminflow.ru/api/messages/send', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -639,7 +639,7 @@ window.addEventListener('beforeunload', () => {
 // Функция загрузки сообщений
 async function loadMessages(friendId) {
     try {
-        const response = await fetch(`https://adminflow.ru:5003/api/messages/history/${currentUser.id}/${friendId}`);
+        const response = await fetch(`https://adminflow.ru/api/messages/history/${currentUser.id}/${friendId}`);
         const data = await response.json();
 
         if (data.success) {
@@ -857,7 +857,7 @@ async function deleteMessage(messageId) {
             attachmentUrl = imgElement ? imgElement.src : (fileLink ? fileLink.href : null);
         }
 
-        const response = await fetch(`https://adminflow.ru:5003/api/messages/delete/${messageId}`, {
+        const response = await fetch(`https://adminflow.ru/api/messages/delete/${messageId}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json'
@@ -1184,7 +1184,7 @@ async function loadChatsList() {
         }
         lastUpdateTime = now;
 
-        const response = await fetch(`https://adminflow.ru:5003/api/chats/${currentUser.id}`, {
+        const response = await fetch(`https://adminflow.ru/api/chats/${currentUser.id}`, {
             method: 'GET',
             credentials: 'include',
             headers: {
@@ -1421,7 +1421,7 @@ function getLastActivityTime(lastActivity) {
 async function updateUnreadCount(friendId) {
   if(!friendId) return
   try {
-    const response = await fetch(`https://adminflow.ru:5003/api/chats/${currentUser.id}`);
+    const response = await fetch(`https://adminflow.ru/api/chats/${currentUser.id}`);
     const data = await response.json();
     if(data.success) {
           const chat = data.chats.find(chat => chat.id == friendId)
@@ -1502,7 +1502,7 @@ async function sendMessage() {
     };
 
     try {
-        const response = await fetch('https://adminflow.ru:5003/api/messages/send', {
+        const response = await fetch('https://adminflow.ru/api/messages/send', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -1562,7 +1562,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 messageInput.value = ''; // Очищаем поле сразу
                 
-                const response = await fetch('https://adminflow.ru:5003/api/messages/send', {
+                const response = await fetch('https://adminflow.ru/api/messages/send', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
