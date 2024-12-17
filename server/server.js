@@ -2000,13 +2000,18 @@ const httpsServer = https.createServer(sslOptions, app);
 const activeConnections = new Map();
 
 // Создаем экземпляр Socket.IO
-const io = new Server(httpsServer, {
+const io = new Server(httpServer, {  // Меняем httpsServer на httpServer
     path: '/socket.io/',
     transports: ['polling', 'websocket'],
     cors: {
-        origin: "*",  // Разрешаем все источники
+        origin: [
+            'http://adminflow.ru',
+            'https://adminflow.ru',
+            'http://www.adminflow.ru',
+            'https://www.adminflow.ru'
+        ],
         methods: ["GET", "POST"],
-        credentials: false,  // Отключаем credentials
+        credentials: true,
         allowedHeaders: ["Content-Type"]
     },
     pingTimeout: 60000,
