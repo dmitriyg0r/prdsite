@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Домашнее задание</title>
+    <title>Мерч Flow</title>
     <link rel="icon" type="image/x-icon" href="../flow.ico">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&family=Montserrat:wght@300&display=swap">
     <link rel="stylesheet" href="../style.css">
@@ -61,27 +61,140 @@
         </div>
     </nav>
     <!-- Остальной контент -->
-    <main>
+    <main class="merch-container">
+        <!-- Заголовок категории -->
+        <div class="category-header">
+            <h1>Футболки</h1>
+            <div class="filters">
+                <select class="filter-select">
+                    <option value="newest">Новинки</option>
+                    <option value="popular">Популярное</option>
+                    <option value="price-low">Цена по возрастанию</option>
+                    <option value="price-high">Цена по убыванию</option>
+                </select>
+            </div>
+        </div>
 
+        <!-- Добавьте кнопку корзины в верхний правый угол -->
+        <div class="cart-button">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="cart-counter">0</span>
+        </div>
+
+        <!-- Сетка товаров -->
+        <div class="products-grid">
+            <!-- Товар 1 -->
+            <div class="product-card" data-product-id="1">
+                <div class="product-image">
+                    <img src="picturies/photo_futbolka.jpg" alt="Flow T-Shirt Black">
+                    <div class="product-overlay">
+                        <button class="quick-view-btn">Быстрый просмотр</button>
+                    </div>
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">Flow T-Shirt Black</h3>
+                    <p class="product-price">1</p>
+                    <div class="product-sizes">
+                        <span>S</span><span>M</span><span>L</span><span>XL</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Товар 2 -->
+            <div class="product-card" data-product-id="2">
+                <div class="product-image">
+                    <img src="picturies/photo_futbolka.jpg" alt="Flow T-Shirt White">
+                    <div class="product-overlay">
+                        <button class="quick-view-btn">Быстрый просмотр</button>
+                    </div>
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">Flow T-Shirt White</h3>
+                    <p class="product-price">2</p>
+                    <div class="product-sizes">
+                        <span>S</span><span>M</span><span>L</span><span>XL</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Товар 3 -->
+            <div class="product-card" data-product-id="3">
+                <div class="product-image">
+                    <img src="path/to/hoodie1.jpg" alt="Flow Hoodie Black">
+                    <div class="product-overlay">
+                        <button class="quick-view-btn">Быстрый просмотр</button>
+                    </div>
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">Flow Hoodie Black</h3>
+                    <p class="product-price">3</p>
+                    <div class="product-sizes">
+                        <span>S</span><span>M</span><span>L</span><span>XL</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Товар 4 -->
+            <div class="product-card" data-product-id="4">
+                <div class="product-image">
+                    <img src="path/to/hoodie2.jpg" alt="Flow Hoodie Grey">
+                    <div class="product-overlay">
+                        <button class="quick-view-btn">Быстрый просмотр</button>
+                    </div>
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">Flow Hoodie Grey</h3>
+                    <p class="product-price">4</p>
+                    <div class="product-sizes">
+                        <span>S</span><span>M</span><span>L</span><span>XL</span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </main>
+
+    <!-- Модальное окно быстрого просмотра -->
+    <div class="quick-view-modal">
+        <div class="modal-content">
+            <button class="close-modal"><i class="fas fa-times"></i></button>
+            <div class="modal-product-details">
+                <div class="modal-product-image">
+                    <div class="main-image">
+                        <button class="nav-btn prev-btn">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <img src="" alt="Product">
+                        <button class="nav-btn next-btn">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                    <div class="image-gallery">
+                        <img src="" alt="View 1" class="gallery-thumb active">
+                        <img src="" alt="View 2" class="gallery-thumb">
+                    </div>
+                </div>
+                <div class="modal-product-info">
+                    <h2>Flow Classic T-Shirt</h2>
+                    <p class="modal-price">4</p>
+                    <div class="size-selector">
+                        <h3>Размер</h3>
+                        <div class="size-options">
+                            <button class="size-btn">S</button>
+                            <button class="size-btn">M</button>
+                            <button class="size-btn">L</button>
+                            <button class="size-btn">XL</button>
+                        </div>
+                    </div>
+                    <button class="add-to-cart-btn">Добавить в корзину</button>
+                    <div class="product-description">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="../main.js"></script>
+    <script src="merch.js"></script>
     
-    <!-- Мобильное меню -->
-    <nav class="mobile-nav">
-        <ul>
-            <li>
-                <a href="../downloads/downloads.html">
-                    <i class="fas fa-download"></i>
-                    <span>Загрузки</span>
-                </a>
-            </li>
-            <li>
-                <a href="../Profile/profile.html">
-                    <i class="fas fa-user"></i>
-                    <span>Профиль</span>
-                </a>
-            </li>
-        </ul>
-    </nav>
 </body>
 </html>
