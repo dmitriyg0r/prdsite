@@ -795,6 +795,11 @@ body {
 
 /* Стили для пустого состояния */
 .empty-requests {
+    position: relative;
+    left: 181px;
+    top: 89px;
+    height: 174px;
+    transition: none;
     text-align: center;
     padding: var(--spacing-xl);
     color: var(--text-secondary);
@@ -1085,6 +1090,7 @@ body {
 }
 
 .modal-body {
+    height: 480.25px;
     padding: var(--spacing-md);
     overflow-y: auto;
     max-height: calc(90vh - 100px);
