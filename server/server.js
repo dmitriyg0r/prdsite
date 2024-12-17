@@ -17,21 +17,16 @@ const STATUS_UPDATE_INTERVAL = 5000; // 5 секунд между обновле
 
 // Middleware
 app.use(cors({
-    origin: function(origin, callback) {
-        const allowedOrigins = [
-            'https://adminflow.ru',
-            'https://www.adminflow.ru'
-        ];
-        
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
+    origin: [
+        'https://adminflow.ru',
+        'https://www.adminflow.ru',
+        'http://adminflow.ru',
+        'http://www.adminflow.ru'
+    ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
+    exposedHeaders: ['Content-Length', 'Content-Type']
 }));
 app.use(express.json());
 
@@ -2001,11 +1996,14 @@ const io = new Server(httpServer, {  // Меняем httpsServer на httpServer
     cors: {
         origin: [
             'https://adminflow.ru',
-            'https://www.adminflow.ru'
+            'https://www.adminflow.ru',
+            'http://adminflow.ru',
+            'http://www.adminflow.ru'
         ],
-        methods: ["GET", "POST"],
+        methods: ["GET", "POST", "OPTIONS"],
         credentials: true,
-        allowedHeaders: ["Content-Type"]
+        allowedHeaders: ["Content-Type", "Authorization", "Accept", "Origin", "X-Requested-With"],
+        exposedHeaders: ['Content-Length', 'Content-Type']
     },
     pingTimeout: 60000,
     pingInterval: 25000,
@@ -2015,6 +2013,18 @@ const io = new Server(httpServer, {  // Меняем httpsServer на httpServer
 
 // Удаляем middleware для Socket.IO, так как теперь используем CORS настройки выше
 app.use('/socket.io', (req, res, next) => {
+    next();
+});
+
+// Добавляем промежуточное ПО для предварительной проверки OPTIONS
+app.options('*', cors());
+
+// Добавляем заголовки безопасности
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Origin', req.headers.origin);
+    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With, Accept, Origin');
     next();
 });
 

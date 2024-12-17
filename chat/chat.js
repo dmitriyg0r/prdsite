@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Загружаем список чатов
     await loadChatsList();
     
-    // Запускаем периодическое обновление списка чатов
+    // Запускаем периодическ��е обновление списка чатов
     setInterval(loadChatsList, 10000); // Обновляем каждые 10 секунд
 });
 
@@ -224,7 +224,7 @@ function createMessageElement(message) {
     messageElement.className = `message message-${message.sender_id === currentUser.id ? 'sent' : 'received'}`;
     messageElement.dataset.messageId = message.id;
 
-    // Добавляем информацию об отправителе для полученных сообщений
+    // Добавляем информацию об отправителе ��ля полученных сообщений
     if (message.sender_id !== currentUser.id) {
         const senderInfo = document.createElement('div');
         senderInfo.className = 'message-sender';
@@ -659,7 +659,7 @@ async function loadMessages(friendId) {
             // Находим только новые сообщения
             const newMessages = data.messages.filter(msg => !existingMessages.has(msg.id.toString()));
             
-            // Если есть новые ��ообщения
+            // Если есть новые сообщения
             if (newMessages.length > 0) {
                 // Добавляем только новые сообщения
                 newMessages.forEach(message => {
@@ -691,7 +691,7 @@ async function loadMessages(friendId) {
     }
 }
 
-// Функция обновлен��я статуса сообщения
+// Функция обновления статуса сообщения
 function updateMessageStatus(messageElement, messageData) {
     const statusElement = messageElement.querySelector('.message-status');
     if (statusElement) {
@@ -978,7 +978,7 @@ function setupContextMenu() {
             // Показываем меню
             contextMenu.style.display = 'block';
 
-            // Получаем размеры меню и окна
+            // Получаем ра��меры меню и окна
             const menuRect = contextMenu.getBoundingClientRect();
             const windowWidth = window.innerWidth;
             const windowHeight = window.innerHeight;
@@ -1055,7 +1055,7 @@ function hideContextMenu() {
     }
 }
 
-// Функция показа предпросмотра ответа
+// Функция показа предп��осмотра ответа
 function showReplyPreview(messageText) {
     const replyPreview = document.getElementById('replyPreview');
     if (!replyPreview) {
@@ -1185,7 +1185,13 @@ async function loadChatsList() {
         lastUpdateTime = now;
 
         const response = await fetch(`https://adminflow.ru:5003/api/chats/${currentUser.id}`, {
-            credentials: 'include'
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Origin': window.location.origin
+            }
         });
         const data = await response.json();
 
@@ -1572,7 +1578,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const responseData = await response.json();
 
                 if (!response.ok) {
-                    throw new Error(responseData.details || responseData.error || 'Ошибка при отправке сообщения');
+                    throw new Error(responseData.details || responseData.error || 'Ошиб��а при отправке сооб��ения');
                 }
 
                 if (responseData.success) {
@@ -1610,7 +1616,11 @@ const socket = io('https://adminflow.ru:5003', {  // Меняем на HTTPS
     path: '/socket.io/',
     transports: ['polling', 'websocket'],
     withCredentials: true,
-    secure: true
+    secure: true,
+    rejectUnauthorized: false, // Добавляем для самоподписанных сертификатов
+    extraHeaders: {
+        'Origin': window.location.origin
+    }
 });
 
 // Обработчики Socket.IO событий
