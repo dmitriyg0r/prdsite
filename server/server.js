@@ -37,11 +37,6 @@ const sslOptions = {
 // Создаем HTTPS сервер
 const server = https.createServer(sslOptions, app);
 
-// Обновляем настройки Socket.IO
-const io = new Server(server, {
-    path: '/socket.io/',
-    cors: corsOptions
-});
 
 app.use(express.json());
 
@@ -468,11 +463,11 @@ app.get('/api/friend-requests', async (req, res) => {
         res.json({ requests: result.rows });
     } catch (err) {
         console.error('Get friend requests error:', err);
-        res.status(500).json({ error: 'Ошибка при получении заявок в друзья' });
+        res.status(500).json({ error: 'Ошибк�� при получении заявок в друзья' });
     }
 });
 
-// Добавляем новый endpoint для удаления из друзей
+// Добавляем новый endpoint для удаления из дру��ей
 app.post('/api/friend/remove', async (req, res) => {
     try {
         const { userId, friendId } = req.body;
@@ -911,7 +906,7 @@ app.post('/api/users/update-profile', async (req, res) => {
 
         await pool.query(query, values);
 
-        // Получаем обновленные данные пользователя
+        // Получаем обновленные данные по��ьзователя
         const result = await pool.query(
             'SELECT id, username, email, role, created_at, last_login, avatar_url FROM users WHERE id = $1',
             [userId]
@@ -930,7 +925,7 @@ app.post('/api/users/update-profile', async (req, res) => {
     }
 });
 
-// Обновляем эн��поинт отправки сообщения с файлом
+// ��бновляем эн��поинт отправки сообщения с файлом
 app.post('/api/messages/send-with-file', messageUpload.single('file'), async (req, res) => {
     try {
         const { senderId, receiverId, message, replyTo } = req.body;
@@ -967,7 +962,7 @@ const checkAdmin = async (req, res, next) => {
         if (!adminId) {
             return res.status(401).json({ 
                 success: false,
-                error: 'Требуется авторизация' 
+                error: 'Требу���тся авторизация' 
             });
         }
 
@@ -1381,7 +1376,7 @@ app.post('/api/users/update-status', async (req, res) => {
             });
         }
 
-        // Проверяем, не было ли недавнего обновления для этого пользователя
+        // Проверяем, не было ли неда��него обновления для этого пользователя
         const lastUpdate = STATUS_UPDATE_CACHE.get(userId);
         const now = Date.now();
         
@@ -1400,7 +1395,7 @@ app.post('/api/users/update-status', async (req, res) => {
         // Обновляем кэш
         STATUS_UPDATE_CACHE.set(userId, now);
 
-        // Получаем список друзей пользователя для уведомления
+        // Получаем списо�� друзей пользователя для уведомления
         const friendsResult = await pool.query(`
             SELECT friend_id as id FROM friendships 
             WHERE user_id = $1 AND status = 'accepted'
@@ -1684,7 +1679,7 @@ app.put('/api/comments/:commentId', async (req, res) => {
         console.error('Error updating comment:', err);
         res.status(500).json({
             success: false,
-            error: 'Ошибка при обновлении комментария'
+            error: 'Ошибка при обновлении коммента��ия'
         });
     }
 });
@@ -2486,7 +2481,7 @@ app.get('/api/users-list', async (req, res) => {
         });
     } catch (err) {
         console.error('Error loading users list:', err);
-        res.status(500).json({ error: 'Ошибка при загрузке списка пользователей' });
+        res.status(500).json({ error: '��шибка при загрузке списка пользователей' });
     }
 });
 
@@ -2543,7 +2538,7 @@ app.post('/api/messages/voice', uploadVoice.single('audio'), async (req, res) =>
 
         const messageId = messageResult.rows[0].id;
 
-        // Затем создаем запись в таблице voice_messages
+        // Затем соз��аем запись в таблице voice_messages
         await pool.query(`
             INSERT INTO voice_messages 
             (message_id, duration, file_path)
