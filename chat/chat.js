@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Загружаем список чатов
     await loadChatsList();
     
-    // Запускаем периодическое обновление списка чатов
+    // Запускаем периодическ��е обновление списка чатов
     setInterval(loadChatsList, 10000); // Обновляем каждые 10 секунд
 });
 
@@ -224,7 +224,7 @@ function createMessageElement(message) {
     messageElement.className = `message message-${message.sender_id === currentUser.id ? 'sent' : 'received'}`;
     messageElement.dataset.messageId = message.id;
 
-    // Добавляе�� информацию об отправителе для полученных сообщений
+    // Добавляем информацию об отправителе для полученных сообщений
     if (message.sender_id !== currentUser.id) {
         const senderInfo = document.createElement('div');
         senderInfo.className = 'message-sender';
@@ -415,7 +415,7 @@ function createAttachmentElement(attachmentUrl) {
             img.src = '../uploads/avatars/default.png'; // Заглушка при ошибке
         };
         img.onload = () => {
-            console.log('Изображение успешно загружено:', fullUrl);
+            console.log('Изоб��ажение успешно загружено:', fullUrl);
         };
         img.onclick = () => showImageModal(fullUrl);
         attachmentElement.appendChild(img);
@@ -1055,7 +1055,7 @@ function hideContextMenu() {
     }
 }
 
-// Функция п��каза предпросмотра ответа
+// Функция показа предпросмотра ответа
 function showReplyPreview(messageText) {
     const replyPreview = document.getElementById('replyPreview');
     if (!replyPreview) {
@@ -1130,7 +1130,7 @@ function startMessageUpdates() {
         clearInterval(messageUpdateInterval);
     }
     
-    // Первая загру��ка
+    // Пер��ая загрука
     if(currentChatPartner) loadMessages(currentChatPartner.id);
     
     // Устанавливаем интервал обновления
@@ -1228,7 +1228,7 @@ async function loadChatsList() {
 }
 
 function updateExistingChatElement(element, chat) {
-    // Обновляем только текстовое содержимое и классы, не трогая структуру DOM
+    // Обновляем только текстовое содержимое и классы, не трогая стру��туру DOM
     const lastMessageEl = element.querySelector('.chat-last-message');
     const unreadCountEl = element.querySelector('.unread-count');
     const statusIndicator = element.querySelector('.status-indicator');
@@ -1532,7 +1532,7 @@ document.getElementById('replyMessageBtn').addEventListener('click', () => {
     hideContextMenu();
 });
 
-// Иници��лизация
+// Инициализация
 setupReplyFunctionality();
 
 // Добавляем подсказку дл Markdown в placeholder
@@ -1616,7 +1616,8 @@ const socket = io('https://adminflow.ru', {
     path: '/socket.io/',
     transports: ['websocket', 'polling'],
     withCredentials: true,
-    secure: true
+    secure: true,
+    rejectUnauthorized: false
 });
 
 // Обработчики Socket.IO событий
