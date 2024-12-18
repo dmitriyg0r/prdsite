@@ -867,7 +867,7 @@ app.post('/api/users/update-profile', async (req, res) => {
             if (usernameCheck.rows.length > 0) {
                 return res.status(400).json({
                     success: false,
-                    error: 'Это имя пользователя уже занято'
+                    error: 'Это имя п��льзователя уже занято'
                 });
             }
         }
@@ -2747,6 +2747,25 @@ app.get('/api/scores/leaderboard', async (req, res) => {
     } catch (err) {
         console.error('Get leaderboard error:', err);
         res.status(500).json({ error: 'Ошибка при получении таблицы лидеров' });
+    }
+});
+
+// Добавьте новый эндпоинт для проверки авторизации
+app.get('/api/check-auth', (req, res) => {
+    if (req.session && req.session.user) {
+        res.json({
+            authenticated: true,
+            user: {
+                id: req.session.user.id,
+                username: req.session.user.username,
+                avatar_url: req.session.user.avatar_url
+            }
+        });
+    } else {
+        res.json({
+            authenticated: false,
+            user: null
+        });
     }
 });
 

@@ -310,6 +310,8 @@ class ArcadeCollector {
         // Инициализируем обработчики кнопок меню
         this.initializeMenuHandlers();
 
+        // Добавляем проверку авторизации при инициализации
+        this.checkAuth();
         this.updateLeaderboard();
     }
 
@@ -2076,14 +2078,94 @@ createBossBullet(boss, speedX, speedY, isHeavy = false) {
         }
     }
 
-    async updateLeaderboard() {
+    // Добавляем метод проверки авторизации
+    async checkAuth() {
         try {
-            const response = await fetch('https://adminflow.ru/api/scores/leaderboard?gameName=ArcadeCollector');
+            const response = await fetch('https://adminflow.ru/api/check-auth', {
+                credentials: 'include' // Важно для работы с сессией
+            });
+            
+            if (!response.ok) {
+                throw new Error('Auth check failed');
+            }
+            
+            const data = await response.json();
+            if (data.authenticated && data.user) {
+                window.userId = data.user.id;
+                this.currentUser = data.user;
+                console.log('User authenticated:', this.currentUser);
+            } else {
+                console.log('User not authenticated');
+                this.showLoginPrompt();
+            }
+        } catch (err) {
+            console.error('Error checking auth:', err);
+            this.showLoginPrompt();
+        }
+    }
+
+    // Добавляем метод показа приглашения войти
+    showLoginPrompt() {
+        const startMenu = document.getElementById('startMenu');
+        if (startMenu) {
+            const loginPrompt = document.createElement('div');
+            loginPrompt.className = 'login-prompt';
+            loginPrompt.innerHTML = `
+                <p>Войдите в аккаунт, чтобы сохранять результаты</p>
+                <a href="/login" class="login-button">Войти</a>
+            `;
+            startMenu.querySelector('.menu-content').appendChild(loginPrompt);
+        }
+    }
+
+    // Обновляем метод сохранения результата
+    async saveScore(score) {
+        if (!this.currentUser) {
+            console.log('User not logged in, score not saved');
+            this.showLoginPrompt();
+            return;
+        }
+
+        try {
+            const response = await fetch('https://adminflow.ru/api/scores/save', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include', // Важно для работы с сессией
+                body: JSON.stringify({
+                    userId: this.currentUser.id,
+                    score: score,
+                    gameName: 'ArcadeCollector'
+                })
+            });
+
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
+
             const data = await response.json();
+            if (data.success) {
+                console.log('Score saved successfully');
+                await this.updateLeaderboard();
+            }
+        } catch (err) {
+            console.error('Error saving score:', err);
+        }
+    }
+
+    // Обновляем метод получения таблицы лидеров
+    async updateLeaderboard() {
+        try {
+            const response = await fetch('https://adminflow.ru/api/scores/leaderboard?gameName=ArcadeCollector', {
+                credentials: 'include' // Важно для работы с сессией
+            });
             
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
             const tbody = document.querySelector('#leaderboardTable tbody');
             if (!tbody) {
                 console.error('Leaderboard table body not found');
@@ -2100,6 +2182,11 @@ createBossBullet(boss, speedX, speedY, isHeavy = false) {
             data.leaderboard.forEach((entry, index) => {
                 const row = document.createElement('tr');
                 const date = new Date(entry.created_at).toLocaleDateString('ru-RU');
+                
+                // Добавляем класс для подсветки результата текущего пользователя
+                if (this.currentUser && entry.user_id === this.currentUser.id) {
+                    row.classList.add('current-user');
+                }
                 
                 row.innerHTML = `
                     <td>${index + 1}</td>
@@ -2119,39 +2206,6 @@ createBossBullet(boss, speedX, speedY, isHeavy = false) {
             });
         } catch (err) {
             console.error('Error updating leaderboard:', err);
-        }
-    }
-
-    async saveScore(score) {
-        if (!window.userId) {
-            console.log('User not logged in, score not saved');
-            return;
-        }
-
-        try {
-            const response = await fetch('https://adminflow.ru/api/scores/save', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    userId: window.userId,
-                    score: score,
-                    gameName: 'ArcadeCollector'
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const data = await response.json();
-            if (data.success) {
-                console.log('Score saved successfully');
-                await this.updateLeaderboard(); // Обновляем таблицу после сохранения
-            }
-        } catch (err) {
-            console.error('Error saving score:', err);
         }
     }
 } // Закрывающая скобка класса
