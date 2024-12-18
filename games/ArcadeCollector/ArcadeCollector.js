@@ -52,43 +52,43 @@ class ArcadeCollector {
         // Типы противников
         this.enemyTypes = {
             basic: {
-                width: 30,
-                height: 30,
-                speed: 120, // Уменьшаем с 150 до 120
+                width: 60,  // Увеличено с 30
+                height: 60, // Увеличено с 30
+                speed: 120,
                 color: '#ef4444',
-                health: 2, // Увеличиваем с 1 до 2
-                points: 15, // Увеличиваем с 10 до 15
-                shootRate: 2500, // Увеличиваем с 2000 до 2500
+                health: 2,
+                points: 15,
+                shootRate: 2500,
                 bulletSpeed: 200,
                 behavior: 'straight',
-                damage: 10, // Базовый урон
-                bulletDamage: 5, // Урон от пуль
+                damage: 10,
+                bulletDamage: 5,
             },
             shooter: {
-                width: 40,
-                height: 40,
-                speed: 90, // Уменьшаем с 100 до 80
+                width: 80,  // Увеличено с 40
+                height: 80, // Увеличено с 40
+                speed: 90,
                 color: '#fb923c',
-                health: 3, // Увеличиваем с 2 до 3
-                points: 25, // Увеличиваем с 20 до 25
-                shootRate: 2000, // Увеличиваем с 1500 до 2000
+                health: 3,
+                points: 25,
+                shootRate: 2000,
                 bulletSpeed: 250,
                 behavior: 'strafe',
-                damage: 15, // Повышенный урон при столкновении
-                bulletDamage: 8, // Повышенный урон от пуль
+                damage: 15,
+                bulletDamage: 8,
             },
             boss: {
-                width: 60,
-                height: 60,
-                speed: 60, // Уменьшаем с 80 до 60
+                width: 120, // Увеличено с 60
+                height: 120, // Увеличено с 60
+                speed: 60,
                 color: '#dc2626',
-                health: 8, // Увеличиваем с 5 до 8
-                points: 75, // Увеличиваем с 50 до 75
-                shootRate: 1500, // Увеличиваем с 1000 до 1500
+                health: 8,
+                points: 75,
+                shootRate: 1500,
                 bulletSpeed: 300,
                 behavior: 'sine',
-                damage: 25, // Сильный урон при столкновении
-                bulletDamage: 12, // Сильный урон от пуль
+                damage: 25,
+                bulletDamage: 12,
             }
         };
 
