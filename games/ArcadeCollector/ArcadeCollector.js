@@ -2017,10 +2017,10 @@ createBossBullet(boss, speedX, speedY, isHeavy = false) {
         switch(enemy.type) {
             case 'basic':
                 enginePositions = [
-                    { x: enemy.x + enemy.width * 0.35, y: enemy.y + 5 },  // Левый средний
-                    { x: enemy.x + enemy.width * 0.45, y: enemy.y + 5 },  // Левый ближний к центру
-                    { x: enemy.x + enemy.width * 0.55, y: enemy.y + 5 },  // Правый ближний к центру
-                    { x: enemy.x + enemy.width * 0.65, y: enemy.y + 5 }   // Правый средний
+                    { x: enemy.x + enemy.width * 0.30, y: enemy.y + 5 },  // Левый средний
+                    { x: enemy.x + enemy.width * 0.40, y: enemy.y + 5 },  // Левый ближний к центру
+                    { x: enemy.x + enemy.width * 0.50, y: enemy.y + 5 },  // Правый ближний к центру
+                    { x: enemy.x + enemy.width * 0.60, y: enemy.y + 5 }   // Правый средний
                 ];
                 particleConfig = {
                     count: 1,
