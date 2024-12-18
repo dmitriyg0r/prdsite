@@ -1,6 +1,6 @@
 async function loadUsers() {
     try {
-        const response = await fetch('https://adminflow.ru:5003/api/users-list');
+        const response = await fetch('https://adminflow.ru/api/users-list');
         if (!response.ok) throw new Error('Ошибка при загрузке пользователей');
         
         const data = await response.json();
