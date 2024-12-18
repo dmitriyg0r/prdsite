@@ -2016,12 +2016,12 @@ createBossBullet(boss, speedX, speedY, isHeavy = false) {
 
         switch(enemy.type) {
             case 'basic':
-                // 4 маленьких двигателя, расположенные по нижней части корабля
+                // 4 маленьких двигателя в верхней части корабля
                 enginePositions = [
-                    { x: enemy.x + enemy.width * 0.2, y: enemy.y + enemy.height - 5 },  // Левый крайний
-                    { x: enemy.x + enemy.width * 0.4, y: enemy.y + enemy.height - 5 },  // Левый средний
-                    { x: enemy.x + enemy.width * 0.6, y: enemy.y + enemy.height - 5 },  // Правый средний
-                    { x: enemy.x + enemy.width * 0.8, y: enemy.y + enemy.height - 5 }   // Правый крайний
+                    { x: enemy.x + enemy.width * 0.2, y: enemy.y + 5 },  // Левый крайний
+                    { x: enemy.x + enemy.width * 0.4, y: enemy.y + 5 },  // Левый средний
+                    { x: enemy.x + enemy.width * 0.6, y: enemy.y + 5 },  // Правый средний
+                    { x: enemy.x + enemy.width * 0.8, y: enemy.y + 5 }   // Правый крайний
                 ];
                 particleConfig = {
                     count: 1,
@@ -2032,10 +2032,10 @@ createBossBullet(boss, speedX, speedY, isHeavy = false) {
                 break;
 
             case 'shooter':
-                // 2 двигателя по бокам
+                // 2 двигателя по бокам в верхней части
                 enginePositions = [
-                    { x: enemy.x + enemy.width * 0.25, y: enemy.y + enemy.height - 5 },  // Левый
-                    { x: enemy.x + enemy.width * 0.75, y: enemy.y + enemy.height - 5 }   // Правый
+                    { x: enemy.x + enemy.width * 0.25, y: enemy.y + 5 },  // Левый
+                    { x: enemy.x + enemy.width * 0.75, y: enemy.y + 5 }   // Правый
                 ];
                 particleConfig = {
                     count: 2,
@@ -2046,9 +2046,9 @@ createBossBullet(boss, speedX, speedY, isHeavy = false) {
                 break;
 
             case 'boss':
-                // Один большой центральный двигатель
+                // Один большой центральный двигатель сверху
                 enginePositions = [
-                    { x: enemy.x + enemy.width * 0.5, y: enemy.y + enemy.height - 5 }  // Центр
+                    { x: enemy.x + enemy.width * 0.5, y: enemy.y + 5 }  // Центр
                 ];
                 particleConfig = {
                     count: 4,
@@ -2069,7 +2069,7 @@ createBossBullet(boss, speedX, speedY, isHeavy = false) {
                     x: pos.x + spread,
                     y: pos.y,
                     vx: (Math.random() - 0.5) * 15,
-                    vy: -particleConfig.baseSpeed - Math.random() * 50,
+                    vy: particleConfig.baseSpeed + Math.random() * 50, // Теперь частицы летят вниз
                     size: size,
                     lifetime: lifetime,
                     time: 0,
