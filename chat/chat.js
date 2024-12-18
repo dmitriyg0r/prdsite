@@ -1611,7 +1611,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Инициализация Socket.IO
+// Socket.IO
 const socket = io('https://adminflow.ru', {
     path: '/socket.io/',
     transports: ['websocket', 'polling'],
