@@ -1301,7 +1301,7 @@ class ArcadeCollector {
         this.gameOverMenu.style.display = 'flex';
         this.finalScoreElement.textContent = this.score;
         
-        // Показываем меню при окончании игры
+        // Показывае�� меню при окончании игры
         this.startMenu.style.display = 'flex';
         
         // Сохраняем результат
@@ -2078,7 +2078,7 @@ createBossBullet(boss, speedX, speedY, isHeavy = false) {
 
     async updateLeaderboard() {
         try {
-            const response = await fetch('http://adminflow.ru/api/scores/leaderboard?gameName=ArcadeCollector');
+            const response = await fetch('https://adminflow.ru/api/scores/leaderboard?gameName=ArcadeCollector');
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -2129,7 +2129,7 @@ createBossBullet(boss, speedX, speedY, isHeavy = false) {
         }
 
         try {
-            const response = await fetch('http://adminflow.ru/api/scores/save', {
+            const response = await fetch('https://adminflow.ru/api/scores/save', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
