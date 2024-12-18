@@ -600,7 +600,7 @@ class ArcadeCollector {
 
     updateEnemies(dt) {
         this.enemies = this.enemies.filter(enemy => {
-            // Обновление времени для поведения
+            // Обновление времени для п��ведения
             enemy.time += dt;
 
             // Обновление позиции в зависиости от поведения
@@ -1228,6 +1228,11 @@ class ArcadeCollector {
             const alpha = (1 - particle.time / particle.lifetime) * 0.7;
             this.ctx.save();
             this.ctx.globalAlpha = alpha;
+            
+            // Добавляем свечение в зависимости от типа противника
+            this.ctx.shadowBlur = particle.type === 'boss' ? 15 : 8;
+            this.ctx.shadowColor = particle.color;
+            
             this.ctx.fillStyle = particle.color;
             this.ctx.beginPath();
             this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
@@ -2006,47 +2011,70 @@ createBossBullet(boss, speedX, speedY, isHeavy = false) {
 
     // Добавим новый метод для создания частиц двигателя противников
     createEnemyEngineParticles(enemy) {
-        const particleCount = 2;
-        const baseSpeed = 100;
-        
-        // Позиции двигателей зависят от типа противника
         let enginePositions;
+        let particleConfig;
+
         switch(enemy.type) {
             case 'basic':
+                // 4 маленьких двигателя по углам
                 enginePositions = [
-                    { x: enemy.x + 10, y: enemy.y + 5 },
-                    { x: enemy.x + enemy.width - 15, y: enemy.y + 5 }
+                    { x: enemy.x + 10, y: enemy.y + 10 },
+                    { x: enemy.x + enemy.width - 15, y: enemy.y + 10 },
+                    { x: enemy.x + 10, y: enemy.y + enemy.height - 15 },
+                    { x: enemy.x + enemy.width - 15, y: enemy.y + enemy.height - 15 }
                 ];
+                particleConfig = {
+                    count: 1,
+                    baseSpeed: 80,
+                    size: { min: 1, max: 2 },
+                    lifetime: { min: 0.1, max: 0.2 }
+                };
                 break;
+
             case 'shooter':
+                // 2 двигателя сзади
                 enginePositions = [
-                    { x: enemy.x + 15, y: enemy.y + 5 },
-                    { x: enemy.x + enemy.width - 20, y: enemy.y + 5 },
-                    { x: enemy.x + enemy.width/2, y: enemy.y + 5 }
+                    { x: enemy.x + enemy.width * 0.3, y: enemy.y + enemy.height - 5 },
+                    { x: enemy.x + enemy.width * 0.7, y: enemy.y + enemy.height - 5 }
                 ];
+                particleConfig = {
+                    count: 2,
+                    baseSpeed: 120,
+                    size: { min: 2, max: 3 },
+                    lifetime: { min: 0.2, max: 0.3 }
+                };
                 break;
+
             case 'boss':
+                // Один большой двигатель по центру
                 enginePositions = [
-                    { x: enemy.x + 20, y: enemy.y + 5 },
-                    { x: enemy.x + enemy.width - 25, y: enemy.y + 5 },
-                    { x: enemy.x + enemy.width/3, y: enemy.y + 5 },
-                    { x: enemy.x + (enemy.width/3) * 2, y: enemy.y + 5 }
+                    { x: enemy.x + enemy.width * 0.5, y: enemy.y + enemy.height - 10 }
                 ];
+                particleConfig = {
+                    count: 4,
+                    baseSpeed: 150,
+                    size: { min: 3, max: 5 },
+                    lifetime: { min: 0.3, max: 0.4 }
+                };
                 break;
         }
 
         enginePositions.forEach(pos => {
-            for (let i = 0; i < particleCount; i++) {
+            for (let i = 0; i < particleConfig.count; i++) {
                 const spread = (Math.random() - 0.5) * 4;
+                const size = particleConfig.size.min + Math.random() * (particleConfig.size.max - particleConfig.size.min);
+                const lifetime = particleConfig.lifetime.min + Math.random() * (particleConfig.lifetime.max - particleConfig.lifetime.min);
+                
                 this.enemyEngineParticles.push({
                     x: pos.x + spread,
                     y: pos.y,
                     vx: (Math.random() - 0.5) * 15,
-                    vy: -baseSpeed - Math.random() * 50, // Отрицательная скорость, так как частицы идут вверх
-                    size: 2 + Math.random() * 2,
-                    lifetime: 0.2 + Math.random() * 0.1,
+                    vy: -particleConfig.baseSpeed - Math.random() * 50,
+                    size: size,
+                    lifetime: lifetime,
                     time: 0,
-                    color: enemy.color // Используем цвет противника
+                    color: enemy.color,
+                    type: enemy.type // Добавляем тип для разной отрисовки
                 });
             }
         });
