@@ -406,7 +406,7 @@ app.post('/api/friend-request/respond', async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         console.error('Friend response error:', err);
-        res.status(500).json({ error: 'Ошибка при обработке заяв����' });
+        res.status(500).json({ error: 'Ошиб��а при обработке заяв����' });
     }
 });
 
@@ -645,7 +645,7 @@ app.get('/api/messages/last/:userId/:friendId', async (req, res) => {
         res.json({ success: true, message: result.rows[0] });
     } catch (err) {
         console.error('Error getting last message:', err);
-        res.status(500).json({ error: 'Ошибка при получении последнего сообщения' });
+        res.status(500).json({ error: 'Ошибка при получении после��него сообщения' });
     }
 });
 
@@ -1521,7 +1521,7 @@ app.get('/api/feed', async (req, res) => {
     }
 });
 
-// Получение комментариев для поста
+// ��олучение комментариев для поста
 app.get('/api/posts/:postId/comments', async (req, res) => {
     try {
         const { postId } = req.params;
@@ -2283,42 +2283,58 @@ app.get('/api/users/:userId', async (req, res) => {
     }
 });
 
-// Получение списка чатов пользователя
+// Модифицируем запрос для получения списка чатов
 app.get('/api/chats/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
 
-        // Модифицированный запрос для получения списка чатов
         const result = await pool.query(`
             WITH ChatPartners AS (
-                -- Получаем уникальных собеседников
-                SELECT DISTINCT 
-                    CASE 
-                        WHEN sender_id = $1 THEN receiver_id
-                        ELSE sender_id 
-                    END as partner_id
-                FROM messages 
-                WHERE sender_id = $1 OR receiver_id = $1
+                -- Получаем всех друзей и собеседников
+                SELECT DISTINCT id as partner_id
+                FROM (
+                    -- Получаем друзей из таблицы friendships
+                    SELECT friend_id as id 
+                    FROM friendships 
+                    WHERE user_id = $1 AND status = 'accepted'
+                    UNION
+                    SELECT user_id as id
+                    FROM friendships 
+                    WHERE friend_id = $1 AND status = 'accepted'
+                    UNION
+                    -- Добавляем собеседников из сообщений
+                    SELECT DISTINCT 
+                        CASE 
+                            WHEN sender_id = $1 THEN receiver_id
+                            ELSE sender_id 
+                        END as id
+                    FROM messages 
+                    WHERE sender_id = $1 OR receiver_id = $1
+                ) all_partners
             ),
             LastMessages AS (
                 -- Получаем последние сообщения для каждого собеседника
-                SELECT DISTINCT ON (
-                    CASE 
-                        WHEN sender_id = $1 THEN receiver_id
-                        ELSE sender_id 
-                    END
-                )
-                    CASE 
-                        WHEN sender_id = $1 THEN receiver_id
-                        ELSE sender_id 
-                    END as partner_id,
+                SELECT DISTINCT ON (partner_id)
+                    partner_id,
                     message,
                     attachment_url,
                     created_at,
                     is_read,
                     sender_id
-                FROM messages
-                WHERE sender_id = $1 OR receiver_id = $1
+                FROM (
+                    SELECT 
+                        CASE 
+                            WHEN sender_id = $1 THEN receiver_id
+                            ELSE sender_id 
+                        END as partner_id,
+                        message,
+                        attachment_url,
+                        created_at,
+                        is_read,
+                        sender_id
+                    FROM messages
+                    WHERE sender_id = $1 OR receiver_id = $1
+                ) m
                 ORDER BY partner_id, created_at DESC
             )
             SELECT 
@@ -2342,10 +2358,14 @@ app.get('/api/chats/:userId', async (req, res) => {
             FROM ChatPartners cp
             JOIN users u ON u.id = cp.partner_id
             LEFT JOIN LastMessages lm ON lm.partner_id = u.id
-            ORDER BY lm.created_at DESC NULLS LAST
+            ORDER BY 
+                CASE 
+                    WHEN lm.created_at IS NULL THEN 1 
+                    ELSE 0 
+                END,
+                lm.created_at DESC NULLS LAST,
+                u.username
         `, [userId]);
-
-        console.log('Chats found:', result.rows.length); // Для отладки
 
         res.json({
             success: true,
