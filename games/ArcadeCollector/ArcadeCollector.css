@@ -370,7 +370,6 @@
     height: 100%;
     display: flex;
     justify-content: center;
-    align-items: center;
     z-index: 100;
 }
 
@@ -385,17 +384,18 @@
 }
 
 .start-menu .menu-content {
-    position: relative;
+    position: absolute;
+    bottom: 50px;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     gap: 30px;
     align-items: center;
     padding: 32px;
 }
 
 .menu-button-img {
-    width: 250px; /* Размер под ваши кнопки */
-    height: auto; /* Автоматическая высота для сохранения пропорций */
+    width: 200px;
+    height: auto;
     cursor: pointer;
     transition: all 0.3s ease;
     object-fit: contain;
