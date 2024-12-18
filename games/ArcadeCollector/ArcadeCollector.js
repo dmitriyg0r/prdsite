@@ -284,6 +284,22 @@ class ArcadeCollector {
         // Инициализация здоровья игрока
         this.player.health = this.player.maxHealth;
         this.updateHealthDisplay(); // Устанавливаем начальное значение
+
+        // Загружаем изображения противников
+        this.enemyImages = {
+            basic: new Image(),
+            shooter: new Image(),
+            boss: new Image()
+        };
+        this.enemyImages.basic.src = '../ArcadeCollector/assets/enemy/EA1.png';
+        this.enemyImages.shooter.src = '../ArcadeCollector/assets/enemy/EA4.png';
+        this.enemyImages.boss.src = '../ArcadeCollector/assets/enemy/EA6.png';
+        
+        // Добавляем обработчики загрузки
+        Object.entries(this.enemyImages).forEach(([type, img]) => {
+            img.onerror = () => console.error(`Error loading ${type} enemy image`);
+            img.onload = () => console.log(`${type} enemy image loaded`);
+        });
     }
 
     animate(currentTime) {
@@ -862,72 +878,29 @@ class ArcadeCollector {
     }
 
     drawEnemy(enemy) {
-        switch(enemy.type) {
-            case 'basic':
-                // Треугольный враг
-                this.ctx.fillStyle = enemy.color;
-                this.ctx.beginPath();
-                this.ctx.moveTo(enemy.x + enemy.width / 2, enemy.y);
-                this.ctx.lineTo(enemy.x + enemy.width, enemy.y + enemy.height);
-                this.ctx.lineTo(enemy.x, enemy.y + enemy.height);
-                this.ctx.closePath();
-                this.ctx.fill();
-
-                // Добавляем свечение
-                this.ctx.shadowColor = enemy.color;
-                this.ctx.shadowBlur = 10;
-                this.ctx.strokeStyle = '#fff';
-                this.ctx.stroke();
-                this.ctx.shadowBlur = 0;
-                break;
-
-            case 'shooter':
-                // Шестиугольный враг с градиентом
-                const shooterGradient = this.ctx.createLinearGradient(
-                    enemy.x, enemy.y, 
-                    enemy.x + enemy.width, enemy.y + enemy.height
-                );
-                shooterGradient.addColorStop(0, enemy.color);
-                shooterGradient.addColorStop(1, '#fbbf24');
-
-                this.ctx.fillStyle = shooterGradient;
-                this.ctx.beginPath();
-                this.drawHexagon(
-                    enemy.x + enemy.width / 2,
-                    enemy.y + enemy.height / 2,
-                    enemy.width / 2
-                );
-                this.ctx.fill();
-
-                // Добавляем пульсирующее оржие
-                const gunSize = 8;
-                this.ctx.fillStyle = '#fff';
-                this.ctx.fillRect(enemy.x - gunSize/2, enemy.y + enemy.height - gunSize/2, gunSize, gunSize);
-                this.ctx.fillRect(enemy.x + enemy.width - gunSize/2, enemy.y + enemy.height - gunSize/2, gunSize, gunSize);
-                break;
-
-            case 'boss':
-                // Сложна форма босса с градиентом
-                const bossGradient = this.ctx.createRadialGradient(
-                    enemy.x + enemy.width/2, enemy.y + enemy.height/2, 0,
-                    enemy.x + enemy.width/2, enemy.y + enemy.height/2, enemy.width/2
-                );
-                bossGradient.addColorStop(0, '#dc2626');
-                bossGradient.addColorStop(0.5, enemy.color);
-                bossGradient.addColorStop(1, '#991b1b');
-
-                // Основное тело
-                this.ctx.fillStyle = bossGradient;
-                this.ctx.beginPath();
-                this.drawBossShape(enemy);
-                this.ctx.fill();
-
-                // Энергетическое поле
-                this.ctx.strokeStyle = `rgba(255, 255, 255, ${0.3 + Math.sin(enemy.time * 5) * 0.2})`;
-                this.ctx.lineWidth = 2;
-                this.ctx.stroke();
-
-                // олоса здоровья
+        const image = this.enemyImages[enemy.type];
+        
+        if (image && image.complete) {
+            // Рисуем изображение противника
+            this.ctx.save();
+            
+            // Добавляем свечение
+            this.ctx.shadowColor = enemy.color;
+            this.ctx.shadowBlur = 10;
+            
+            // Рисуем изображение
+            this.ctx.drawImage(
+                image,
+                enemy.x,
+                enemy.y,
+                enemy.width,
+                enemy.height
+            );
+            
+            this.ctx.restore();
+            
+            // Если это босс, добавляем полоску здоровья
+            if (enemy.type === 'boss') {
                 const healthPercentage = enemy.health / this.enemyTypes.boss.health;
                 const healthBarWidth = enemy.width * 1.2;
                 const healthBarHeight = 8;
@@ -953,7 +926,39 @@ class ArcadeCollector {
                     healthBarWidth * healthPercentage,
                     healthBarHeight
                 );
-                break;
+            }
+        } else {
+            // Fallback: рисуем базовые фигуры, если изображения не загрузились
+            switch(enemy.type) {
+                case 'basic':
+                    // Треугольный враг
+                    this.ctx.fillStyle = enemy.color;
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(enemy.x + enemy.width / 2, enemy.y);
+                    this.ctx.lineTo(enemy.x + enemy.width, enemy.y + enemy.height);
+                    this.ctx.lineTo(enemy.x, enemy.y + enemy.height);
+                    this.ctx.closePath();
+                    this.ctx.fill();
+                    break;
+
+                case 'shooter':
+                    // Шестиугольный враг
+                    this.ctx.fillStyle = enemy.color;
+                    this.ctx.beginPath();
+                    this.drawHexagon(
+                        enemy.x + enemy.width / 2,
+                        enemy.y + enemy.height / 2,
+                        enemy.width / 2
+                    );
+                    this.ctx.fill();
+                    break;
+
+                case 'boss':
+                    // Прямоугольный босс
+                    this.ctx.fillStyle = enemy.color;
+                    this.ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+                    break;
+            }
         }
     }
 
@@ -1808,7 +1813,7 @@ updateWeaponPowerup(dt) {
         }
     }
 
-    // Волновая атака
+    // Волновая ата��а
     bossWaveShot(boss) {
         const bulletCount = 12;
         const waveAmplitude = 100;
@@ -1856,7 +1861,7 @@ createBossBullet(boss, speedX, speedY, isHeavy = false) {
 
     // Добавим новые методы для атак лазерного босса
     bossLaserShot(boss) {
-        // Прямой лазерный луч
+        // Прямо�� лазерный луч
         const angle = Math.atan2(this.player.y - boss.y, this.player.x - boss.x);
         for(let i = 0; i < 5; i++) {
             const speedX = Math.cos(angle) * boss.bulletSpeed;
