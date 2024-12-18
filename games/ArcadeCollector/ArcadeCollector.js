@@ -2081,21 +2081,36 @@ createBossBullet(boss, speedX, speedY, isHeavy = false) {
     // Добавляем метод проверки авторизации
     async checkAuth() {
         try {
+            console.log('Checking authentication...');
             const response = await fetch('https://adminflow.ru/api/check-auth', {
-                credentials: 'include' // Важно для работы с сессией
+                credentials: 'include',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
             });
             
+            console.log('Auth response status:', response.status);
+            
             if (!response.ok) {
-                throw new Error('Auth check failed');
+                throw new Error(`Auth check failed: ${response.status}`);
             }
             
             const data = await response.json();
+            console.log('Auth response data:', data);
+            
             if (data.authenticated && data.user) {
-                window.userId = data.user.id;
                 this.currentUser = data.user;
                 console.log('User authenticated:', this.currentUser);
+                
+                // Добавим проверку наличия необходимых данных
+                if (!this.currentUser.id) {
+                    console.error('User ID is missing in the response');
+                    this.showLoginPrompt();
+                    return;
+                }
             } else {
-                console.log('User not authenticated');
+                console.log('User not authenticated:', data.message);
                 this.showLoginPrompt();
             }
         } catch (err) {
@@ -2120,8 +2135,13 @@ createBossBullet(boss, speedX, speedY, isHeavy = false) {
 
     // Обновляем метод сохранения результата
     async saveScore(score) {
-        if (!this.currentUser) {
-            console.log('User not logged in, score not saved');
+        console.log('Attempting to save score:', {
+            score,
+            currentUser: this.currentUser
+        });
+
+        if (!this.currentUser || !this.currentUser.id) {
+            console.log('Cannot save score: user not authenticated');
             this.showLoginPrompt();
             return;
         }
@@ -2131,8 +2151,9 @@ createBossBullet(boss, speedX, speedY, isHeavy = false) {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json'
                 },
-                credentials: 'include', // Важно для работы с сессией
+                credentials: 'include',
                 body: JSON.stringify({
                     userId: this.currentUser.id,
                     score: score,
@@ -2140,14 +2161,20 @@ createBossBullet(boss, speedX, speedY, isHeavy = false) {
                 })
             });
 
+            console.log('Save score response status:', response.status);
+
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
             const data = await response.json();
+            console.log('Save score response:', data);
+
             if (data.success) {
                 console.log('Score saved successfully');
                 await this.updateLeaderboard();
+            } else {
+                console.error('Failed to save score:', data.error);
             }
         } catch (err) {
             console.error('Error saving score:', err);

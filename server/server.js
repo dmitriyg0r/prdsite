@@ -19,10 +19,11 @@ const STATUS_UPDATE_INTERVAL = 5000; // 5 секунд между обновле
 
 // Обновляем настройки CORS и SSL
 const corsOptions = {
-    origin: ['http://adminflow.ru', 'https://adminflow.ru'],
+    origin: ['https://adminflow.ru'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    exposedHeaders: ['set-cookie']
 };
 
 app.use(cors(corsOptions));
@@ -2752,6 +2753,12 @@ app.get('/api/scores/leaderboard', async (req, res) => {
 
 // Добавьте новый эндпоинт для проверки авторизации
 app.get('/api/check-auth', (req, res) => {
+    console.log('Session check:', {
+        hasSession: !!req.session,
+        sessionData: req.session,
+        cookies: req.cookies
+    });
+
     if (req.session && req.session.user) {
         res.json({
             authenticated: true,
@@ -2762,9 +2769,10 @@ app.get('/api/check-auth', (req, res) => {
             }
         });
     } else {
-        res.json({
+        res.status(401).json({
             authenticated: false,
-            user: null
+            user: null,
+            message: 'Не авторизован'
         });
     }
 });
