@@ -4,8 +4,10 @@
     background: var(--background-color);
     padding: 20px;
     display: flex;
-    flex-direction: column;
-    align-items: center;
+    flex-direction: row;
+    justify-content: center;
+    gap: 20px;
+    align-items: flex-start;
 }
 
 /* Кнопка возврата */
@@ -409,4 +411,84 @@
 .menu-button-img:active {
     transform: scale(0.95);
     filter: brightness(0.9);
+}
+
+/* Стили для таблицы лидеров */
+.leaderboard-container {
+    margin-left: 20px;
+    background: var(--surface-color);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    box-shadow: var(--shadow-lg);
+    min-width: 300px;
+}
+
+.leaderboard-container h2 {
+    color: var(--text-primary);
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.leaderboard-content {
+    overflow-y: auto;
+    max-height: 600px;
+}
+
+#leaderboardTable {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#leaderboardTable th,
+#leaderboardTable td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-light);
+    color: var(--text-primary);
+}
+
+#leaderboardTable th {
+    background: var(--background-color);
+    font-weight: 600;
+}
+
+#leaderboardTable tr:hover {
+    background: var(--background-color);
+}
+
+.player-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.player-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* Обновим стили game-wrapper для горизонтального расположения */
+.game-wrapper {
+    flex-direction: row;
+    justify-content: center;
+    gap: 20px;
+    align-items: flex-start;
+    padding: 20px;
+}
+
+/* Адаптивность */
+@media (max-width: 1200px) {
+    .game-wrapper {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .leaderboard-container {
+        margin-left: 0;
+        margin-top: 20px;
+        width: 100%;
+        max-width: 600px;
+    }
 }

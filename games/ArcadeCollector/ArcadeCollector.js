@@ -309,6 +309,8 @@ class ArcadeCollector {
 
         // Инициализируем обработчики кнопок меню
         this.initializeMenuHandlers();
+
+        this.updateLeaderboard();
     }
 
     initializeMenuHandlers() {
@@ -716,7 +718,7 @@ class ArcadeCollector {
             }
         }
         
-        // Обновляем босса
+        // Об��овляем босса
         this.updateBoss(dt);
         
         this.updateDifficulty(dt);
@@ -1301,6 +1303,28 @@ class ArcadeCollector {
         
         // Показываем меню при окончании игры
         this.startMenu.style.display = 'flex';
+        
+        // Сохраняем результат
+        if (window.userId) { // Убедитесь, что userId доступен
+            try {
+                fetch('/api/scores/save', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        userId: window.userId,
+                        score: this.score,
+                        gameName: 'ArcadeCollector'
+                    })
+                });
+                
+                // Обновляем таблицу лидеров
+                 this.updateLeaderboard();
+            } catch (err) {
+                console.error('Error saving score:', err);
+            }
+        }
     }
 
     reset() {
@@ -2068,6 +2092,38 @@ createBossBullet(boss, speedX, speedY, isHeavy = false) {
             this.enemies.forEach(enemy => {
                 this.createEnemyEngineParticles(enemy);
             });
+        }
+    }
+
+    async updateLeaderboard() {
+        try {
+            const response = await fetch('/api/scores/leaderboard?gameName=ArcadeCollector');
+            const data = await response.json();
+            
+            const tbody = document.querySelector('#leaderboardTable tbody');
+            tbody.innerHTML = '';
+            
+            data.leaderboard.forEach((entry, index) => {
+                const row = document.createElement('tr');
+                const date = new Date(entry.created_at).toLocaleDateString();
+                
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>
+                        <div class="player-info">
+                            <img src="${entry.avatar_url || '/images/default-avatar.png'}" 
+                                 alt="" class="player-avatar">
+                            <span>${entry.username}</span>
+                        </div>
+                    </td>
+                    <td>${entry.score}</td>
+                    <td>${date}</td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        } catch (err) {
+            console.error('Error updating leaderboard:', err);
         }
     }
 } // Закрывающая скобка класса

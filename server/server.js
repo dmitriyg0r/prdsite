@@ -2692,3 +2692,61 @@ app.delete('/api/messages/:messageId', async (req, res) => {
     }
 });
 
+// Добавьте после других CREATE TABLE запросов
+pool.query(`
+    CREATE TABLE IF NOT EXISTS scores (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id),
+        score INTEGER NOT NULL,
+        game_name VARCHAR(50) NOT NULL,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    );
+    
+    CREATE INDEX IF NOT EXISTS idx_scores_game_name ON scores(game_name);
+    CREATE INDEX IF NOT EXISTS idx_scores_user_id ON scores(user_id);
+`).catch(err => {
+    console.error('Error creating scores table:', err);
+});
+
+// Сохранение нового результата
+app.post('/api/scores/save', async (req, res) => {
+    try {
+        const { userId, score, gameName } = req.body;
+        
+        await pool.query(`
+            INSERT INTO scores (user_id, score, game_name)
+            VALUES ($1, $2, $3)
+        `, [userId, score, gameName]);
+        
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Save score error:', err);
+        res.status(500).json({ error: 'Ошибка при сохранении результата' });
+    }
+});
+
+// Получение таблицы лидеров
+app.get('/api/scores/leaderboard', async (req, res) => {
+    try {
+        const { gameName } = req.query;
+        
+        const result = await pool.query(`
+            SELECT 
+                s.score,
+                s.created_at,
+                u.username,
+                u.avatar_url
+            FROM scores s
+            JOIN users u ON s.user_id = u.id
+            WHERE s.game_name = $1
+            ORDER BY s.score DESC
+            LIMIT 10
+        `, [gameName]);
+        
+        res.json({ leaderboard: result.rows });
+    } catch (err) {
+        console.error('Get leaderboard error:', err);
+        res.status(500).json({ error: 'Ошибка при получении таблицы лидеров' });
+    }
+});
+
