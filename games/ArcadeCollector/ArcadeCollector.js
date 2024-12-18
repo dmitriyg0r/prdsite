@@ -1125,7 +1125,7 @@ class ArcadeCollector {
             this.ctx.fill();
         });
 
-        // Добавляем индикатор отката рывка
+        // Добавляем индикатор отката рывк��
         if (this.player.dashCooldownTimer > 0) {
             const dashCooldownPercent = this.player.dashCooldownTimer / this.player.dashCooldown;
             const dashBarWidth = 30;
@@ -2016,43 +2016,40 @@ createBossBullet(boss, speedX, speedY, isHeavy = false) {
 
         switch(enemy.type) {
             case 'basic':
-                // 4 маленьких двигателя в верхней части корабля
                 enginePositions = [
-                    { x: enemy.x + enemy.width * 0.2, y: enemy.y + 5 },  // Левый крайний
-                    { x: enemy.x + enemy.width * 0.4, y: enemy.y + 5 },  // Левый средний
-                    { x: enemy.x + enemy.width * 0.6, y: enemy.y + 5 },  // Правый средний
-                    { x: enemy.x + enemy.width * 0.8, y: enemy.y + 5 }   // Правый крайний
+                    { x: enemy.x + enemy.width * 0.35, y: enemy.y + 5 },  // Левый средний
+                    { x: enemy.x + enemy.width * 0.45, y: enemy.y + 5 },  // Левый ближний к центру
+                    { x: enemy.x + enemy.width * 0.55, y: enemy.y + 5 },  // Правый ближний к центру
+                    { x: enemy.x + enemy.width * 0.65, y: enemy.y + 5 }   // Правый средний
                 ];
                 particleConfig = {
                     count: 1,
-                    baseSpeed: 80,
+                    baseSpeed: -80,
                     size: { min: 1, max: 2 },
                     lifetime: { min: 0.1, max: 0.2 }
                 };
                 break;
 
             case 'shooter':
-                // 2 двигателя по бокам в верхней части
                 enginePositions = [
-                    { x: enemy.x + enemy.width * 0.25, y: enemy.y + 5 },  // Левый
-                    { x: enemy.x + enemy.width * 0.75, y: enemy.y + 5 }   // Правый
+                    { x: enemy.x + enemy.width * 0.4, y: enemy.y + 5 },   // Левый ближе к центру
+                    { x: enemy.x + enemy.width * 0.6, y: enemy.y + 5 }    // Правый ближе к центру
                 ];
                 particleConfig = {
                     count: 2,
-                    baseSpeed: 120,
+                    baseSpeed: -120,
                     size: { min: 2, max: 3 },
                     lifetime: { min: 0.2, max: 0.3 }
                 };
                 break;
 
             case 'boss':
-                // Один большой центральный двигатель сверху
                 enginePositions = [
-                    { x: enemy.x + enemy.width * 0.5, y: enemy.y + 5 }  // Центр
+                    { x: enemy.x + enemy.width * 0.5, y: enemy.y + 5 }  // Центральный
                 ];
                 particleConfig = {
                     count: 4,
-                    baseSpeed: 150,
+                    baseSpeed: -150,
                     size: { min: 3, max: 5 },
                     lifetime: { min: 0.3, max: 0.4 }
                 };
@@ -2069,7 +2066,7 @@ createBossBullet(boss, speedX, speedY, isHeavy = false) {
                     x: pos.x + spread,
                     y: pos.y,
                     vx: (Math.random() - 0.5) * 15,
-                    vy: particleConfig.baseSpeed + Math.random() * 50, // Теперь частицы летят вниз
+                    vy: particleConfig.baseSpeed - Math.random() * 50,
                     size: size,
                     lifetime: lifetime,
                     time: 0,
