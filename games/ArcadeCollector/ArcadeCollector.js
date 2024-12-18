@@ -300,6 +300,9 @@ class ArcadeCollector {
             img.onerror = () => console.error(`Error loading ${type} enemy image`);
             img.onload = () => console.log(`${type} enemy image loaded`);
         });
+
+        // В конструкторе добавим массив для частиц двигателей противников
+        this.enemyEngineParticles = [];
     }
 
     animate(currentTime) {
@@ -719,6 +722,9 @@ class ArcadeCollector {
         if (this.player.shootCooldown > 0) {
             this.player.shootCooldown -= dt * 1000;
         }
+
+        // Обновление частиц двигателей противников
+        this.updateEnemyEngineParticles(dt);
     }
 
     updatePlayerPosition(dt) {
@@ -1216,6 +1222,18 @@ class ArcadeCollector {
             
             this.ctx.restore();
         }
+
+        // Отрисовка частиц двигателей противников
+        this.enemyEngineParticles.forEach(particle => {
+            const alpha = (1 - particle.time / particle.lifetime) * 0.7;
+            this.ctx.save();
+            this.ctx.globalAlpha = alpha;
+            this.ctx.fillStyle = particle.color;
+            this.ctx.beginPath();
+            this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+            this.ctx.fill();
+            this.ctx.restore();
+        });
     }
 
     checkCollision(rect1, rect2) {
@@ -1986,6 +2004,71 @@ createBossBullet(boss, speedX, speedY, isHeavy = false) {
         }
     }
 
+    // Добавим новый метод для создания частиц двигателя противников
+    createEnemyEngineParticles(enemy) {
+        const particleCount = 2;
+        const baseSpeed = 100;
+        
+        // Позиции двигателей зависят от типа противника
+        let enginePositions;
+        switch(enemy.type) {
+            case 'basic':
+                enginePositions = [
+                    { x: enemy.x + 10, y: enemy.y + 5 },
+                    { x: enemy.x + enemy.width - 15, y: enemy.y + 5 }
+                ];
+                break;
+            case 'shooter':
+                enginePositions = [
+                    { x: enemy.x + 15, y: enemy.y + 5 },
+                    { x: enemy.x + enemy.width - 20, y: enemy.y + 5 },
+                    { x: enemy.x + enemy.width/2, y: enemy.y + 5 }
+                ];
+                break;
+            case 'boss':
+                enginePositions = [
+                    { x: enemy.x + 20, y: enemy.y + 5 },
+                    { x: enemy.x + enemy.width - 25, y: enemy.y + 5 },
+                    { x: enemy.x + enemy.width/3, y: enemy.y + 5 },
+                    { x: enemy.x + (enemy.width/3) * 2, y: enemy.y + 5 }
+                ];
+                break;
+        }
+
+        enginePositions.forEach(pos => {
+            for (let i = 0; i < particleCount; i++) {
+                const spread = (Math.random() - 0.5) * 4;
+                this.enemyEngineParticles.push({
+                    x: pos.x + spread,
+                    y: pos.y,
+                    vx: (Math.random() - 0.5) * 15,
+                    vy: -baseSpeed - Math.random() * 50, // Отрицательная скорость, так как частицы идут вверх
+                    size: 2 + Math.random() * 2,
+                    lifetime: 0.2 + Math.random() * 0.1,
+                    time: 0,
+                    color: enemy.color // Используем цвет противника
+                });
+            }
+        });
+    }
+
+    // Добавим метод обновления частиц двигателей противников
+    updateEnemyEngineParticles(dt) {
+        this.enemyEngineParticles = this.enemyEngineParticles.filter(particle => {
+            particle.x += particle.vx * dt;
+            particle.y += particle.vy * dt;
+            particle.time += dt;
+            particle.size -= dt * 3;
+            return particle.time < particle.lifetime && particle.size > 0;
+        });
+
+        // Создаем новые частицы для каждого противника
+        if (this.gameState === 'playing') {
+            this.enemies.forEach(enemy => {
+                this.createEnemyEngineParticles(enemy);
+            });
+        }
+    }
 } // Закрывающая скобка класса
 
 // Создание экземпляра игры при загрузке страницы
