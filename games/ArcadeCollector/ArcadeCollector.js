@@ -1305,26 +1305,7 @@ class ArcadeCollector {
         this.startMenu.style.display = 'flex';
         
         // Сохраняем результат
-        if (window.userId) { // Убедитесь, что userId доступен
-            try {
-                fetch('/api/scores/save', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        userId: window.userId,
-                        score: this.score,
-                        gameName: 'ArcadeCollector'
-                    })
-                });
-                
-                // Обновляем таблицу лидеров
-                 this.updateLeaderboard();
-            } catch (err) {
-                console.error('Error saving score:', err);
-            }
-        }
+        this.saveScore(this.score);
     }
 
     reset() {
@@ -1737,7 +1718,7 @@ updateWeaponPowerup(dt) {
         }, 3000);
     }
 
-    // Добавляем метод для эффекта появления босса
+    // Добавляем ме��од для эффекта появления босса
     createBossSpawnEffect() {
         const particles = 30;
         const colors = ['#dc2626', '#ef4444', '#ffffff'];
@@ -2097,22 +2078,36 @@ createBossBullet(boss, speedX, speedY, isHeavy = false) {
 
     async updateLeaderboard() {
         try {
-            const response = await fetch('/api/scores/leaderboard?gameName=ArcadeCollector');
+            const response = await fetch('http://adminflow.ru/api/scores/leaderboard?gameName=ArcadeCollector');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
             const data = await response.json();
             
             const tbody = document.querySelector('#leaderboardTable tbody');
+            if (!tbody) {
+                console.error('Leaderboard table body not found');
+                return;
+            }
+            
             tbody.innerHTML = '';
+            
+            if (!data.leaderboard || !Array.isArray(data.leaderboard)) {
+                console.error('Invalid leaderboard data:', data);
+                return;
+            }
             
             data.leaderboard.forEach((entry, index) => {
                 const row = document.createElement('tr');
-                const date = new Date(entry.created_at).toLocaleDateString();
+                const date = new Date(entry.created_at).toLocaleDateString('ru-RU');
                 
                 row.innerHTML = `
                     <td>${index + 1}</td>
                     <td>
                         <div class="player-info">
-                            <img src="${entry.avatar_url || '/images/default-avatar.png'}" 
-                                 alt="" class="player-avatar">
+                            <img src="${entry.avatar_url || '/assets/default-avatar.png'}" 
+                                 alt="" class="player-avatar"
+                                 onerror="this.src='/assets/default-avatar.png'">
                             <span>${entry.username}</span>
                         </div>
                     </td>
@@ -2124,6 +2119,39 @@ createBossBullet(boss, speedX, speedY, isHeavy = false) {
             });
         } catch (err) {
             console.error('Error updating leaderboard:', err);
+        }
+    }
+
+    async saveScore(score) {
+        if (!window.userId) {
+            console.log('User not logged in, score not saved');
+            return;
+        }
+
+        try {
+            const response = await fetch('http://adminflow.ru/api/scores/save', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    userId: window.userId,
+                    score: score,
+                    gameName: 'ArcadeCollector'
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            if (data.success) {
+                console.log('Score saved successfully');
+                await this.updateLeaderboard(); // Обновляем таблицу после сохранения
+            }
+        } catch (err) {
+            console.error('Error saving score:', err);
         }
     }
 } // Закрывающая скобка класса
