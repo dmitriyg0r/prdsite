@@ -129,6 +129,9 @@ class ArcadeCollector {
         
         // Добавляем стартовое меню
         this.startMenu = document.getElementById('startMenu');
+        this.startButton = document.getElementById('startButton');
+        this.skillsButton = document.getElementById('skillsButton');
+        this.leadersButton = document.getElementById('leadersButton');
         
         // Добавляем массив для частиц
         this.particles = [];
@@ -303,6 +306,28 @@ class ArcadeCollector {
 
         // В конструкторе добавим массив для частиц двигателей противников
         this.enemyEngineParticles = [];
+
+        // Инициализируем обработчики кнопок меню
+        this.initializeMenuHandlers();
+    }
+
+    initializeMenuHandlers() {
+        // Кнопка Play - начинает игру
+        this.startButton.addEventListener('click', () => {
+            this.startGame();
+        });
+
+        // Кнопка Skills - открывает меню скиллов
+        this.skillsButton.addEventListener('click', () => {
+            // Здесь будет логика открытия меню скиллов
+            console.log('Skills menu clicked');
+        });
+
+        // Кнопка Leaders - открывает таблицу лидеров
+        this.leadersButton.addEventListener('click', () => {
+            // Здесь будет логика открытия таблицы лидеров
+            console.log('Leaders board clicked');
+        });
     }
 
     animate(currentTime) {
@@ -1273,78 +1298,29 @@ class ArcadeCollector {
         this.gameState = 'gameOver';
         this.gameOverMenu.style.display = 'flex';
         this.finalScoreElement.textContent = this.score;
+        
+        // Показываем меню при окончании игры
+        this.startMenu.style.display = 'flex';
     }
 
-    restartGame() {
-        // Полный сброс состояния игры
-        this.gameState = 'playing';
-        this.score = 0;
-        this.player.lives = 3;
-        this.difficulty = 1;
-        this.gameTime = 0;
-        this.enemySpawnTimer = 0;
-        this.coinSpawnTimer = 0;
-        
-        // чищ��ем все массивы
-        this.coins = [];
-        this.enemies = [];
-        this.bullets = [];
-        this.enemyBullets = [];
-        this.particles = [];
-        
-        // Сбрасываем позицию игрока
-        this.player.x = this.canvas.width / 2 - this.player.width / 2;
-        this.player.y = this.canvas.height - 50;
-        
-        // Сбрасываем все таймеры и кулдауны
-        this.player.shootCooldown = 0;
-        this.timeAccumulator = 0;
-        this.lastTime = performance.now();
-        
-        // бновляем UI
-        this.scoreElement.textContent = '0';
-        this.livesElement.textContent = '3';
-        this.levelElement.textContent = '1.0';
-        
-        // Скрывам все меню
-        this.pauseMenu.style.display = 'none';
-        this.gameOverMenu.style.display = 'none';
-        
-        // Сбрасываем состояни клавиш
-        Object.keys(this.keys).forEach(key => {
-            this.keys[key] = false;
-        });
-        
-        // Сбрасываем параметры рывка
-        this.player.dashTimer = 0;
-        this.player.dashCooldownTimer = 0;
-        this.player.isDashing = false;
-        
-        // Иициализация здоровья игрока
-        this.player.health = this.player.maxHealth;
-        this.updateHealthDisplay(); // Обновляем отображение при рестарте
+    reset() {
+        this.gameState = 'start';
+        this.startMenu.style.display = 'flex';
+        // ... остальной код сброса ...
     }
 
     startGame() {
+        // Скрываем меню
+        this.startMenu.style.display = 'none';
+        // Запускаем игру
         this.gameState = 'playing';
+        // Сбрасываем счет и другие параметры игры
         this.score = 0;
-        this.gameTime = 0;
-        this.difficulty = 1;
-        this.player.lives = 5;
-        
-        // Обновляем UI
-        if (this.scoreElement) this.scoreElement.textContent = this.score;
-        if (this.livesElement) this.livesElement.textContent = this.player.lives;
-        if (this.levelElement) this.levelElement.textContent = this.difficulty;
-        
-        // Скрываем стартовое меню
-        if (this.startMenu) {
-            this.startMenu.style.display = 'none';
-        }
-        
-        // Инициализация здоровья игрока
         this.player.health = this.player.maxHealth;
-        this.updateHealthDisplay(); // Обновляем отображение при старте игры
+        this.enemies = [];
+        this.bullets = [];
+        this.coins = [];
+        this.updateHealthDisplay();
     }
 
     createDashEffect() {
