@@ -361,7 +361,7 @@
     transform: translateX(-50%);
 } 
 
-/* Стили для меню с картинками */
+/* Стили для меню с картинками кнопок */
 .start-menu {
     position: absolute;
     top: 0;
@@ -388,21 +388,25 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 30px;
     align-items: center;
     padding: 32px;
 }
 
 .menu-button-img {
-    width: 200px; /* Или другой размер, подходящий для ваших картинок */
+    width: 250px; /* Размер под ваши кнопки */
+    height: auto; /* Автоматическая высота для сохранения пропорций */
     cursor: pointer;
-    transition: transform 0.3s ease;
+    transition: all 0.3s ease;
+    object-fit: contain;
 }
 
 .menu-button-img:hover {
     transform: scale(1.1);
+    filter: brightness(1.2) drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
 }
 
 .menu-button-img:active {
     transform: scale(0.95);
+    filter: brightness(0.9);
 }
