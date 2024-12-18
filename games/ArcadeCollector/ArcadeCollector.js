@@ -52,43 +52,43 @@ class ArcadeCollector {
         // Типы противников
         this.enemyTypes = {
             basic: {
-                width: 30,
-                height: 30,
-                speed: 120, // Уменьшаем с 150 до 120
+                width: 60,  // Увеличено с 30
+                height: 60, // Увеличено с 30
+                speed: 120,
                 color: '#ef4444',
-                health: 2, // Увеличиваем с 1 до 2
-                points: 15, // Увеличиваем с 10 до 15
-                shootRate: 2500, // Увеличиваем с 2000 до 2500
+                health: 2,
+                points: 15,
+                shootRate: 2500,
                 bulletSpeed: 200,
                 behavior: 'straight',
-                damage: 10, // Базовый урон
-                bulletDamage: 5, // Урон от пуль
+                damage: 10,
+                bulletDamage: 5,
             },
             shooter: {
-                width: 40,
-                height: 40,
-                speed: 90, // Уменьшаем с 100 до 80
+                width: 80,  // Увеличено с 40
+                height: 80, // Увеличено с 40
+                speed: 90,
                 color: '#fb923c',
-                health: 3, // Увеличиваем с 2 до 3
-                points: 25, // Увеличиваем с 20 до 25
-                shootRate: 2000, // Увеличиваем с 1500 до 2000
+                health: 3,
+                points: 25,
+                shootRate: 2000,
                 bulletSpeed: 250,
                 behavior: 'strafe',
-                damage: 15, // Повышенный урон при столкновении
-                bulletDamage: 8, // Повышенный урон от пуль
+                damage: 15,
+                bulletDamage: 8,
             },
             boss: {
-                width: 60,
-                height: 60,
-                speed: 60, // Уменьшаем с 80 до 60
+                width: 120, // Увеличено с 60
+                height: 120, // Увеличено с 60
+                speed: 60,
                 color: '#dc2626',
-                health: 8, // Увеличиваем с 5 до 8
-                points: 75, // Увеличиваем с 50 до 75
-                shootRate: 1500, // Увеличиваем с 1000 до 1500
+                health: 8,
+                points: 75,
+                shootRate: 1500,
                 bulletSpeed: 300,
                 behavior: 'sine',
-                damage: 25, // Сильный урон при столкновении
-                bulletDamage: 12, // Сильный урон от пуль
+                damage: 25,
+                bulletDamage: 12,
             }
         };
 
@@ -129,6 +129,9 @@ class ArcadeCollector {
         
         // Добавляем стартовое меню
         this.startMenu = document.getElementById('startMenu');
+        this.startButton = document.getElementById('startButton');
+        this.skillsButton = document.getElementById('skillsButton');
+        this.leadersButton = document.getElementById('leadersButton');
         
         // Добавляем массив для частиц
         this.particles = [];
@@ -284,6 +287,51 @@ class ArcadeCollector {
         // Инициализация здоровья игрока
         this.player.health = this.player.maxHealth;
         this.updateHealthDisplay(); // Устанавливаем начальное значение
+
+        // Загружаем изображения противников
+        this.enemyImages = {
+            basic: new Image(),
+            shooter: new Image(),
+            boss: new Image()
+        };
+        this.enemyImages.basic.src = 'assets/enemy/EA6.png';
+        this.enemyImages.shooter.src = 'assets/enemy/EA4.png';
+        this.enemyImages.boss.src = 'assets/enemy/EA1.png';
+        
+        // Добавляем обработчики загрузки
+        Object.entries(this.enemyImages).forEach(([type, img]) => {
+            img.onerror = () => console.error(`Error loading ${type} enemy image`);
+            img.onload = () => console.log(`${type} enemy image loaded`);
+        });
+
+        // В конструкторе добавим массив для частиц двигателей противников
+        this.enemyEngineParticles = [];
+
+        // Инициализируем обработчики кнопок меню
+        this.initializeMenuHandlers();
+
+        // Добавляем проверку авторизации при инициализации
+        this.checkAuth();
+        this.updateLeaderboard();
+    }
+
+    initializeMenuHandlers() {
+        // Кнопка Play - начинает игру
+        this.startButton.addEventListener('click', () => {
+            this.startGame();
+        });
+
+        // Кнопка Skills - открывает меню скиллов
+        this.skillsButton.addEventListener('click', () => {
+            // Здесь будет логика открытия меню скиллов
+            console.log('Skills menu clicked');
+        });
+
+        // Кнопка Leaders - открывает таблицу лидеров
+        this.leadersButton.addEventListener('click', () => {
+            // Здесь будет логика открытия таблицы лидеров
+            console.log('Leaders board clicked');
+        });
     }
 
     animate(currentTime) {
@@ -581,7 +629,7 @@ class ArcadeCollector {
 
     updateEnemies(dt) {
         this.enemies = this.enemies.filter(enemy => {
-            // Обновление времени для поведения
+            // Обновление времени для п��в��дения
             enemy.time += dt;
 
             // Обновление позиции в зависиости от поведения
@@ -672,7 +720,7 @@ class ArcadeCollector {
             }
         }
         
-        // Обновляем босса
+        // Об��овляем босса
         this.updateBoss(dt);
         
         this.updateDifficulty(dt);
@@ -703,6 +751,9 @@ class ArcadeCollector {
         if (this.player.shootCooldown > 0) {
             this.player.shootCooldown -= dt * 1000;
         }
+
+        // Обновление частиц двигателей противников
+        this.updateEnemyEngineParticles(dt);
     }
 
     updatePlayerPosition(dt) {
@@ -862,72 +913,29 @@ class ArcadeCollector {
     }
 
     drawEnemy(enemy) {
-        switch(enemy.type) {
-            case 'basic':
-                // Треугольный враг
-                this.ctx.fillStyle = enemy.color;
-                this.ctx.beginPath();
-                this.ctx.moveTo(enemy.x + enemy.width / 2, enemy.y);
-                this.ctx.lineTo(enemy.x + enemy.width, enemy.y + enemy.height);
-                this.ctx.lineTo(enemy.x, enemy.y + enemy.height);
-                this.ctx.closePath();
-                this.ctx.fill();
-
-                // Добавляем свечение
-                this.ctx.shadowColor = enemy.color;
-                this.ctx.shadowBlur = 10;
-                this.ctx.strokeStyle = '#fff';
-                this.ctx.stroke();
-                this.ctx.shadowBlur = 0;
-                break;
-
-            case 'shooter':
-                // Шестиугольный враг с градиентом
-                const shooterGradient = this.ctx.createLinearGradient(
-                    enemy.x, enemy.y, 
-                    enemy.x + enemy.width, enemy.y + enemy.height
-                );
-                shooterGradient.addColorStop(0, enemy.color);
-                shooterGradient.addColorStop(1, '#fbbf24');
-
-                this.ctx.fillStyle = shooterGradient;
-                this.ctx.beginPath();
-                this.drawHexagon(
-                    enemy.x + enemy.width / 2,
-                    enemy.y + enemy.height / 2,
-                    enemy.width / 2
-                );
-                this.ctx.fill();
-
-                // Добавляем пульсирующее оржие
-                const gunSize = 8;
-                this.ctx.fillStyle = '#fff';
-                this.ctx.fillRect(enemy.x - gunSize/2, enemy.y + enemy.height - gunSize/2, gunSize, gunSize);
-                this.ctx.fillRect(enemy.x + enemy.width - gunSize/2, enemy.y + enemy.height - gunSize/2, gunSize, gunSize);
-                break;
-
-            case 'boss':
-                // Сложна форма босса с градиентом
-                const bossGradient = this.ctx.createRadialGradient(
-                    enemy.x + enemy.width/2, enemy.y + enemy.height/2, 0,
-                    enemy.x + enemy.width/2, enemy.y + enemy.height/2, enemy.width/2
-                );
-                bossGradient.addColorStop(0, '#dc2626');
-                bossGradient.addColorStop(0.5, enemy.color);
-                bossGradient.addColorStop(1, '#991b1b');
-
-                // Основное тело
-                this.ctx.fillStyle = bossGradient;
-                this.ctx.beginPath();
-                this.drawBossShape(enemy);
-                this.ctx.fill();
-
-                // Энергетическое поле
-                this.ctx.strokeStyle = `rgba(255, 255, 255, ${0.3 + Math.sin(enemy.time * 5) * 0.2})`;
-                this.ctx.lineWidth = 2;
-                this.ctx.stroke();
-
-                // олоса здоровья
+        const image = this.enemyImages[enemy.type];
+        
+        if (image && image.complete) {
+            // Рисуем изображение противника
+            this.ctx.save();
+            
+            // Добавляем свечение
+            this.ctx.shadowColor = enemy.color;
+            this.ctx.shadowBlur = 10;
+            
+            // Рисуем изображение
+            this.ctx.drawImage(
+                image,
+                enemy.x,
+                enemy.y,
+                enemy.width,
+                enemy.height
+            );
+            
+            this.ctx.restore();
+            
+            // Если это босс, добавляем полоску здоровья
+            if (enemy.type === 'boss') {
                 const healthPercentage = enemy.health / this.enemyTypes.boss.health;
                 const healthBarWidth = enemy.width * 1.2;
                 const healthBarHeight = 8;
@@ -953,7 +961,39 @@ class ArcadeCollector {
                     healthBarWidth * healthPercentage,
                     healthBarHeight
                 );
-                break;
+            }
+        } else {
+            // Fallback: рисуем базовые фигуры, если изображения не загрузились
+            switch(enemy.type) {
+                case 'basic':
+                    // Треугольный враг
+                    this.ctx.fillStyle = enemy.color;
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(enemy.x + enemy.width / 2, enemy.y);
+                    this.ctx.lineTo(enemy.x + enemy.width, enemy.y + enemy.height);
+                    this.ctx.lineTo(enemy.x, enemy.y + enemy.height);
+                    this.ctx.closePath();
+                    this.ctx.fill();
+                    break;
+
+                case 'shooter':
+                    // Шестиугольный враг
+                    this.ctx.fillStyle = enemy.color;
+                    this.ctx.beginPath();
+                    this.drawHexagon(
+                        enemy.x + enemy.width / 2,
+                        enemy.y + enemy.height / 2,
+                        enemy.width / 2
+                    );
+                    this.ctx.fill();
+                    break;
+
+                case 'boss':
+                    // Прямоугольный босс
+                    this.ctx.fillStyle = enemy.color;
+                    this.ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+                    break;
+            }
         }
     }
 
@@ -1114,7 +1154,7 @@ class ArcadeCollector {
             this.ctx.fill();
         });
 
-        // Добавляем индикатор отката рывка
+        // Добавляем индикатор отката рывк��
         if (this.player.dashCooldownTimer > 0) {
             const dashCooldownPercent = this.player.dashCooldownTimer / this.player.dashCooldown;
             const dashBarWidth = 30;
@@ -1211,6 +1251,23 @@ class ArcadeCollector {
             
             this.ctx.restore();
         }
+
+        // Отрисовка частиц двигателей противников
+        this.enemyEngineParticles.forEach(particle => {
+            const alpha = (1 - particle.time / particle.lifetime) * 0.7;
+            this.ctx.save();
+            this.ctx.globalAlpha = alpha;
+            
+            // Добавляем свечение в зависимости от типа противника
+            this.ctx.shadowBlur = particle.type === 'boss' ? 15 : 8;
+            this.ctx.shadowColor = particle.color;
+            
+            this.ctx.fillStyle = particle.color;
+            this.ctx.beginPath();
+            this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+            this.ctx.fill();
+            this.ctx.restore();
+        });
     }
 
     checkCollision(rect1, rect2) {
@@ -1245,78 +1302,32 @@ class ArcadeCollector {
         this.gameState = 'gameOver';
         this.gameOverMenu.style.display = 'flex';
         this.finalScoreElement.textContent = this.score;
+        
+        // Показывае�� меню при окончании игры
+        this.startMenu.style.display = 'flex';
+        
+        // Сохраняем результат
+        this.saveScore(this.score);
     }
 
-    restartGame() {
-        // Полный сброс состояния игры
-        this.gameState = 'playing';
-        this.score = 0;
-        this.player.lives = 3;
-        this.difficulty = 1;
-        this.gameTime = 0;
-        this.enemySpawnTimer = 0;
-        this.coinSpawnTimer = 0;
-        
-        // чищ��ем все массивы
-        this.coins = [];
-        this.enemies = [];
-        this.bullets = [];
-        this.enemyBullets = [];
-        this.particles = [];
-        
-        // Сбрасываем позицию игрока
-        this.player.x = this.canvas.width / 2 - this.player.width / 2;
-        this.player.y = this.canvas.height - 50;
-        
-        // Сбрасываем все таймеры и кулдауны
-        this.player.shootCooldown = 0;
-        this.timeAccumulator = 0;
-        this.lastTime = performance.now();
-        
-        // бновляем UI
-        this.scoreElement.textContent = '0';
-        this.livesElement.textContent = '3';
-        this.levelElement.textContent = '1.0';
-        
-        // Скрывам все меню
-        this.pauseMenu.style.display = 'none';
-        this.gameOverMenu.style.display = 'none';
-        
-        // Сбрасываем состояни клавиш
-        Object.keys(this.keys).forEach(key => {
-            this.keys[key] = false;
-        });
-        
-        // Сбрасываем параметры рывка
-        this.player.dashTimer = 0;
-        this.player.dashCooldownTimer = 0;
-        this.player.isDashing = false;
-        
-        // Иициализация здоровья игрока
-        this.player.health = this.player.maxHealth;
-        this.updateHealthDisplay(); // Обновляем отображение при рестарте
+    reset() {
+        this.gameState = 'start';
+        this.startMenu.style.display = 'flex';
+        // ... остальной код сброса ...
     }
 
     startGame() {
+        // Скрываем меню
+        this.startMenu.style.display = 'none';
+        // Запускаем игру
         this.gameState = 'playing';
+        // Сбрасываем счет и другие параметры игры
         this.score = 0;
-        this.gameTime = 0;
-        this.difficulty = 1;
-        this.player.lives = 5;
-        
-        // Обновляем UI
-        if (this.scoreElement) this.scoreElement.textContent = this.score;
-        if (this.livesElement) this.livesElement.textContent = this.player.lives;
-        if (this.levelElement) this.levelElement.textContent = this.difficulty;
-        
-        // Скрываем стартовое меню
-        if (this.startMenu) {
-            this.startMenu.style.display = 'none';
-        }
-        
-        // Инициализация здоровья игрока
         this.player.health = this.player.maxHealth;
-        this.updateHealthDisplay(); // Обновляем отображение при старте игры
+        this.enemies = [];
+        this.bullets = [];
+        this.coins = [];
+        this.updateHealthDisplay();
     }
 
     createDashEffect() {
@@ -1709,7 +1720,7 @@ updateWeaponPowerup(dt) {
         }, 3000);
     }
 
-    // Добавляем метод для эффекта появления босса
+    // Добавляем ме��од для эффекта появления босса
     createBossSpawnEffect() {
         const particles = 30;
         const colors = ['#dc2626', '#ef4444', '#ffffff'];
@@ -1808,7 +1819,7 @@ updateWeaponPowerup(dt) {
         }
     }
 
-    // Волновая атака
+    // Волновая ата��а
     bossWaveShot(boss) {
         const bulletCount = 12;
         const waveAmplitude = 100;
@@ -1856,7 +1867,7 @@ createBossBullet(boss, speedX, speedY, isHeavy = false) {
 
     // Добавим новые методы для атак лазерного босса
     bossLaserShot(boss) {
-        // Прямой лазерный луч
+        // Прямо�� лазерный луч
         const angle = Math.atan2(this.player.y - boss.y, this.player.x - boss.x);
         for(let i = 0; i < 5; i++) {
             const speedX = Math.cos(angle) * boss.bulletSpeed;
@@ -1981,6 +1992,249 @@ createBossBullet(boss, speedX, speedY, isHeavy = false) {
         }
     }
 
+    // Добавим новый метод для создания частиц двигателя противников
+    createEnemyEngineParticles(enemy) {
+        let enginePositions;
+        let particleConfig;
+
+        switch(enemy.type) {
+            case 'basic':
+                enginePositions = [
+                    { x: enemy.x + enemy.width * 0.30, y: enemy.y + 5 },  // Левый средний
+                    { x: enemy.x + enemy.width * 0.40, y: enemy.y + 5 },  // Левый ближний к центру
+                    { x: enemy.x + enemy.width * 0.50, y: enemy.y + 5 },  // Правый ближний к центру
+                    { x: enemy.x + enemy.width * 0.60, y: enemy.y + 5 }   // Правый средний
+                ];
+                particleConfig = {
+                    count: 1,
+                    baseSpeed: -80,
+                    size: { min: 1, max: 2 },
+                    lifetime: { min: 0.1, max: 0.2 }
+                };
+                break;
+
+            case 'shooter':
+                enginePositions = [
+                    { x: enemy.x + enemy.width * 0.4, y: enemy.y + 5 },   // Левый ближе к центру
+                    { x: enemy.x + enemy.width * 0.6, y: enemy.y + 5 }    // Правый ближе к центру
+                ];
+                particleConfig = {
+                    count: 2,
+                    baseSpeed: -120,
+                    size: { min: 2, max: 3 },
+                    lifetime: { min: 0.2, max: 0.3 }
+                };
+                break;
+
+            case 'boss':
+                enginePositions = [
+                    { x: enemy.x + enemy.width * 0.5, y: enemy.y + 5 }  // Центральный
+                ];
+                particleConfig = {
+                    count: 4,
+                    baseSpeed: -150,
+                    size: { min: 3, max: 5 },
+                    lifetime: { min: 0.3, max: 0.4 }
+                };
+                break;
+        }
+
+        enginePositions.forEach(pos => {
+            for (let i = 0; i < particleConfig.count; i++) {
+                const spread = (Math.random() - 0.5) * 4;
+                const size = particleConfig.size.min + Math.random() * (particleConfig.size.max - particleConfig.size.min);
+                const lifetime = particleConfig.lifetime.min + Math.random() * (particleConfig.lifetime.max - particleConfig.lifetime.min);
+                
+                this.enemyEngineParticles.push({
+                    x: pos.x + spread,
+                    y: pos.y,
+                    vx: (Math.random() - 0.5) * 15,
+                    vy: particleConfig.baseSpeed - Math.random() * 50,
+                    size: size,
+                    lifetime: lifetime,
+                    time: 0,
+                    color: enemy.color,
+                    type: enemy.type
+                });
+            }
+        });
+    }
+
+    // Добавим метод обновления частиц двигателей противников
+    updateEnemyEngineParticles(dt) {
+        this.enemyEngineParticles = this.enemyEngineParticles.filter(particle => {
+            particle.x += particle.vx * dt;
+            particle.y += particle.vy * dt;
+            particle.time += dt;
+            particle.size -= dt * 3;
+            return particle.time < particle.lifetime && particle.size > 0;
+        });
+
+        // Создаем новые частицы для каждого противника
+        if (this.gameState === 'playing') {
+            this.enemies.forEach(enemy => {
+                this.createEnemyEngineParticles(enemy);
+            });
+        }
+    }
+
+    // Добавляем метод проверки авторизации
+    async checkAuth() {
+        try {
+            console.log('Checking authentication...');
+            const response = await fetch('https://adminflow.ru/api/check-auth', {
+                credentials: 'include',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            console.log('Auth response status:', response.status);
+            
+            if (!response.ok) {
+                throw new Error(`Auth check failed: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            console.log('Auth response data:', data);
+            
+            if (data.authenticated && data.user) {
+                this.currentUser = data.user;
+                console.log('User authenticated:', this.currentUser);
+                
+                // Добавим проверку наличия необходимых данных
+                if (!this.currentUser.id) {
+                    console.error('User ID is missing in the response');
+                    this.showLoginPrompt();
+                    return;
+                }
+            } else {
+                console.log('User not authenticated:', data.message);
+                this.showLoginPrompt();
+            }
+        } catch (err) {
+            console.error('Error checking auth:', err);
+            this.showLoginPrompt();
+        }
+    }
+
+    // Добавляем метод показа приглашения войти
+    showLoginPrompt() {
+        const startMenu = document.getElementById('startMenu');
+        if (startMenu) {
+            const loginPrompt = document.createElement('div');
+            loginPrompt.className = 'login-prompt';
+            loginPrompt.innerHTML = `
+                <p>Войдите в аккаунт, чтобы сохранять результаты</p>
+                <a href="/login" class="login-button">Войти</a>
+            `;
+            startMenu.querySelector('.menu-content').appendChild(loginPrompt);
+        }
+    }
+
+    // Обновляем метод сохранения результата
+    async saveScore(score) {
+        console.log('Attempting to save score:', {
+            score,
+            currentUser: this.currentUser
+        });
+
+        if (!this.currentUser || !this.currentUser.id) {
+            console.log('Cannot save score: user not authenticated');
+            this.showLoginPrompt();
+            return;
+        }
+
+        try {
+            const response = await fetch('https://adminflow.ru/api/scores/save', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    userId: this.currentUser.id,
+                    score: score,
+                    gameName: 'ArcadeCollector'
+                })
+            });
+
+            console.log('Save score response status:', response.status);
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log('Save score response:', data);
+
+            if (data.success) {
+                console.log('Score saved successfully');
+                await this.updateLeaderboard();
+            } else {
+                console.error('Failed to save score:', data.error);
+            }
+        } catch (err) {
+            console.error('Error saving score:', err);
+        }
+    }
+
+    // Обновляем метод получения таблицы лидеров
+    async updateLeaderboard() {
+        try {
+            const response = await fetch('https://adminflow.ru/api/scores/leaderboard?gameName=ArcadeCollector', {
+                credentials: 'include' // Важно для работы с сессией
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            const tbody = document.querySelector('#leaderboardTable tbody');
+            if (!tbody) {
+                console.error('Leaderboard table body not found');
+                return;
+            }
+            
+            tbody.innerHTML = '';
+            
+            if (!data.leaderboard || !Array.isArray(data.leaderboard)) {
+                console.error('Invalid leaderboard data:', data);
+                return;
+            }
+            
+            data.leaderboard.forEach((entry, index) => {
+                const row = document.createElement('tr');
+                const date = new Date(entry.created_at).toLocaleDateString('ru-RU');
+                
+                // Добавляем класс для подсветки результата текущего пользователя
+                if (this.currentUser && entry.user_id === this.currentUser.id) {
+                    row.classList.add('current-user');
+                }
+                
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>
+                        <div class="player-info">
+                            <img src="${entry.avatar_url || '/assets/default-avatar.png'}" 
+                                 alt="" class="player-avatar"
+                                 onerror="this.src='/assets/default-avatar.png'">
+                            <span>${entry.username}</span>
+                        </div>
+                    </td>
+                    <td>${entry.score}</td>
+                    <td>${date}</td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        } catch (err) {
+            console.error('Error updating leaderboard:', err);
+        }
+    }
 } // Закрывающая скобка класса
 
 // Создание экземпляра игры при загрузке страницы

@@ -19,10 +19,11 @@ const STATUS_UPDATE_INTERVAL = 5000; // 5 секунд между обновле
 
 // Обновляем настройки CORS и SSL
 const corsOptions = {
-    origin: ['http://adminflow.ru', 'https://adminflow.ru'],
+    origin: ['https://adminflow.ru'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    exposedHeaders: ['set-cookie']
 };
 
 app.use(cors(corsOptions));
@@ -406,7 +407,7 @@ app.post('/api/friend-request/respond', async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         console.error('Friend response error:', err);
-        res.status(500).json({ error: 'Ошибка при обработке заяв����' });
+        res.status(500).json({ error: 'Ошиб��а при обработке заяв����' });
     }
 });
 
@@ -645,7 +646,7 @@ app.get('/api/messages/last/:userId/:friendId', async (req, res) => {
         res.json({ success: true, message: result.rows[0] });
     } catch (err) {
         console.error('Error getting last message:', err);
-        res.status(500).json({ error: 'Ошибка при получении последнего сообщения' });
+        res.status(500).json({ error: 'Ошибка при получении после��него сообщения' });
     }
 });
 
@@ -867,7 +868,7 @@ app.post('/api/users/update-profile', async (req, res) => {
             if (usernameCheck.rows.length > 0) {
                 return res.status(400).json({
                     success: false,
-                    error: 'Это имя пользователя уже занято'
+                    error: 'Это имя п��льзователя уже занято'
                 });
             }
         }
@@ -1521,7 +1522,7 @@ app.get('/api/feed', async (req, res) => {
     }
 });
 
-// Получение комментариев для поста
+// ��олучение комментариев для поста
 app.get('/api/posts/:postId/comments', async (req, res) => {
     try {
         const { postId } = req.params;
@@ -2283,42 +2284,58 @@ app.get('/api/users/:userId', async (req, res) => {
     }
 });
 
-// Получение списка чатов пользователя
+// Модифицируем запрос для получения списка чатов
 app.get('/api/chats/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
 
-        // Модифицированный запрос для получения списка чатов
         const result = await pool.query(`
             WITH ChatPartners AS (
-                -- Получаем уникальных собеседников
-                SELECT DISTINCT 
-                    CASE 
-                        WHEN sender_id = $1 THEN receiver_id
-                        ELSE sender_id 
-                    END as partner_id
-                FROM messages 
-                WHERE sender_id = $1 OR receiver_id = $1
+                -- Получаем всех друзей и собеседников
+                SELECT DISTINCT id as partner_id
+                FROM (
+                    -- Получаем друзей из таблицы friendships
+                    SELECT friend_id as id 
+                    FROM friendships 
+                    WHERE user_id = $1 AND status = 'accepted'
+                    UNION
+                    SELECT user_id as id
+                    FROM friendships 
+                    WHERE friend_id = $1 AND status = 'accepted'
+                    UNION
+                    -- Добавляем собеседников из сообщений
+                    SELECT DISTINCT 
+                        CASE 
+                            WHEN sender_id = $1 THEN receiver_id
+                            ELSE sender_id 
+                        END as id
+                    FROM messages 
+                    WHERE sender_id = $1 OR receiver_id = $1
+                ) all_partners
             ),
             LastMessages AS (
                 -- Получаем последние сообщения для каждого собеседника
-                SELECT DISTINCT ON (
-                    CASE 
-                        WHEN sender_id = $1 THEN receiver_id
-                        ELSE sender_id 
-                    END
-                )
-                    CASE 
-                        WHEN sender_id = $1 THEN receiver_id
-                        ELSE sender_id 
-                    END as partner_id,
+                SELECT DISTINCT ON (partner_id)
+                    partner_id,
                     message,
                     attachment_url,
                     created_at,
                     is_read,
                     sender_id
-                FROM messages
-                WHERE sender_id = $1 OR receiver_id = $1
+                FROM (
+                    SELECT 
+                        CASE 
+                            WHEN sender_id = $1 THEN receiver_id
+                            ELSE sender_id 
+                        END as partner_id,
+                        message,
+                        attachment_url,
+                        created_at,
+                        is_read,
+                        sender_id
+                    FROM messages
+                    WHERE sender_id = $1 OR receiver_id = $1
+                ) m
                 ORDER BY partner_id, created_at DESC
             )
             SELECT 
@@ -2342,10 +2359,14 @@ app.get('/api/chats/:userId', async (req, res) => {
             FROM ChatPartners cp
             JOIN users u ON u.id = cp.partner_id
             LEFT JOIN LastMessages lm ON lm.partner_id = u.id
-            ORDER BY lm.created_at DESC NULLS LAST
+            ORDER BY 
+                CASE 
+                    WHEN lm.created_at IS NULL THEN 1 
+                    ELSE 0 
+                END,
+                lm.created_at DESC NULLS LAST,
+                u.username
         `, [userId]);
-
-        console.log('Chats found:', result.rows.length); // Для отладки
 
         res.json({
             success: true,
@@ -2668,6 +2689,90 @@ app.delete('/api/messages/:messageId', async (req, res) => {
         res.status(500).json({
             success: false,
             error: 'Ошибка при удалении сообщения'
+        });
+    }
+});
+
+// Добавьте после других CREATE TABLE запросов
+pool.query(`
+    CREATE TABLE IF NOT EXISTS scores (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id),
+        score INTEGER NOT NULL,
+        game_name VARCHAR(50) NOT NULL,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    );
+    
+    CREATE INDEX IF NOT EXISTS idx_scores_game_name ON scores(game_name);
+    CREATE INDEX IF NOT EXISTS idx_scores_user_id ON scores(user_id);
+`).catch(err => {
+    console.error('Error creating scores table:', err);
+});
+
+// Сохранение нового результата
+app.post('/api/scores/save', async (req, res) => {
+    try {
+        const { userId, score, gameName } = req.body;
+        
+        await pool.query(`
+            INSERT INTO scores (user_id, score, game_name)
+            VALUES ($1, $2, $3)
+        `, [userId, score, gameName]);
+        
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Save score error:', err);
+        res.status(500).json({ error: 'Ошибка при сохранении результата' });
+    }
+});
+
+// Получение таблицы лидеров
+app.get('/api/scores/leaderboard', async (req, res) => {
+    try {
+        const { gameName } = req.query;
+        
+        const result = await pool.query(`
+            SELECT 
+                s.score,
+                s.created_at,
+                u.username,
+                u.avatar_url
+            FROM scores s
+            JOIN users u ON s.user_id = u.id
+            WHERE s.game_name = $1
+            ORDER BY s.score DESC
+            LIMIT 10
+        `, [gameName]);
+        
+        res.json({ leaderboard: result.rows });
+    } catch (err) {
+        console.error('Get leaderboard error:', err);
+        res.status(500).json({ error: 'Ошибка при получении таблицы лидеров' });
+    }
+});
+
+// Добавьте новый эндпоинт для проверки авторизации
+app.get('/api/check-auth', (req, res) => {
+    console.log('Session check:', {
+        hasSession: !!req.session,
+        sessionData: req.session,
+        cookies: req.cookies
+    });
+
+    if (req.session && req.session.user) {
+        res.json({
+            authenticated: true,
+            user: {
+                id: req.session.user.id,
+                username: req.session.user.username,
+                avatar_url: req.session.user.avatar_url
+            }
+        });
+    } else {
+        res.status(401).json({
+            authenticated: false,
+            user: null,
+            message: 'Не авторизован'
         });
     }
 });
