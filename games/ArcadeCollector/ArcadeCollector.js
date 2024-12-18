@@ -291,9 +291,9 @@ class ArcadeCollector {
             shooter: new Image(),
             boss: new Image()
         };
-        this.enemyImages.basic.src = 'assets/enemy/EA1.png';
-        this.enemyImages.shooter.src = 'assets/enemy/EA4.png';
-        this.enemyImages.boss.src = 'assets/enemy/EA6.png';
+        this.enemyImages.basic.src = '../assets/enemy/EA6.png';
+        this.enemyImages.shooter.src = '../assets/enemy/EA4.png';
+        this.enemyImages.boss.src = '../assets/enemy/EA1.png';
         
         // Добавляем обработчики загрузки
         Object.entries(this.enemyImages).forEach(([type, img]) => {
