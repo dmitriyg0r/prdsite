@@ -1065,7 +1065,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     `;
     document.head.appendChild(style);
 
-    // Обрабо��чики для мены пароля
+    // Обработчики для мены пароля
     const requestPasswordChangeBtn = document.getElementById('request-password-change');
     const passwordChangeModal = document.getElementById('password-change-modal');
     const sendVerificationCodeBtn = document.getElementById('send-verification-code');
@@ -1355,18 +1355,34 @@ async function createPost() {
 async function loadPosts() {
     try {
         const userId = new URLSearchParams(window.location.search).get('id') || currentUser.id;
-        console.log('Loading posts for userId:', userId); // Отладочная информация
-        
+        if (!userId || !currentUser.id) {
+            throw new Error('Missing required user IDs');
+        }
+
         const response = await fetch(`https://adminflow.ru/api/posts/${userId}?currentUserId=${currentUser.id}`);
         const data = await response.json();
-        
-        console.log('Posts response:', data); // Отладочная информация
+
+        if (!response.ok) {
+            throw new Error(data.error || 'Failed to load posts');
+        }
 
         if (data.success) {
-            displayPosts(data.posts);
+            displayPosts(data.posts || []);
+        } else {
+            throw new Error(data.error || 'Failed to load posts');
         }
     } catch (err) {
         console.error('Error loading posts:', err);
+        const container = document.getElementById('posts-container');
+        if (container) {
+            container.innerHTML = `
+                <div class="error-message">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <p>Ошибка при загрузке публикаций</p>
+                    <button onclick="loadPosts()">Повторить</button>
+                </div>
+            `;
+        }
     }
 }
 
