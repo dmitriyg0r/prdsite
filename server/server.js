@@ -407,7 +407,7 @@ app.post('/api/friend-request/respond', async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         console.error('Friend response error:', err);
-        res.status(500).json({ error: 'Ошиб��а при обработке заявки' });
+        res.status(500).json({ error: 'Ошиб��а при обработ��е заявки' });
     }
 });
 
@@ -1238,13 +1238,14 @@ app.post('/api/posts/create', uploadPost.single('image'), async (req, res) => {
     }
 });
 
-// Обновляем маршрут для получения постов
+// Маршрут для получения постов
 app.get('/api/posts/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
         const { currentUserId } = req.query;
 
-        // Проверяем наличие необходимых параметров
+        console.log('Fetching posts:', { userId, currentUserId });
+
         if (!userId || !currentUserId) {
             return res.status(400).json({
                 success: false,
@@ -1252,25 +1253,47 @@ app.get('/api/posts/:userId', async (req, res) => {
             });
         }
 
-        // Получаем посты с информацией о лайках
+        // Получаем посты с учетом структуры таблицы
         const postsQuery = `
+            WITH post_stats AS (
+                -- Подсчет лайков
+                SELECT 
+                    parent_id as post_id,
+                    COUNT(*) as likes_count
+                FROM posts
+                WHERE type = 'like'
+                GROUP BY parent_id
+            ),
+            comment_stats AS (
+                -- Подсчет комментариев
+                SELECT 
+                    parent_id as post_id,
+                    COUNT(*) as comments_count
+                FROM posts
+                WHERE type = 'comment'
+                GROUP BY parent_id
+            ),
+            user_likes AS (
+                -- Проверка лайков текущего пользователя
+                SELECT DISTINCT parent_id as post_id
+                FROM posts
+                WHERE type = 'like' 
+                AND user_id = $2
+            )
             SELECT 
                 p.*,
                 u.username as author_name,
                 u.avatar_url as author_avatar,
-                COUNT(DISTINCT l.id) as likes_count,
-                COUNT(DISTINCT c.id) as comments_count,
-                EXISTS(
-                    SELECT 1 
-                    FROM likes 
-                    WHERE post_id = p.id AND user_id = $2
-                ) as is_liked
+                COALESCE(ps.likes_count, 0) as likes_count,
+                COALESCE(cs.comments_count, 0) as comments_count,
+                CASE WHEN ul.post_id IS NOT NULL THEN true ELSE false END as is_liked
             FROM posts p
             LEFT JOIN users u ON p.user_id = u.id
-            LEFT JOIN likes l ON p.id = l.post_id
-            LEFT JOIN comments c ON p.id = c.post_id
-            WHERE p.user_id = $1
-            GROUP BY p.id, u.username, u.avatar_url
+            LEFT JOIN post_stats ps ON p.id = ps.post_id
+            LEFT JOIN comment_stats cs ON p.id = cs.post_id
+            LEFT JOIN user_likes ul ON p.id = ul.post_id
+            WHERE p.user_id = $1 
+            AND p.type = 'post'
             ORDER BY p.created_at DESC
         `;
 
@@ -1285,7 +1308,7 @@ app.get('/api/posts/:userId', async (req, res) => {
         console.error('Error fetching posts:', err);
         res.status(500).json({
             success: false,
-            error: 'Ошибка при загрузке постов'
+            error: 'Ошибка при загрузке постов: ' + err.message
         });
     }
 });
