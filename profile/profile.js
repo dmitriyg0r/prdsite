@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('logout-btn').style.display = 'none';
             document.querySelector('.avatar-overlay').style.display = 'none';
             
-            // Скрываем вклаку запросов в модальном окне
+            // Скрываем вкла��у запросов в модальном окне
             const requestsTab = document.querySelector('[data-tab="requests-tab"]');
             if (requestsTab) {
                 requestsTab.style.display = 'none';
@@ -361,7 +361,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         } catch (err) {
             console.error('Search error:', err);
-            alert('Ошибка при поиске пользователей');
+            alert('Ошибка ��ри поиске пользователей');
         }
     }
 
@@ -631,7 +631,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             </div>
         `).join('');
 
-        // Обновляем обраб��тчики событий
+        // Обновляем обрабтчики событий
         document.querySelectorAll('.accept-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 respondToFriendRequest(btn.dataset.userId, 'accepted');
@@ -934,7 +934,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const updateActivity = () => {
             lastActivity = new Date();
             
-            // Используем debouncing для обновления ��татуса
+            // Используем debouncing для обновления татуса
             if (activityTimeout) {
                 clearTimeout(activityTimeout);
             }
@@ -1307,7 +1307,7 @@ async function createPost() {
                 return;
             }
 
-            // Изм��няем имя поля на 'image' для соответствия серверу
+            // Измняем имя поля на 'image' для соответствия серверу
             formData.append('image', file);
         }
 
@@ -1350,44 +1350,60 @@ async function createPost() {
     }
 }
 
+// Функция проверки состояния сервера
+async function checkServerHealth() {
+    try {
+        const response = await fetch('https://adminflow.ru/api/health');
+        const data = await response.json();
+        
+        if (!data.success) {
+            console.error('Server health check failed:', data);
+            return false;
+        }
+        
+        return true;
+    } catch (err) {
+        console.error('Server health check error:', err);
+        return false;
+    }
+}
+
+// Модифицируем функцию загрузки постов
 async function loadPosts() {
     try {
-        // Получаем userId из URL или используем currentUser.id
+        // Проверяем состояние сервера перед запросом
+        const isHealthy = await checkServerHealth();
+        if (!isHealthy) {
+            throw new Error('Сервер временно недоступен');
+        }
+
         const urlParams = new URLSearchParams(window.location.search);
         const userId = urlParams.get('id') || currentUser?.id;
         
-        console.log('Loading posts for user:', { userId, currentUserId: currentUser?.id });
-
-        // Проверяем наличие необходимых ID
         if (!userId || !currentUser?.id) {
             throw new Error('Необходимые ID отсутствуют');
         }
 
+        console.log('Loading posts for user:', { userId, currentUserId: currentUser.id });
+
         const response = await fetch(`https://adminflow.ru/api/posts/${userId}?currentUserId=${currentUser.id}`);
         
         if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
             console.error('Server response:', {
                 status: response.status,
-                statusText: response.statusText
+                statusText: response.statusText,
+                data: errorData
             });
-            
-            const errorData = await response.json().catch(() => ({}));
-            console.error('Error data:', errorData);
-            
-            throw new Error(`Ошибка загрузки: ${response.status} ${errorData.error || response.statusText}`);
+            throw new Error(errorData.error || `Ошибка загрузки: ${response.status}`);
         }
-        
+
         const data = await response.json();
-        
+        console.log('Posts loaded:', data);
+
         if (!data.success) {
             throw new Error(data.error || 'Ошибка при загрузке постов');
         }
-
-        // Проверяем структуру данных
-        console.log('Posts data:', {
-            postsCount: data.posts?.length,
-            firstPost: data.posts?.[0]
-        });
 
         displayPosts(data.posts);
 
@@ -1397,15 +1413,12 @@ async function loadPosts() {
         if (container) {
             container.innerHTML = `
                 <div class="error-message">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <p>Ошибка при загрузке публикаций: ${error.message}</p>
-                    <button onclick="loadPosts()" class="retry-btn">
-                        <i class="fas fa-sync-alt"></i> Повторить
-                    </button>
+                    <p>${error.message}</p>
+                    <button onclick="loadPosts()" class="retry-btn">Повторить</button>
                 </div>
             `;
         }
-        throw error; // Пробрасываем ошибку дальше для обработки в вызывающем коде
+        throw error;
     }
 }
 
@@ -1589,7 +1602,7 @@ async function deletePost(postId) {
         const data = await response.json();
         
         if (response.ok || data.success) {
-            // Перезагружаем посты после удаления
+            // Перезагружаем посты после удале��ия
             loadPosts();
         } else {
             alert(data.error || 'Ошибка при удалении публикации');

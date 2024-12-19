@@ -46,6 +46,152 @@ testConnection().then(connected => {
     }
 });
 
+// Проверка подключения к базе данных
+let dbConnected = false;
+
+async function checkDbConnection() {
+    try {
+        await pool.query('SELECT 1');
+        dbConnected = true;
+        console.log('[DB] Connection successful');
+    } catch (err) {
+        dbConnected = false;
+        console.error('[DB] Connection error:', err);
+    }
+}
+
+// Проверяем подключение при старте
+checkDbConnection();
+
+// Middleware для проверки подключения к БД
+app.use(async (req, res, next) => {
+    if (!dbConnected) {
+        await checkDbConnection();
+    }
+    if (!dbConnected) {
+        return res.status(500).json({
+            success: false,
+            error: 'Database connection error'
+        });
+    }
+    next();
+});
+
+// Максимально упрощенный маршрут для получения постов
+app.get('/api/posts/:userId', async (req, res) => {
+    try {
+        const { userId } = req.params;
+        console.log('[GET /api/posts] Request for user:', userId);
+
+        // Простой запрос только для постов
+        const query = `
+            SELECT 
+                p.id,
+                p.user_id,
+                p.content,
+                p.image_url,
+                p.created_at,
+                u.username as author_name,
+                u.avatar_url as author_avatar
+            FROM posts p
+            JOIN users u ON p.user_id = u.id
+            WHERE p.user_id = $1 
+            AND p.type = 'post'
+            ORDER BY p.created_at DESC
+        `;
+
+        const result = await pool.query(query, [userId]);
+        console.log('[GET /api/posts] Found posts:', result.rows.length);
+
+        res.json({
+            success: true,
+            posts: result.rows
+        });
+
+    } catch (err) {
+        console.error('[GET /api/posts] Error:', {
+            message: err.message,
+            stack: err.stack,
+            code: err.code
+        });
+        
+        res.status(500).json({
+            success: false,
+            error: err.message
+        });
+    }
+});
+
+// Максимально упрощенный маршрут для обновления статуса
+app.post('/api/users/update-status', async (req, res) => {
+    try {
+        const { userId } = req.body;
+        console.log('[UPDATE STATUS] Request for user:', userId);
+
+        if (!userId) {
+            return res.status(400).json({
+                success: false,
+                error: 'User ID is required'
+            });
+        }
+
+        // Проверяем существование пользователя
+        const userCheck = await pool.query(
+            'SELECT id FROM users WHERE id = $1',
+            [userId]
+        );
+
+        if (userCheck.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'User not found'
+            });
+        }
+
+        // Простое обновление времени активности
+        const result = await pool.query(
+            'UPDATE users SET last_activity = NOW() WHERE id = $1 RETURNING id',
+            [userId]
+        );
+
+        res.json({
+            success: true,
+            user: result.rows[0]
+        });
+
+    } catch (err) {
+        console.error('[UPDATE STATUS] Error:', {
+            message: err.message,
+            stack: err.stack,
+            code: err.code
+        });
+        
+        res.status(500).json({
+            success: false,
+            error: err.message
+        });
+    }
+});
+
+// Проверка состояния базы данных
+app.get('/api/health', async (req, res) => {
+    try {
+        await pool.query('SELECT 1');
+        res.json({
+            success: true,
+            database: 'connected',
+            timestamp: new Date().toISOString()
+        });
+    } catch (err) {
+        res.status(500).json({
+            success: false,
+            database: 'disconnected',
+            error: err.message,
+            timestamp: new Date().toISOString()
+        });
+    }
+});
+
 // Test route
 app.get('/api/test', async (req, res) => {
     try {
@@ -407,7 +553,7 @@ app.post('/api/friend-request/respond', async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         console.error('Friend response error:', err);
-        res.status(500).json({ error: 'Ошиб��а при обработ��е заявки' });
+        res.status(500).json({ error: 'Ошиба при обработе заявки' });
     }
 });
 
@@ -1238,116 +1384,6 @@ app.post('/api/posts/create', uploadPost.single('image'), async (req, res) => {
     }
 });
 
-// Маршрут для получения постов
-app.get('/api/posts/:userId', async (req, res) => {
-    try {
-        const { userId } = req.params;
-        const { currentUserId } = req.query;
-
-        console.log('[GET /api/posts] Starting request:', { userId, currentUserId });
-
-        // Базовый запрос для проверки соединения
-        try {
-            const connectionTest = await pool.query('SELECT 1');
-            console.log('[GET /api/posts] Database connection test:', connectionTest.rows);
-        } catch (err) {
-            console.error('[GET /api/posts] Database connection error:', err);
-            throw new Error('Database connection failed');
-        }
-
-        // Простой запрос для получения постов
-        const simpleQuery = `
-            SELECT 
-                p.id,
-                p.user_id,
-                p.content,
-                p.image_url,
-                p.created_at,
-                p.type,
-                u.username as author_name,
-                u.avatar_url as author_avatar
-            FROM posts p
-            JOIN users u ON p.user_id = u.id
-            WHERE p.user_id = $1 
-            AND p.type = 'post'
-            ORDER BY p.created_at DESC
-        `;
-
-        console.log('[GET /api/posts] Executing simple query...');
-        const posts = await pool.query(simpleQuery, [userId]);
-        console.log('[GET /api/posts] Found posts:', posts.rows.length);
-
-        // Получаем лайки отдельным запросом
-        const likesQuery = `
-            SELECT parent_id, COUNT(*) as count
-            FROM posts
-            WHERE type = 'like'
-            AND parent_id IN (SELECT id FROM posts WHERE user_id = $1 AND type = 'post')
-            GROUP BY parent_id
-        `;
-
-        const likes = await pool.query(likesQuery, [userId]);
-        console.log('[GET /api/posts] Found likes:', likes.rows.length);
-
-        // Получаем комментарии отдельным запросом
-        const commentsQuery = `
-            SELECT parent_id, COUNT(*) as count
-            FROM posts
-            WHERE type = 'comment'
-            AND parent_id IN (SELECT id FROM posts WHERE user_id = $1 AND type = 'post')
-            GROUP BY parent_id
-        `;
-
-        const comments = await pool.query(commentsQuery, [userId]);
-        console.log('[GET /api/posts] Found comments:', comments.rows.length);
-
-        // Получаем лайки текущего пользователя
-        const userLikesQuery = `
-            SELECT parent_id
-            FROM posts
-            WHERE type = 'like'
-            AND user_id = $1
-        `;
-
-        const userLikes = await pool.query(userLikesQuery, [currentUserId]);
-        console.log('[GET /api/posts] Found user likes:', userLikes.rows.length);
-
-        // Собираем все данные вместе
-        const result = posts.rows.map(post => {
-            const postLikes = likes.rows.find(l => l.parent_id === post.id);
-            const postComments = comments.rows.find(c => c.parent_id === post.id);
-            const isLiked = userLikes.rows.some(ul => ul.parent_id === post.id);
-
-            return {
-                ...post,
-                likes_count: postLikes ? parseInt(postLikes.count) : 0,
-                comments_count: postComments ? parseInt(postComments.count) : 0,
-                is_liked: isLiked
-            };
-        });
-
-        console.log('[GET /api/posts] Sending response with posts:', result.length);
-
-        res.json({
-            success: true,
-            posts: result
-        });
-
-    } catch (err) {
-        console.error('[GET /api/posts] Error:', {
-            message: err.message,
-            stack: err.stack,
-            code: err.code,
-            detail: err.detail
-        });
-        
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка при загрузке постов: ' + err.message
-        });
-    }
-});
-
 // Упрощенный маршрут для обновления статуса
 app.post('/api/users/update-status', async (req, res) => {
     try {
@@ -1355,15 +1391,24 @@ app.post('/api/users/update-status', async (req, res) => {
         
         console.log('[UPDATE STATUS] Request for user:', userId);
 
-        // Простое обновление без дополнительных проверок
-        const result = await pool.query(`
-            UPDATE users 
-            SET last_activity = CURRENT_TIMESTAMP 
-            WHERE id = $1 
-            RETURNING id, last_activity
-        `, [userId]);
+        // Проверяем существование пользователя
+        const userCheck = await pool.query(
+            'SELECT id FROM users WHERE id = $1',
+            [userId]
+        );
 
-        console.log('[UPDATE STATUS] Update result:', result.rows[0]);
+        if (userCheck.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'User not found'
+            });
+        }
+
+        // Простое обновление времени активности
+        const result = await pool.query(
+            'UPDATE users SET last_activity = NOW() WHERE id = $1 RETURNING id',
+            [userId]
+        );
 
         res.json({
             success: true,
