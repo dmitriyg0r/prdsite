@@ -492,3 +492,59 @@
         max-width: 600px;
     }
 }
+
+.game-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 10px 20px;
+    border-radius: 5px;
+    color: white;
+    z-index: 1000;
+    animation: slideIn 0.3s ease-out;
+}
+
+.game-notification.success {
+    background-color: #4ade80;
+}
+
+.game-notification.error {
+    background-color: #ef4444;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Стили для индикатора здоровья */
+#health {
+    transition: color 0.3s ease;
+}
+
+#health.low-health {
+    color: #ef4444;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+/* Эффект получения урона */
+.damage {
+    animation: damage 0.3s ease;
+}
+
+@keyframes damage {
+    0% { border-color: #ef4444; }
+    100% { border-color: var(--border-light); }
+}

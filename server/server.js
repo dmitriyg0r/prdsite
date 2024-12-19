@@ -1749,7 +1749,7 @@ app.delete('/api/messages/delete/:messageId', async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         console.error('Error deleting message:', err);
-        res.status(500).json({ error: 'Ошибка при удал��нии соо��щ��н����я' });
+        res.status(500).json({ error: 'Ошиб��а при удал��нии соо��щ��н����я' });
     }
 });
 
@@ -2578,6 +2578,100 @@ app.get('/api/check-auth', async (req, res) => {
         res.status(500).json({
             success: false,
             error: 'Ошибка проверки авторизации',
+            details: process.env.NODE_ENV === 'development' ? err.message : undefined
+        });
+    }
+});
+
+// Эндпоинт для сохранения рекордов
+app.post('/api/scores/save', async (req, res) => {
+    try {
+        const { userId, score, gameName } = req.body;
+
+        // Проверяем наличие всех необходимых данных
+        if (!userId || score === undefined || !gameName) {
+            return res.status(400).json({
+                success: false,
+                error: 'Отсутствуют обязательные параметры'
+            });
+        }
+
+        // Проверяем, что score является числом и больше или равен 0
+        const numericScore = parseInt(score);
+        if (isNaN(numericScore) || numericScore < 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'Некорректное значение счета'
+            });
+        }
+
+        // Начинаем транзакцию
+        await pool.query('BEGIN');
+
+        try {
+            // Получаем текущий лучший результат пользователя
+            const currentBest = await pool.query(
+                'SELECT score FROM scores WHERE user_id = $1 AND game_name = $2',
+                [userId, gameName]
+            );
+
+            if (currentBest.rows.length === 0) {
+                // Если это первый результат пользователя
+                await pool.query(
+                    'INSERT INTO scores (user_id, score, game_name) VALUES ($1, $2, $3)',
+                    [userId, numericScore, gameName]
+                );
+            } else if (numericScore > currentBest.rows[0].score) {
+                // Если новый результат лучше предыдущего
+                await pool.query(
+                    'UPDATE scores SET score = $1, created_at = CURRENT_TIMESTAMP WHERE user_id = $2 AND game_name = $3',
+                    [numericScore, userId, gameName]
+                );
+            }
+
+            // Фиксируем транзакцию
+            await pool.query('COMMIT');
+
+            // Получаем обновленную позицию в таблице лидеров
+            const rankQuery = await pool.query(`
+                WITH RankedScores AS (
+                    SELECT 
+                        user_id,
+                        score,
+                        ROW_NUMBER() OVER (ORDER BY score DESC) as rank
+                    FROM scores
+                    WHERE game_name = $1
+                )
+                SELECT rank
+                FROM RankedScores
+                WHERE user_id = $2
+            `, [gameName, userId]);
+
+            res.json({
+                success: true,
+                message: 'Рекорд сохранен',
+                rank: rankQuery.rows[0]?.rank || null,
+                score: numericScore
+            });
+
+        } catch (err) {
+            // В случае ошибки откатываем транзакцию
+            await pool.query('ROLLBACK');
+            throw err;
+        }
+
+    } catch (err) {
+        console.error('Error saving score:', {
+            error: err,
+            stack: err.stack,
+            userId: req.body.userId,
+            score: req.body.score,
+            gameName: req.body.gameName
+        });
+
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при сохранении рекорда',
             details: process.env.NODE_ENV === 'development' ? err.message : undefined
         });
     }

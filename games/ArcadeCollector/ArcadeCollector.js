@@ -433,7 +433,7 @@ class ArcadeCollector {
             }
         };
         
-        // Добавим порядок появления б��ссов
+        // Добавим порядок появления б�����сов
         this.bossOrder = ['basic']; // Первый босс всегда basic
         this.currentBossIndex = 0;
         
@@ -1083,6 +1083,12 @@ class ArcadeCollector {
 
         // Обновление частиц двигателей противников
         this.updateEnemyEngineParticles(dt);
+
+        // Проверяем здоровье в начале обновления
+        if (this.player.health <= 0) {
+            this.gameOver();
+            return;
+        }
     }
 
     updatePlayerPosition(dt) {
@@ -1573,20 +1579,22 @@ class ArcadeCollector {
     }
 
     gameOver() {
-        this.gameState = 'over';
-        
-        // Обновляем финальный счет
-        if (this.finalScoreElement) {
-            this.finalScoreElement.textContent = this.score;
-        }
+        if (this.gameState === 'gameover') return; // Предотвращаем повторный вызов
+
+        this.gameState = 'gameover';
+        this.player.health = 0; // Устанавливаем здоровье в 0
         
         // Показываем меню окончания игры
         const gameOverMenu = document.getElementById('gameOverMenu');
         if (gameOverMenu) {
+            const finalScore = document.getElementById('finalScore');
+            if (finalScore) {
+                finalScore.textContent = Math.round(this.score);
+            }
             gameOverMenu.style.display = 'flex';
         }
-        
-        // Сохраняем счет
+
+        // Сохраняем рекорд
         this.saveScore(this.score);
     }
 
@@ -1673,22 +1681,18 @@ class ArcadeCollector {
     }
 
     createDamageEffect() {
-        // Визуальный эффект получения рона
-        const particles = 15;
-        const colors = ['#ef4444', '#dc2626', '#ffffff'];
-        
-        for (let i = 0; i < particles; i++) {
-            const angle = (Math.PI * 2 * i) / particles;
-            const speed = 100 + Math.random() * 100;
-            
+        // Создаем красные частицы при получении урона
+        const particleCount = 10;
+        for (let i = 0; i < particleCount; i++) {
+            const angle = (Math.PI * 2 * i) / particleCount;
             this.particles.push({
                 x: this.player.x + this.player.width / 2,
                 y: this.player.y + this.player.height / 2,
-                vx: Math.cos(angle) * speed,
-                vy: Math.sin(angle) * speed,
-                size: 3 + Math.random() * 3,
-                color: colors[Math.floor(Math.random() * colors.length)],
-                lifetime: 0.3 + Math.random() * 0.2,
+                vx: Math.cos(angle) * 200,
+                vy: Math.sin(angle) * 200,
+                size: 5,
+                color: '#ef4444',
+                lifetime: 0.5,
                 time: 0
             });
         }
@@ -1700,7 +1704,7 @@ class ArcadeCollector {
         }
     }
 
-    // Добавим новый метод для создания частиц двигателя
+    // Добавим новый метод для создания части двигателя
     createEngineParticles() {
         // Определяем интенсивность на основе движения
         const movingUp = this.keys.ArrowUp;
@@ -1730,7 +1734,7 @@ class ArcadeCollector {
         });
     }
 
-    // Добавим мето�� обновления частиц двигателя
+    // Добавим мето обновления частиц двигателя
     updateEngineParticles(dt) {
         this.engineParticles = this.engineParticles.filter(particle => {
             particle.x += particle.vx * dt;
@@ -1820,7 +1824,7 @@ class ArcadeCollector {
         }
     }
 
-    // Эффект улучшения ор��жия
+    // Эффект улучшения оржия
     applyWeaponPerk(type) {
         this.weaponPowerup = {
             active: true,
@@ -1997,7 +2001,7 @@ class ArcadeCollector {
         }, 3000);
     }
 
-    // Добавляем метод для эф��екта появления босса
+    // Добавляем метод для эфекта появления босса
     createBossSpawnEffect() {
         const particles = 30;
         const colors = ['#dc2626', '#ef4444', '#ffffff'];
@@ -2019,7 +2023,7 @@ class ArcadeCollector {
         }
     }
 
-    // Добавляем метод обновлени�� бос��а
+    // Добавляем метод обновлени боса
     updateBoss(dt) {
         if (!this.bossConfig.active || !this.bossConfig.boss) return;
         
@@ -2035,7 +2039,7 @@ class ArcadeCollector {
         }
     }
 
-    // Добавляем метод стрельбы босса с разными паттернам��
+    // Добавляем метод стрельбы босса с разными паттернам
     bossShooting(boss) {
         const pattern = boss.bulletPatterns[boss.currentPattern];
         
@@ -2316,7 +2320,7 @@ class ArcadeCollector {
                 };
                 break;
 
-            // Добавляем конфигурацию по умолчанию для всех остальн���� типов
+            // Добавляем конфигурацию по умолчанию для всех остальн типов
             default:
                 enginePositions = [
                     { x: enemy.x + enemy.width * 0.5, y: enemy.y + 5 }
@@ -2362,7 +2366,7 @@ class ArcadeCollector {
             return particle.time < particle.lifetime && particle.size > 0;
         });
 
-        // Создаем ��овые частицы для каждого противника
+        // Создаем овые частицы для каждого противника
         if (this.gameState === 'playing') {
             this.enemies.forEach(enemy => {
                 this.createEnemyEngineParticles(enemy);
@@ -2431,18 +2435,13 @@ class ArcadeCollector {
 
     // Обновляем метод сохранения результата
     async saveScore(score) {
-        console.log('Attempting to save score:', {
-            score,
-            currentUser: this.currentUser
-        });
-
-        if (!this.currentUser || !this.currentUser.id) {
-            console.log('Cannot save score: user not authenticated');
-            this.showLoginPrompt();
-            return;
-        }
-
         try {
+            if (!this.currentUser || !this.currentUser.id) {
+                console.warn('Невозможно сохранить рекорд: пользователь не авторизован');
+                this.showLoginPrompt();
+                return;
+            }
+
             const response = await fetch('https://adminflow.ru/api/scores/save', {
                 method: 'POST',
                 headers: {
@@ -2452,28 +2451,36 @@ class ArcadeCollector {
                 credentials: 'include',
                 body: JSON.stringify({
                     userId: this.currentUser.id,
-                    score: score,
+                    score: Math.round(score), // Округляем счет до целого числа
                     gameName: 'ArcadeCollector'
                 })
             });
-
-            console.log('Save score response status:', response.status);
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
             const data = await response.json();
-            console.log('Save score response:', data);
-
+            
             if (data.success) {
-                console.log('Score saved successfully');
+                console.log('Рекорд сохранен успешно', {
+                    score: data.score,
+                    rank: data.rank
+                });
+                
+                // Показываем уведомление о сохранении рекорда
+                this.showNotification(`Рекорд сохранен! Ваше место: ${data.rank}`);
+                
+                // Обновляем таблицу лидеров
                 await this.updateLeaderboard();
             } else {
-                console.error('Failed to save score:', data.error);
+                console.error('Ошибка сохранения рекорда:', data.error);
+                this.showNotification('Ошибка сохранения рекорда', 'error');
             }
+
         } catch (err) {
-            console.error('Error saving score:', err);
+            console.error('Ошибка сохранения рекорда:', err);
+            this.showNotification('Ошибка сохранения рекорда', 'error');
         }
     }
 
@@ -2756,6 +2763,19 @@ class ArcadeCollector {
         }
         
         return this.score;
+    }
+
+    // Добавим метод для показа уведомлений
+    showNotification(message, type = 'success') {
+        const notification = document.createElement('div');
+        notification.className = `game-notification ${type}`;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+
+        // Удаляем уведомление через 3 секунды
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
     }
 } // Закрывающая скобка класса
 
