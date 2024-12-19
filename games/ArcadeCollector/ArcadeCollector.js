@@ -433,7 +433,7 @@ class ArcadeCollector {
             }
         };
         
-        // Добавим порядок появления б������сов
+        // Добавим порядок появления б��������сов
         this.bossOrder = ['basic']; // Первый босс всегда basic
         this.currentBossIndex = 0;
         
@@ -448,7 +448,7 @@ class ArcadeCollector {
         this.loadImages = this.loadImages.bind(this);
         this.init = this.init.bind(this);
         
-        // Запускаем инициализа��ию
+        // Запускаем инициализа����ию
         this.init();
     }
 
@@ -476,15 +476,34 @@ class ArcadeCollector {
 
     async loadImages() {
         try {
-            // Загрузка изображений бонусов с правильными путями
-            this.healthPerkImage = await this.loadImage('./assets/med_perk.png');
-            this.weaponPerkImage = await this.loadImage('./assets/w3_perk.png');
-            this.weapon2PerkImage = await this.loadImage('./assets/w2_perk.png');
+            // Загрузка изображений бонусов
+            this.healthPerkImage = await this.loadImage('../ArcadeCollector/assets/med_perk.png');
+            this.weaponPerkImage = await this.loadImage('../ArcadeCollector/assets/w3_perk.png');
+            this.weapon2PerkImage = await this.loadImage('../ArcadeCollector/assets/w2_perk.png');
 
-            // Загрузка изображений врагов
-            for (const enemyType of Object.keys(this.enemyTypes)) {
+            // Карта соответствия типов врагов и названий файлов
+            const enemyImageMap = {
+                basic: 'EA1',
+                shooter: 'EA2',
+                boss: 'EA3',
+                fast: 'EA4',
+                tank: 'EA5',
+                zigzag: 'EA6',
+                kamikaze: 'EA7',
+                sniper: 'EA8',
+                bomber: 'EA9',
+                stealth: 'EA10',
+                shielded: 'EA11',
+                healer: 'EA12',
+                drone: 'EA13',
+                swarm: 'EA14',
+                heavy: 'EA15'
+            };
+
+            // Загрузка изображений врагов с правильными названиями файлов
+            for (const [enemyType, fileName] of Object.entries(enemyImageMap)) {
                 try {
-                    const image = await this.loadImage(`./assets/enemies/${enemyType}.png`);
+                    const image = await this.loadImage(`../ArcadeCollector/assets/enemy/${fileName}.png`);
                     this.enemyTypes[enemyType].image = image;
                     console.log(`${enemyType} enemy image loaded successfully`);
                 } catch (err) {
@@ -499,7 +518,6 @@ class ArcadeCollector {
             console.log('Все изображения загружены успешно');
         } catch (err) {
             console.error('Ошибка загрузки изображений:', err);
-            // Создаем заглушки для отсутствующих изображений перков
             this.createFallbackImages();
         }
     }
@@ -883,7 +901,7 @@ class ArcadeCollector {
             bullet.x += bullet.speedX * dt;
             bullet.y += bullet.speedY * dt;
             
-            // Проверяем попадание в босса
+            // Проверяем ��опадание в босса
             if (this.bossConfig.active && this.bossConfig.boss) {
                 if (this.checkCollision(bullet, this.bossConfig.boss)) {
                     this.bossConfig.boss.health -= bullet.damage;
@@ -1282,7 +1300,7 @@ class ArcadeCollector {
             this.player.dashTimer -= dt;
             this.player.ghostTimer -= dt;
             
-            // Создаем призрачный сле����
+            // Создаем призрачный сле
             if (this.player.ghostTimer <= 0) {
                 this.createDashGhost();
                 this.player.ghostTimer = this.player.ghostInterval;
@@ -2190,7 +2208,7 @@ class ArcadeCollector {
         }
     }
 
-    // Добавляем метод стрельбы босса с разными паттернам
+    // Добавляем метод стрельбы б��сса с разными паттернам
     bossShooting(boss) {
         const pattern = boss.bulletPatterns[boss.currentPattern];
         
