@@ -621,48 +621,21 @@ class ArcadeCollector {
     }
 
     updateDifficulty() {
-        try {
-            // Проверяем, что необходимые значения существуют и являются числами
-            if (typeof this.gameTime !== 'number') {
-                this.gameTime = 0;
-            }
-            if (typeof this.score !== 'number') {
-                this.score = 0;
-            }
-
-            // Базовая сложность всегда начинается с 1
-            let newDifficulty = 1;
-            
-            // Увеличение сложности от времени (каждые 60 секунд +0.5)
-            const timeBonus = Math.floor(this.gameTime / 60) * 0.5;
-            
-            // Увеличение сложности от очков (каждые 500 очков +0.2)
-            const scoreBonus = Math.floor(this.score / 500) * 0.2;
-            
-            // Складываем бонусы
-            newDifficulty += timeBonus + scoreBonus;
-            
-            // Ограничиваем минимальную и максимальную сложность
-            this.difficulty = Math.max(1, Math.min(newDifficulty, 10));
-            
-            // Безопасное обновление отображения
-            if (this.levelElement) {
-                const formattedDifficulty = this.difficulty.toFixed(1);
-                // Дополнительная проверка на NaN
-                if (!isNaN(formattedDifficulty)) {
-                    this.levelElement.textContent = formattedDifficulty;
-                } else {
-                    this.levelElement.textContent = '1.0';
-                    console.error('Difficulty calculation resulted in NaN');
-                }
-            }
-        } catch (error) {
-            console.error('Error in updateDifficulty:', error);
-            // В случае ошибки устанавливаем базовые значения
-            this.difficulty = 1;
-            if (this.levelElement) {
-                this.levelElement.textContent = '1.0';
-            }
+        // Базовая сложность
+        let newDifficulty = 1;
+        
+        // Увеличение сложности от времени (каждые 60 секунд +0.5)
+        newDifficulty += Math.floor(this.gameTime / 60) * 0.5;
+        
+        // Увеличение сложности от очков (каждые 500 очков +0.2)
+        newDifficulty += Math.floor(this.score / 500) * 0.2;
+        
+        // Ограничиваем минимальную и максимальную сложность
+        this.difficulty = Math.max(1, Math.min(newDifficulty, 10));
+        
+        // Обновляем отображение уровня
+        if (this.levelElement) {
+            this.levelElement.textContent = this.difficulty.toFixed(1);
         }
     }
 
@@ -2632,29 +2605,16 @@ class ArcadeCollector {
     }
 
     handleEnemyDestruction(enemy) {
-        // Проверяем все необходимые условия
-        if (!enemy || !enemy.type || !this.enemyTypes[enemy.type]) {
-            console.error('Invalid enemy data:', enemy);
-            return;
-        }
-
-        // Получаем очки за врага
-        const points = this.enemyTypes[enemy.type].points || 0;
-        
-        // Проверяем, что this.score существует и является числом
-        if (typeof this.score !== 'number') {
-            this.score = 0;
-        }
-        
-        // Увеличиваем очки
+        // Начисляем очки
+        const points = this.enemyTypes[enemy.type].points;
         this.score += points;
         
-        // Безопасное обновление отображения очков
+        // Обновляем отображение очков
         if (this.scoreElement) {
-            this.scoreElement.textContent = Math.floor(this.score).toString();
+            this.scoreElement.textContent = this.score;
         }
         
-        // Обновляем сложность после изменения очков
+        // Обновляем сложность
         this.updateDifficulty();
         
         // Создаем эффект уничтожения
