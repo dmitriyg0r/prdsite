@@ -440,115 +440,181 @@ class ArcadeCollector {
         // Инициализируем состояние пользователя
         this.currentUser = null;
         
-        // Проверяем авторизацию при запуске
-        this.checkAuth();
-        
-        // Привязываем методы к контексту
+        // Определяем методы класса до их использования
         this.restartGame = this.restartGame.bind(this);
-        this.bindEvents();
+        this.checkAuth = this.checkAuth.bind(this);
+        this.saveScore = this.saveScore.bind(this);
+        this.showLoginPrompt = this.showLoginPrompt.bind(this);
         
-        this.lastTime = performance.now();
-        this.animate(this.lastTime);
+        // Проверяем авторизацию каждые 30 секунд
+        this.checkAuth();
+        setInterval(() => this.checkAuth(), 30000);
         
-        // Инициализация здоровья игрока
-        this.player.health = this.player.maxHealth;
-        this.updateHealthDisplay(); // Устанавливаем начальное значение
+        // Инициализируем игру
+        this.init();
+    }
 
-        // В конструкторе обновите загрузку изображений врагов:
-        this.enemyImages = {
-            basic: new Image(),
-            shooter: new Image(),
-            boss: new Image(),
-            fast: new Image(),
-            tank: new Image(),
-            zigzag: new Image(),
-            kamikaze: new Image(),
-            sniper: new Image(),
-            bomber: new Image(),
-            stealth: new Image(),
-            shielded: new Image(),
-            healer: new Image(),
-            drone: new Image(),
-            swarm: new Image(),
-            heavy: new Image()
-        };
+    async init() {
+        try {
+            // Ждем завершения проверки авторизации
+            await this.checkAuth();
+            
+            // Инициализируем остальные компоненты
+            this.bindEvents();
+            this.loadImages();
+            this.startGame();
+        } catch (err) {
+            console.error('Ошибка инициализации игры:', err);
+        }
+    }
 
-        // Загружаем изображения
-        this.enemyImages.basic.src = 'assets/enemy/EA6.png';
-        this.enemyImages.shooter.src = 'assets/enemy/EA4.png';
-        this.enemyImages.boss.src = 'assets/enemy/EA1.png';
-        this.enemyImages.fast.src = 'assets/enemy/EA2.png';
-        this.enemyImages.tank.src = 'assets/enemy/EA3.png';
-        this.enemyImages.zigzag.src = 'assets/enemy/EA5.png';
-        this.enemyImages.kamikaze.src = 'assets/enemy/EA7.png';
-        this.enemyImages.sniper.src = 'assets/enemy/EA8.png';
-        this.enemyImages.bomber.src = 'assets/enemy/EA9.png';
-        this.enemyImages.stealth.src = 'assets/enemy/EA10.png';
-        this.enemyImages.shielded.src = 'assets/enemy/EA11.png';
-        this.enemyImages.healer.src = 'assets/enemy/EA12.png';
-        this.enemyImages.drone.src = 'assets/enemy/EA13.png';
-        this.enemyImages.swarm.src = 'assets/enemy/EA14.png';
-        this.enemyImages.heavy.src = 'assets/enemy/EA15.png';
+    async checkAuth() {
+        try {
+            const response = await fetch('/api/check-auth', {
+                credentials: 'include',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            });
 
-        // Добавляем обработчики загрузки
-        Object.entries(this.enemyImages).forEach(([type, img]) => {
-            img.onerror = () => {
-                console.error(`Error loading ${type} enemy image`);
-                // Устанавливаем флаг ошибки загрузки для этого типа
-                this.enemyImageLoadErrors = this.enemyImageLoadErrors || {};
-                this.enemyImageLoadErrors[type] = true;
-            };
-            img.onload = () => console.log(`${type} enemy image loaded successfully`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            
+            if (data.authenticated && data.user) {
+                this.currentUser = data.user;
+                console.log('Пользователь авторизован:', this.currentUser);
+                
+                // Обновляем UI после успешной авториза��ии
+                this.updateAuthUI();
+            } else {
+                this.currentUser = null;
+                console.log('Пользователь не авторизован');
+            }
+        } catch (err) {
+            console.error('Ошибка при проверке авторизации:', err);
+            if (err.message.includes('500')) {
+                console.warn('Сервер временно недоступен');
+            }
+        }
+    }
+
+    updateAuthUI() {
+        // Обновляем UI в зависимости от состояния авторизации
+        const authStatus = document.getElementById('authStatus');
+        if (authStatus) {
+            if (this.currentUser) {
+                authStatus.textContent = `Игрок: ${this.currentUser.username}`;
+                authStatus.classList.add('authenticated');
+            } else {
+                authStatus.textContent = 'Гость';
+                authStatus.classList.remove('authenticated');
+            }
+        }
+    }
+
+    bindEvents() {
+        // Привязываем обработчики событий
+        const restartButtons = document.querySelectorAll('.restart-button');
+        restartButtons.forEach(button => {
+            button.removeEventListener('click', this.restartGame); // Удаляем старый обработчик
+            button.addEventListener('click', this.restartGame); // Добавляем новый
         });
 
-        // В конструкторе добавим массив для частиц двигателей противников
-        this.enemyEngineParticles = [];
+        // ... остальные обработчики событий ...
+    }
 
-        // Инициализируем обработчики кнопок меню
-        this.initializeMenuHandlers();
-
-        // Добавляем порядок появления врагов по уровням сложности
-        this.enemyProgression = [
-            { difficulty: 1, types: ['basic', 'fast'] },
-            { difficulty: 1.5, types: ['shooter', 'zigzag'] },
-            { difficulty: 2, types: ['tank', 'kamikaze'] },
-            { difficulty: 2.5, types: ['sniper', 'drone'] },
-            { difficulty: 3, types: ['bomber', 'stealth'] },
-            { difficulty: 3.5, types: ['healer', 'swarm'] },
-            { difficulty: 4, types: ['shielded', 'heavy'] }
-        ];
+    restartGame() {
+        console.log('Перезапуск игры...');
         
-        // Инициализация базовых значений
+        // Сбрасываем состояние игры
         this.score = 0;
+        this.gameState = 'playing';
         this.gameTime = 0;
         this.difficulty = 1;
         
-        // Обновляем начальн��е отображение
-        if (this.scoreElement) {
-            this.scoreElement.textContent = '0';
+        // Сбрасываем состояние игрока
+        this.player.health = this.player.maxHealth;
+        this.player.x = this.canvas.width / 2;
+        this.player.y = this.canvas.height - 50;
+        this.player.velocityX = 0;
+        this.player.velocityY = 0;
+        
+        // Очищаем массивы
+        this.enemies = [];
+        this.bullets = [];
+        this.enemyBullets = [];
+        this.particles = [];
+        this.powerUps = [];
+        
+        // Скрываем меню
+        const gameOverMenu = document.getElementById('gameOverMenu');
+        if (gameOverMenu) {
+            gameOverMenu.style.display = 'none';
         }
-        if (this.levelElement) {
-            this.levelElement.textContent = '1.0';
-        }
         
-        // Правильная инициализация UI элементов
-        this.scoreElement = document.getElementById('score');
-        this.finalScoreElement = document.querySelector('#gameOverMenu #finalScore');
-        this.score = 0;
-        
-        // Проверка инициализации элементов
-        if (!this.scoreElement) console.error('Score element not found!');
-        if (!this.finalScoreElement) console.error('Final score element not found!');
-        
-        // Начальное обновление счета
+        // Обновляем UI
         this.updateScore(0);
+        this.drawUI();
         
-        // Проверяем инициализацию score
-        console.log('Constructor initialization:', {
-            score: this.score,
-            scoreElement: this.scoreElement,
-            scoreElementExists: !!this.scoreElement
-        });
+        // Запускаем игр��вой цикл
+        requestAnimationFrame(() => this.gameLoop());
+        
+        console.log('Игра перезапущена');
+    }
+
+    async saveScore(score) {
+        if (!this.currentUser) {
+            await this.checkAuth(); // Повторная проверка авторизации
+        }
+
+        if (!this.currentUser || !this.currentUser.id) {
+            console.warn('Невозможно сохранить рекорд: пользователь не авторизован');
+            this.showLoginPrompt();
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/scores/save', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    userId: this.currentUser.id,
+                    score: Math.round(score),
+                    gameName: 'ArcadeCollector'
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            
+            if (data.success) {
+                console.log('Рекорд сохранен успешно:', data);
+                this.showNotification(`Рекорд сохранен! Ваше место: ${data.rank}`);
+                await this.updateLeaderboard();
+            } else {
+                throw new Error(data.error || 'Ошибка сохранения рекорда');
+            }
+        } catch (err) {
+            console.error('Ошибка сохранения рекорда:', err);
+            this.showNotification('Ошибка сохранения рекорда', 'error');
+        }
+    }
+
+    showLoginPrompt() {
+        const loginPrompt = document.getElementById('loginPrompt');
+        if (loginPrompt) {
+            loginPrompt.style.display = 'block';
+        }
     }
 
     initializeMenuHandlers() {
@@ -863,7 +929,7 @@ class ArcadeCollector {
     getAvailableEnemyTypes() {
         let availableTypes = [];
         
-        // Проходим по прогрессии и добавляем типы врагов, доступные для тек��щей сложности
+        // Проходим по прогрессии и добавляем типы врагов, доступные для текущей сложности
         this.enemyProgression.forEach(level => {
             if (this.difficulty >= level.difficulty) {
                 availableTypes = [...availableTypes, ...level.types];
@@ -942,7 +1008,7 @@ class ArcadeCollector {
         });
     }
 
-    // Добавим новый метод для стрельбы врагов
+    // Добавьте новый метод для стрельбы врагов
     enemyShoot(enemy) {
         const type = this.enemyTypes[enemy.type];
         
@@ -1136,7 +1202,7 @@ class ArcadeCollector {
             this.player.dashTimer -= dt;
             this.player.ghostTimer -= dt;
             
-            // Создаем призрачный след
+            // Создаем призрачный сле��
             if (this.player.ghostTimer <= 0) {
                 this.createDashGhost();
                 this.player.ghostTimer = this.player.ghostInterval;
@@ -1709,7 +1775,7 @@ class ArcadeCollector {
         }
     }
 
-    // Добавим новый метод для создания части двигателя
+    // Добавим новый метод для создания частицы двигателя
     createEngineParticles() {
         // Определяем интенсивность на основе движения
         const movingUp = this.keys.ArrowUp;
@@ -1918,7 +1984,7 @@ class ArcadeCollector {
         }
     }
 
-    // Добавляем метод создания эффекта выстрела
+    // Добавляем метод создания эффекта ��ыстрела
     createShootEffect() {
         const muzzleFlash = {
             x: this.player.x + this.player.width/2,
@@ -2382,20 +2448,13 @@ class ArcadeCollector {
     // Добавляем метод проверки авторизации
     async checkAuth() {
         try {
-            const response = await fetch('https://adminflow.ru/api/check-auth', {
+            const response = await fetch('/api/check-auth', {
                 credentials: 'include',
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 }
             });
-            
-            // Добавим проверку статуса ответа
-            if (response.status === 500) {
-                console.warn('Сервер временно недоступен');
-                this.showLoginPrompt();
-                return;
-            }
             
             if (!response.ok) {
                 throw new Error(`Ошибка проверки авторизации: ${response.status}`);
@@ -2406,16 +2465,12 @@ class ArcadeCollector {
             
             if (data.authenticated && data.user) {
                 this.currentUser = data.user;
-                console.log('User authenticated:', this.currentUser);
+                console.log('Пользователь авторизован:', this.currentUser);
                 
-                // Добавим проверку наличия необходимых данных
-                if (!this.currentUser.id) {
-                    console.error('User ID is missing in the response');
-                    this.showLoginPrompt();
-                    return;
-                }
+                // Обновляем UI после успешной авторизации
+                this.updateAuthUI();
             } else {
-                console.log('User not authenticated:', data.message);
+                console.log('Пользователь не авторизован:', data.message);
                 this.showLoginPrompt();
             }
         } catch (err) {
@@ -2434,16 +2489,14 @@ class ArcadeCollector {
         `;
         document.body.appendChild(notification);
         
-        setTimeout(() => notification.remove(), 5000);
+        console.log('Игра перезапущена');
     }
 
     // Обновляем метод сохранения результата
     async saveScore(score) {
-        try {
-            // Проверяем авторизацию перед сохранением
-            if (!this.currentUser) {
-                await this.checkAuth();
-            }
+        if (!this.currentUser) {
+            await this.checkAuth(); // Повторная проверка авторизации
+        }
 
             if (!this.currentUser || !this.currentUser.id) {
                 console.warn('Невозможно сохранить рекорд: пользователь не авторизован');
@@ -2451,11 +2504,11 @@ class ArcadeCollector {
                 return;
             }
 
-            const response = await fetch('https://adminflow.ru/api/scores/save', {
+        try {
+            const response = await fetch('/api/scores/save', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json'
                 },
                 credentials: 'include',
                 body: JSON.stringify({
@@ -2472,18 +2525,12 @@ class ArcadeCollector {
             const data = await response.json();
             
             if (data.success) {
-                console.log('Рекорд сохранен успешно', {
-                    score: data.score,
-                    rank: data.rank
-                });
-                
+                console.log('Рекорд сохранен успешно:', data);
                 this.showNotification(`Рекорд сохранен! Ваше место: ${data.rank}`);
                 await this.updateLeaderboard();
             } else {
-                console.error('Ошибка сохранения рекорда:', data.error);
-                this.showNotification('Ошибка сохранения рекорда', 'error');
+                throw new Error(data.error || 'Ошибка сохранения рекорда');
             }
-
         } catch (err) {
             console.error('Ошибка сохранения рекорда:', err);
             this.showNotification('Ошибка сохранения рекорда', 'error');
@@ -2493,15 +2540,9 @@ class ArcadeCollector {
     // Обновляем метод получения таблицы лидеров
     async updateLeaderboard() {
         try {
-            const response = await fetch('https://adminflow.ru/api/scores/leaderboard?gameName=ArcadeCollector', {
+            const response = await fetch('/api/scores/leaderboard?gameName=ArcadeCollector', {
                 credentials: 'include'
             });
-            
-            // Добавим проверку статуса ответа
-            if (response.status === 500) {
-                console.warn('Сервер временно недоступен');
-                return;
-            }
             
             if (!response.ok) {
                 throw new Error(`Ошибка HTTP! статус: ${response.status}`);
