@@ -7,9 +7,7 @@ class ArcadeCollector {
         this.canvas.height = 600;
         
         // Состояние игры
-        this.gameState = 'start';
-        this.gameTime = 0; // Время игры в секундах
-        this.difficulty = 1; // Множитель сложности
+        this.gameState = 'menu'; // Начальное состояние - меню
         
         // Временные параметры
         this.lastTime = 0;
@@ -448,29 +446,35 @@ class ArcadeCollector {
         this.loadImages = this.loadImages.bind(this);
         this.init = this.init.bind(this);
         
-        // Запускаем инициализа����ию
+        // Инициализируем DOM элементы
+        this.menuElement = document.getElementById('gameMenu');
+        this.gameOverElement = document.getElementById('gameOverMenu');
+        
+        // Привязываем методы
+        this.startGame = this.startGame.bind(this);
+        this.showMenu = this.showMenu.bind(this);
+        
+        // Запускаем инициализацию
         this.init();
     }
 
     async init() {
         try {
             // Сначала загружаем изображения
-            await this.loadImages().catch(err => {
-                console.warn('Ошибка загрузки изображений, используем заглушки:', err);
-                this.createFallbackImages();
-            });
+            await this.loadImages();
             
             // Затем проверяем авторизацию
             await this.checkAuth();
             
-            // Инициализируем остальные компоненты
+            // Инициализируем компоненты
             this.bindEvents();
-            this.startGame();
+            
+            // Показываем меню вместо автоматического старта игры
+            this.showMenu();
         } catch (err) {
             console.error('Ошибка инициализации игры:', err);
-            // Продолжаем работу игры даже при ошибках инициализации
-            this.bindEvents();
-            this.startGame();
+            // Даже при ошибке показываем меню
+            this.showMenu();
         }
     }
 
@@ -608,6 +612,13 @@ class ArcadeCollector {
     }
 
     startGame() {
+        if (this.menuElement) {
+            this.menuElement.style.display = 'none';
+        }
+        if (this.gameOverElement) {
+            this.gameOverElement.style.display = 'none';
+        }
+        
         this.gameState = 'playing';
         this.score = 0;
         this.updateScore(0);
@@ -616,10 +627,16 @@ class ArcadeCollector {
 
     bindEvents() {
         // Привязываем обработчики событий
-        const restartButtons = document.querySelectorAll('.restart-button');
-        restartButtons.forEach(button => {
-            button.removeEventListener('click', this.restartGame); // Удаляем старый обработчик
-            button.addEventListener('click', this.restartGame); // Добавляем новый
+        const startButtons = document.querySelectorAll('.start-button');
+        startButtons.forEach(button => {
+            button.removeEventListener('click', this.startGame);
+            button.addEventListener('click', this.startGame);
+        });
+
+        const menuButtons = document.querySelectorAll('.menu-button');
+        menuButtons.forEach(button => {
+            button.removeEventListener('click', this.showMenu);
+            button.addEventListener('click', this.showMenu);
         });
 
         // ... остальные обработчики событий ...
@@ -1774,18 +1791,17 @@ class ArcadeCollector {
     }
 
     startGame() {
-        // Скрываем меню
-        this.startMenu.style.display = 'none';
-        // Запус��аем игру
+        if (this.menuElement) {
+            this.menuElement.style.display = 'none';
+        }
+        if (this.gameOverElement) {
+            this.gameOverElement.style.display = 'none';
+        }
+        
         this.gameState = 'playing';
-        // Явно устанавливаем score как число
         this.score = 0;
-        this.scoreElement.textContent = '0';
-        this.player.health = this.player.maxHealth;
-        this.enemies = [];
-        this.bullets = [];
-        this.coins = [];
-        this.updateHealthDisplay();
+        this.updateScore(0);
+        this.gameLoop();
     }
 
     createDashEffect() {
@@ -2773,6 +2789,16 @@ class ArcadeCollector {
         setTimeout(() => {
             notification.remove();
         }, 3000);
+    }
+
+    showMenu() {
+        this.gameState = 'menu';
+        if (this.menuElement) {
+            this.menuElement.style.display = 'flex';
+        }
+        if (this.gameOverElement) {
+            this.gameOverElement.style.display = 'none';
+        }
     }
 } // Закрывающая скобка класса
 
