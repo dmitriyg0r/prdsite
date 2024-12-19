@@ -471,9 +471,9 @@ class ArcadeCollector {
     async loadImages() {
         try {
             // Загрузка изображений бонусов
-            this.healthPerkImage = await this.loadImage('assets/perks/med_perk.png');
-            this.weaponPerkImage = await this.loadImage('assets/perks/w3_perk.png');
-            this.weapon2PerkImage = await this.loadImage('assets/perks/w2_perk.png');
+            this.healthPerkImage = await this.loadImage('../ArcadeCollector/assets/perks/med_perk.png');
+            this.weaponPerkImage = await this.loadImage('../ArcadeCollector/assets/perks/w3_perk.png');
+            this.weapon2PerkImage = await this.loadImage('../ArcadeCollector/assets/perks/w2_perk.png');
 
             // Загрузка изображений врагов
             for (const enemyType of Object.keys(this.enemyTypes)) {
