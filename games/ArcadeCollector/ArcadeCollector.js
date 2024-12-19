@@ -512,6 +512,19 @@ class ArcadeCollector {
             { difficulty: 3.5, types: ['healer', 'swarm'] },
             { difficulty: 4, types: ['shielded', 'heavy'] }
         ];
+        
+        // Инициализация базовых значений
+        this.score = 0;
+        this.gameTime = 0;
+        this.difficulty = 1;
+        
+        // Обновляем начальное отображение
+        if (this.scoreElement) {
+            this.scoreElement.textContent = '0';
+        }
+        if (this.levelElement) {
+            this.levelElement.textContent = '1.0';
+        }
     }
 
     initializeMenuHandlers() {
@@ -607,35 +620,31 @@ class ArcadeCollector {
         document.getElementById('playAgainBtn').addEventListener('click', () => this.restartGame());
     }
 
-    updateDifficulty(dt) {
-        this.gameTime += dt;
+    updateDifficulty() {
+        // Базовая сложность
+        let newDifficulty = 1;
         
-        // Защита от NaN
-        if (isNaN(this.difficulty)) {
-            this.difficulty = 1;
-        }
+        // Увеличение сложности от времени (каждые 60 секунд +0.5)
+        newDifficulty += Math.floor(this.gameTime / 60) * 0.5;
         
-        // Более плавное увеличение сложности
-        this.difficulty = 1 + Math.floor(this.gameTime / 60) * 0.5; // Каждую минуту +0.5 к сложности
+        // Увеличение сложности от очков (каждые 500 очков +0.2)
+        newDifficulty += Math.floor(this.score / 500) * 0.2;
         
-        // Добавляем влияние очков, но с меньшим весом
-        const scoreInfluence = Math.floor(this.score / 500) * 0.2;
-        this.difficulty += scoreInfluence;
-        
-        // Корректируем частоту спавна
-        const availableTypes = this.getAvailableEnemyTypes();
-        const baseSpawnRate = 2500;
-        this.enemySpawnRate = Math.max(
-            800, // Минимальный интервал спавна
-            baseSpawnRate - (availableTypes.length * 100) - (this.difficulty * 100)
-        );
+        // Ограничиваем минимальную и максимальную сложность
+        this.difficulty = Math.max(1, Math.min(newDifficulty, 10));
         
         // Обновляем отображение уровня
         if (this.levelElement) {
-            // Округляем до одного знака после запятой
-            const displayLevel = Math.round(this.difficulty * 10) / 10;
-            this.levelElement.textContent = displayLevel.toFixed(1);
+            this.levelElement.textContent = this.difficulty.toFixed(1);
         }
+        
+        // Обновляем частоту появления врагов
+        const availableTypes = this.getAvailableEnemyTypes();
+        const baseSpawnRate = 2500;
+        this.enemySpawnRate = Math.max(
+            800,
+            baseSpawnRate - (availableTypes.length * 100) - (this.difficulty * 100)
+        );
     }
 
     shoot() {
@@ -1018,22 +1027,13 @@ class ArcadeCollector {
     update(dt) {
         if (this.gameState !== 'playing') return;
         
-        // Проверяем, нужно ли создать босса
-        if (!this.bossConfig.active) {
-            const threshold = this.currentBossIndex === 0 
-                ? this.bossConfig.scoreThreshold 
-                : this.bossConfig.lastBossScore + this.bossConfig.subsequentThreshold;
-            
-            if (this.score >= threshold) {
-                this.createBoss();
-                this.bossConfig.lastBossScore = this.score;
-            }
-        }
+        // Обновляем время и сложность
+        this.gameTime += dt;
+        this.updateDifficulty();
         
         // Обновляем босса
         this.updateBoss(dt);
         
-        this.updateDifficulty(dt);
         this.updatePlayerPosition(dt);
         this.updateSpawnTimers(dt);
         this.updateGameObjects(dt);
@@ -1477,7 +1477,7 @@ class ArcadeCollector {
             this.ctx.shadowColor = boss.color;
             this.ctx.shadowBlur = 20;
             
-            // Рисуем босса
+            // Рисуем ��осса
             this.ctx.fillStyle = boss.color;
             this.ctx.fillRect(boss.x, boss.y, boss.width, boss.height);
             
@@ -2609,6 +2609,52 @@ class ArcadeCollector {
                 lifetime: 0.5,
                 time: 0
             });
+        }
+    }
+
+    handleEnemyDestruction(enemy) {
+        // Начисляем очки
+        const points = this.enemyTypes[enemy.type].points;
+        this.score += points;
+        
+        // Обновляем отображение очков
+        if (this.scoreElement) {
+            this.scoreElement.textContent = this.score.toString();
+        }
+        
+        // Создаем эффект уничтожения
+        this.createDestroyEffect(enemy);
+        
+        // Проверяем достижение порога для появления босса
+        this.checkBossSpawn();
+    }
+
+    updateBulletCollisions() {
+        for (let i = this.bullets.length - 1; i >= 0; i--) {
+            const bullet = this.bullets[i];
+            
+            for (let j = this.enemies.length - 1; j >= 0; j--) {
+                const enemy = this.enemies[j];
+                
+                if (this.checkCollision(bullet, enemy)) {
+                    // Удаляем пулю
+                    this.bullets.splice(i, 1);
+                    
+                    // Уменьшаем здоровье врага
+                    enemy.health -= bullet.damage || 1;
+                    
+                    // Создаем эффект попадания
+                    this.createHitEffect(bullet.x, bullet.y);
+                    
+                    // Если враг уничтожен
+                    if (enemy.health <= 0) {
+                        this.enemies.splice(j, 1);
+                        this.handleEnemyDestruction(enemy);
+                    }
+                    
+                    break; // Прерываем цикл, так как пуля уже удалена
+                }
+            }
         }
     }
 } // Закрывающая скобка класса
