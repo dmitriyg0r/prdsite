@@ -433,7 +433,7 @@ class ArcadeCollector {
             }
         };
         
-        // Добавим порядок появления боссов
+        // Добавим порядок появлени�� боссов
         this.bossOrder = ['basic']; // Первый босс всегда basic
         this.currentBossIndex = 0;
         
@@ -1355,7 +1355,7 @@ class ArcadeCollector {
                 );
                 this.ctx.restore();
             } else {
-                // Fallback: рисуем цветной прямоугольник, если изображение не загрузилось
+                // Fallback: рисуем цветной прямоугольник, если изображение не ��агрузилось
                 this.ctx.fillStyle = perk.color;
                 this.ctx.fillRect(perk.x, perk.y, perk.width, perk.height);
             }
@@ -2145,13 +2145,14 @@ class ArcadeCollector {
         let enginePositions;
         let particleConfig;
 
+        // Определяем конфигурацию в зависимости от типа врага
         switch(enemy.type) {
             case 'basic':
                 enginePositions = [
-                    { x: enemy.x + enemy.width * 0.30, y: enemy.y + 5 },  // Левый средний
-                    { x: enemy.x + enemy.width * 0.40, y: enemy.y + 5 },  // Левый ближний к центру
-                    { x: enemy.x + enemy.width * 0.50, y: enemy.y + 5 },  // Правый ближний к центру
-                    { x: enemy.x + enemy.width * 0.60, y: enemy.y + 5 }   // Правый средний
+                    { x: enemy.x + enemy.width * 0.30, y: enemy.y + 5 },
+                    { x: enemy.x + enemy.width * 0.40, y: enemy.y + 5 },
+                    { x: enemy.x + enemy.width * 0.50, y: enemy.y + 5 },
+                    { x: enemy.x + enemy.width * 0.60, y: enemy.y + 5 }
                 ];
                 particleConfig = {
                     count: 1,
@@ -2163,8 +2164,8 @@ class ArcadeCollector {
 
             case 'shooter':
                 enginePositions = [
-                    { x: enemy.x + enemy.width * 0.4, y: enemy.y + 5 },   // Левый ближе к центру
-                    { x: enemy.x + enemy.width * 0.6, y: enemy.y + 5 }    // Правый ближе к центру
+                    { x: enemy.x + enemy.width * 0.4, y: enemy.y + 5 },
+                    { x: enemy.x + enemy.width * 0.6, y: enemy.y + 5 }
                 ];
                 particleConfig = {
                     count: 2,
@@ -2176,7 +2177,7 @@ class ArcadeCollector {
 
             case 'boss':
                 enginePositions = [
-                    { x: enemy.x + enemy.width * 0.5, y: enemy.y + 5 }  // Центральный
+                    { x: enemy.x + enemy.width * 0.5, y: enemy.y + 5 }
                 ];
                 particleConfig = {
                     count: 4,
@@ -2185,8 +2186,22 @@ class ArcadeCollector {
                     lifetime: { min: 0.3, max: 0.4 }
                 };
                 break;
+
+            // Добавляем конфигурацию по умолчанию для всех остальных типов
+            default:
+                enginePositions = [
+                    { x: enemy.x + enemy.width * 0.5, y: enemy.y + 5 }
+                ];
+                particleConfig = {
+                    count: 1,
+                    baseSpeed: -100,
+                    size: { min: 1.5, max: 2.5 },
+                    lifetime: { min: 0.15, max: 0.25 }
+                };
+                break;
         }
 
+        // Создаем частицы для каждой позиции двигателя
         enginePositions.forEach(pos => {
             for (let i = 0; i < particleConfig.count; i++) {
                 const spread = (Math.random() - 0.5) * 4;
