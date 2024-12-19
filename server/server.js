@@ -1068,7 +1068,7 @@ app.get('/api/admin/users', checkAdmin, async (req, res) => {
         });
     } catch (err) {
         console.error('Admin users error:', err);
-        res.status(500).json({ error: 'Ошибка при получении списка пользователей' });
+        res.status(500).json({ error: 'Ошиб��а при получении списка пользователей' });
     }
 });
 
@@ -1253,51 +1253,48 @@ app.get('/api/posts/:userId', async (req, res) => {
             });
         }
 
-        // Получаем посты с учетом структуры таблицы
+        // Упрощенный запрос для отладки
         const postsQuery = `
-            WITH post_stats AS (
-                -- Подсчет лайков
-                SELECT 
-                    parent_id as post_id,
-                    COUNT(*) as likes_count
-                FROM posts
-                WHERE type = 'like'
-                GROUP BY parent_id
-            ),
-            comment_stats AS (
-                -- Подсчет комментариев
-                SELECT 
-                    parent_id as post_id,
-                    COUNT(*) as comments_count
-                FROM posts
-                WHERE type = 'comment'
-                GROUP BY parent_id
-            ),
-            user_likes AS (
-                -- Проверка лайков текущего пользователя
-                SELECT DISTINCT parent_id as post_id
-                FROM posts
-                WHERE type = 'like' 
-                AND user_id = $2
-            )
             SELECT 
-                p.*,
+                p.id,
+                p.user_id,
+                p.content,
+                p.image_url,
+                p.created_at,
+                p.updated_at,
                 u.username as author_name,
                 u.avatar_url as author_avatar,
-                COALESCE(ps.likes_count, 0) as likes_count,
-                COALESCE(cs.comments_count, 0) as comments_count,
-                CASE WHEN ul.post_id IS NOT NULL THEN true ELSE false END as is_liked
+                (
+                    SELECT COUNT(*) 
+                    FROM posts likes 
+                    WHERE likes.type = 'like' AND likes.parent_id = p.id
+                ) as likes_count,
+                (
+                    SELECT COUNT(*) 
+                    FROM posts comments 
+                    WHERE comments.type = 'comment' AND comments.parent_id = p.id
+                ) as comments_count,
+                EXISTS(
+                    SELECT 1 
+                    FROM posts ul 
+                    WHERE ul.type = 'like' 
+                    AND ul.parent_id = p.id 
+                    AND ul.user_id = $2
+                ) as is_liked
             FROM posts p
-            LEFT JOIN users u ON p.user_id = u.id
-            LEFT JOIN post_stats ps ON p.id = ps.post_id
-            LEFT JOIN comment_stats cs ON p.id = cs.post_id
-            LEFT JOIN user_likes ul ON p.id = ul.post_id
+            JOIN users u ON p.user_id = u.id
             WHERE p.user_id = $1 
             AND p.type = 'post'
+            AND p.parent_id IS NULL
             ORDER BY p.created_at DESC
         `;
 
+        console.log('Executing query with params:', [userId, currentUserId]);
         const result = await pool.query(postsQuery, [userId, currentUserId]);
+        console.log('Query result:', {
+            rowCount: result.rowCount,
+            firstRow: result.rows[0]
+        });
 
         res.json({
             success: true,
@@ -1305,10 +1302,63 @@ app.get('/api/posts/:userId', async (req, res) => {
         });
 
     } catch (err) {
-        console.error('Error fetching posts:', err);
+        console.error('Database error:', {
+            message: err.message,
+            stack: err.stack,
+            query: err.query
+        });
+        
         res.status(500).json({
             success: false,
             error: 'Ошибка при загрузке постов: ' + err.message
+        });
+    }
+});
+
+// Маршрут для обновления статуса пользователя
+app.post('/api/users/update-status', async (req, res) => {
+    try {
+        const { userId } = req.body;
+
+        if (!userId) {
+            return res.status(400).json({
+                success: false,
+                error: 'Отсутствует ID пользователя'
+            });
+        }
+
+        const updateQuery = `
+            UPDATE users 
+            SET 
+                is_online = true,
+                last_activity = CURRENT_TIMESTAMP
+            WHERE id = $1
+            RETURNING id, is_online, last_activity
+        `;
+
+        const result = await pool.query(updateQuery, [userId]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'Пользователь не найден'
+            });
+        }
+
+        res.json({
+            success: true,
+            user: result.rows[0]
+        });
+
+    } catch (err) {
+        console.error('Status update error:', {
+            message: err.message,
+            stack: err.stack
+        });
+        
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при обновлении статуса: ' + err.message
         });
     }
 });
