@@ -433,7 +433,7 @@ class ArcadeCollector {
             }
         };
         
-        // Добавим порядок появлени����������� б���ссов
+        // Добавим порядок появлени������������ б���ссов
         this.bossOrder = ['basic']; // Первый босс всегда basic
         this.currentBossIndex = 0;
         
@@ -525,6 +525,18 @@ class ArcadeCollector {
         if (this.levelElement) {
             this.levelElement.textContent = '1.0';
         }
+        
+        // Правильная инициализация UI элементов
+        this.scoreElement = document.getElementById('score');
+        this.finalScoreElement = document.querySelector('#gameOverMenu #finalScore');
+        this.score = 0;
+        
+        // Проверка инициализации элементов
+        if (!this.scoreElement) console.error('Score element not found!');
+        if (!this.finalScoreElement) console.error('Final score element not found!');
+        
+        // Начальное обновление счета
+        this.updateScore(0);
     }
 
     initializeMenuHandlers() {
@@ -1322,7 +1334,7 @@ class ArcadeCollector {
         if (this.playerImage.complete) { // Проверяем, загрузилось ли изображение
             this.ctx.save();
             if (this.player.isDashing) {
-                // Добавляем свечение во время рывка
+                // Добав��яем ��вечение во время рывка
                 this.ctx.shadowColor = '#86efac';
                 this.ctx.shadowBlur = 20;
             }
@@ -1374,7 +1386,7 @@ class ArcadeCollector {
         // Отрисовка противников
         this.enemies.forEach(enemy => this.drawEnemy(enemy));
 
-        // Отрисовка монет
+        // О��рисовка монет
         this.coins.forEach(coin => {
             const coinGradient = this.ctx.createRadialGradient(
                 coin.x + coin.width/2, coin.y + coin.height/2, 0,
@@ -1550,14 +1562,20 @@ class ArcadeCollector {
     }
 
     gameOver() {
-        this.gameState = 'gameOver';
-        this.gameOverMenu.style.display = 'flex';
-        this.finalScoreElement.textContent = this.score;
+        this.gameState = 'over';
         
-        // Показываем меню при окончании игры
-        this.startMenu.style.display = 'flex';
+        // Обновляем финальный счет
+        if (this.finalScoreElement) {
+            this.finalScoreElement.textContent = this.score;
+        }
         
-        // Сохраняем результат
+        // Показываем меню окончания игры
+        const gameOverMenu = document.getElementById('gameOverMenu');
+        if (gameOverMenu) {
+            gameOverMenu.style.display = 'flex';
+        }
+        
+        // Сохраняем счет
         this.saveScore(this.score);
     }
 
@@ -1968,7 +1986,7 @@ class ArcadeCollector {
         }, 3000);
     }
 
-    // Добавляем метод для эффекта появления босса
+    // Добавляем метод для эф��екта появления босса
     createBossSpawnEffect() {
         const particles = 30;
         const colors = ['#dc2626', '#ef4444', '#ffffff'];
@@ -2333,7 +2351,7 @@ class ArcadeCollector {
             return particle.time < particle.lifetime && particle.size > 0;
         });
 
-        // Создаем новые частицы для каждого противника
+        // Создаем ��овые частицы для каждого противника
         if (this.gameState === 'playing') {
             this.enemies.forEach(enemy => {
                 this.createEnemyEngineParticles(enemy);
@@ -2610,19 +2628,19 @@ class ArcadeCollector {
     }
 
     handleEnemyDestruction(enemy) {
-        // Убедимся, что очки являются числами
-        const points = parseInt(this.enemyTypes[enemy.type].points) || 0;
-        this.score = parseInt(this.score || 0) + points;
-        
-        // Обновляем отображение очков, округляя до целого числа
-        if (this.scoreElement) {
-            this.scoreElement.textContent = Math.round(this.score);
+        if (!enemy || !enemy.type || !this.enemyTypes[enemy.type]) {
+            console.error('Invalid enemy object:', enemy);
+            return;
         }
         
-        // Обновляем сложность после изменения очков
-        this.updateDifficulty();
+        const points = parseInt(this.enemyTypes[enemy.type].points) || 0;
+        console.log('Enemy destroyed:', {
+            type: enemy.type,
+            points: points,
+            currentScore: this.score
+        });
         
-        // Создаем эффект уничтожения
+        this.updateScore(points);
         this.createDestroyEffect(enemy);
     }
 
@@ -2640,19 +2658,59 @@ class ArcadeCollector {
                     // Уменьшаем здоровье врага
                     enemy.health -= bullet.damage || 1;
                     
-                    // Создаем эффект попадания
-                    this.createHitEffect(bullet.x, bullet.y);
-                    
                     // Если враг уничтожен
                     if (enemy.health <= 0) {
+                        // Получаем очки за врага
+                        const points = parseInt(this.enemyTypes[enemy.type].points) || 0;
+                        
+                        // Увеличиваем счет
+                        this.score = parseInt(this.score) + points;
+                        
+                        // Обновляем отображение
+                        if (this.scoreElement) {
+                            this.scoreElement.textContent = Math.round(this.score);
+                        }
+                        
+                        // Удаляем врага
                         this.enemies.splice(j, 1);
-                        this.handleEnemyDestruction(enemy);
+                        
+                        // Создаем эффект уничтожения
+                        this.createDestroyEffect(enemy);
+                        
+                        // Обновляем сложность
+                        this.updateDifficulty();
                     }
+                    
+                    // Создаем эффект попадания
+                    this.createHitEffect(enemy);
                     
                     break; // Прерываем цикл, так как пуля уже удалена
                 }
             }
         }
+    }
+
+    // Добавляем метод для безопасного обновления счета
+    updateScore(points) {
+        // Преобразуем в числа
+        this.score = Math.max(0, parseInt(this.score || 0) + parseInt(points || 0));
+        
+        // Обновляем все элементы отображения счета
+        if (this.scoreElement) {
+            this.scoreElement.textContent = this.score;
+        }
+        
+        // Обновляем сложность
+        this.updateDifficulty();
+        
+        // Отладочная информация
+        console.log('Score updated:', {
+            points: points,
+            newScore: this.score,
+            scoreElementContent: this.scoreElement?.textContent
+        });
+        
+        return this.score;
     }
 } // Закрывающая скобка класса
 
