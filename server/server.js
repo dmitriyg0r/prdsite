@@ -407,7 +407,7 @@ app.post('/api/friend-request/respond', async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         console.error('Friend response error:', err);
-        res.status(500).json({ error: 'Оши����а при об����ботке заяв����' });
+        res.status(500).json({ error: 'Оши����а при об�����ботке заяв����' });
     }
 });
 
@@ -1749,7 +1749,7 @@ app.delete('/api/messages/delete/:messageId', async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         console.error('Error deleting message:', err);
-        res.status(500).json({ error: 'Ошибка при удалении сообщ��н����я' });
+        res.status(500).json({ error: 'Ошибка при удалении соо��щ��н����я' });
     }
 });
 
@@ -2314,118 +2314,138 @@ app.get('/api/users/:userId', async (req, res) => {
 app.get('/api/chats/:userId', async (req, res) => {
     try {
         const userId = req.params.userId;
-        console.log('=== Начало запроса /api/chats/:userId ===');
-        console.log('userId:', userId);
+        console.log('\n=== Запрос чатов для пользователя:', userId, '===');
 
-        // Проверяем подключение к базе данных
-        try {
-            await pool.query('SELECT 1');
-            console.log('Подключение к БД активно');
-        } catch (dbError) {
-            console.error('Ошибка подключения к БД:', dbError);
-            return res.status(500).json({
-                success: false,
-                error: 'Database connection error',
-                details: dbError.message
-            });
-        }
-
-        // Проверяем корректность userId
+        // Базовая проверка userId
         if (!userId || isNaN(userId)) {
-            console.log('Некорректный userId:', userId);
-            return res.status(400).json({
-                success: false,
-                error: 'Invalid user ID'
-            });
+            throw new Error('Invalid userId provided');
         }
 
-        // Проверяем существование пользователя
-        console.log('Проверка пользователя...');
-        const userQuery = 'SELECT id, username FROM users WHERE id = $1';
-        const userResult = await pool.query(userQuery, [userId]);
-
-        if (userResult.rows.length === 0) {
-            console.log('Пользователь не найден:', userId);
+        // Простой запрос для проверки существования пользователя
+        const userCheck = await pool.query('SELECT id FROM users WHERE id = $1', [userId]);
+        if (userCheck.rows.length === 0) {
             return res.status(404).json({
                 success: false,
                 error: 'User not found'
             });
         }
 
-        console.log('Пользователь найден:', userResult.rows[0]);
-
-        // Получаем список чатов
-        const chatsQuery = `
+        // Получаем список ID пользователей, с которыми есть переписка
+        const chatParticipantsQuery = `
             SELECT DISTINCT
-                u.id,
-                u.username,
-                u.avatar_url,
-                u.is_online,
-                u.last_activity
-            FROM users u
-            INNER JOIN (
-                SELECT 
-                    CASE 
-                        WHEN sender_id = $1 THEN receiver_id
-                        ELSE sender_id 
-                    END as chat_user_id
-                FROM messages
-                WHERE sender_id = $1 OR receiver_id = $1
-            ) chat_users ON u.id = chat_users.chat_user_id
+                CASE 
+                    WHEN sender_id = $1 THEN receiver_id
+                    ELSE sender_id 
+                END as participant_id
+            FROM messages
+            WHERE sender_id = $1 OR receiver_id = $1
         `;
 
-        console.log('Выполнение запроса чатов...');
-        const chatsResult = await pool.query(chatsQuery, [userId]);
-        console.log(`Найдено ${chatsResult.rows.length} собеседников`);
-
-        // Получаем последние сообщения для каждого чата
-        const chats = [];
-        for (const chatUser of chatsResult.rows) {
-            try {
-                // Получаем последнее сообщение
-                const lastMessageQuery = `
-                    SELECT 
-                        id as message_id,
-                        sender_id,
-                        receiver_id,
-                        message,
-                        created_at,
-                        is_read,
-                        attachment_url
-                    FROM messages
-                    WHERE (sender_id = $1 AND receiver_id = $2)
-                       OR (sender_id = $2 AND receiver_id = $1)
-                    ORDER BY created_at DESC
-                    LIMIT 1
-                `;
-                
-                const messageResult = await pool.query(lastMessageQuery, [userId, chatUser.id]);
-                
-                // Получаем количество непрочитанных сообщений
-                const unreadQuery = `
-                    SELECT COUNT(*) as count
-                    FROM messages
-                    WHERE sender_id = $1 
-                    AND receiver_id = $2 
-                    AND is_read = false
-                `;
-                
-                const unreadResult = await pool.query(unreadQuery, [chatUser.id, userId]);
-
-                chats.push({
-                    id: chatUser.id,
-                    username: chatUser.username,
-                    avatar_url: chatUser.avatar_url,
-                    is_online: chatUser.is_online,
-                    last_activity: chatUser.last_activity,
-                    unread_count: parseInt(unreadResult.rows[0].count),
-                    last_message: messageResult.rows[0] || null
-                });
-            } catch (chatError) {
-                console.error('Ошибка при обработке чата:', chatError);
-                // Продолжаем обработку других чатов
-            }
+        console.log('Выполняем запрос участников чата...');
+        const participantsResult = await pool.query(chatParticipantsQuery, [userId]);
+        
+        if (participantsResult.rows.length === 0) {
+            console.log('Чаты не найдены');
+            return res.json({
+                success: true,
+                chats: []
+            });
         }
+
+        const participantIds = participantsResult.rows.map(row => row.participant_id);
+        console.log('Найдено участников:', participantIds.length);
+
+        // Получаем информацию о пользователях
+        const usersQuery = `
+            SELECT id, username, avatar_url, is_online, last_activity
+            FROM users
+            WHERE id = ANY($1::int[])
+        `;
+
+        console.log('Получаем информацию о пользователях...');
+        const usersResult = await pool.query(usersQuery, [participantIds]);
+
+        // Формируем базовую структуру чатов
+        const chats = usersResult.rows.map(user => ({
+            id: user.id,
+            username: user.username,
+            avatar_url: user.avatar_url,
+            is_online: user.is_online,
+            last_activity: user.last_activity,
+            unread_count: 0,
+            last_message: null
+        }));
+
+        // Получаем количество непрочитанных сообщений
+        const unreadCountQuery = `
+            SELECT sender_id, COUNT(*) as count
+            FROM messages
+            WHERE receiver_id = $1 
+            AND sender_id = ANY($2::int[])
+            AND is_read = false
+            GROUP BY sender_id
+        `;
+
+        console.log('Получаем количество непрочитанных сообщений...');
+        const unreadResult = await pool.query(unreadCountQuery, [userId, participantIds]);
+        
+        // Обновляем количество непрочитанных сообщений
+        unreadResult.rows.forEach(row => {
+            const chat = chats.find(c => c.id === row.sender_id);
+            if (chat) {
+                chat.unread_count = parseInt(row.count);
+            }
+        });
+
+        // Получаем последние сообщения
+        const lastMessagesQuery = `
+            SELECT DISTINCT ON (
+                CASE 
+                    WHEN sender_id = $1 THEN receiver_id
+                    ELSE sender_id 
+                END
+            )
+                id as message_id,
+                sender_id,
+                receiver_id,
+                message,
+                created_at,
+                is_read,
+                attachment_url,
+                CASE 
+                    WHEN sender_id = $1 THEN receiver_id
+                    ELSE sender_id 
+                END as chat_user_id
+            FROM messages
+            WHERE sender_id = $1 OR receiver_id = $1
+            ORDER BY chat_user_id, created_at DESC
+        `;
+
+        console.log('Получаем последние сообщения...');
+        const messagesResult = await pool.query(lastMessagesQuery, [userId]);
+
+        // Добавляем последние сообщения к чатам
+        messagesResult.rows.forEach(msg => {
+            const chat = chats.find(c => c.id === msg.chat_user_id);
+            if (chat) {
+                chat.last_message = {
+                    id: msg.message_id,
+                    sender_id: msg.sender_id,
+                    receiver_id: msg.receiver_id,
+                    message: msg.message,
+                    created_at: msg.created_at,
+                    is_read: msg.is_read,
+                    attachment_url: msg.attachment_url
+                };
+            }
+        });
+
+        // Сортируем чаты по времени последнего сообщения
+        chats.sort((a, b) => {
+            const timeA = a.last_message?.created_at || 0;
+            const timeB = b.last_message?.created_at || 0;
+            return new Date(timeB) - new Date(timeA);
+        });
 
         console.log('Отправка результата...');
         res.json({
@@ -2433,21 +2453,16 @@ app.get('/api/chats/:userId', async (req, res) => {
             chats: chats
         });
 
-        console.log('=== Конец запроса /api/chats/:userId ===');
-
     } catch (error) {
-        console.error('Критическая ошибка при получении чатов:', {
-            error: error.message,
+        console.error('Ошибка при получении чатов:', {
+            message: error.message,
             stack: error.stack,
-            code: error.code,
-            detail: error.detail,
-            table: error.table,
-            constraint: error.constraint
+            code: error.code
         });
         
         res.status(500).json({
             success: false,
-            error: 'Failed to fetch chats',
+            error: 'Ошибка при получении чатов',
             details: error.message
         });
     }
