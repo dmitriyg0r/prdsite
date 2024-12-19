@@ -2251,7 +2251,7 @@ io.engine.on("connection_error", (err) => {
     });
 });
 
-// Добавляем проверочный endpoint
+// Д��бавляем проверочный endpoint
 app.get('/socket.io/test', (req, res) => {
     res.json({
         status: 'Socket.IO server is running',
@@ -2801,5 +2801,97 @@ app.get('/api/check-auth', (req, res) => {
             message: 'Не авторизован'
         });
     }
+});
+
+// Добавляем middleware для проверки Content-Type
+app.use((req, res, next) => {
+    res.header('Content-Type', 'application/json');
+    res.header('Access-Control-Allow-Origin', 'https://adminflow.ru');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    next();
+});
+
+// Обновляем эндпоинт для получения списка чатов
+app.get('/api/chats', async (req, res) => {
+    try {
+        const { userId } = req.query;
+        
+        if (!userId) {
+            return res.status(400).json({
+                success: false,
+                error: 'User ID is required'
+            });
+        }
+
+        // Получаем список чатов с последними сообщениями
+        const result = await pool.query(`
+            WITH LastMessages AS (
+                SELECT DISTINCT ON (
+                    CASE 
+                        WHEN sender_id = $1 THEN receiver_id 
+                        ELSE sender_id 
+                    END
+                )
+                    m.*,
+                    CASE 
+                        WHEN sender_id = $1 THEN receiver_id 
+                        ELSE sender_id 
+                    END as chat_with
+                FROM messages m
+                WHERE sender_id = $1 OR receiver_id = $1
+                ORDER BY chat_with, created_at DESC
+            )
+            SELECT 
+                lm.*,
+                u.username as chat_username,
+                u.avatar_url,
+                u.is_online,
+                u.last_activity,
+                (
+                    SELECT COUNT(*)
+                    FROM messages m2
+                    WHERE m2.sender_id = lm.chat_with
+                    AND m2.receiver_id = $1
+                    AND m2.is_read = false
+                ) as unread_count
+            FROM LastMessages lm
+            JOIN users u ON u.id = lm.chat_with
+            ORDER BY lm.created_at DESC
+        `, [userId]);
+
+        res.json({
+            success: true,
+            chats: result.rows
+        });
+
+    } catch (error) {
+        console.error('Error fetching chats:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch chats',
+            details: error.message
+        });
+    }
+});
+
+// Обработка ошибок
+app.use((err, req, res, next) => {
+    console.error('Server error:', err);
+    res.status(500).json({
+        success: false,
+        error: 'Internal Server Error',
+        details: err.message
+    });
+});
+
+// Обработка 404
+app.use((req, res) => {
+    res.status(404).json({
+        success: false,
+        error: 'Not Found',
+        details: 'The requested resource was not found'
+    });
 });
 
