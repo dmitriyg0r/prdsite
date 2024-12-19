@@ -462,7 +462,7 @@ app.post('/api/upload-avatar', upload.single('avatar'), (req, res) => {
 app.use((err, req, res, next) => {
     if (err instanceof multer.MulterError) {
         if (err.code === 'LIMIT_FILE_SIZE') {
-            return res.status(400).json({ error: 'Файл слишком большой. Максимальный размер: 10MB' });
+            return res.status(400).json({ error: 'Файл слишком большой. Максим��льный размер: 10MB' });
         }
         return res.status(400).json({ error: err.message });
     }
@@ -2104,19 +2104,7 @@ httpsServer.listen(PORT, 'localhost', () => {
 // Создаем Map для хранения активных соединений
 const activeConnections = new Map();
 
-// Используем существующий httpsServer для Socket.IO
-const io = new Server(httpsServer, {
-    cors: {
-        origin: [
-            'https://adminflow.ru',
-            'https://www.adminflow.ru',
-            'http://adminflow.ru',
-            'http://www.adminflow.ru'
-        ],
-        methods: ['GET', 'POST'],
-        credentials: true
-    }
-});
+
 
 // Удаляем middleware для Socket.IO, так как теперь используем CORS настройки выше
 app.use('/socket.io', (req, res, next) => {
@@ -2404,25 +2392,32 @@ app.get('/api/chats/:userId', async (req, res) => {
             });
         }
 
-        // Получаем список чатов с последними сообщениями
+        // Оптимизированный запрос для получения чатов
         const query = `
-            WITH LastMessages AS (
+            WITH ChatPartners AS (
+                SELECT DISTINCT
+                    CASE 
+                        WHEN sender_id = $1 THEN receiver_id 
+                        ELSE sender_id 
+                    END as partner_id
+                FROM messages
+                WHERE sender_id = $1 OR receiver_id = $1
+            ),
+            LastMessages AS (
                 SELECT DISTINCT ON (
                     CASE 
                         WHEN sender_id = $1 THEN receiver_id 
                         ELSE sender_id 
                     END
                 )
+                    m.*,
                     CASE 
                         WHEN sender_id = $1 THEN receiver_id 
                         ELSE sender_id 
-                    END as chat_partner_id,
-                    message,
-                    created_at,
-                    sender_id
-                FROM messages
+                    END as partner_id
+                FROM messages m
                 WHERE sender_id = $1 OR receiver_id = $1
-                ORDER BY chat_partner_id, created_at DESC
+                ORDER BY partner_id, created_at DESC
             )
             SELECT 
                 u.id,
@@ -2432,15 +2427,29 @@ app.get('/api/chats/:userId', async (req, res) => {
                 u.last_activity,
                 lm.message as last_message,
                 lm.created_at as last_message_time,
-                lm.sender_id as last_message_sender_id
-            FROM LastMessages lm
-            JOIN users u ON u.id = lm.chat_partner_id
-            ORDER BY lm.created_at DESC
+                lm.sender_id = $1 as is_own_message,
+                COUNT(CASE WHEN m.is_read = false AND m.receiver_id = $1 THEN 1 END) as unread_count
+            FROM ChatPartners cp
+            JOIN users u ON u.id = cp.partner_id
+            LEFT JOIN LastMessages lm ON lm.partner_id = cp.partner_id
+            LEFT JOIN messages m ON (
+                m.sender_id = cp.partner_id AND 
+                m.receiver_id = $1 AND 
+                m.is_read = false
+            )
+            GROUP BY 
+                u.id, 
+                u.username, 
+                u.avatar_url, 
+                u.is_online, 
+                u.last_activity,
+                lm.message,
+                lm.created_at,
+                lm.sender_id
+            ORDER BY lm.created_at DESC NULLS LAST
         `;
 
-        console.log('[GET /api/chats] Executing query...');
         const result = await pool.query(query, [userId]);
-        console.log('[GET /api/chats] Found chats:', result.rows.length);
 
         res.json({
             success: true,
@@ -2448,15 +2457,10 @@ app.get('/api/chats/:userId', async (req, res) => {
         });
 
     } catch (err) {
-        console.error('[GET /api/chats] Error:', {
-            message: err.message,
-            stack: err.stack,
-            code: err.code
-        });
-        
+        console.error('[GET /api/chats] Error:', err);
         res.status(500).json({
             success: false,
-            error: err.message
+            error: 'Внутренняя ошибка сервера при получении списка чатов'
         });
     }
 });
@@ -2708,4 +2712,26 @@ app.post('/api/scores/save', async (req, res) => {
             details: process.env.NODE_ENV === 'development' ? err.message : undefined
         });
     }
+});
+
+// Обновляем настройку Socket.IO
+const io = new Server(server, {
+    path: '/socket.io/',
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"],
+        credentials: true
+    },
+    transports: ['websocket', 'polling'],
+    allowEIO3: true,
+    pingTimeout: 60000,
+    pingInterval: 25000
+});
+
+// Добавляем обработку CORS для Socket.IO
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+    next();
 });
