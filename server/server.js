@@ -462,7 +462,7 @@ app.post('/api/upload-avatar', upload.single('avatar'), (req, res) => {
 app.use((err, req, res, next) => {
     if (err instanceof multer.MulterError) {
         if (err.code === 'LIMIT_FILE_SIZE') {
-            return res.status(400).json({ error: 'Файл слишком большой. Максим����льный размер: 10MB' });
+            return res.status(400).json({ error: 'Файл слишком большой. Максим������льный размер: 10MB' });
         }
         return res.status(400).json({ error: err.message });
     }
@@ -1565,7 +1565,7 @@ setInterval(() => {
 // Добавляем автоматическое обновение статуса каждые 5 минут
 setInterval(async () => {
     try {
-        // Помечаем ользователей как оффлайн, если их последняя активность была более 5 минут назад
+        // Помечаем ользователей как оффлайн, есл�� их последняя активность была более 5 минут назад
         await pool.query(`
             UPDATE users 
             SET is_online = false 
@@ -2061,16 +2061,6 @@ app.post('/api/change-password', async (req, res) => {
     }
 });
 
-// Обновляем настройки HTTP и HTTPS серверов
-const httpServer = http.createServer((req, res) => {
-    res.writeHead(301, { Location: `https://${req.headers.host}${req.url}` });
-    res.end();
-});
-
-const httpsServer = https.createServer(sslOptions, app);
-httpsServer.listen(PORT, 'localhost', () => {
-    console.log(`HTTPS Server running on localhost:${PORT}`);
-});
 
 // Удаляем HTTP сервер, так как используем только HTTPS
 // http.createServer(app).listen(PORT);
@@ -2566,7 +2556,7 @@ app.get('/api/check-auth', async (req, res) => {
             });
         }
 
-        // Получаем данные пользователя
+        // Пол��чаем данные пользователя
         const userResult = await pool.query(
             'SELECT id, username, role, avatar_url FROM users WHERE id = $1',
             [userId]
@@ -2688,22 +2678,6 @@ app.post('/api/scores/save', async (req, res) => {
     }
 });
 
-// Обновляем настройку Socket.IO
-const io = new Server(httpsServer, {
-    path: '/socket.io/',
-    cors: {
-        origin: [
-            'https://adminflow.ru',
-            'https://www.adminflow.ru'
-        ],
-        methods: ['GET', 'POST'],
-        credentials: true
-    },
-    transports: ['websocket', 'polling'],
-    allowEIO3: true,
-    pingTimeout: 60000,
-    pingInterval: 25000
-});
 
 // Добавляем обработку CORS для Socket.IO
 app.use((req, res, next) => {
