@@ -407,7 +407,7 @@ app.post('/api/friend-request/respond', async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         console.error('Friend response error:', err);
-        res.status(500).json({ error: 'Оши����а при об�����ботке заяв����' });
+        res.status(500).json({ error: 'Оши����а п��и об�����ботке заяв����' });
     }
 });
 
@@ -1599,7 +1599,7 @@ app.post('/api/posts/comment', async (req, res) => {
             });
         }
 
-        // Создаем комментарий
+        // С��здаем комментарий
         const result = await pool.query(`
             INSERT INTO posts (user_id, parent_id, type, content, created_at)
             VALUES ($1, $2, 'comment', $3, CURRENT_TIMESTAMP)
@@ -2315,38 +2315,33 @@ app.get('/api/chats/:userId', async (req, res) => {
     let client;
     try {
         const userId = req.params.userId;
+        console.log('Получен запрос чатов для userId:', userId);
+        
         client = await pool.connect();
+        console.log('Подключение к БД установлено');
 
-        // Получаем базовый список чатов с последними сообщениями
+        // Проверяем существование пользователя
+        const userCheck = await client.query('SELECT id FROM users WHERE id = $1', [userId]);
+        if (userCheck.rows.length === 0) {
+            console.log('Пользователь не найден:', userId);
+            return res.status(404).json({
+                success: false,
+                error: 'Пользователь не найден'
+            });
+        }
+
+        console.log('Начинаем выполнение основного запроса...');
+        
+        // Упрощенный запрос для отладки
         const result = await client.query(`
             WITH ChatUsers AS (
                 SELECT DISTINCT
                     CASE 
-                        WHEN sender_id = $1 THEN receiver_id
-                        ELSE sender_id 
+                        WHEN m.sender_id = $1 THEN m.receiver_id
+                        ELSE m.sender_id 
                     END as other_user_id
-                FROM messages
-                WHERE sender_id = $1 OR receiver_id = $1
-            ),
-            LastMessages AS (
-                SELECT DISTINCT ON (chat_pair) 
-                    id as message_id,
-                    sender_id,
-                    receiver_id,
-                    message,
-                    created_at,
-                    is_read,
-                    attachment_url,
-                    LEAST(sender_id, receiver_id) || '-' || GREATEST(sender_id, receiver_id) as chat_pair
-                FROM messages
-                WHERE sender_id = $1 OR receiver_id = $1
-                ORDER BY chat_pair, created_at DESC
-            ),
-            UnreadCounts AS (
-                SELECT sender_id, COUNT(*) as unread_count
-                FROM messages
-                WHERE receiver_id = $1 AND is_read = false
-                GROUP BY sender_id
+                FROM messages m
+                WHERE m.sender_id = $1 OR m.receiver_id = $1
             )
             SELECT 
                 u.id,
@@ -2354,22 +2349,43 @@ app.get('/api/chats/:userId', async (req, res) => {
                 u.avatar_url,
                 u.is_online,
                 u.last_activity,
-                COALESCE(uc.unread_count, 0) as unread_count,
-                lm.message_id,
-                lm.sender_id as last_message_sender_id,
-                lm.receiver_id as last_message_receiver_id,
-                lm.message as last_message,
-                lm.created_at as last_message_time,
-                lm.is_read as last_message_is_read,
-                lm.attachment_url as last_message_attachment
+                COALESCE(
+                    (SELECT COUNT(*)
+                     FROM messages m2
+                     WHERE m2.receiver_id = $1 
+                     AND m2.sender_id = u.id 
+                     AND m2.is_read = false), 
+                    0
+                ) as unread_count,
+                (
+                    SELECT json_build_object(
+                        'id', m3.id,
+                        'sender_id', m3.sender_id,
+                        'receiver_id', m3.receiver_id,
+                        'message', m3.message,
+                        'created_at', m3.created_at,
+                        'is_read', m3.is_read,
+                        'attachment_url', m3.attachment_url
+                    )
+                    FROM messages m3
+                    WHERE (m3.sender_id = $1 AND m3.receiver_id = u.id)
+                       OR (m3.sender_id = u.id AND m3.receiver_id = $1)
+                    ORDER BY m3.created_at DESC
+                    LIMIT 1
+                ) as last_message
             FROM ChatUsers cu
             JOIN users u ON u.id = cu.other_user_id
-            LEFT JOIN LastMessages lm ON 
-                (lm.sender_id = $1 AND lm.receiver_id = cu.other_user_id) OR
-                (lm.sender_id = cu.other_user_id AND lm.receiver_id = $1)
-            LEFT JOIN UnreadCounts uc ON uc.sender_id = cu.other_user_id
-            ORDER BY lm.created_at DESC NULLS LAST
+            ORDER BY (
+                SELECT m4.created_at
+                FROM messages m4
+                WHERE (m4.sender_id = $1 AND m4.receiver_id = u.id)
+                   OR (m4.sender_id = u.id AND m4.receiver_id = $1)
+                ORDER BY m4.created_at DESC
+                LIMIT 1
+            ) DESC NULLS LAST
         `, [userId]);
+
+        console.log(`Получено ${result.rows.length} чатов`);
 
         // Форматируем результат
         const chats = result.rows.map(row => ({
@@ -2379,24 +2395,26 @@ app.get('/api/chats/:userId', async (req, res) => {
             is_online: row.is_online,
             last_activity: row.last_activity,
             unread_count: parseInt(row.unread_count),
-            last_message: row.message_id ? {
-                id: row.message_id,
-                sender_id: row.last_message_sender_id,
-                receiver_id: row.last_message_receiver_id,
-                message: row.last_message,
-                created_at: row.last_message_time,
-                is_read: row.last_message_is_read,
-                attachment_url: row.last_message_attachment
-            } : null
+            last_message: row.last_message
         }));
 
+        console.log('Отправляем ответ клиенту');
         res.json({
             success: true,
             chats: chats
         });
 
     } catch (error) {
-        console.error('Ошибка при получении чатов:', error);
+        console.error('Детальная ошибка при получении чатов:', {
+            message: error.message,
+            stack: error.stack,
+            code: error.code,
+            detail: error.detail,
+            hint: error.hint,
+            position: error.position,
+            table: error.table
+        });
+        
         res.status(500).json({
             success: false,
             error: 'Ошибка при получении чатов',
@@ -2404,6 +2422,7 @@ app.get('/api/chats/:userId', async (req, res) => {
         });
     } finally {
         if (client) {
+            console.log('Освобождаем подключение к БД');
             client.release();
         }
     }
