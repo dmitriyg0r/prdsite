@@ -433,7 +433,7 @@ class ArcadeCollector {
             }
         };
         
-        // Добавим порядок появлени��������� б���ссов
+        // Добавим порядок появлени����������� б���ссов
         this.bossOrder = ['basic']; // Первый босс всегда basic
         this.currentBossIndex = 0;
         
@@ -1572,8 +1572,9 @@ class ArcadeCollector {
         this.startMenu.style.display = 'none';
         // Запускаем игру
         this.gameState = 'playing';
-        // Сбрасываем счет и другие параметры игры
+        // Явно устанавливаем score как число
         this.score = 0;
+        this.scoreElement.textContent = '0';
         this.player.health = this.player.maxHealth;
         this.enemies = [];
         this.bullets = [];
@@ -2609,11 +2610,11 @@ class ArcadeCollector {
     }
 
     handleEnemyDestruction(enemy) {
-        // Проверяем и конвертируем очки в число
-        const points = Number(this.enemyTypes[enemy.type].points);
-        this.score = Number(this.score || 0) + points;
+        // Убедимся, что очки являются числами
+        const points = parseInt(this.enemyTypes[enemy.type].points) || 0;
+        this.score = parseInt(this.score || 0) + points;
         
-        // Обновляем отображение очков
+        // Обновляем отображение очков, округляя до целого числа
         if (this.scoreElement) {
             this.scoreElement.textContent = Math.round(this.score);
         }
