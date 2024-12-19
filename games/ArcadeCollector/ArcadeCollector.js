@@ -414,7 +414,7 @@ class ArcadeCollector {
                 bulletPatterns: ['swarm', 'multiSwarm', 'chaosSwarm'],
                 bulletSpeed: 180,
                 bulletDamage: 12,
-                name: 'Повели��ель роя'
+                name: 'Повелитель роя'
             },
             tank: {
                 width: 160,
@@ -433,7 +433,7 @@ class ArcadeCollector {
             }
         };
         
-        // Добавим порядок появлени������������� б���ссов
+        // Добавим порядок появления боссов
         this.bossOrder = ['basic']; // Первый босс всегда basic
         this.currentBossIndex = 0;
         
@@ -518,7 +518,7 @@ class ArcadeCollector {
         this.gameTime = 0;
         this.difficulty = 1;
         
-        // Обновляем начальное отображение
+        // Обновляем начальн��е отображение
         if (this.scoreElement) {
             this.scoreElement.textContent = '0';
         }
@@ -732,14 +732,16 @@ class ArcadeCollector {
             bullet.x += bullet.speedX * dt;
             bullet.y += bullet.speedY * dt;
             
-            // Проверяем попадание в босс��
+            // Проверяем попадание в босса
             if (this.bossConfig.active && this.bossConfig.boss) {
                 if (this.checkCollision(bullet, this.bossConfig.boss)) {
                     this.bossConfig.boss.health -= bullet.damage;
                     this.createHitEffect(this.bossConfig.boss);
                     
                     if (this.bossConfig.boss.health <= 0) {
-                        this.score += this.bossConfig.boss.points;
+                        // Изменяем начисление очков за босса
+                        const bossPoints = this.bossConfig.boss.points || 1000;
+                        this.score += bossPoints;
                         this.scoreElement.textContent = this.score;
                         this.createDestroyEffect(this.bossConfig.boss);
                         this.bossConfig.active = false;
@@ -753,9 +755,11 @@ class ArcadeCollector {
             for (let i = this.enemies.length - 1; i >= 0; i--) {
                 const enemy = this.enemies[i];
                 if (this.checkCollision(bullet, enemy)) {
-                    enemy.health--;
+                    enemy.health -= bullet.damage || 1;
                     if (enemy.health <= 0) {
-                        this.score += enemy.points;
+                        // Изменяем начисление очков за врага
+                        const enemyPoints = this.enemyTypes[enemy.type].points || 100;
+                        this.score += enemyPoints;
                         this.scoreElement.textContent = this.score;
                         this.enemies.splice(i, 1);
                         this.createDestroyEffect(enemy);
@@ -1219,7 +1223,7 @@ class ArcadeCollector {
             return coin.y < this.canvas.height;
         });
         
-        // Обновле��ие препятствий
+        // Обновле��ие препя��ствий
         this.obstacles = this.obstacles.filter(obstacle => {
             obstacle.y += this.currentObstacleSpeed * dt;
             
@@ -2312,7 +2316,7 @@ class ArcadeCollector {
                 };
                 break;
 
-            // Добавляем конфигурацию по умолчанию для всех остальных типов
+            // Добавляем конфигурацию по умолчанию для всех остальн��х типов
             default:
                 enginePositions = [
                     { x: enemy.x + enemy.width * 0.5, y: enemy.y + 5 }
