@@ -454,7 +454,7 @@ app.post('/api/upload-avatar', upload.single('avatar'), (req, res) => {
 
     } catch (err) {
         console.error('Error uploading avatar:', err);
-        res.status(500).json({ error: 'Ошибка при загрузке аватара' });
+        res.status(500).json({ error: 'Ошибка пр�� загрузке аватара' });
     }
 });
 
@@ -462,7 +462,7 @@ app.post('/api/upload-avatar', upload.single('avatar'), (req, res) => {
 app.use((err, req, res, next) => {
     if (err instanceof multer.MulterError) {
         if (err.code === 'LIMIT_FILE_SIZE') {
-            return res.status(400).json({ error: 'Файл слишком большой. Максим������льный размер: 10MB' });
+            return res.status(400).json({ error: 'Файл слишком большой. Максим��������льный размер: 10MB' });
         }
         return res.status(400).json({ error: err.message });
     }
@@ -1132,7 +1132,7 @@ const checkAdmin = async (req, res, next) => {
         if (!adminId) {
             return res.status(401).json({ 
                 success: false,
-                error: 'Требуется авторизация' 
+                error: 'Требуется авториза��ия' 
             });
         }
 
@@ -2341,22 +2341,7 @@ app.get('/api/users/:userId', async (req, res) => {
 app.get('/api/chats/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
-        console.log('[GET /api/chats] Request for user:', userId);
-
-        // Проверяем существование пользователя
-        const userCheck = await pool.query(
-            'SELECT id FROM users WHERE id = $1',
-            [userId]
-        );
-
-        if (userCheck.rows.length === 0) {
-            return res.status(404).json({
-                success: false,
-                error: 'Пользователь не найден'
-            });
-        }
-
-        // Оптимизированный запрос для получения чатов
+        
         const query = `
             WITH ChatPartners AS (
                 SELECT DISTINCT
@@ -2366,22 +2351,6 @@ app.get('/api/chats/:userId', async (req, res) => {
                     END as partner_id
                 FROM messages
                 WHERE sender_id = $1 OR receiver_id = $1
-            ),
-            LastMessages AS (
-                SELECT DISTINCT ON (
-                    CASE 
-                        WHEN sender_id = $1 THEN receiver_id 
-                        ELSE sender_id 
-                    END
-                )
-                    m.*,
-                    CASE 
-                        WHEN sender_id = $1 THEN receiver_id 
-                        ELSE sender_id 
-                    END as partner_id
-                FROM messages m
-                WHERE sender_id = $1 OR receiver_id = $1
-                ORDER BY partner_id, created_at DESC
             )
             SELECT 
                 u.id,
@@ -2389,28 +2358,30 @@ app.get('/api/chats/:userId', async (req, res) => {
                 u.avatar_url,
                 u.is_online,
                 u.last_activity,
-                lm.message as last_message,
-                lm.created_at as last_message_time,
-                lm.sender_id = $1 as is_own_message,
-                COUNT(CASE WHEN m.is_read = false AND m.receiver_id = $1 THEN 1 END) as unread_count
+                m.message as last_message,
+                m.created_at as last_message_time,
+                m.sender_id = $1 as is_own_message,
+                COUNT(CASE WHEN m2.is_read = false AND m2.receiver_id = $1 THEN 1 END) as unread_count
             FROM ChatPartners cp
             JOIN users u ON u.id = cp.partner_id
-            LEFT JOIN LastMessages lm ON lm.partner_id = cp.partner_id
-            LEFT JOIN messages m ON (
-                m.sender_id = cp.partner_id AND 
-                m.receiver_id = $1 AND 
-                m.is_read = false
-            )
+            LEFT JOIN LATERAL (
+                SELECT * FROM messages 
+                WHERE (sender_id = $1 AND receiver_id = cp.partner_id) 
+                   OR (sender_id = cp.partner_id AND receiver_id = $1)
+                ORDER BY created_at DESC 
+                LIMIT 1
+            ) m ON true
+            LEFT JOIN messages m2 ON m2.sender_id = cp.partner_id AND m2.receiver_id = $1 AND m2.is_read = false
             GROUP BY 
                 u.id, 
                 u.username, 
                 u.avatar_url, 
                 u.is_online, 
                 u.last_activity,
-                lm.message,
-                lm.created_at,
-                lm.sender_id
-            ORDER BY lm.created_at DESC NULLS LAST
+                m.message,
+                m.created_at,
+                m.sender_id
+            ORDER BY m.created_at DESC NULLS LAST
         `;
 
         const result = await pool.query(query, [userId]);
@@ -2421,10 +2392,10 @@ app.get('/api/chats/:userId', async (req, res) => {
         });
 
     } catch (err) {
-        console.error('[GET /api/chats] Error:', err);
+        console.error('Error getting chats:', err);
         res.status(500).json({
             success: false,
-            error: 'Внутренняя ошибка сервера при получении списка чатов'
+            error: 'Internal server error'
         });
     }
 });
@@ -2702,10 +2673,12 @@ const io = new Server(httpsServer, {
     cors: {
         origin: [
             'https://adminflow.ru',
-            'https://www.adminflow.ru'
+            'https://www.adminflow.ru',
+            'http://localhost:3000' // Добавляем для локальной разработки
         ],
         methods: ['GET', 'POST'],
-        credentials: true
+        credentials: true,
+        allowedHeaders: ['Content-Type', 'Authorization']
     },
     transports: ['websocket', 'polling'],
     allowEIO3: true,
