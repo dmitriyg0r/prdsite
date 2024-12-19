@@ -2312,159 +2312,100 @@ app.get('/api/users/:userId', async (req, res) => {
 
 // Обновляем эндпоинт для получения чатов
 app.get('/api/chats/:userId', async (req, res) => {
-    const client = await pool.connect();
-    
+    let client;
     try {
         const userId = req.params.userId;
-        console.log('\n=== Начало запроса чатов ===');
-        console.log('userId:', userId);
+        client = await pool.connect();
 
-        // Начинаем транзакцию
-        await client.query('BEGIN');
-
-        // 1. Проверяем пользователя
-        const userResult = await client.query(`
-            SELECT id, username 
-            FROM users 
-            WHERE id = $1
-        `, [userId]);
-
-        if (userResult.rows.length === 0) {
-            await client.query('ROLLBACK');
-            return res.status(404).json({
-                success: false,
-                error: 'Пользователь не найден'
-            });
-        }
-
-        // 2. Получаем базовый список чатов
-        const baseChatsQuery = `
-            SELECT DISTINCT ON (other_user_id)
-                other_user_id,
-                u.username,
-                u.avatar_url,
-                u.is_online,
-                u.last_activity
-            FROM (
-                SELECT 
+        // Получаем базовый список чатов с последними сообщениями
+        const result = await client.query(`
+            WITH ChatUsers AS (
+                SELECT DISTINCT
                     CASE 
                         WHEN sender_id = $1 THEN receiver_id
                         ELSE sender_id 
                     END as other_user_id
                 FROM messages
                 WHERE sender_id = $1 OR receiver_id = $1
-            ) AS m
-            JOIN users u ON u.id = m.other_user_id
-        `;
+            ),
+            LastMessages AS (
+                SELECT DISTINCT ON (chat_pair) 
+                    id as message_id,
+                    sender_id,
+                    receiver_id,
+                    message,
+                    created_at,
+                    is_read,
+                    attachment_url,
+                    LEAST(sender_id, receiver_id) || '-' || GREATEST(sender_id, receiver_id) as chat_pair
+                FROM messages
+                WHERE sender_id = $1 OR receiver_id = $1
+                ORDER BY chat_pair, created_at DESC
+            ),
+            UnreadCounts AS (
+                SELECT sender_id, COUNT(*) as unread_count
+                FROM messages
+                WHERE receiver_id = $1 AND is_read = false
+                GROUP BY sender_id
+            )
+            SELECT 
+                u.id,
+                u.username,
+                u.avatar_url,
+                u.is_online,
+                u.last_activity,
+                COALESCE(uc.unread_count, 0) as unread_count,
+                lm.message_id,
+                lm.sender_id as last_message_sender_id,
+                lm.receiver_id as last_message_receiver_id,
+                lm.message as last_message,
+                lm.created_at as last_message_time,
+                lm.is_read as last_message_is_read,
+                lm.attachment_url as last_message_attachment
+            FROM ChatUsers cu
+            JOIN users u ON u.id = cu.other_user_id
+            LEFT JOIN LastMessages lm ON 
+                (lm.sender_id = $1 AND lm.receiver_id = cu.other_user_id) OR
+                (lm.sender_id = cu.other_user_id AND lm.receiver_id = $1)
+            LEFT JOIN UnreadCounts uc ON uc.sender_id = cu.other_user_id
+            ORDER BY lm.created_at DESC NULLS LAST
+        `, [userId]);
 
-        console.log('Выполняем запрос базового списка чатов...');
-        const baseChatsResult = await client.query(baseChatsQuery, [userId]);
-        
-        if (baseChatsResult.rows.length === 0) {
-            await client.query('COMMIT');
-            return res.json({
-                success: true,
-                chats: []
-            });
-        }
+        // Форматируем результат
+        const chats = result.rows.map(row => ({
+            id: row.id,
+            username: row.username,
+            avatar_url: row.avatar_url,
+            is_online: row.is_online,
+            last_activity: row.last_activity,
+            unread_count: parseInt(row.unread_count),
+            last_message: row.message_id ? {
+                id: row.message_id,
+                sender_id: row.last_message_sender_id,
+                receiver_id: row.last_message_receiver_id,
+                message: row.last_message,
+                created_at: row.last_message_time,
+                is_read: row.last_message_is_read,
+                attachment_url: row.last_message_attachment
+            } : null
+        }));
 
-        // 3. Получаем непрочитанные сообщения
-        const unreadQuery = `
-            SELECT sender_id, COUNT(*) as unread_count
-            FROM messages
-            WHERE receiver_id = $1 
-            AND is_read = false
-            GROUP BY sender_id
-        `;
-
-        console.log('Получаем количество непрочитанных сообщений...');
-        const unreadResult = await client.query(unreadQuery, [userId]);
-        const unreadCounts = new Map(
-            unreadResult.rows.map(row => [row.sender_id, parseInt(row.unread_count)])
-        );
-
-        // 4. Получаем последние сообщения
-        const lastMessagesQuery = `
-            SELECT DISTINCT ON (chat_user)
-                id as message_id,
-                sender_id,
-                receiver_id,
-                message,
-                created_at,
-                is_read,
-                attachment_url,
-                CASE 
-                    WHEN sender_id = $1 THEN receiver_id
-                    ELSE sender_id 
-                END as chat_user
-            FROM messages
-            WHERE sender_id = $1 OR receiver_id = $1
-            ORDER BY chat_user, created_at DESC
-        `;
-
-        console.log('Получаем последние сообщения...');
-        const lastMessagesResult = await client.query(lastMessagesQuery, [userId]);
-        const lastMessages = new Map(
-            lastMessagesResult.rows.map(msg => [msg.chat_user, msg])
-        );
-
-        // 5. Формируем итоговый результат
-        const chats = baseChatsResult.rows.map(chat => {
-            const lastMessage = lastMessages.get(chat.other_user_id);
-            return {
-                id: chat.other_user_id,
-                username: chat.username,
-                avatar_url: chat.avatar_url,
-                is_online: chat.is_online,
-                last_activity: chat.last_activity,
-                unread_count: unreadCounts.get(chat.other_user_id) || 0,
-                last_message: lastMessage ? {
-                    id: lastMessage.message_id,
-                    sender_id: lastMessage.sender_id,
-                    receiver_id: lastMessage.receiver_id,
-                    message: lastMessage.message,
-                    created_at: lastMessage.created_at,
-                    is_read: lastMessage.is_read,
-                    attachment_url: lastMessage.attachment_url
-                } : null
-            };
-        });
-
-        // Сортируем по времени последнего сообщения
-        chats.sort((a, b) => {
-            const timeA = a.last_message?.created_at || new Date(0);
-            const timeB = b.last_message?.created_at || new Date(0);
-            return new Date(timeB) - new Date(timeA);
-        });
-
-        await client.query('COMMIT');
-        
-        console.log(`Успешно получено ${chats.length} чатов`);
         res.json({
             success: true,
             chats: chats
         });
 
     } catch (error) {
-        await client.query('ROLLBACK');
-        console.error('Ошибка при получении чатов:', {
-            message: error.message,
-            stack: error.stack,
-            code: error.code,
-            detail: error.detail,
-            hint: error.hint,
-            position: error.position,
-            table: error.table
-        });
-        
+        console.error('Ошибка при получении чатов:', error);
         res.status(500).json({
             success: false,
             error: 'Ошибка при получении чатов',
             details: error.message
         });
     } finally {
-        client.release();
-        console.log('=== Конец запроса чатов ===\n');
+        if (client) {
+            client.release();
+        }
     }
 });
 
