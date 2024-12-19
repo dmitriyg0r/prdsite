@@ -2443,7 +2443,7 @@ class ArcadeCollector {
         }
 
         try {
-            const response = await fetch('http://adminflow.ru/api/scores/save', {
+            const response = await fetch('https://adminflow.ru/api/scores/save', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -2480,7 +2480,7 @@ class ArcadeCollector {
     // Обновляем метод получения таблицы лидеров
     async updateLeaderboard() {
         try {
-            const response = await fetch('http://adminflow.ru/api/scores/leaderboard?gameName=ArcadeCollector', {
+            const response = await fetch('https://adminflow.ru/api/scores/leaderboard?gameName=ArcadeCollector', {
                 credentials: 'include'
             });
             
