@@ -433,7 +433,7 @@ class ArcadeCollector {
             }
         };
         
-        // Добавим порядок появлени���� б���ссов
+        // Добавим порядок появлени����� б���ссов
         this.bossOrder = ['basic']; // Первый босс всегда basic
         this.currentBossIndex = 0;
         
@@ -610,13 +610,19 @@ class ArcadeCollector {
     updateDifficulty(dt) {
         this.gameTime += dt;
         
+        // Защита от NaN
+        if (isNaN(this.difficulty)) {
+            this.difficulty = 1;
+        }
+        
         // Более плавное увеличение сложности
         this.difficulty = 1 + Math.floor(this.gameTime / 60) * 0.5; // Каждую минуту +0.5 к сложности
         
         // Добавляем влияние очков, но с меньшим весом
-        this.difficulty += Math.floor(this.score / 500) * 0.2;
+        const scoreInfluence = Math.floor(this.score / 500) * 0.2;
+        this.difficulty += scoreInfluence;
         
-        // Корректируем частоту спавна в зависимости от количества типов врагов
+        // Корректируем частоту спавна
         const availableTypes = this.getAvailableEnemyTypes();
         const baseSpawnRate = 2500;
         this.enemySpawnRate = Math.max(
@@ -626,7 +632,9 @@ class ArcadeCollector {
         
         // Обновляем отображение уровня
         if (this.levelElement) {
-            this.levelElement.textContent = Math.floor(this.difficulty * 10) / 10;
+            // Округляем до одного знака после запятой
+            const displayLevel = Math.round(this.difficulty * 10) / 10;
+            this.levelElement.textContent = displayLevel.toFixed(1);
         }
     }
 
@@ -743,50 +751,38 @@ class ArcadeCollector {
     }
 
     createDestroyEffect(enemy) {
-        // Создаем эффект взрыва
-        const particles = 12;
-        const colors = ['#fcd34d', '#f59e0b', '#dc2626', '#ffffff'];
+        const particleCount = 10;
+        const color = this.enemyTypes[enemy.type].color;
         
-        for (let i = 0; i < particles; i++) {
-            const angle = (Math.PI * 2 * i) / particles;
-            const speed = 100 + Math.random() * 100;
-            const size = 4 + Math.random() * 4;
-            const lifetime = 0.5 + Math.random() * 0.5;
-            const color = colors[Math.floor(Math.random() * colors.length)];
+        for (let i = 0; i < particleCount; i++) {
+            const angle = (Math.PI * 2 * i) / particleCount;
+            const speed = 100 + Math.random() * 50;
             
             this.particles.push({
                 x: enemy.x + enemy.width / 2,
                 y: enemy.y + enemy.height / 2,
                 vx: Math.cos(angle) * speed,
                 vy: Math.sin(angle) * speed,
-                size: size,
+                size: 4 + Math.random() * 2,
                 color: color,
-                lifetime: lifetime,
+                lifetime: 0.5 + Math.random() * 0.3,
                 time: 0
             });
         }
     }
 
     createHitEffect(enemy) {
-        // Создаем эффект поадания
-        const particles = 6;
-        const colors = ['#ffffff', '#fcd34d'];
+        const particleCount = 5;
         
-        for (let i = 0; i < particles; i++) {
-            const angle = -Math.PI/2 + (Math.random() - 0.5);
-            const speed = 50 + Math.random() * 50;
-            const size = 2 + Math.random() * 2;
-            const lifetime = 0.2 + Math.random() * 0.2;
-            const color = colors[Math.floor(Math.random() * colors.length)];
-            
+        for (let i = 0; i < particleCount; i++) {
             this.particles.push({
                 x: enemy.x + enemy.width / 2,
                 y: enemy.y + enemy.height / 2,
-                vx: Math.cos(angle) * speed,
-                vy: Math.sin(angle) * speed,
-                size: size,
-                color: color,
-                lifetime: lifetime,
+                vx: (Math.random() - 0.5) * 100,
+                vy: (Math.random() - 0.5) * 100,
+                size: 2 + Math.random() * 2,
+                color: '#ffffff',
+                lifetime: 0.2,
                 time: 0
             });
         }
@@ -1208,7 +1204,7 @@ class ArcadeCollector {
             return coin.y < this.canvas.height;
         });
         
-        // Обновление препятствий
+        // Обновле��ие препятствий
         this.obstacles = this.obstacles.filter(obstacle => {
             obstacle.y += this.currentObstacleSpeed * dt;
             
@@ -1436,7 +1432,7 @@ class ArcadeCollector {
             );
         }
 
-        // Сначала отрисовываем частицы двигателя
+        // Сначала отрисовываем частицы двигат��ля
         this.engineParticles.forEach(particle => {
             const alpha = (1 - particle.time / particle.lifetime) * 0.7;
             this.ctx.save();
