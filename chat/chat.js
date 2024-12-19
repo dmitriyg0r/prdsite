@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Загружаем список чатов
     await loadChatsList();
     
-    // Запускаем периодическое обновление списка чатов
+    // Запускаем периодическ��е обновление списка чатов
     setInterval(loadChatsList, 10000); // Обновляем каждые 10 секунд
 });
 
@@ -361,7 +361,7 @@ function createMessageElement(message) {
         messageElement.appendChild(messageContent);
     }
 
-    // Добавляем время отправки
+    // Добав��яем время отправки
     const timestamp = document.createElement('div');
     timestamp.className = 'message-timestamp';
     timestamp.textContent = new Date(message.created_at).toLocaleTimeString([], { 
@@ -464,7 +464,7 @@ async function sendMessage() {
         const responseData = await response.json();
 
         if (!response.ok) {
-            throw new Error(responseData.details || responseData.error || 'Ошибка при отправке сообщения');
+            throw new Error(responseData.details || responseData.error || 'Ошибка при отп��авке сообщения');
         }
 
         if (responseData.success) {
@@ -1122,7 +1122,7 @@ function startMessageUpdates() {
         clearInterval(messageUpdateInterval);
     }
     
-    // Пер��ая загрука
+    // Первая загрука
     if(currentChatPartner) loadMessages(currentChatPartner.id);
     
     // Устанавливаем интервал обновления
@@ -1220,7 +1220,7 @@ async function loadChatsList() {
 }
 
 function updateExistingChatElement(element, chat) {
-    // Обновляем только текстовое содержимое и классы, не трогая стру��туру DOM
+    // Обновляем только текстовое содержимое и классы, не трогая структуру DOM
     const lastMessageEl = element.querySelector('.chat-last-message');
     const unreadCountEl = element.querySelector('.unread-count');
     const statusIndicator = element.querySelector('.status-indicator');
@@ -1253,7 +1253,7 @@ function updateExistingChatElement(element, chat) {
         statusIndicator.className = `status-indicator ${chat.is_online ? 'online' : 'offline'}`;
     }
 
-    // Обновляем аватар только если изменился
+    // Обновляем аватар только если ��зменился
     if (avatarImg && avatarImg.src !== chat.avatar_url) {
         avatarImg.src = chat.avatar_url || '../uploads/avatars/default.png';
     }
@@ -1666,3 +1666,54 @@ socket.on('typing_status', ({ userId, isTyping }) => {
         }
     }
 });
+
+function getFileIcon(fileType, fileName) {
+    const extension = fileName.split('.').pop().toLowerCase();
+    
+    const iconMap = {
+        // Документы
+        'pdf': 'fa-file-pdf',
+        'doc': 'fa-file-word',
+        'docx': 'fa-file-word',
+        'xls': 'fa-file-excel',
+        'xlsx': 'fa-file-excel',
+        'ppt': 'fa-file-powerpoint',
+        'pptx': 'fa-file-powerpoint',
+        'txt': 'fa-file-lines',
+        
+        // Архивы
+        'zip': 'fa-file-zipper',
+        'rar': 'fa-file-zipper',
+        '7z': 'fa-file-zipper',
+        'tar': 'fa-file-zipper',
+        'gz': 'fa-file-zipper',
+        
+        // Изображения
+        'jpg': 'fa-file-image',
+        'jpeg': 'fa-file-image',
+        'png': 'fa-file-image',
+        'gif': 'fa-file-image',
+        
+        // Аудио/Видео
+        'mp3': 'fa-file-audio',
+        'wav': 'fa-file-audio',
+        'mp4': 'fa-file-video',
+        'avi': 'fa-file-video',
+        
+        // Код
+        'js': 'fa-file-code',
+        'py': 'fa-file-code',
+        'html': 'fa-file-code',
+        'css': 'fa-file-code',
+    };
+    
+    return iconMap[extension] || 'fa-file';
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}

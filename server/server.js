@@ -407,7 +407,7 @@ app.post('/api/friend-request/respond', async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         console.error('Friend response error:', err);
-        res.status(500).json({ error: 'Ошиб��а при обработке заяв����' });
+        res.status(500).json({ error: 'Оши����а при обработке заяв����' });
     }
 });
 
@@ -485,36 +485,27 @@ app.post('/api/friend/remove', async (req, res) => {
 
 // Настройка хранилища для файлов сообщений
 const messageStorage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        const uploadDir = path.join(__dirname, '../public/uploads/messages');
-        if (!fs.existsSync(uploadDir)){
+    destination: (req, file, cb) => {
+        const uploadDir = '/var/www/html/uploads/messages';
+        if (!fs.existsSync(uploadDir)) {
             fs.mkdirSync(uploadDir, { recursive: true });
         }
         cb(null, uploadDir);
     },
-    filename: function (req, file, cb) {
+    filename: (req, file, cb) => {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        const filename = 'message-' + uniqueSuffix + path.extname(file.originalname);
-        file.fileUrl = `/uploads/messages/${filename}`;
-        cb(null, filename);
+        cb(null, uniqueSuffix + '-' + file.originalname);
     }
 });
 
 const messageUpload = multer({ 
     storage: messageStorage,
     limits: {
-        fileSize: 10 * 1024 * 1024 // 10MB макс размер
+        fileSize: 50 * 1024 * 1024 // Увеличиваем до 50MB
     },
     fileFilter: (req, file, cb) => {
-        // Разрешенные типы файлов
-        const filetypes = /jpeg|jpg|png|gif|pdf|doc|docx|txt/;
-        const mimetype = filetypes.test(file.mimetype);
-        const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-
-        if (mimetype && extname) {
-            return cb(null, true);
-        }
-        cb(new Error('Неподдерживаемый тип файла!'));
+        // Разрешаем все типы файлов
+        cb(null, true);
     }
 });
 
@@ -1393,7 +1384,7 @@ app.post('/api/users/update-status', async (req, res) => {
         // Обновляем кэш
         STATUS_UPDATE_CACHE.set(userId, now);
 
-        // Получаем списо�� друзей пользователя для уведомления
+        // Получаем списо�� друзе�� пользователя для уведомления
         const friendsResult = await pool.query(`
             SELECT friend_id as id FROM friendships 
             WHERE user_id = $1 AND status = 'accepted'
