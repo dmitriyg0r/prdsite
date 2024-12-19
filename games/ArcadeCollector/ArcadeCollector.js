@@ -433,7 +433,7 @@ class ArcadeCollector {
             }
         };
         
-        // Добавим порядок появления боссов
+        // Добавим порядок появления б��ссов
         this.bossOrder = ['basic']; // Первый босс всегда basic
         this.currentBossIndex = 0;
         
@@ -1545,7 +1545,7 @@ class ArcadeCollector {
     }
 
     checkCollision(rect1, rect2) {
-        // Если первый объект - игрок, используем его хитбокс
+        // Если первый объект - игрок, испол��зуем его хитбокс
         const rect1X = rect1 === this.player ? rect1.x + (rect1.width - rect1.hitboxWidth) / 2 : rect1.x;
         const rect1Y = rect1 === this.player ? rect1.y + (rect1.height - rect1.hitboxHeight) / 2 : rect1.y;
         const rect1Width = rect1 === this.player ? rect1.hitboxWidth : rect1.width;
@@ -2316,7 +2316,7 @@ class ArcadeCollector {
                 };
                 break;
 
-            // Добавляем конфигурацию по умолчанию для всех остальн��х типов
+            // Добавляем конфигурацию по умолчанию для всех остальн���� типов
             default:
                 enginePositions = [
                     { x: enemy.x + enemy.width * 0.5, y: enemy.y + 5 }
@@ -2373,7 +2373,6 @@ class ArcadeCollector {
     // Добавляем метод проверки авторизации
     async checkAuth() {
         try {
-            console.log('Checking authentication...');
             const response = await fetch('https://adminflow.ru/api/check-auth', {
                 credentials: 'include',
                 headers: {
@@ -2382,10 +2381,15 @@ class ArcadeCollector {
                 }
             });
             
-            console.log('Auth response status:', response.status);
+            // Добавим проверку статуса ответа
+            if (response.status === 500) {
+                console.warn('Сервер временно недоступен');
+                this.showLoginPrompt();
+                return;
+            }
             
             if (!response.ok) {
-                throw new Error(`Auth check failed: ${response.status}`);
+                throw new Error(`Ошибка проверки авторизации: ${response.status}`);
             }
             
             const data = await response.json();
@@ -2406,7 +2410,7 @@ class ArcadeCollector {
                 this.showLoginPrompt();
             }
         } catch (err) {
-            console.error('Error checking auth:', err);
+            console.error('Ошибка при проверке авторизации:', err);
             this.showLoginPrompt();
         }
     }
@@ -2439,7 +2443,7 @@ class ArcadeCollector {
         }
 
         try {
-            const response = await fetch('https://adminflow.ru/api/scores/save', {
+            const response = await fetch('http://adminflow.ru/api/scores/save', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -2476,12 +2480,18 @@ class ArcadeCollector {
     // Обновляем метод получения таблицы лидеров
     async updateLeaderboard() {
         try {
-            const response = await fetch('https://adminflow.ru/api/scores/leaderboard?gameName=ArcadeCollector', {
-                credentials: 'include' // Важно для работы с сессией
+            const response = await fetch('http://adminflow.ru/api/scores/leaderboard?gameName=ArcadeCollector', {
+                credentials: 'include'
             });
             
+            // Добавим проверку статуса ответа
+            if (response.status === 500) {
+                console.warn('Сервер временно недоступен');
+                return;
+            }
+            
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                throw new Error(`Ошибка HTTP! статус: ${response.status}`);
             }
             
             const data = await response.json();
@@ -2524,7 +2534,8 @@ class ArcadeCollector {
                 tbody.appendChild(row);
             });
         } catch (err) {
-            console.error('Error updating leaderboard:', err);
+            console.error('Ошибка обновления таблицы лидеров:', err);
+            // Можно добавить визуальное уведомление пользователя
         }
     }
 
