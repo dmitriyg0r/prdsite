@@ -445,27 +445,58 @@ class ArcadeCollector {
         this.checkAuth = this.checkAuth.bind(this);
         this.saveScore = this.saveScore.bind(this);
         this.showLoginPrompt = this.showLoginPrompt.bind(this);
+        this.loadImages = this.loadImages.bind(this);
+        this.init = this.init.bind(this);
         
-        // Проверяем авторизацию каждые 30 секунд
-        this.checkAuth();
-        setInterval(() => this.checkAuth(), 30000);
-        
-        // Инициализируем игру
+        // Запускаем инициализацию
         this.init();
     }
 
     async init() {
         try {
-            // Ждем завершения проверки авторизации
+            // Сначала загружаем изображения
+            await this.loadImages();
+            
+            // Затем проверяем авторизацию
             await this.checkAuth();
             
             // Инициализируем остальные компоненты
             this.bindEvents();
-            this.loadImages();
             this.startGame();
         } catch (err) {
             console.error('Ошибка инициализации игры:', err);
         }
+    }
+
+    async loadImages() {
+        try {
+            // Загрузка изображений бонусов
+            this.healthPerkImage = await this.loadImage('assets/perks/health.png');
+            this.weaponPerkImage = await this.loadImage('assets/perks/weapon.png');
+            this.weapon2PerkImage = await this.loadImage('assets/perks/weapon2.png');
+
+            // Загрузка изображений врагов
+            for (const enemyType of Object.keys(this.enemyTypes)) {
+                const image = await this.loadImage(`assets/enemies/${enemyType}.png`);
+                this.enemyTypes[enemyType].image = image;
+                console.log(`${enemyType} enemy image loaded successfully`);
+            }
+        } catch (err) {
+            console.error('Ошибка загрузки изображений:', err);
+            throw err;
+        }
+    }
+
+    loadImage(src) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => {
+                console.log(`${src} loaded`);
+                resolve(img);
+            };
+            img.onerror = () => reject(new Error(`Failed to load image: ${src}`));
+            img.src = src;
+        });
     }
 
     async checkAuth() {
@@ -478,8 +509,13 @@ class ArcadeCollector {
                 }
             });
 
+            if (response.status === 500) {
+                console.warn('Сервер временно недоступен');
+                return;
+            }
+
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                throw new Error(`Ошибка проверки авторизации: ${response.status}`);
             }
 
             const data = await response.json();
@@ -487,33 +523,23 @@ class ArcadeCollector {
             if (data.authenticated && data.user) {
                 this.currentUser = data.user;
                 console.log('Пользователь авторизован:', this.currentUser);
-                
-                // Обновляем UI после успешной авториза��ии
                 this.updateAuthUI();
             } else {
                 this.currentUser = null;
                 console.log('Пользователь не авторизован');
+                this.updateAuthUI();
             }
         } catch (err) {
             console.error('Ошибка при проверке авторизации:', err);
-            if (err.message.includes('500')) {
-                console.warn('Сервер временно недоступен');
-            }
+            // Не выбрасываем ошибку дальше, чтобы не прерывать инициализацию игры
         }
     }
 
-    updateAuthUI() {
-        // Обновляем UI в зависимости от состояния авторизации
-        const authStatus = document.getElementById('authStatus');
-        if (authStatus) {
-            if (this.currentUser) {
-                authStatus.textContent = `Игрок: ${this.currentUser.username}`;
-                authStatus.classList.add('authenticated');
-            } else {
-                authStatus.textContent = 'Гость';
-                authStatus.classList.remove('authenticated');
-            }
-        }
+    startGame() {
+        this.gameState = 'playing';
+        this.score = 0;
+        this.updateScore(0);
+        this.gameLoop();
     }
 
     bindEvents() {
@@ -1202,7 +1228,7 @@ class ArcadeCollector {
             this.player.dashTimer -= dt;
             this.player.ghostTimer -= dt;
             
-            // Создаем призрачный сле��
+            // Создаем призрачный сле����
             if (this.player.ghostTimer <= 0) {
                 this.createDashGhost();
                 this.player.ghostTimer = this.player.ghostInterval;
@@ -2442,154 +2468,6 @@ class ArcadeCollector {
             this.enemies.forEach(enemy => {
                 this.createEnemyEngineParticles(enemy);
             });
-        }
-    }
-
-    // Добавляем метод проверки авторизации
-    async checkAuth() {
-        try {
-            const response = await fetch('/api/check-auth', {
-                credentials: 'include',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                }
-            });
-            
-            if (!response.ok) {
-                throw new Error(`Ошибка проверки авторизации: ${response.status}`);
-            }
-            
-            const data = await response.json();
-            console.log('Auth response data:', data);
-            
-            if (data.authenticated && data.user) {
-                this.currentUser = data.user;
-                console.log('Пользователь авторизован:', this.currentUser);
-                
-                // Обновляем UI после успешной авторизации
-                this.updateAuthUI();
-            } else {
-                console.log('Пользователь не авторизован:', data.message);
-                this.showLoginPrompt();
-            }
-        } catch (err) {
-            console.error('Ошибка при проверке авторизации:', err);
-            this.showLoginPrompt();
-        }
-    }
-
-    // Добавляем метод показа приглашения войти
-    showLoginPrompt() {
-        const notification = document.createElement('div');
-        notification.className = 'game-notification warning';
-        notification.innerHTML = `
-            Для сохранения рекордов необходимо 
-            <a href="/login" style="color: white; text-decoration: underline;">авторизоваться</a>
-        `;
-        document.body.appendChild(notification);
-        
-        console.log('Игра перезапущена');
-    }
-
-    // Обновляем метод сохранения результата
-    async saveScore(score) {
-        if (!this.currentUser) {
-            await this.checkAuth(); // Повторная проверка авторизации
-        }
-
-            if (!this.currentUser || !this.currentUser.id) {
-                console.warn('Невозможно сохранить рекорд: пользователь не авторизован');
-                this.showLoginPrompt();
-                return;
-            }
-
-        try {
-            const response = await fetch('/api/scores/save', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                credentials: 'include',
-                body: JSON.stringify({
-                    userId: this.currentUser.id,
-                    score: Math.round(score),
-                    gameName: 'ArcadeCollector'
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const data = await response.json();
-            
-            if (data.success) {
-                console.log('Рекорд сохранен успешно:', data);
-                this.showNotification(`Рекорд сохранен! Ваше место: ${data.rank}`);
-                await this.updateLeaderboard();
-            } else {
-                throw new Error(data.error || 'Ошибка сохранения рекорда');
-            }
-        } catch (err) {
-            console.error('Ошибка сохранения рекорда:', err);
-            this.showNotification('Ошибка сохранения рекорда', 'error');
-        }
-    }
-
-    // Обновляем метод получения таблицы лидеров
-    async updateLeaderboard() {
-        try {
-            const response = await fetch('/api/scores/leaderboard?gameName=ArcadeCollector', {
-                credentials: 'include'
-            });
-            
-            if (!response.ok) {
-                throw new Error(`Ошибка HTTP! статус: ${response.status}`);
-            }
-            
-            const data = await response.json();
-            const tbody = document.querySelector('#leaderboardTable tbody');
-            if (!tbody) {
-                console.error('Leaderboard table body not found');
-                return;
-            }
-            
-            tbody.innerHTML = '';
-            
-            if (!data.leaderboard || !Array.isArray(data.leaderboard)) {
-                console.error('Invalid leaderboard data:', data);
-                return;
-            }
-            
-            data.leaderboard.forEach((entry, index) => {
-                const row = document.createElement('tr');
-                const date = new Date(entry.created_at).toLocaleDateString('ru-RU');
-                
-                // Добавляем класс для подсветки результата текущего пользователя
-                if (this.currentUser && entry.user_id === this.currentUser.id) {
-                    row.classList.add('current-user');
-                }
-                
-                row.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td>
-                        <div class="player-info">
-                            <img src="${entry.avatar_url || '/assets/default-avatar.png'}" 
-                                 alt="" class="player-avatar"
-                                 onerror="this.src='/assets/default-avatar.png'">
-                            <span>${entry.username}</span>
-                        </div>
-                    </td>
-                    <td>${entry.score}</td>
-                    <td>${date}</td>
-                `;
-                
-                tbody.appendChild(row);
-            });
-        } catch (err) {
-            console.error('Ошибка обновления таблицы лидеров:', err);
-            // Можно добавить визуальное уведомление пользователя
         }
     }
 
