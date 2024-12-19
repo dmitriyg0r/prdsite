@@ -407,7 +407,7 @@ app.post('/api/friend-request/respond', async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         console.error('Friend response error:', err);
-        res.status(500).json({ error: 'Оши����а п��и об�����ботке заяв����' });
+        res.status(500).json({ error: 'Ош������а п��и об�����ботке заяв����' });
     }
 });
 
@@ -1346,7 +1346,7 @@ app.delete('/api/posts/delete/:postId', async (req, res) => {
     }
 });
 
-// Добавляем раздачу статическ��х файлов для постов
+// Добавляем раздачу статическ���� файлов для постов
 app.use('/uploads/posts', express.static('/var/www/html/uploads/posts')); 
 
 // Получение статуса пользователя
@@ -1400,7 +1400,7 @@ app.post('/api/users/update-status', async (req, res) => {
             });
         }
 
-        // Проверяем, н�� ��ыло ли неда��него обновления для этого пользователя
+        // Проверяем, ���� ��ыло ли неда��него обновления для этого пользователя
         const lastUpdate = STATUS_UPDATE_CACHE.get(userId);
         const now = Date.now();
         
@@ -1749,7 +1749,7 @@ app.delete('/api/messages/delete/:messageId', async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         console.error('Error deleting message:', err);
-        res.status(500).json({ error: 'Ошибка при удалении соо��щ��н����я' });
+        res.status(500).json({ error: 'Ошибка при удал��нии соо��щ��н����я' });
     }
 });
 
@@ -2445,5 +2445,70 @@ app.use((err, req, res, next) => {
         error: 'Internal Server Error',
         details: err.message
     });
+});
+
+app.get('/api/scores/leaderboard', async (req, res) => {
+    try {
+        const { gameName } = req.query;
+
+        if (!gameName) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'Не указано название игры' 
+            });
+        }
+
+        // Используем WITH для оптимизации запроса
+        const result = await pool.query(`
+            WITH RankedScores AS (
+                SELECT DISTINCT ON (s.user_id)
+                    s.id,
+                    s.user_id,
+                    s.score,
+                    s.created_at,
+                    u.username,
+                    u.avatar_url,
+                    ROW_NUMBER() OVER (ORDER BY s.score DESC, s.created_at DESC) as rank
+                FROM scores s
+                JOIN users u ON s.user_id = u.id
+                WHERE s.game_name = $1
+                ORDER BY s.user_id, s.score DESC, s.created_at DESC
+            )
+            SELECT *
+            FROM RankedScores
+            ORDER BY score DESC, created_at DESC
+            LIMIT 10
+        `, [gameName]);
+
+        // Если записей нет, возвращаем пустой массив с сообщением
+        if (result.rows.length === 0) {
+            return res.json({
+                success: true,
+                leaderboard: [],
+                message: 'Таблица лидеров пока пуста'
+            });
+        }
+
+        res.json({
+            success: true,
+            leaderboard: result.rows.map(row => ({
+                ...row,
+                rank: parseInt(row.rank)
+            }))
+        });
+
+    } catch (err) {
+        console.error('Ошибка при получении таблицы лидеров:', {
+            error: err,
+            gameName: req.query.gameName,
+            stack: err.stack
+        });
+        
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при получении таблицы лидеров',
+            details: process.env.NODE_ENV === 'development' ? err.message : undefined
+        });
+    }
 });
 
