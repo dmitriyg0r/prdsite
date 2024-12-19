@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('logout-btn').style.display = 'none';
             document.querySelector('.avatar-overlay').style.display = 'none';
             
-            // Скрываем вкла��ку запросов в модальном окне
+            // Скрываем вклаку запросов в модальном окне
             const requestsTab = document.querySelector('[data-tab="requests-tab"]');
             if (requestsTab) {
                 requestsTab.style.display = 'none';
@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Загружаем список своих друзей
         await loadFriends(currentUser.id);
         
-        // Запуска��м обновление своего статуса
+        // Запускам обновление своего статуса
         startStatusUpdates();
         
         // Загружаем посты
@@ -631,7 +631,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             </div>
         `).join('');
 
-        // Обновляем обработчики событий
+        // Обновляем обраб��тчики событий
         document.querySelectorAll('.accept-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 respondToFriendRequest(btn.dataset.userId, 'accepted');
@@ -916,9 +916,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 })
             });
 
-            if (!response.ok) {
-                throw new Error('Failed to update status');
-            }
+                if (!response.ok) {
+                    throw new Error('Failed to update status');
+                }
 
             lastStatusUpdate = now;
         } catch (err) {
@@ -934,7 +934,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const updateActivity = () => {
             lastActivity = new Date();
             
-            // Используем debouncing для обновления статуса
+            // Используем debouncing для обновления ��татуса
             if (activityTimeout) {
                 clearTimeout(activityTimeout);
             }
@@ -1307,7 +1307,7 @@ async function createPost() {
                 return;
             }
 
-            // Изменяем имя поля на 'image' для соответствия серверу
+            // Изм��няем имя поля на 'image' для соответствия серверу
             formData.append('image', file);
         }
 
@@ -1356,23 +1356,41 @@ async function loadPosts() {
         const urlParams = new URLSearchParams(window.location.search);
         const userId = urlParams.get('id') || currentUser?.id;
         
+        console.log('Loading posts for user:', { userId, currentUserId: currentUser?.id });
+
         // Проверяем наличие необходимых ID
         if (!userId || !currentUser?.id) {
-            console.error('Missing required IDs:', { userId, currentUserId: currentUser?.id });
             throw new Error('Необходимые ID отсутствуют');
         }
 
         const response = await fetch(`https://adminflow.ru/api/posts/${userId}?currentUserId=${currentUser.id}`);
+        
         if (!response.ok) {
-            throw new Error(`Error: ${response.status} ${response.statusText}`);
+            console.error('Server response:', {
+                status: response.status,
+                statusText: response.statusText
+            });
+            
+            const errorData = await response.json().catch(() => ({}));
+            console.error('Error data:', errorData);
+            
+            throw new Error(`Ошибка загрузки: ${response.status} ${errorData.error || response.statusText}`);
         }
         
         const data = await response.json();
-        if (data.success) {
-            displayPosts(data.posts);
-        } else {
-            throw new Error(data.error || 'Failed to load posts');
+        
+        if (!data.success) {
+            throw new Error(data.error || 'Ошибка при загрузке постов');
         }
+
+        // Проверяем структуру данных
+        console.log('Posts data:', {
+            postsCount: data.posts?.length,
+            firstPost: data.posts?.[0]
+        });
+
+        displayPosts(data.posts);
+
     } catch (error) {
         console.error('Error loading posts:', error);
         const container = document.getElementById('posts-container');
@@ -1381,23 +1399,42 @@ async function loadPosts() {
                 <div class="error-message">
                     <i class="fas fa-exclamation-circle"></i>
                     <p>Ошибка при загрузке публикаций: ${error.message}</p>
-                    <button onclick="loadPosts()">Повторить</button>
+                    <button onclick="loadPosts()" class="retry-btn">
+                        <i class="fas fa-sync-alt"></i> Повторить
+                    </button>
                 </div>
             `;
         }
+        throw error; // Пробрасываем ошибку дальше для обработки в вызывающем коде
     }
 }
 
+// Обновляем функцию displayPosts для лучшей обработки ошибок
 function displayPosts(posts) {
+    if (!Array.isArray(posts)) {
+        console.error('Invalid posts data:', posts);
+        throw new Error('Неверный формат данных постов');
+    }
+
     const container = document.getElementById('posts-container');
+    if (!container) {
+        console.error('Posts container not found');
+        return;
+    }
+
     container.innerHTML = posts.length ? posts.map(post => {
+        // Проверяем наличие необходимых полей
+        if (!post || !post.id) {
+            console.error('Invalid post data:', post);
+            return '';
+        }
+
         let mediaContent = '';
         if (post.image_url) {
             const fileExtension = post.image_url.split('.').pop().toLowerCase();
             const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
             
             if (imageExtensions.includes(fileExtension)) {
-                // Для изображений (убрана иконка расширения)
                 mediaContent = `
                     <div class="post-media">
                         <div class="post-image-container" onclick='openImageInFullscreen("${post.image_url}", ${JSON.stringify({
@@ -1411,7 +1448,6 @@ function displayPosts(posts) {
                     </div>
                 `;
             } else {
-                // Для документов
                 const fileName = post.image_url.split('/').pop();
                 const fileIcon = getFileIcon(fileExtension);
                 mediaContent = `
@@ -1439,13 +1475,13 @@ function displayPosts(posts) {
                         <div class="post-author">${post.author_name}</div>
                         <div class="post-date">${new Date(post.created_at).toLocaleString()}</div>
                     </div>
-                    ${post.user_id === currentUser.id ? `
+                    ${post.user_id === currentUser?.id ? `
                         <button class="delete-post-btn" data-post-id="${post.id}">
                             <i class="fas fa-trash"></i>
                         </button>
                     ` : ''}
                 </div>
-                <div class="post-content">${post.content}</div>
+                <div class="post-content">${post.content || ''}</div>
                 ${mediaContent}
                 <div class="post-actions">
                     <button class="post-action like-action ${post.is_liked ? 'liked' : ''}" data-post-id="${post.id}">
@@ -1468,9 +1504,14 @@ function displayPosts(posts) {
                 </div>
             </div>
         `;
-    }).join('') : '<div class="no-posts">Не найдено публикаций</div>';
+    }).join('') : '<div class="no-posts">Публикаций пока нет</div>';
 
-    // Добавляем обработчики
+    // Добавляем обработчики после отрисовки
+    addPostEventHandlers();
+}
+
+// Добавляем функцию для установки обработчиков событий
+function addPostEventHandlers() {
     document.querySelectorAll('.delete-post-btn').forEach(btn => {
         btn.addEventListener('click', () => deletePost(btn.dataset.postId));
     });
