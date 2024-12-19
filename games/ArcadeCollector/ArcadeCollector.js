@@ -577,17 +577,40 @@ class ArcadeCollector {
 
     async checkAuth() {
         try {
+            // Проверяем наличие токена в localStorage
+            const token = localStorage.getItem('token');
+            const userId = localStorage.getItem('userId');
+            const username = localStorage.getItem('username');
+
+            if (token && userId && username) {
+                // Если есть данные в localStorage, считаем пользователя авторизованным
+                this.currentUser = {
+                    id: userId,
+                    username: username,
+                    token: token
+                };
+                console.log('Пользователь авторизован из localStorage:', this.currentUser);
+                this.updateAuthUI();
+                return;
+            }
+
+            // Если нет данных в localStorage, делаем запрос к серверу
             const response = await fetch('/api/check-auth', {
                 credentials: 'include',
                 headers: {
                     'Accept': 'application/json',
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
                 }
             });
 
             if (response.status === 500) {
-                console.warn('Сервер временно недоступен');
-                return;
+                console.warn('Сервер временно недоступен, проверяем localStorage');
+                // Даже если сервер недоступен, но есть данные в localStorage,
+                // позволяем пользователю играть
+                if (this.currentUser) {
+                    return;
+                }
             }
 
             if (!response.ok) {
@@ -598,16 +621,46 @@ class ArcadeCollector {
             
             if (data.authenticated && data.user) {
                 this.currentUser = data.user;
+                // Сохраняем данные в localStorage
+                localStorage.setItem('token', data.user.token);
+                localStorage.setItem('userId', data.user.id);
+                localStorage.setItem('username', data.user.username);
                 console.log('Пользователь авторизован:', this.currentUser);
                 this.updateAuthUI();
             } else {
                 this.currentUser = null;
+                // Очищаем localStorage
+                localStorage.removeItem('token');
+                localStorage.removeItem('userId');
+                localStorage.removeItem('username');
                 console.log('Пользователь не авторизован');
                 this.updateAuthUI();
             }
         } catch (err) {
             console.error('Ошибка при проверке авторизации:', err);
-            // Не выбрасываем ошибку дальше, чтобы не прерывать инициализацию игры
+            // Проверяем localStorage в случае ошибки
+            if (localStorage.getItem('token')) {
+                this.currentUser = {
+                    id: localStorage.getItem('userId'),
+                    username: localStorage.getItem('username'),
+                    token: localStorage.getItem('token')
+                };
+                console.log('Использованы данные из localStorage:', this.currentUser);
+                this.updateAuthUI();
+            }
+        }
+    }
+
+    updateAuthUI() {
+        const authStatus = document.getElementById('authStatus');
+        const userInfo = document.getElementById('userInfo');
+        
+        if (this.currentUser) {
+            if (authStatus) authStatus.textContent = 'Авторизован';
+            if (userInfo) userInfo.textContent = `Игрок: ${this.currentUser.username}`;
+        } else {
+            if (authStatus) authStatus.textContent = 'Не авторизован';
+            if (userInfo) userInfo.textContent = 'Гость';
         }
     }
 
@@ -2300,7 +2353,7 @@ class ArcadeCollector {
         }
     }
 
-    // Крестообразная атака
+    // ��рестообразная атака
     bossCrossShot(boss) {
         const directions = [
             {x: 1, y: 0}, {x: -1, y: 0},
