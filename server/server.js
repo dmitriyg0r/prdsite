@@ -407,7 +407,7 @@ app.post('/api/friend-request/respond', async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         console.error('Friend response error:', err);
-        res.status(500).json({ error: 'Ошиб��а при обрабо����е заявки' });
+        res.status(500).json({ error: 'Ошиб��а при обработ��е заявки' });
     }
 });
 
@@ -1244,68 +1244,103 @@ app.get('/api/posts/:userId', async (req, res) => {
         const { userId } = req.params;
         const { currentUserId } = req.query;
 
-        console.log('Fetching posts:', { userId, currentUserId });
+        console.log('[GET /api/posts] Starting request:', { userId, currentUserId });
 
-        if (!userId || !currentUserId) {
-            return res.status(400).json({
-                success: false,
-                error: 'Отсутствуют обязательные параметры'
-            });
+        // Базовый запрос для проверки соединения
+        try {
+            const connectionTest = await pool.query('SELECT 1');
+            console.log('[GET /api/posts] Database connection test:', connectionTest.rows);
+        } catch (err) {
+            console.error('[GET /api/posts] Database connection error:', err);
+            throw new Error('Database connection failed');
         }
 
-        // Получаем посты с учетом структуры таблицы
-        const postsQuery = `
-            WITH post_stats AS (
-                -- Подсчет лайков
-                SELECT 
-                    parent_id as post_id,
-                    COUNT(*) as likes_count
-                FROM posts
-                WHERE type = 'like'
-                GROUP BY parent_id
-            ),
-            comment_stats AS (
-                -- Подсчет комментариев
-                SELECT 
-                    parent_id as post_id,
-                    COUNT(*) as comments_count
-                FROM posts
-                WHERE type = 'comment'
-                GROUP BY parent_id
-            ),
-            user_likes AS (
-                -- Проверка лайков текущего пользователя
-                SELECT DISTINCT parent_id as post_id
-                FROM posts
-                WHERE type = 'like' 
-                AND user_id = $2
-            )
+        // Простой запрос для получения постов
+        const simpleQuery = `
             SELECT 
-                p.*,
+                p.id,
+                p.user_id,
+                p.content,
+                p.image_url,
+                p.created_at,
+                p.type,
                 u.username as author_name,
-                u.avatar_url as author_avatar,
-                COALESCE(ps.likes_count, 0) as likes_count,
-                COALESCE(cs.comments_count, 0) as comments_count,
-                CASE WHEN ul.post_id IS NOT NULL THEN true ELSE false END as is_liked
+                u.avatar_url as author_avatar
             FROM posts p
-            LEFT JOIN users u ON p.user_id = u.id
-            LEFT JOIN post_stats ps ON p.id = ps.post_id
-            LEFT JOIN comment_stats cs ON p.id = cs.post_id
-            LEFT JOIN user_likes ul ON p.id = ul.post_id
+            JOIN users u ON p.user_id = u.id
             WHERE p.user_id = $1 
             AND p.type = 'post'
             ORDER BY p.created_at DESC
         `;
 
-        const result = await pool.query(postsQuery, [userId, currentUserId]);
+        console.log('[GET /api/posts] Executing simple query...');
+        const posts = await pool.query(simpleQuery, [userId]);
+        console.log('[GET /api/posts] Found posts:', posts.rows.length);
+
+        // Получаем лайки отдельным запросом
+        const likesQuery = `
+            SELECT parent_id, COUNT(*) as count
+            FROM posts
+            WHERE type = 'like'
+            AND parent_id IN (SELECT id FROM posts WHERE user_id = $1 AND type = 'post')
+            GROUP BY parent_id
+        `;
+
+        const likes = await pool.query(likesQuery, [userId]);
+        console.log('[GET /api/posts] Found likes:', likes.rows.length);
+
+        // Получаем комментарии отдельным запросом
+        const commentsQuery = `
+            SELECT parent_id, COUNT(*) as count
+            FROM posts
+            WHERE type = 'comment'
+            AND parent_id IN (SELECT id FROM posts WHERE user_id = $1 AND type = 'post')
+            GROUP BY parent_id
+        `;
+
+        const comments = await pool.query(commentsQuery, [userId]);
+        console.log('[GET /api/posts] Found comments:', comments.rows.length);
+
+        // Получаем лайки текущего пользователя
+        const userLikesQuery = `
+            SELECT parent_id
+            FROM posts
+            WHERE type = 'like'
+            AND user_id = $1
+        `;
+
+        const userLikes = await pool.query(userLikesQuery, [currentUserId]);
+        console.log('[GET /api/posts] Found user likes:', userLikes.rows.length);
+
+        // Собираем все данные вместе
+        const result = posts.rows.map(post => {
+            const postLikes = likes.rows.find(l => l.parent_id === post.id);
+            const postComments = comments.rows.find(c => c.parent_id === post.id);
+            const isLiked = userLikes.rows.some(ul => ul.parent_id === post.id);
+
+            return {
+                ...post,
+                likes_count: postLikes ? parseInt(postLikes.count) : 0,
+                comments_count: postComments ? parseInt(postComments.count) : 0,
+                is_liked: isLiked
+            };
+        });
+
+        console.log('[GET /api/posts] Sending response with posts:', result.length);
 
         res.json({
             success: true,
-            posts: result.rows
+            posts: result
         });
 
     } catch (err) {
-        console.error('Error fetching posts:', err);
+        console.error('[GET /api/posts] Error:', {
+            message: err.message,
+            stack: err.stack,
+            code: err.code,
+            detail: err.detail
+        });
+        
         res.status(500).json({
             success: false,
             error: 'Ошибка при загрузке постов: ' + err.message
@@ -1313,83 +1348,38 @@ app.get('/api/posts/:userId', async (req, res) => {
     }
 });
 
-// Обработка лайков
-app.post('/api/posts/like', async (req, res) => {
+// Упрощенный маршрут для обновления статуса
+app.post('/api/users/update-status', async (req, res) => {
     try {
-        const { userId, postId } = req.body;
-
-        // Проверяем, существует ли уже лайк
-        const existingLike = await pool.query(
-            'SELECT * FROM posts WHERE parent_id = $1 AND user_id = $2 AND type = $3',
-            [postId, userId, 'like']
-        );
-
-        let liked = false;
-        
-        if (existingLike.rows.length > 0) {
-            // Если лайк существует - удаляем его
-            await pool.query(
-                'DELETE FROM posts WHERE parent_id = $1 AND user_id = $2 AND type = $3',
-                [postId, userId, 'like']
-            );
-        } else {
-            // Если лайка нет - создаем его
-            await pool.query(
-                'INSERT INTO posts (user_id, parent_id, type) VALUES ($1, $2, $3)',
-                [userId, postId, 'like']
-            );
-            liked = true;
-        }
-
-        // Получаем обновленное количество лайков
-        const likesCount = await pool.query(
-            'SELECT COUNT(*) FROM posts WHERE parent_id = $1 AND type = $2',
-            [postId, 'like']
-        );
-
-        res.json({ 
-            success: true, 
-            liked: liked,
-            likes_count: parseInt(likesCount.rows[0].count)
-        });
-    } catch (err) {
-        console.error('Error toggling like:', err);
-        res.status(500).json({ error: 'Ошибка при обработке лайка' });
-    }
-});
-
-// Удаление поста
-app.delete('/api/posts/delete/:postId', async (req, res) => {
-    try {
-        const { postId } = req.params;
         const { userId } = req.body;
+        
+        console.log('[UPDATE STATUS] Request for user:', userId);
 
-        // Проверяем, является ли пользователь автором поста
-        const post = await pool.query(
-            'SELECT * FROM posts WHERE id = $1 AND user_id = $2 AND type = $3',
-            [postId, userId, 'post']
-        );
+        // Простое обновление без дополнительных проверок
+        const result = await pool.query(`
+            UPDATE users 
+            SET last_activity = CURRENT_TIMESTAMP 
+            WHERE id = $1 
+            RETURNING id, last_activity
+        `, [userId]);
 
-        if (post.rows.length === 0) {
-            return res.status(403).json({ error: 'У вас нет прав на удаление этого поста' });
-        }
+        console.log('[UPDATE STATUS] Update result:', result.rows[0]);
 
-        // Удаляем все связанные записи (лайки, комментарии)
-        await pool.query('DELETE FROM posts WHERE parent_id = $1', [postId]);
-        // Удаляем сам пост
-        await pool.query('DELETE FROM posts WHERE id = $1', [postId]);
+        res.json({
+            success: true,
+            user: result.rows[0]
+        });
 
-        res.json({ success: true });
     } catch (err) {
-        console.error('Error deleting post:', err);
-        res.status(500).json({ error: 'Ошибка при удалении поста' });
+        console.error('[UPDATE STATUS] Error:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка обновления статуса'
+        });
     }
 });
 
-// Добавляем раздачу статических файлов для постов
-app.use('/uploads/posts', express.static('/var/www/html/uploads/posts')); 
-
-// Получение статуса пользователя
+// Маршрут для получения статуса пользователя
 app.get('/api/users/status/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
@@ -2713,184 +2703,6 @@ app.post('/api/scores/save', async (req, res) => {
             success: false,
             error: 'Ошибка при сохранении рекорда',
             details: process.env.NODE_ENV === 'development' ? err.message : undefined
-        });
-    }
-});
-
-// Маршрут для получения постов
-app.get('/api/posts/:userId', async (req, res) => {
-    try {
-        const { userId } = req.params;
-        const { currentUserId } = req.query;
-
-        console.log('[GET /api/posts] Request params:', { userId, currentUserId });
-
-        if (!userId || !currentUserId) {
-            console.log('[GET /api/posts] Missing parameters');
-            return res.status(400).json({
-                success: false,
-                error: 'Отсутствуют обязательные параметры'
-            });
-        }
-
-        // Сначала проверим существование пользователей
-        const userCheckQuery = `
-            SELECT id FROM users WHERE id IN ($1, $2)
-        `;
-        
-        console.log('[GET /api/posts] Checking users existence...');
-        const userCheck = await pool.query(userCheckQuery, [userId, currentUserId]);
-        
-        if (userCheck.rows.length < 2) {
-            console.log('[GET /api/posts] One or both users not found');
-            return res.status(404).json({
-                success: false,
-                error: 'Один или оба пользователя не найдены'
-            });
-        }
-
-        // Проверим структуру таблицы posts
-        console.log('[GET /api/posts] Checking posts table structure...');
-        const tableCheck = await pool.query(`
-            SELECT column_name, data_type 
-            FROM information_schema.columns 
-            WHERE table_name = 'posts'
-        `);
-        console.log('Posts table structure:', tableCheck.rows);
-
-        // Базовый запрос для тестирования
-        const testQuery = `
-            SELECT p.*, u.username 
-            FROM posts p
-            JOIN users u ON p.user_id = u.id
-            WHERE p.user_id = $1 
-            AND p.type = 'post'
-            LIMIT 1
-        `;
-
-        console.log('[GET /api/posts] Testing basic query...');
-        const testResult = await pool.query(testQuery, [userId]);
-        console.log('Test query result:', testResult.rows);
-
-        // Если базовый запрос работает, выполняем полный запрос
-        const postsQuery = `
-            SELECT 
-                p.id,
-                p.user_id,
-                p.content,
-                p.image_url,
-                p.created_at,
-                p.updated_at,
-                u.username as author_name,
-                u.avatar_url as author_avatar,
-                (
-                    SELECT COUNT(*) 
-                    FROM posts likes 
-                    WHERE likes.parent_id = p.id 
-                    AND likes.type = 'like'
-                ) as likes_count,
-                (
-                    SELECT COUNT(*) 
-                    FROM posts comments 
-                    WHERE comments.parent_id = p.id 
-                    AND comments.type = 'comment'
-                ) as comments_count,
-                EXISTS(
-                    SELECT 1 
-                    FROM posts ul 
-                    WHERE ul.parent_id = p.id 
-                    AND ul.type = 'like' 
-                    AND ul.user_id = $2
-                ) as is_liked
-            FROM posts p
-            JOIN users u ON p.user_id = u.id
-            WHERE p.user_id = $1 
-            AND p.type = 'post'
-            ORDER BY p.created_at DESC
-        `;
-
-        console.log('[GET /api/posts] Executing main query...');
-        const result = await pool.query(postsQuery, [userId, currentUserId]);
-        console.log('Main query result count:', result.rows.length);
-
-        res.json({
-            success: true,
-            posts: result.rows
-        });
-
-    } catch (err) {
-        console.error('[GET /api/posts] Error:', {
-            message: err.message,
-            stack: err.stack,
-            query: err.query,
-            parameters: err.parameters
-        });
-        
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка при загрузке постов: ' + err.message
-        });
-    }
-});
-
-// Маршрут для обновления статуса
-app.post('/api/users/update-status', async (req, res) => {
-    try {
-        const { userId, timestamp } = req.body;
-        
-        console.log('[POST /api/users/update-status] Request body:', { userId, timestamp });
-
-        if (!userId) {
-            console.log('[POST /api/users/update-status] Missing userId');
-            return res.status(400).json({
-                success: false,
-                error: 'Отсутствует ID пользователя'
-            });
-        }
-
-        // Проверяем существование пользователя
-        console.log('[POST /api/users/update-status] Checking user existence...');
-        const userExists = await pool.query(
-            'SELECT id FROM users WHERE id = $1',
-            [userId]
-        );
-
-        if (userExists.rows.length === 0) {
-            console.log('[POST /api/users/update-status] User not found:', userId);
-            return res.status(404).json({
-                success: false,
-                error: 'Пользователь не найден'
-            });
-        }
-
-        // Обновляем статус
-        console.log('[POST /api/users/update-status] Updating user status...');
-        const result = await pool.query(`
-            UPDATE users 
-            SET 
-                is_online = true,
-                last_activity = CURRENT_TIMESTAMP
-            WHERE id = $1
-            RETURNING id, is_online, last_activity
-        `, [userId]);
-
-        console.log('[POST /api/users/update-status] Update result:', result.rows[0]);
-
-        res.json({
-            success: true,
-            user: result.rows[0]
-        });
-
-    } catch (err) {
-        console.error('[POST /api/users/update-status] Error:', {
-            message: err.message,
-            stack: err.stack,
-            query: err.query
-        });
-        
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка при обновлении статуса: ' + err.message
         });
     }
 });
