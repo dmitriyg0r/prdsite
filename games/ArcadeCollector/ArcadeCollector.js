@@ -433,7 +433,7 @@ class ArcadeCollector {
             }
         };
         
-        // Добавим порядок появлени����� б���ссов
+        // Добавим порядок появлени������� б���ссов
         this.bossOrder = ['basic']; // Первый босс всегда basic
         this.currentBossIndex = 0;
         
@@ -621,7 +621,7 @@ class ArcadeCollector {
     }
 
     updateDifficulty() {
-        // Базовая сложность
+        // Базовая сложность всегда начинается с 1
         let newDifficulty = 1;
         
         // Увеличение сложности от времени (каждые 60 секунд +0.5)
@@ -633,18 +633,10 @@ class ArcadeCollector {
         // Ограничиваем минимальную и максимальную сложность
         this.difficulty = Math.max(1, Math.min(newDifficulty, 10));
         
-        // Обновляем отображение уровня
+        // Безопасное обновление отображения
         if (this.levelElement) {
             this.levelElement.textContent = this.difficulty.toFixed(1);
         }
-        
-        // Обновляем частоту появления врагов
-        const availableTypes = this.getAvailableEnemyTypes();
-        const baseSpawnRate = 2500;
-        this.enemySpawnRate = Math.max(
-            800,
-            baseSpawnRate - (availableTypes.length * 100) - (this.difficulty * 100)
-        );
     }
 
     shoot() {
@@ -839,7 +831,7 @@ class ArcadeCollector {
     getAvailableEnemyTypes() {
         let availableTypes = [];
         
-        // Проходим по прогрессии и добавляем типы врагов, доступные для текущей сложности
+        // Проходим по прогрессии и добавляем типы врагов, доступные для тек��щей сложности
         this.enemyProgression.forEach(level => {
             if (this.difficulty >= level.difficulty) {
                 availableTypes = [...availableTypes, ...level.types];
@@ -1993,7 +1985,7 @@ class ArcadeCollector {
         }
     }
 
-    // Добавляем метод обновления босса
+    // Добавляем метод обновлени�� бос��а
     updateBoss(dt) {
         if (!this.bossConfig.active || !this.bossConfig.boss) return;
         
@@ -2613,20 +2605,22 @@ class ArcadeCollector {
     }
 
     handleEnemyDestruction(enemy) {
-        // Начисляем очки
-        const points = this.enemyTypes[enemy.type].points;
-        this.score += points;
-        
-        // Обновляем отображение очков
-        if (this.scoreElement) {
-            this.scoreElement.textContent = this.score.toString();
+        // Проверяем наличие типа врага и его очков
+        if (enemy && enemy.type && this.enemyTypes[enemy.type]) {
+            const points = this.enemyTypes[enemy.type].points;
+            this.score += points;
+            
+            // Безопасное обновление отображения
+            if (this.scoreElement) {
+                this.scoreElement.textContent = this.score.toString();
+            }
+            
+            // Создаем эффект уничтожения
+            this.createDestroyEffect(enemy);
+            
+            // Проверяем достижение порога для появления босса
+            this.checkBossSpawn();
         }
-        
-        // Создаем эффект уничтожения
-        this.createDestroyEffect(enemy);
-        
-        // Проверяем достижение порога для появления босса
-        this.checkBossSpawn();
     }
 
     updateBulletCollisions() {
