@@ -462,7 +462,7 @@ app.post('/api/upload-avatar', upload.single('avatar'), (req, res) => {
 app.use((err, req, res, next) => {
     if (err instanceof multer.MulterError) {
         if (err.code === 'LIMIT_FILE_SIZE') {
-            return res.status(400).json({ error: 'Файл слишком большой. Максим��льный размер: 10MB' });
+            return res.status(400).json({ error: 'Файл слишком большой. Максим����льный размер: 10MB' });
         }
         return res.status(400).json({ error: err.message });
     }
@@ -1933,32 +1933,6 @@ transporter.verify(function(error, success) {
     }
 });
 
-// Альтернативная конфигурация  TLS
-const alternativeTransporter = nodemailer.createTransport({
-    host: 'smtp.timeweb.ru',
-    port: 587,              // Алтернативный порт
-    secure: false,          // Для порта 587
-    requireTLS: true,       // Требуем TLS
-    auth: {
-        user: 'adminflow@adminflow.ru',
-        pass: 'Gg3985502'
-    },
-    tls: {
-        rejectUnauthorized: false // В случае проблем с сертификатом
-    }
-});
-
-// Проверяем альтернативное соединение
-alternativeTransporter.verify(function(error, success) {
-    if (error) {
-        console.error('Ошибка подключения к альтернативному SMTP:', error);
-    } else {
-        console.log('Альтернативный SMTP сервер готов к отправке сообщений');
-        // Если альтернативно соединение работает, используем его
-        transporter = alternativeTransporter;
-    }
-});
-
 // Функция для генерации кода подтверждения
 function generateVerificationCode() {
     return Math.floor(100000 + Math.random() * 900000).toString();
@@ -2715,11 +2689,14 @@ app.post('/api/scores/save', async (req, res) => {
 });
 
 // Обновляем настройку Socket.IO
-const io = new Server(server, {
+const io = new Server(httpsServer, {
     path: '/socket.io/',
     cors: {
-        origin: "*",
-        methods: ["GET", "POST"],
+        origin: [
+            'https://adminflow.ru',
+            'https://www.adminflow.ru'
+        ],
+        methods: ['GET', 'POST'],
         credentials: true
     },
     transports: ['websocket', 'polling'],
@@ -2734,4 +2711,44 @@ app.use((req, res, next) => {
     res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
     res.header('Access-Control-Allow-Headers', 'Content-Type');
     next();
+});
+
+// Создаем HTTP сервер для редиректа
+const httpServer = http.createServer((req, res) => {
+    res.writeHead(301, { Location: `https://${req.headers.host}${req.url}` });
+    res.end();
+});
+
+// Создаем HTTPS сервер
+const httpsServer = https.createServer(sslOptions, app);
+
+// Инициализируем Socket.IO с правильными настройками
+const io = new Server(httpsServer, {
+    path: '/socket.io/',
+    cors: {
+        origin: [
+            'https://adminflow.ru',
+            'https://www.adminflow.ru'
+        ],
+        methods: ['GET', 'POST'],
+        credentials: true
+    },
+    transports: ['websocket', 'polling'],
+    allowEIO3: true,
+    pingTimeout: 60000,
+    pingInterval: 25000
+});
+
+// Запускаем оба сервера
+httpServer.listen(80, () => {
+    console.log('HTTP Server running on port 80 (redirect)');
+});
+
+httpsServer.listen(PORT, () => {
+    console.log(`HTTPS Server running on port ${PORT}`);
+});
+
+// Добавляем middleware для проверки состояния Socket.IO
+app.get('/socket.io/', (req, res) => {
+    res.send('Socket.IO endpoint is active');
 });
