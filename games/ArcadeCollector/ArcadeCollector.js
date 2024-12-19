@@ -433,7 +433,7 @@ class ArcadeCollector {
             }
         };
         
-        // Добавим порядок появлени�� боссов
+        // Добавим порядок появлени�� б���ссов
         this.bossOrder = ['basic']; // Первый босс всегда basic
         this.currentBossIndex = 0;
         
@@ -445,20 +445,51 @@ class ArcadeCollector {
         this.player.health = this.player.maxHealth;
         this.updateHealthDisplay(); // Устанавливаем начальное значение
 
-        // Загружаем изображения противников
+        // В конструкторе обновите загрузку изображений врагов:
         this.enemyImages = {
             basic: new Image(),
             shooter: new Image(),
-            boss: new Image()
+            boss: new Image(),
+            fast: new Image(),
+            tank: new Image(),
+            zigzag: new Image(),
+            kamikaze: new Image(),
+            sniper: new Image(),
+            bomber: new Image(),
+            stealth: new Image(),
+            shielded: new Image(),
+            healer: new Image(),
+            drone: new Image(),
+            swarm: new Image(),
+            heavy: new Image()
         };
+
+        // Загружаем изображения
         this.enemyImages.basic.src = 'assets/enemy/EA6.png';
         this.enemyImages.shooter.src = 'assets/enemy/EA4.png';
         this.enemyImages.boss.src = 'assets/enemy/EA1.png';
-        
+        this.enemyImages.fast.src = 'assets/enemy/EA2.png';
+        this.enemyImages.tank.src = 'assets/enemy/EA3.png';
+        this.enemyImages.zigzag.src = 'assets/enemy/EA5.png';
+        this.enemyImages.kamikaze.src = 'assets/enemy/EA7.png';
+        this.enemyImages.sniper.src = 'assets/enemy/EA8.png';
+        this.enemyImages.bomber.src = 'assets/enemy/EA9.png';
+        this.enemyImages.stealth.src = 'assets/enemy/EA10.png';
+        this.enemyImages.shielded.src = 'assets/enemy/EA11.png';
+        this.enemyImages.healer.src = 'assets/enemy/EA12.png';
+        this.enemyImages.drone.src = 'assets/enemy/EA13.png';
+        this.enemyImages.swarm.src = 'assets/enemy/EA14.png';
+        this.enemyImages.heavy.src = 'assets/enemy/EA15.png';
+
         // Добавляем обработчики загрузки
         Object.entries(this.enemyImages).forEach(([type, img]) => {
-            img.onerror = () => console.error(`Error loading ${type} enemy image`);
-            img.onload = () => console.log(`${type} enemy image loaded`);
+            img.onerror = () => {
+                console.error(`Error loading ${type} enemy image`);
+                // Устанавливаем флаг ошибки загрузки для этого типа
+                this.enemyImageLoadErrors = this.enemyImageLoadErrors || {};
+                this.enemyImageLoadErrors[type] = true;
+            };
+            img.onload = () => console.log(`${type} enemy image loaded successfully`);
         });
 
         // В конструкторе добавим массив для частиц двигателей противников
@@ -836,7 +867,7 @@ class ArcadeCollector {
                     break;
                 case 'heal':
                     enemy.y += enemy.speed * dt;
-                    // Лечение ближайших врагов
+                    // Лечение ближайших вр��гов
                     this.healNearbyEnemies(enemy);
                     break;
                 case 'swarm':
@@ -2396,6 +2427,116 @@ class ArcadeCollector {
             });
         } catch (err) {
             console.error('Error updating leaderboard:', err);
+        }
+    }
+
+    updateSwarmBehavior(enemy) {
+        // Находим ближайших врагов
+        const nearbyEnemies = this.enemies.filter(other => {
+            if (other === enemy) return false;
+            const dx = other.x - enemy.x;
+            const dy = other.y - enemy.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            return distance < 150; // Радиус роя
+        });
+
+        if (nearbyEnemies.length > 0) {
+            // Вычисляем среднюю позицию роя
+            let centerX = 0;
+            let centerY = 0;
+            nearbyEnemies.forEach(other => {
+                centerX += other.x;
+                centerY += other.y;
+            });
+            centerX /= nearbyEnemies.length;
+            centerY /= nearbyEnemies.length;
+
+            // Двигаемся к центру роя
+            const dx = centerX - enemy.x;
+            const dy = centerY - enemy.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            if (distance > 0) {
+                enemy.x += (dx / distance) * enemy.speed * this.deltaTime * 0.5;
+                enemy.y += (dy / distance) * enemy.speed * this.deltaTime * 0.5;
+            }
+        } else {
+            // Если нет ближайших врагов, двигаемся вниз
+            enemy.y += enemy.speed * this.deltaTime;
+        }
+    }
+
+    updateDroneBehavior(enemy) {
+        // Дроны двигаются зигзагом и следуют за игроком
+        const dx = this.player.x - enemy.x;
+        const dy = this.player.y - enemy.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        enemy.time += this.deltaTime;
+        
+        // Добавляем зигзагообразное движение
+        const zigzag = Math.sin(enemy.time * 5) * 50;
+        
+        if (distance > 0) {
+            enemy.x += (dx / distance) * enemy.speed * this.deltaTime + zigzag * this.deltaTime;
+            enemy.y += (dy / distance) * enemy.speed * this.deltaTime;
+        }
+    }
+
+    updateStealthBehavior(enemy) {
+        // Стелс-враги периодически становятся полупрозрачными
+        enemy.time += this.deltaTime;
+        enemy.alpha = 0.3 + Math.abs(Math.sin(enemy.time * 2)) * 0.7;
+        
+        // Прямое движение вниз
+        enemy.y += enemy.speed * this.deltaTime;
+    }
+
+    healNearbyEnemies(healer) {
+        const healRadius = 100;
+        const healAmount = 1;
+        
+        this.enemies.forEach(enemy => {
+            if (enemy !== healer) {
+                const dx = enemy.x - healer.x;
+                const dy = enemy.y - healer.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance < healRadius) {
+                    const maxHealth = this.enemyTypes[enemy.type].health;
+                    enemy.health = Math.min(enemy.health + healAmount * this.deltaTime, maxHealth);
+                    this.createHealEffect(enemy);
+                }
+            }
+        });
+    }
+
+    updateKamikazeBehavior(enemy) {
+        // Камикадзе быстро движутся к игроку
+        const dx = this.player.x - enemy.x;
+        const dy = this.player.y - enemy.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        if (distance > 0) {
+            enemy.x += (dx / distance) * enemy.speed * this.deltaTime;
+            enemy.y += (dy / distance) * enemy.speed * this.deltaTime;
+        }
+    }
+
+    createHealEffect(enemy) {
+        // Создаем зеленые частицы вокруг врага
+        const particleCount = 3;
+        for (let i = 0; i < particleCount; i++) {
+            const angle = (Math.PI * 2 * i) / particleCount;
+            this.particles.push({
+                x: enemy.x + enemy.width / 2 + Math.cos(angle) * 20,
+                y: enemy.y + enemy.height / 2 + Math.sin(angle) * 20,
+                vx: Math.cos(angle) * 50,
+                vy: Math.sin(angle) * 50,
+                size: 4,
+                color: '#34d399',
+                lifetime: 0.5,
+                time: 0
+            });
         }
     }
 } // Закрывающая скобка класса
