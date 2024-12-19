@@ -1359,30 +1359,37 @@ async function loadPosts() {
             throw new Error('Missing required user IDs');
         }
 
-        const response = await fetch(`https://adminflow.ru/api/posts/${userId}?currentUserId=${currentUser.id}`);
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.error || 'Failed to load posts');
-        }
-
-        if (data.success) {
-            displayPosts(data.posts || []);
-        } else {
-            throw new Error(data.error || 'Failed to load posts');
-        }
+        await loadPosts(userId, currentUser.id);
     } catch (err) {
-        console.error('Error loading posts:', err);
+        console.error('Error in loadPosts wrapper:', err);
         const container = document.getElementById('posts-container');
         if (container) {
             container.innerHTML = `
                 <div class="error-message">
                     <i class="fas fa-exclamation-circle"></i>
-                    <p>Ошибка при загрузке публикаций</p>
+                    <p>Ошибка при загрузке публикаций: ${err.message}</p>
                     <button onclick="loadPosts()">Повторить</button>
                 </div>
             `;
         }
+    }
+}
+
+async function loadPosts(userId, currentUserId) {
+    try {
+        const response = await fetch(`https://adminflow.ru/api/posts/${userId}?currentUserId=${currentUserId}`);
+        if (!response.ok) {
+            throw new Error(`Error: ${response.status} ${response.statusText}`);
+        }
+        const data = await response.json();
+        if (data.success) {
+            displayPosts(data.posts);
+        } else {
+            throw new Error(data.error || 'Failed to load posts');
+        }
+    } catch (error) {
+        console.error('Error loading posts:', error);
+        alert(`Error loading posts: ${error.message}`);
     }
 }
 
