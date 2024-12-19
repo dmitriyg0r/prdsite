@@ -2310,513 +2310,10 @@ app.get('/api/users/:userId', async (req, res) => {
     }
 });
 
-// Модифицируем запрос для получения списка чатов
+// Получение списка чатов для пользователя
 app.get('/api/chats/:userId', async (req, res) => {
     try {
-        const { userId } = req.params;
-
-        const result = await pool.query(`
-            WITH ChatPartners AS (
-                -- Получаем всех друзей и собеседников
-                SELECT DISTINCT id as partner_id
-                FROM (
-                    -- Получаем друзей из таблицы friendships
-                    SELECT friend_id as id 
-                    FROM friendships 
-                    WHERE user_id = $1 AND status = 'accepted'
-                    UNION
-                    SELECT user_id as id
-                    FROM friendships 
-                    WHERE friend_id = $1 AND status = 'accepted'
-                    UNION
-                    -- Добавляем собеседников из сообщений
-                    SELECT DISTINCT 
-                        CASE 
-                            WHEN sender_id = $1 THEN receiver_id
-                            ELSE sender_id 
-                        END as id
-                    FROM messages 
-                    WHERE sender_id = $1 OR receiver_id = $1
-                ) all_partners
-            ),
-            LastMessages AS (
-                -- Получаем последние сообщения для каждого собеседника
-                SELECT DISTINCT ON (partner_id)
-                    partner_id,
-                    message,
-                    attachment_url,
-                    created_at,
-                    is_read,
-                    sender_id
-                FROM (
-                    SELECT 
-                        CASE 
-                            WHEN sender_id = $1 THEN receiver_id
-                            ELSE sender_id 
-                        END as partner_id,
-                        message,
-                        attachment_url,
-                        created_at,
-                        is_read,
-                        sender_id
-                    FROM messages
-                    WHERE sender_id = $1 OR receiver_id = $1
-                ) m
-                ORDER BY partner_id, created_at DESC
-            )
-            SELECT 
-                u.id,
-                u.username,
-                u.avatar_url,
-                u.is_online,
-                u.last_activity,
-                lm.message as last_message,
-                lm.attachment_url as last_message_attachment,
-                lm.created_at as last_message_time,
-                lm.is_read,
-                lm.sender_id = $1 as is_own_message,
-                (
-                    SELECT COUNT(*)
-                    FROM messages m
-                    WHERE m.sender_id = u.id 
-                    AND m.receiver_id = $1 
-                    AND m.is_read = false
-                ) as unread_count
-            FROM ChatPartners cp
-            JOIN users u ON u.id = cp.partner_id
-            LEFT JOIN LastMessages lm ON lm.partner_id = u.id
-            ORDER BY 
-                CASE 
-                    WHEN lm.created_at IS NULL THEN 1 
-                    ELSE 0 
-                END,
-                lm.created_at DESC NULLS LAST,
-                u.username
-        `, [userId]);
-
-        res.json({
-            success: true,
-            chats: result.rows
-        });
-    } catch (err) {
-        console.error('Error getting chats:', err);
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка при получении списка чатов'
-        });
-    }
-});
-
-// Добавляем отдельный роут для отправки текстовых сообщений
-app.post('/api/messages/send', async (req, res) => {
-    try {
-        const { senderId, receiverId, message, replyToMessageId } = req.body;
-        
-        console.log('Получены данные:', { 
-            senderId, 
-            receiverId, 
-            message, 
-            replyToMessageId,
-            body: req.body 
-        });
-
-        // Проверяем и конвертируем ID в числа
-        const senderIdNum = parseInt(senderId);
-        const receiverIdNum = parseInt(receiverId);
-
-        if (isNaN(senderIdNum) || isNaN(receiverIdNum)) {
-            return res.status(400).json({
-                success: false,
-                error: 'Некорректные ID отправителя или получателя'
-            });
-        }
-
-        // Проверяем существование пользователей
-        const usersExist = await pool.query(`
-            SELECT EXISTS (
-                SELECT 1 FROM users WHERE id = $1
-            ) AS sender_exists,
-            EXISTS (
-                SELECT 1 FROM users WHERE id = $2
-            ) AS receiver_exists
-        `, [senderIdNum, receiverIdNum]);
-
-        if (!usersExist.rows[0].sender_exists || !usersExist.rows[0].receiver_exists) {
-            return res.status(404).json({
-                success: false,
-                error: 'Отправитель или получатель не найден'
-            });
-        }
-
-        // Сохраняем сообщение
-        const insertQuery = `
-            INSERT INTO messages 
-            (sender_id, receiver_id, message, reply_to, created_at, is_read)
-            VALUES ($1, $2, $3, $4, NOW(), false)
-            RETURNING 
-                id, 
-                sender_id,
-                receiver_id,
-                message,
-                reply_to,
-                created_at,
-                is_read
-        `;
-
-        console.log('Выполняем запрос:', {
-            query: insertQuery,
-            params: [senderIdNum, receiverIdNum, message || '', replyToMessageId || null]
-        });
-
-        const result = await pool.query(insertQuery, 
-            [senderIdNum, receiverIdNum, message || '', replyToMessageId || null]
-        );
-
-        console.log('Результат запроса:', result.rows[0]);
-
-        if (!result.rows[0]) {
-            throw new Error('Сообщение не было сохранено');
-        }
-
-        const newMessage = {
-            ...result.rows[0],
-            sender_id: senderIdNum,
-            receiver_id: receiverIdNum
-        };
-
-        // Отправляем через Socket.IO
-        try {
-            const receiverSocketId = activeConnections.get(receiverIdNum);
-            if (receiverSocketId) {
-                io.to(receiverSocketId).emit('new_message', newMessage);
-            }
-        } catch (socketError) {
-            console.error('Ошибка Socket.IO:', socketError);
-        }
-
-        return res.status(200).json({
-            success: true,
-            message: newMessage
-        });
-
-    } catch (error) {
-        console.error('Детальная ошибка отправки сообщения:', {
-            error: error.message,
-            stack: error.stack,
-            code: error.code,
-            detail: error.detail
-        });
-
-        return res.status(500).json({
-            success: false,
-            error: 'Ошибка при отправке сообщения',
-            details: error.message
-        });
-    }
-});
-
-// Получение списка пользователей для сайдбара
-app.get('/api/users-list', async (req, res) => {
-    try {
-        const result = await pool.query(`
-            SELECT id, username, avatar_url
-            FROM users
-            ORDER BY created_at DESC
-            LIMIT 20
-        `);
-        
-        res.json({ 
-            success: true,
-            users: result.rows 
-        });
-    } catch (err) {
-        console.error('Error loading users list:', err);
-        res.status(500).json({ error: 'Ошибка при загрузке списка пользователей' });
-    }
-});
-
-// Периодическая очистка уста���евших записей кэша
-setInterval(() => {
-    const now = Date.now();
-    for (const [userId, timestamp] of STATUS_UPDATE_CACHE.entries()) {
-        if (now - timestamp > STATUS_UPDATE_INTERVAL * 2) {
-            STATUS_UPDATE_CACHE.delete(userId);
-        }
-    }
-}, STATUS_UPDATE_INTERVAL * 2);
-
-// Настройка хранилища для голосовых сообщений
-const voiceStorage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        const dir = 'uploads/voice';
-        if (!fs.existsSync(dir)){
-            fs.mkdirSync(dir, { recursive: true });
-        }
-        cb(null, dir);
-    },
-    filename: function (req, file, cb) {
-        cb(null, Date.now() + '-' + Math.round(Math.random() * 1E9) + '.webm');
-    }
-});
-
-const uploadVoice = multer({ 
-    storage: voiceStorage,
-    limits: {
-        fileSize: 10 * 1024 * 1024 // Максимальный размер 10MB
-    }
-});
-
-// Эндпоинт для отправки голосовых сообщений
-app.post('/api/messages/voice', uploadVoice.single('audio'), async (req, res) => {
-    try {
-        const { senderId, receiverId } = req.body;
-        
-        if (!req.file) {
-            return res.status(400).json({ 
-                success: false, 
-                error: 'Аудиофайл не найден' 
-            });
-        }
-
-        // Сначала создаем запись в таблице messages
-        const messageResult = await pool.query(`
-            INSERT INTO messages 
-            (sender_id, receiver_id, message_type, message, created_at, is_read)
-            VALUES ($1, $2, 'voice', '[Голосовое сообщение]', NOW(), false)
-            RETURNING id, created_at
-        `, [senderId, receiverId]);
-
-        const messageId = messageResult.rows[0].id;
-
-        // Затем соз��аем запись в таблице voice_messages
-        await pool.query(`
-            INSERT INTO voice_messages 
-            (message_id, duration, file_path)
-            VALUES ($1, $2, $3)
-        `, [messageId, 0, req.file.path]); // Длительность можно обновить позже
-
-        const message = {
-            id: messageId,
-            sender_id: senderId,
-            receiver_id: receiverId,
-            message_type: 'voice',
-            message: '[Голосовое сообщение]',
-            file_path: req.file.path,
-            created_at: messageResult.rows[0].created_at,
-            is_read: false
-        };
-
-        // Отправляем уведомление через Socket.IO
-        const receiverSocketId = activeConnections.get(receiverId);
-        if (receiverSocketId) {
-            io.to(receiverSocketId).emit('new_message', message);
-        }
-
-        res.json({ 
-            success: true, 
-            message 
-        });
-
-    } catch (err) {
-        console.error('Error sending voice message:', err);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Ошибка при отправке голосового сообщения' 
-        });
-    }
-});
-
-// Эндпоинт для получения голосового сообщения
-app.get('/api/messages/voice/:messageId', async (req, res) => {
-    try {
-        const { messageId } = req.params;
-
-        const result = await pool.query(`
-            SELECT vm.file_path
-            FROM voice_messages vm
-            JOIN messages m ON m.id = vm.message_id
-            WHERE m.id = $1
-        `, [messageId]);
-
-        if (result.rows.length === 0) {
-            return res.status(404).json({
-                success: false,
-                error: 'Голосовое сообщение не найдено'
-            });
-        }
-
-        const filePath = result.rows[0].file_path;
-        res.sendFile(path.resolve(filePath));
-
-    } catch (err) {
-        console.error('Error getting voice message:', err);
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка при получении голосового сообщения'
-        });
-    }
-});
-
-// Обновляем эндпоинт удаления сообщений
-app.delete('/api/messages/:messageId', async (req, res) => {
-    try {
-        const { messageId } = req.params;
-
-        // Начинаем транзакцию
-        await pool.query('BEGIN');
-
-        try {
-            // Проверяем тип сообщения и получаем путь к файлу, если это голосовое сообщение
-            const messageResult = await pool.query(`
-                SELECT m.message_type, vm.file_path 
-                FROM messages m 
-                LEFT JOIN voice_messages vm ON vm.message_id = m.id 
-                WHERE m.id = $1
-            `, [messageId]);
-
-            if (messageResult.rows.length === 0) {
-                await pool.query('ROLLBACK');
-                return res.status(404).json({
-                    success: false,
-                    error: 'Сообщение не найдено'
-                });
-            }
-
-            const { message_type, file_path } = messageResult.rows[0];
-
-            // Если это голосовое сообщение, удаляем файл
-            if (message_type === 'voice' && file_path) {
-                try {
-                    fs.unlinkSync(file_path);
-                } catch (fileError) {
-                    console.error('Ошибка при удалении файла:', fileError);
-                    // Продолжаем выполнение даже если файл не удалось удалить
-                }
-            }
-
-            // Удаляем сообщение (связанная запись в voice_messages удалится автоматически)
-            await pool.query('DELETE FROM messages WHERE id = $1', [messageId]);
-
-            // Фиксируем транзакцию
-            await pool.query('COMMIT');
-
-            res.json({
-                success: true,
-                message: 'Сообщение успешно удалено'
-            });
-
-        } catch (err) {
-            await pool.query('ROLLBACK');
-            throw err;
-        }
-
-    } catch (err) {
-        console.error('Error deleting message:', err);
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка при удалении сообщения'
-        });
-    }
-});
-
-// Добавьте после других CREATE TABLE запросов
-pool.query(`
-    CREATE TABLE IF NOT EXISTS scores (
-        id SERIAL PRIMARY KEY,
-        user_id INTEGER REFERENCES users(id),
-        score INTEGER NOT NULL,
-        game_name VARCHAR(50) NOT NULL,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-    );
-    
-    CREATE INDEX IF NOT EXISTS idx_scores_game_name ON scores(game_name);
-    CREATE INDEX IF NOT EXISTS idx_scores_user_id ON scores(user_id);
-`).catch(err => {
-    console.error('Error creating scores table:', err);
-});
-
-// Сохранение нового результата
-app.post('/api/scores/save', async (req, res) => {
-    try {
-        const { userId, score, gameName } = req.body;
-        
-        await pool.query(`
-            INSERT INTO scores (user_id, score, game_name)
-            VALUES ($1, $2, $3)
-        `, [userId, score, gameName]);
-        
-        res.json({ success: true });
-    } catch (err) {
-        console.error('Save score error:', err);
-        res.status(500).json({ error: 'Ошибка при сохранении результата' });
-    }
-});
-
-// Получение таблицы лидеров
-app.get('/api/scores/leaderboard', async (req, res) => {
-    try {
-        const { gameName } = req.query;
-        
-        const result = await pool.query(`
-            SELECT 
-                s.score,
-                s.created_at,
-                u.username,
-                u.avatar_url
-            FROM scores s
-            JOIN users u ON s.user_id = u.id
-            WHERE s.game_name = $1
-            ORDER BY s.score DESC
-            LIMIT 10
-        `, [gameName]);
-        
-        res.json({ leaderboard: result.rows });
-    } catch (err) {
-        console.error('Get leaderboard error:', err);
-        res.status(500).json({ error: 'Ошибка при получении таблицы лидеров' });
-    }
-});
-
-// Добавьте новый эндпоинт для проверки авторизации
-app.get('/api/check-auth', (req, res) => {
-    console.log('Session check:', {
-        hasSession: !!req.session,
-        sessionData: req.session,
-        cookies: req.cookies
-    });
-
-    if (req.session && req.session.user) {
-        res.json({
-            authenticated: true,
-            user: {
-                id: req.session.user.id,
-                username: req.session.user.username,
-                avatar_url: req.session.user.avatar_url
-            }
-        });
-    } else {
-        res.status(401).json({
-            authenticated: false,
-            user: null,
-            message: 'Не авторизован'
-        });
-    }
-});
-
-// Добавляем middleware для проверки Content-Type
-app.use((req, res, next) => {
-    res.header('Content-Type', 'application/json');
-    res.header('Access-Control-Allow-Origin', 'https://adminflow.ru');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    next();
-});
-
-// Обновляем эндпоинт для получения списка чатов
-app.get('/api/chats', async (req, res) => {
-    try {
-        const { userId } = req.query;
+        const userId = req.params.userId;
         
         if (!userId) {
             return res.status(400).json({
@@ -2829,10 +2326,8 @@ app.get('/api/chats', async (req, res) => {
         const result = await pool.query(`
             WITH LastMessages AS (
                 SELECT DISTINCT ON (
-                    CASE 
-                        WHEN sender_id = $1 THEN receiver_id 
-                        ELSE sender_id 
-                    END
+                    LEAST(sender_id, receiver_id),
+                    GREATEST(sender_id, receiver_id)
                 )
                     m.*,
                     CASE 
@@ -2841,11 +2336,22 @@ app.get('/api/chats', async (req, res) => {
                     END as chat_with
                 FROM messages m
                 WHERE sender_id = $1 OR receiver_id = $1
-                ORDER BY chat_with, created_at DESC
+                ORDER BY 
+                    LEAST(sender_id, receiver_id),
+                    GREATEST(sender_id, receiver_id),
+                    created_at DESC
             )
             SELECT 
-                lm.*,
-                u.username as chat_username,
+                lm.id as message_id,
+                lm.sender_id,
+                lm.receiver_id,
+                lm.message,
+                lm.created_at,
+                lm.is_read,
+                lm.message_type,
+                lm.attachment_url,
+                u.id as user_id,
+                u.username,
                 u.avatar_url,
                 u.is_online,
                 u.last_activity,
@@ -2858,12 +2364,32 @@ app.get('/api/chats', async (req, res) => {
                 ) as unread_count
             FROM LastMessages lm
             JOIN users u ON u.id = lm.chat_with
-            ORDER BY lm.created_at DESC
+            ORDER BY lm.created_at DESC;
         `, [userId]);
+
+        // Форматируем данные для ответа
+        const chats = result.rows.map(row => ({
+            id: row.user_id,
+            username: row.username,
+            avatar_url: row.avatar_url,
+            is_online: row.is_online,
+            last_activity: row.last_activity,
+            unread_count: parseInt(row.unread_count),
+            last_message: {
+                id: row.message_id,
+                sender_id: row.sender_id,
+                receiver_id: row.receiver_id,
+                message: row.message,
+                created_at: row.created_at,
+                is_read: row.is_read,
+                message_type: row.message_type,
+                attachment_url: row.attachment_url
+            }
+        }));
 
         res.json({
             success: true,
-            chats: result.rows
+            chats: chats
         });
 
     } catch (error) {
@@ -2876,22 +2402,13 @@ app.get('/api/chats', async (req, res) => {
     }
 });
 
-// Обработка ошибок
+// Добавляем обработчик ошибок
 app.use((err, req, res, next) => {
     console.error('Server error:', err);
     res.status(500).json({
         success: false,
         error: 'Internal Server Error',
         details: err.message
-    });
-});
-
-// Обработка 404
-app.use((req, res) => {
-    res.status(404).json({
-        success: false,
-        error: 'Not Found',
-        details: 'The requested resource was not found'
     });
 });
 
