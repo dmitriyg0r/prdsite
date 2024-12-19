@@ -1346,7 +1346,7 @@ app.delete('/api/posts/delete/:postId', async (req, res) => {
     }
 });
 
-// Добавляем раздачу статическ���� файлов для постов
+// Добавляем раздачу статическ���� файлов ��ля п��стов
 app.use('/uploads/posts', express.static('/var/www/html/uploads/posts')); 
 
 // Получение статуса пользователя
@@ -2449,16 +2449,23 @@ app.use((err, req, res, next) => {
 
 app.get('/api/scores/leaderboard', async (req, res) => {
     try {
-        const { gameName } = req.query;
+        // Проверяем подключение к базе данных
+        const dbCheck = await pool.query('SELECT 1');
+        if (!dbCheck) {
+            throw new Error('Database connection failed');
+        }
 
+        const { gameName } = req.query;
         if (!gameName) {
-            return res.status(400).json({ 
-                success: false, 
-                error: 'Не указано название игры' 
+            return res.status(400).json({
+                success: false,
+                error: 'Не указано название игры'
             });
         }
 
-        // Используем WITH для оптимизации запроса
+        // Используем транзакцию для обеспечения целостности данных
+        await pool.query('BEGIN');
+
         const result = await pool.query(`
             WITH RankedScores AS (
                 SELECT DISTINCT ON (s.user_id)
@@ -2480,14 +2487,7 @@ app.get('/api/scores/leaderboard', async (req, res) => {
             LIMIT 10
         `, [gameName]);
 
-        // Если записей нет, возвращаем пустой массив с сообщением
-        if (result.rows.length === 0) {
-            return res.json({
-                success: true,
-                leaderboard: [],
-                message: 'Таблица лидеров пока пуста'
-            });
-        }
+        await pool.query('COMMIT');
 
         res.json({
             success: true,
@@ -2498,15 +2498,86 @@ app.get('/api/scores/leaderboard', async (req, res) => {
         });
 
     } catch (err) {
-        console.error('Ошибка при получении таблицы лидеров:', {
+        await pool.query('ROLLBACK');
+        console.error('Leaderboard error:', {
             error: err,
-            gameName: req.query.gameName,
-            stack: err.stack
+            stack: err.stack,
+            gameName: req.query.gameName
         });
-        
+
         res.status(500).json({
             success: false,
-            error: 'Ошибка при получении таблицы лидеров',
+            error: 'Ошибка получения таблицы лидеров',
+            details: process.env.NODE_ENV === 'development' ? err.message : undefined
+        });
+    }
+});
+
+// Middleware для логирования запросов
+app.use((req, res, next) => {
+    console.log(`${new Date().toISOString()} ${req.method} ${req.url}`);
+    next();
+});
+
+// Middleware для обработки ошибок
+app.use((err, req, res, next) => {
+    console.error('Server error:', {
+        error: err,
+        stack: err.stack,
+        url: req.url,
+        method: req.method,
+        body: req.body,
+        query: req.query
+    });
+
+    res.status(500).json({
+        success: false,
+        error: 'Внутренняя ошибка сервера',
+        details: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
+});
+
+// Обновляем проверку авторизации
+app.get('/api/check-auth', async (req, res) => {
+    try {
+        // Проверяем подключение к базе данных
+        const dbCheck = await pool.query('SELECT 1');
+        if (!dbCheck) {
+            throw new Error('Database connection failed');
+        }
+
+        // Получаем данные пользователя из сессии
+        const userId = req.session?.userId;
+        if (!userId) {
+            return res.json({
+                authenticated: false,
+                message: 'Пользователь не авторизован'
+            });
+        }
+
+        // Получаем данные пользователя
+        const userResult = await pool.query(
+            'SELECT id, username, role, avatar_url FROM users WHERE id = $1',
+            [userId]
+        );
+
+        if (userResult.rows.length === 0) {
+            return res.json({
+                authenticated: false,
+                message: 'Пользователь не найден'
+            });
+        }
+
+        res.json({
+            authenticated: true,
+            user: userResult.rows[0]
+        });
+
+    } catch (err) {
+        console.error('Auth check error:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка проверки авторизации',
             details: process.env.NODE_ENV === 'development' ? err.message : undefined
         });
     }
