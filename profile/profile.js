@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('logout-btn').style.display = 'none';
             document.querySelector('.avatar-overlay').style.display = 'none';
             
-            // Скрываем вкладку запросов в модальном окне
+            // Скрываем вкла��ку запросов в модальном окне
             const requestsTab = document.querySelector('[data-tab="requests-tab"]');
             if (requestsTab) {
                 requestsTab.style.display = 'none';
@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Загружаем список своих друзей
         await loadFriends(currentUser.id);
         
-        // Запускаем обновление своего статуса
+        // Запуска��м обновление своего статуса
         startStatusUpdates();
         
         // Загружаем посты
@@ -475,20 +475,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Функции для работы с друзьями
     async function loadFriends(userId) {
-        if (!userId) {
+        // Если userId не передан, используем currentUser.id
+        const targetUserId = userId || currentUser?.id;
+        
+        if (!targetUserId) {
             console.warn('loadFriends: userId is undefined');
             return;
         }
 
         try {
-            const response = await fetch(`https://adminflow.ru/api/friends?userId=${userId}`);
+            const response = await fetch(`https://adminflow.ru/api/friends?userId=${targetUserId}`);
             if (!response.ok) {
                 throw new Error(`Failed to load friends: ${response.status}`);
             }
             const data = await response.json();
             
             if (data.success) {
-                displayFriends(data.friends, userId === currentUser?.id);
+                displayFriends(data.friends, targetUserId === currentUser?.id);
                 updateFriendsCount(data.friends.length);
             } else {
                 throw new Error('Failed to load friends: server returned false success');
@@ -888,44 +891,39 @@ document.addEventListener('DOMContentLoaded', async () => {
     const MIN_UPDATE_INTERVAL = 10000; // Минимальный интервал между обновлениями (10 секунд)
 
     async function updateUserStatus(force = false) {
-        if (!currentUser) return;
-
-        const now = Date.now();
-        
-        // Пропускаем обновление, если прошло слишком мало времени с последнего обновления
-        if (!force && now - lastStatusUpdate < MIN_UPDATE_INTERVAL) {
+        if (!currentUser?.id) {
+            console.warn('updateUserStatus: currentUser.id is undefined');
             return;
         }
 
-        // Отменяем предыдущий отложенный запрос
-        if (statusUpdateTimeout) {
-            clearTimeout(statusUpdateTimeout);
+        const now = Date.now();
+        
+        // Пропускаем обновление, если прошло слишком мало времени
+        if (!force && lastStatusUpdate && (now - lastStatusUpdate < MIN_UPDATE_INTERVAL)) {
+            return;
         }
 
-        // Откладываем выполнение запроса
-        statusUpdateTimeout = setTimeout(async () => {
-            try {
-                const response = await fetch('https://adminflow.ru/api/users/update-status', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        userId: currentUser.id,
-                        is_online: true,
-                        last_activity: new Date().toISOString()
-                    })
-                });
+        try {
+            const response = await fetch('https://adminflow.ru/api/users/update-status', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    userId: currentUser.id,
+                    is_online: true,
+                    last_activity: new Date().toISOString()
+                })
+            });
 
-                if (!response.ok) {
-                    throw new Error('Failed to update status');
-                }
-
-                lastStatusUpdate = now;
-            } catch (err) {
-                console.error('Error updating user status:', err);
+            if (!response.ok) {
+                throw new Error('Failed to update status');
             }
-        }, 100); // Небольшая задержка для группировки обновлений
+
+            lastStatusUpdate = now;
+        } catch (err) {
+            console.error('Error updating user status:', err);
+        }
     }
 
     // Оптимизированная функция отслеживания активности
@@ -1354,33 +1352,21 @@ async function createPost() {
 
 async function loadPosts() {
     try {
-        const userId = new URLSearchParams(window.location.search).get('id') || currentUser.id;
-        if (!userId || !currentUser.id) {
-            throw new Error('Missing required user IDs');
+        // Получаем userId из URL или используем currentUser.id
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('id') || currentUser?.id;
+        
+        // Проверяем наличие необходимых ID
+        if (!userId || !currentUser?.id) {
+            console.error('Missing required IDs:', { userId, currentUserId: currentUser?.id });
+            throw new Error('Необходимые ID отсутствуют');
         }
 
-        await loadPosts(userId, currentUser.id);
-    } catch (err) {
-        console.error('Error in loadPosts wrapper:', err);
-        const container = document.getElementById('posts-container');
-        if (container) {
-            container.innerHTML = `
-                <div class="error-message">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <p>Ошибка при загрузке публикаций: ${err.message}</p>
-                    <button onclick="loadPosts()">Повторить</button>
-                </div>
-            `;
-        }
-    }
-}
-
-async function loadPosts(userId, currentUserId) {
-    try {
-        const response = await fetch(`https://adminflow.ru/api/posts/${userId}?currentUserId=${currentUserId}`);
+        const response = await fetch(`https://adminflow.ru/api/posts/${userId}?currentUserId=${currentUser.id}`);
         if (!response.ok) {
             throw new Error(`Error: ${response.status} ${response.statusText}`);
         }
+        
         const data = await response.json();
         if (data.success) {
             displayPosts(data.posts);
@@ -1389,7 +1375,16 @@ async function loadPosts(userId, currentUserId) {
         }
     } catch (error) {
         console.error('Error loading posts:', error);
-        alert(`Error loading posts: ${error.message}`);
+        const container = document.getElementById('posts-container');
+        if (container) {
+            container.innerHTML = `
+                <div class="error-message">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <p>Ошибка при загрузке публикаций: ${error.message}</p>
+                    <button onclick="loadPosts()">Повторить</button>
+                </div>
+            `;
+        }
     }
 }
 
@@ -1655,7 +1650,7 @@ window.closeImageModal = function(modal) {
     }, 300);
 };
 
-// ��обавляем функцию в глобальную область видимости
+// обавляем функцию в глобальную область видимости
 window.openFriendsModal = function() {
     const friendsModal = document.getElementById('friends-modal');
     const friendsTab = document.querySelector('[data-tab="friends-tab"]');
