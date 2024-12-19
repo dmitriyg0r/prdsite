@@ -407,7 +407,7 @@ app.post('/api/friend-request/respond', async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         console.error('Friend response error:', err);
-        res.status(500).json({ error: 'Оши����а при обр��ботке заяв����' });
+        res.status(500).json({ error: 'Оши����а при об����ботке заяв����' });
     }
 });
 
@@ -1749,7 +1749,7 @@ app.delete('/api/messages/delete/:messageId', async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         console.error('Error deleting message:', err);
-        res.status(500).json({ error: 'Ошибка при удалении сообщен��я' });
+        res.status(500).json({ error: 'Ошибка при удалении сообщен����я' });
     }
 });
 
@@ -2314,41 +2314,54 @@ app.get('/api/users/:userId', async (req, res) => {
 app.get('/api/chats/:userId', async (req, res) => {
     try {
         const userId = req.params.userId;
+        console.log('Получен запрос на получение чатов для пользователя:', userId);
         
+        // Проверяем корректность userId
+        if (!userId || isNaN(userId)) {
+            console.log('Некорректный userId:', userId);
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid user ID'
+            });
+        }
+
         // Проверяем существование пользователя
+        console.log('Проверка существования пользователя...');
         const userExists = await pool.query(
             'SELECT id FROM users WHERE id = $1',
             [userId]
         );
 
         if (userExists.rows.length === 0) {
+            console.log('Пользователь не найден:', userId);
             return res.status(404).json({
                 success: false,
                 error: 'User not found'
             });
         }
 
+        console.log('Выполнение запроса для получения чатов...');
         // Упрощаем запрос для получения чатов
         const query = `
-            WITH LastMessages AS (
-                SELECT DISTINCT ON (chat_id) *
-                FROM (
-                    SELECT 
-                        CASE 
-                            WHEN sender_id = $1 THEN receiver_id
-                            ELSE sender_id 
-                        END as chat_id,
-                        id as message_id,
-                        sender_id,
-                        receiver_id,
-                        message,
-                        created_at,
-                        is_read,
-                        attachment_url
-                    FROM messages
-                    WHERE sender_id = $1 OR receiver_id = $1
-                ) m
-                ORDER BY chat_id, created_at DESC
+            WITH ChatParticipants AS (
+                SELECT DISTINCT
+                    CASE 
+                        WHEN sender_id = $1 THEN receiver_id
+                        ELSE sender_id 
+                    END as participant_id
+                FROM messages
+                WHERE sender_id = $1 OR receiver_id = $1
+            ),
+            LastMessages AS (
+                SELECT DISTINCT ON (m.chat_participant) 
+                    m.*,
+                    CASE 
+                        WHEN m.sender_id = $1 THEN m.receiver_id
+                        ELSE m.sender_id 
+                    END as chat_participant
+                FROM messages m
+                WHERE m.sender_id = $1 OR m.receiver_id = $1
+                ORDER BY chat_participant, m.created_at DESC
             )
             SELECT 
                 u.id,
@@ -2356,20 +2369,28 @@ app.get('/api/chats/:userId', async (req, res) => {
                 u.avatar_url,
                 u.is_online,
                 u.last_activity,
-                lm.*,
+                lm.id as message_id,
+                lm.sender_id,
+                lm.receiver_id,
+                lm.message,
+                lm.created_at,
+                lm.is_read,
+                lm.attachment_url,
                 (
                     SELECT COUNT(*)
                     FROM messages m2
-                    WHERE m2.sender_id = lm.chat_id
+                    WHERE m2.sender_id = lm.chat_participant
                     AND m2.receiver_id = $1
                     AND m2.is_read = false
                 ) as unread_count
-            FROM LastMessages lm
-            JOIN users u ON u.id = lm.chat_id
-            ORDER BY lm.created_at DESC
+            FROM ChatParticipants cp
+            JOIN users u ON u.id = cp.participant_id
+            LEFT JOIN LastMessages lm ON lm.chat_participant = cp.participant_id
+            ORDER BY lm.created_at DESC NULLS LAST
         `;
 
         const result = await pool.query(query, [userId]);
+        console.log(`Найдено ${result.rows.length} чатов`);
 
         // Форматируем данные для ответа
         const chats = result.rows.map(row => ({
@@ -2379,7 +2400,7 @@ app.get('/api/chats/:userId', async (req, res) => {
             is_online: row.is_online,
             last_activity: row.last_activity,
             unread_count: parseInt(row.unread_count) || 0,
-            last_message: {
+            last_message: row.message_id ? {
                 id: row.message_id,
                 sender_id: row.sender_id,
                 receiver_id: row.receiver_id,
@@ -2387,16 +2408,23 @@ app.get('/api/chats/:userId', async (req, res) => {
                 created_at: row.created_at,
                 is_read: row.is_read,
                 attachment_url: row.attachment_url
-            }
+            } : null
         }));
 
+        console.log('Отправка ответа клиенту');
         res.json({
             success: true,
             chats: chats
         });
 
     } catch (error) {
-        console.error('Ошибка при получении чатов:', error);
+        console.error('Детальная ошибка при получении чатов:', {
+            error: error.message,
+            stack: error.stack,
+            query: error.query,
+            parameters: error.parameters
+        });
+        
         res.status(500).json({
             success: false,
             error: 'Failed to fetch chats',
