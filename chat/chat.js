@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Загружаем список чатов
     await loadChatsList();
     
-    // Запускаем периодическ��е обновление списка чатов
+    // Запускаем периодическое обновление списка чатов
     setInterval(loadChatsList, 10000); // Обновляем каждые 10 секунд
 });
 
@@ -417,31 +417,47 @@ function createAttachmentElement(message) {
 async function sendMessage() {
     const messageInput = document.getElementById('messageInput');
     
-    if (!messageInput || !currentChatPartner) {
-        console.error('messageInput не найден или нет получателя');
+    // Проверяем наличие всех необходимых данных
+    if (!messageInput) {
+        console.error('Элемент messageInput не найден');
+        return;
+    }
+
+    if (!currentUser) {
+        console.error('Пользователь не авторизован');
+        return;
+    }
+
+    if (!currentChatPartner) {
+        console.error('Не выбран собеседник');
         return;
     }
 
     const messageText = messageInput.value.trim();
     if (!messageText) {
+        console.log('Пустое сообщение, пропускаем отправку');
         return;
     }
 
     try {
-        // Немедленно очищаем значение
+        // Очищаем поле ввода сразу после начала отправки
         messageInput.value = '';
         
+        const messageData = {
+            senderId: currentUser.id,
+            receiverId: currentChatPartner.id,
+            message: messageText,
+            replyToMessageId: replyToMessageId || null
+        };
+
+        console.log('Отправка сообщения:', messageData);
+
         const response = await fetch('https://adminflow.ru/api/messages/send', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                senderId: currentUser.id,
-                receiverId: currentChatPartner.id,
-                message: messageText,
-                replyToMessageId: replyToMessageId || null
-            })
+            body: JSON.stringify(messageData)
         });
 
         const responseData = await response.json();
@@ -464,6 +480,8 @@ async function sendMessage() {
         }
     } catch (error) {
         console.error('Ошибка при отправке сообщения:', error);
+        // Возвращаем текст в поле ввода в случае ошибки
+        messageInput.value = messageText;
         alert(`Не удалось отправить сообщение: ${error.message}`);
     }
 }
@@ -636,7 +654,7 @@ async function loadMessages(friendId) {
             
             // Если есть новые сообщения
             if (newMessages.length > 0) {
-                // Добавляем только новые соо��щения
+                // Добавляем только новые сообщения
                 newMessages.forEach(message => {
                     const messageElement = createMessageElement(message);
                     messagesContainer.appendChild(messageElement);
@@ -738,7 +756,7 @@ function setupAttachmentHandlers() {
         const file = e.target.files[0];
         if (file) {
             if (file.size > 50 * 1024 * 1024) { // 50MB
-                alert('Файл слишком большой (максимум 50MB)');
+                alert('Файл слишком боль��ой (максимум 50MB)');
                 fileInput.value = '';
                 return;
             }
@@ -876,7 +894,7 @@ async function deleteMessage(messageId) {
         }
     } catch (error) {
         console.error('Ошибка при удалении сообщения:', error);
-        alert('Произошла ошибка при удалении сообщения');
+        alert('Прои��ошла ошибка при удалении сообщения');
     }
 }
 
@@ -1389,7 +1407,7 @@ async function selectChat(chat) {
     }
 }
 
-// Функция получения времени последней активност пользователя
+// Функция п��лучения времени последней активност пользователя
 function getLastActivityTime(lastActivity) {
    if (!lastActivity) return 'неизвестно';
    
@@ -1533,7 +1551,7 @@ setupReplyFunctionality();
 document.addEventListener('DOMContentLoaded', () => {
     const messageInput = document.getElementById('messageInput');
     if (messageInput) {
-        messageInput.placeholder = 'Сообщение... (*курсив*, **жирный**, `код`, ```блок кода```, > цитата)';
+        messageInput.placeholder = 'Сообщение... (*курсив*, **жирный**, `��од`, ```блок кода```, > цитата)';
     }
 });
 
