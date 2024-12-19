@@ -512,6 +512,19 @@
     background-color: #ef4444;
 }
 
+.game-notification.warning {
+    background-color: #f59e0b;
+}
+
+.game-notification a {
+    color: white;
+    text-decoration: underline;
+}
+
+.game-notification a:hover {
+    text-decoration: none;
+}
+
 @keyframes slideIn {
     from {
         transform: translateX(100%);

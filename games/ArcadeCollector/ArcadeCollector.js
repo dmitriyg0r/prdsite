@@ -433,11 +433,20 @@ class ArcadeCollector {
             }
         };
         
-        // Добавим порядок появления б�����сов
+        // Добавим порядок появления б������сов
         this.bossOrder = ['basic']; // Первый босс всегда basic
         this.currentBossIndex = 0;
         
+        // Инициализируем состояние пользователя
+        this.currentUser = null;
+        
+        // Проверяем авторизацию при запуске
+        this.checkAuth();
+        
+        // Привязываем методы к контексту
+        this.restartGame = this.restartGame.bind(this);
         this.bindEvents();
+        
         this.lastTime = performance.now();
         this.animate(this.lastTime);
         
@@ -497,10 +506,6 @@ class ArcadeCollector {
 
         // Инициализируем обработчики кнопок меню
         this.initializeMenuHandlers();
-
-        // Добавляем проверку авторизации при инициализации
-        this.checkAuth();
-        this.updateLeaderboard();
 
         // Добавляем порядок появления врагов по уровням сложности
         this.enemyProgression = [
@@ -2421,21 +2426,25 @@ class ArcadeCollector {
 
     // Добавляем метод показа приглашения войти
     showLoginPrompt() {
-        const startMenu = document.getElementById('startMenu');
-        if (startMenu) {
-            const loginPrompt = document.createElement('div');
-            loginPrompt.className = 'login-prompt';
-            loginPrompt.innerHTML = `
-                <p>Войдите в аккаунт, чтобы сохранять результаты</p>
-                <a href="/login" class="login-button">Войти</a>
-            `;
-            startMenu.querySelector('.menu-content').appendChild(loginPrompt);
-        }
+        const notification = document.createElement('div');
+        notification.className = 'game-notification warning';
+        notification.innerHTML = `
+            Для сохранения рекордов необходимо 
+            <a href="/login" style="color: white; text-decoration: underline;">авторизоваться</a>
+        `;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => notification.remove(), 5000);
     }
 
     // Обновляем метод сохранения результата
     async saveScore(score) {
         try {
+            // Проверяем авторизацию перед сохранением
+            if (!this.currentUser) {
+                await this.checkAuth();
+            }
+
             if (!this.currentUser || !this.currentUser.id) {
                 console.warn('Невозможно сохранить рекорд: пользователь не авторизован');
                 this.showLoginPrompt();
@@ -2451,7 +2460,7 @@ class ArcadeCollector {
                 credentials: 'include',
                 body: JSON.stringify({
                     userId: this.currentUser.id,
-                    score: Math.round(score), // Округляем счет до целого числа
+                    score: Math.round(score),
                     gameName: 'ArcadeCollector'
                 })
             });
@@ -2468,10 +2477,7 @@ class ArcadeCollector {
                     rank: data.rank
                 });
                 
-                // Показываем уведомление о сохранении рекорда
                 this.showNotification(`Рекорд сохранен! Ваше место: ${data.rank}`);
-                
-                // Обновляем таблицу лидеров
                 await this.updateLeaderboard();
             } else {
                 console.error('Ошибка сохранения рекорда:', data.error);
