@@ -433,7 +433,7 @@ class ArcadeCollector {
             }
         };
         
-        // Добавим порядок появлени�������� б���ссов
+        // Добавим порядок появлени��������� б���ссов
         this.bossOrder = ['basic']; // Первый босс всегда basic
         this.currentBossIndex = 0;
         
@@ -621,21 +621,25 @@ class ArcadeCollector {
     }
 
     updateDifficulty() {
+        // Убеждаемся, что работаем с числами
+        const currentTime = Number(this.gameTime || 0);
+        const currentScore = Number(this.score || 0);
+        
         // Базовая сложность
         let newDifficulty = 1;
         
         // Увеличение сложности от времени (каждые 60 секунд +0.5)
-        newDifficulty += Math.floor(this.gameTime / 60) * 0.5;
+        newDifficulty += Math.floor(currentTime / 60) * 0.5;
         
         // Увеличение сложности от очков (каждые 500 очков +0.2)
-        newDifficulty += Math.floor(this.score / 500) * 0.2;
+        newDifficulty += Math.floor(currentScore / 500) * 0.2;
         
-        // Ограничиваем минимальную и максимальную сложность
+        // Ограничиваем сложность и сохраняем
         this.difficulty = Math.max(1, Math.min(newDifficulty, 10));
         
         // Обновляем отображение уровня
         if (this.levelElement) {
-            this.levelElement.textContent = this.difficulty.toFixed(1);
+            this.levelElement.textContent = Number(this.difficulty).toFixed(1);
         }
     }
 
@@ -1583,7 +1587,7 @@ class ArcadeCollector {
         const colors = ['#4ade80', '#86efac', '#22c55e', '#ffffff'];
         const angleSpread = Math.PI / 3; // 60 градусов раброс
         
-        // Определяем направление движения
+        // Определяем направление ��вижения
         const angle = Math.atan2(this.player.velocityY, this.player.velocityX);
         
         for (let i = 0; i < particles; i++) {
@@ -2001,7 +2005,7 @@ class ArcadeCollector {
         }
     }
 
-    // Добавляем метод стрельбы босса с разными паттернами
+    // Добавляем метод стрельбы босса с разными паттернам��
     bossShooting(boss) {
         const pattern = boss.bulletPatterns[boss.currentPattern];
         
@@ -2605,23 +2609,20 @@ class ArcadeCollector {
     }
 
     handleEnemyDestruction(enemy) {
-        // Начисляем очки
-        const points = this.enemyTypes[enemy.type].points;
-        this.score += points;
+        // Проверяем и конвертируем очки в число
+        const points = Number(this.enemyTypes[enemy.type].points);
+        this.score = Number(this.score || 0) + points;
         
         // Обновляем отображение очков
         if (this.scoreElement) {
-            this.scoreElement.textContent = this.score;
+            this.scoreElement.textContent = Math.round(this.score);
         }
         
-        // Обновляем сложность
+        // Обновляем сложность после изменения очков
         this.updateDifficulty();
         
         // Создаем эффект уничтожения
         this.createDestroyEffect(enemy);
-        
-        // Проверяем достижение порога для появления босса
-        this.checkBossSpawn();
     }
 
     updateBulletCollisions() {
