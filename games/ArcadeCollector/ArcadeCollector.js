@@ -433,7 +433,7 @@ class ArcadeCollector {
             }
         };
         
-        // Добавим порядок появлени������� б���ссов
+        // Добавим порядок появлени�������� б���ссов
         this.bossOrder = ['basic']; // Первый босс всегда basic
         this.currentBossIndex = 0;
         
@@ -621,21 +621,48 @@ class ArcadeCollector {
     }
 
     updateDifficulty() {
-        // Базовая сложность всегда начинается с 1
-        let newDifficulty = 1;
-        
-        // Увеличение сложности от времени (каждые 60 секунд +0.5)
-        newDifficulty += Math.floor(this.gameTime / 60) * 0.5;
-        
-        // Увеличение сложности от очков (каждые 500 очков +0.2)
-        newDifficulty += Math.floor(this.score / 500) * 0.2;
-        
-        // Ограничиваем минимальную и максимальную сложность
-        this.difficulty = Math.max(1, Math.min(newDifficulty, 10));
-        
-        // Безопасное обновление отображения
-        if (this.levelElement) {
-            this.levelElement.textContent = this.difficulty.toFixed(1);
+        try {
+            // Проверяем, что необходимые значения существуют и являются числами
+            if (typeof this.gameTime !== 'number') {
+                this.gameTime = 0;
+            }
+            if (typeof this.score !== 'number') {
+                this.score = 0;
+            }
+
+            // Базовая сложность всегда начинается с 1
+            let newDifficulty = 1;
+            
+            // Увеличение сложности от времени (каждые 60 секунд +0.5)
+            const timeBonus = Math.floor(this.gameTime / 60) * 0.5;
+            
+            // Увеличение сложности от очков (каждые 500 очков +0.2)
+            const scoreBonus = Math.floor(this.score / 500) * 0.2;
+            
+            // Складываем бонусы
+            newDifficulty += timeBonus + scoreBonus;
+            
+            // Ограничиваем минимальную и максимальную сложность
+            this.difficulty = Math.max(1, Math.min(newDifficulty, 10));
+            
+            // Безопасное обновление отображения
+            if (this.levelElement) {
+                const formattedDifficulty = this.difficulty.toFixed(1);
+                // Дополнительная проверка на NaN
+                if (!isNaN(formattedDifficulty)) {
+                    this.levelElement.textContent = formattedDifficulty;
+                } else {
+                    this.levelElement.textContent = '1.0';
+                    console.error('Difficulty calculation resulted in NaN');
+                }
+            }
+        } catch (error) {
+            console.error('Error in updateDifficulty:', error);
+            // В случае ошибки устанавливаем базовые значения
+            this.difficulty = 1;
+            if (this.levelElement) {
+                this.levelElement.textContent = '1.0';
+            }
         }
     }
 
@@ -2605,22 +2632,36 @@ class ArcadeCollector {
     }
 
     handleEnemyDestruction(enemy) {
-        // Проверяем наличие типа врага и его очков
-        if (enemy && enemy.type && this.enemyTypes[enemy.type]) {
-            const points = this.enemyTypes[enemy.type].points;
-            this.score += points;
-            
-            // Безопасное обновление отображения
-            if (this.scoreElement) {
-                this.scoreElement.textContent = this.score.toString();
-            }
-            
-            // Создаем эффект уничтожения
-            this.createDestroyEffect(enemy);
-            
-            // Проверяем достижение порога для появления босса
-            this.checkBossSpawn();
+        // Проверяем все необходимые условия
+        if (!enemy || !enemy.type || !this.enemyTypes[enemy.type]) {
+            console.error('Invalid enemy data:', enemy);
+            return;
         }
+
+        // Получаем очки за врага
+        const points = this.enemyTypes[enemy.type].points || 0;
+        
+        // Проверяем, что this.score существует и является числом
+        if (typeof this.score !== 'number') {
+            this.score = 0;
+        }
+        
+        // Увеличиваем очки
+        this.score += points;
+        
+        // Безопасное обновление отображения очков
+        if (this.scoreElement) {
+            this.scoreElement.textContent = Math.floor(this.score).toString();
+        }
+        
+        // Обновляем сложность после изменения очков
+        this.updateDifficulty();
+        
+        // Создаем эффект уничтожения
+        this.createDestroyEffect(enemy);
+        
+        // Проверяем достижение порога для появления босса
+        this.checkBossSpawn();
     }
 
     updateBulletCollisions() {
