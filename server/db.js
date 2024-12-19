@@ -6,9 +6,6 @@ const pool = new Pool({
     database: 'adminflow',
     password: 'sGLTccA_Na#9zC',
     port: 5432,
-    max: 20,
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 2000,
 });
 
 pool.on('connect', () => {
@@ -22,11 +19,11 @@ pool.on('error', (err) => {
 const testConnection = async () => {
     try {
         const client = await pool.connect();
-        console.log('Database connection successful');
+        console.log('Успешное подключение к базе данных');
         client.release();
         return true;
     } catch (err) {
-        console.error('Database connection error:', err.message);
+        console.error('Ошибка подключения к базе данных:', err);
         return false;
     }
 };
