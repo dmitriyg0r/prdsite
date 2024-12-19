@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Загружаем список чатов
     await loadChatsList();
     
-    // Запускаем периодическое обновление списка чатов
+    // Запускаем периодическ��е обновление списка чатов
     setInterval(loadChatsList, 10000); // Обновляем каждые 10 секунд
 });
 
@@ -224,40 +224,45 @@ function createMessageElement(message) {
     messageElement.className = `message message-${message.sender_id === currentUser.id ? 'sent' : 'received'}`;
     messageElement.dataset.messageId = message.id;
 
-    // Добавляем информацию об отпр��вителе для полученных сообщений
+    // Добавляем информацию об отправителе для полученных сообщений
     if (message.sender_id !== currentUser.id) {
         const senderInfo = document.createElement('div');
         senderInfo.className = 'message-sender';
-        senderInfo.textContent = message.sender_name || 'Пользователь';
+        senderInfo.textContent = message.sender_username || 'Пользователь';
         messageElement.appendChild(senderInfo);
     }
 
+    // Если это голосовое сообщение
     if (message.message_type === 'voice') {
-        // Создаем голосовое сообщение
         const voiceContainer = document.createElement('div');
         voiceContainer.className = 'voice-message';
-        
+
+        // Создаем кнопку воспроизведения
         const playButton = document.createElement('button');
         playButton.className = 'voice-message-play';
         playButton.innerHTML = '<i class="fas fa-play"></i>';
 
+        // Создаем визуализацию волны
         const waveform = document.createElement('div');
         waveform.className = 'voice-message-waveform';
         
+        // Добавляем прогресс-бар
         const progress = document.createElement('div');
         progress.className = 'voice-message-progress';
         waveform.appendChild(progress);
 
+        // Добавляем время
         const timeSpan = document.createElement('span');
         timeSpan.className = 'voice-message-time';
         timeSpan.textContent = '00:00';
 
+        // Собираем все элементы
         voiceContainer.appendChild(playButton);
         voiceContainer.appendChild(waveform);
         voiceContainer.appendChild(timeSpan);
         messageElement.appendChild(voiceContainer);
 
-        // Обработчик воспроизведения
+        // Добавляем обработчик воспроизведения
         let audio = null;
         playButton.addEventListener('click', async () => {
             try {
@@ -291,11 +296,11 @@ function createMessageElement(message) {
                 audio.ontimeupdate = () => {
                     const percent = (audio.currentTime / audio.duration) * 100;
                     progress.style.width = `${percent}%`;
-                    timeSpan.textContent = formatTime(audio.currentTime);
+                    timeSpan.textContent = formatTime(Math.floor(audio.currentTime));
                 };
 
                 audio.onloadedmetadata = () => {
-                    timeSpan.textContent = formatTime(audio.duration);
+                    timeSpan.textContent = formatTime(Math.floor(audio.duration));
                 };
 
                 await audio.play();
@@ -306,59 +311,37 @@ function createMessageElement(message) {
                 alert('Не удалось воспроизвести сообщение');
             }
         });
-
-        // Добавляем контекстное меню для голосовых сообщений
-        if (message.sender_id === currentUser.id) {
-            voiceContainer.addEventListener('contextmenu', (e) => {
-                e.preventDefault();
-                showContextMenu(e, [
-                    {
-                        text: 'Удалить сообщение',
-                        onClick: async () => {
-                            try {
-                                const response = await fetch(`https://adminflow.ru/api/messages/${message.id}`, {
-                                    method: 'DELETE'
-                                });
-
-                                if (response.ok) {
-                                    messageElement.remove();
-                                } else {
-                                    throw new Error('Ошибка при удалении сообщения');
-                                }
-                            } catch (error) {
-                                console.error('Ошибка:', error);
-                                alert('Не удалось удалить сообщение');
-                            }
-                        }
-                    }
-                ]);
-            });
-        }
-    } else {
-        // Обработка текстовых сообщений
-        const messageContent = document.createElement('div');
-        messageContent.className = 'message-content';
-
-        // Добавляем ответ на сообщение, если есть
-        if (message.reply_to_message_id) {
-            const replyContent = document.createElement('div');
-            replyContent.className = 'message-reply';
-            // Здесь нужно добавить логику получения текста сообщения, на которое отвечают
-            messageContent.appendChild(replyContent);
-        }
-
-        // Создаем контейнер для текста сообщения
-        const messageText = document.createElement('div');
-        messageText.className = 'message-text';
+    } 
+    // Если это обычное сообщение с файлом
+    else if (message.attachment_url) {
+        const fileContainer = document.createElement('div');
+        fileContainer.className = 'file-container';
         
-        // Обрабатываем текст сообщения через marked и DOMPurify
-        if (message.message) {
-            const sanitizedHtml = DOMPurify.sanitize(marked.parse(message.message));
-            messageText.innerHTML = sanitizedHtml;
-        }
-
-        messageContent.appendChild(messageText);
-        messageElement.appendChild(messageContent);
+        const fileName = message.attachment_url.split('-').slice(2).join('-');
+        const fileIcon = getFileIcon(null, fileName);
+        
+        fileContainer.innerHTML = `
+            <i class="fas ${fileIcon} file-icon"></i>
+            <div class="file-info">
+                <div class="file-name">${fileName}</div>
+                <a href="https://adminflow.ru/uploads/messages/${message.attachment_url}" 
+                   class="file-download" 
+                   target="_blank" 
+                   download="${fileName}">
+                    <i class="fas fa-download"></i>
+                    Скачать
+                </a>
+            </div>
+        `;
+        
+        messageElement.appendChild(fileContainer);
+    }
+    // Если есть текст сообщения
+    if (message.message && message.message.trim()) {
+        const textElement = document.createElement('div');
+        textElement.className = 'message-text';
+        textElement.innerHTML = DOMPurify.sanitize(marked.parse(message.message));
+        messageElement.appendChild(textElement);
     }
 
     // Добавляем время отправки
@@ -373,11 +356,11 @@ function createMessageElement(message) {
     return messageElement;
 }
 
-// Вспомогательная функция для форматирования времени
+// Функция форматирования времени для аудио
 function formatTime(seconds) {
     const minutes = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    const remainingSeconds = Math.floor(seconds % 60);
+    return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
 }
 
 function createAttachmentElement(message) {
@@ -508,7 +491,7 @@ async function markMessagesAsRead(friendId) {
             // Обновляем счетчик олько если успешно обновили статус
             await updateUnreadCount(friendId);
         } else {
-            console.error('Ошибка ��ри обновлении статуса сообщений:', data.error);
+            console.error('Ошибка при обновлении статуса сообщений:', data.error);
         }
     } catch (err) {
         console.error('Error marking messages as read:', err);
@@ -653,7 +636,7 @@ async function loadMessages(friendId) {
             
             // Если есть новые сообщения
             if (newMessages.length > 0) {
-                // Добавляем только новые сообщения
+                // Добавляем только новые соо��щения
                 newMessages.forEach(message => {
                     const messageElement = createMessageElement(message);
                     messagesContainer.appendChild(messageElement);
@@ -778,11 +761,12 @@ function setupAttachmentHandlers() {
 // Обновляем функцию для отправки сообщения с файлом
 async function sendMessageWithFile(file) {
     try {
+        const messageInput = document.getElementById('messageInput');
         const formData = new FormData();
         formData.append('file', file);
         formData.append('senderId', currentUser.id);
         formData.append('receiverId', currentChatPartner.id);
-        formData.append('message', ''); // Пустое сообщение или можно добавить текст из messageInput
+        formData.append('message', messageInput.value.trim());
 
         const response = await fetch('https://adminflow.ru/api/messages/send-with-file', {
             method: 'POST',
@@ -796,11 +780,10 @@ async function sendMessageWithFile(file) {
         const data = await response.json();
         
         if (data.success) {
-            // Очищаем превью файла
+            messageInput.value = '';
             document.getElementById('filePreview').innerHTML = '';
             selectedFile = null;
             
-            // Добавляем сообщение в чат
             const messageElement = createMessageElement(data.message);
             const messagesContainer = document.getElementById('messages');
             messagesContainer.appendChild(messageElement);
@@ -958,7 +941,7 @@ function setupContextMenu() {
         return;
     }
 
-    // Обработчик правого клика ��а сообщении
+    // Обработчик правого клика на сообщении
     messagesArea.addEventListener('contextmenu', (e) => {
         e.preventDefault();
         
@@ -1013,7 +996,7 @@ function setupContextMenu() {
         }
     });
 
-    // Обработчик для кн��пки ответа
+    // Обработчик для кнопки ответа
     const replyButton = document.getElementById('replyMessageBtn');
     if (replyButton) {
         replyButton.addEventListener('click', () => {
@@ -1216,7 +1199,7 @@ async function loadChatsList() {
             const existingElement = friendsList.querySelector(`.chat-partner[data-friend-id="${chatId}"]`);
             
             if (existingElement) {
-                // Обновляем только содержимое существующ��го элемента
+                // Обновляем только содержимое существующего элемента
                 updateExistingChatElement(existingElement, chat);
             } else {
                 // Добавляем новый элемент только если его нет
@@ -1245,7 +1228,7 @@ function updateExistingChatElement(element, chat) {
     const statusIndicator = element.querySelector('.status-indicator');
     const avatarImg = element.querySelector('.chat-avatar');
 
-    // Обновляем последнее сооб��ение
+    // Обновляем последнее сообщение
     if (lastMessageEl) {
         const newMessageText = formatLastMessage(chat);
         if (lastMessageEl.textContent !== newMessageText) {

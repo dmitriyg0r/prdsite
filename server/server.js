@@ -487,6 +487,7 @@ app.post('/api/friend/remove', async (req, res) => {
 const messageStorage = multer.diskStorage({
     destination: (req, file, cb) => {
         const uploadDir = '/var/www/html/uploads/messages';
+        // Создаем директорию, если она не существует
         if (!fs.existsSync(uploadDir)) {
             fs.mkdirSync(uploadDir, { recursive: true });
         }
@@ -494,6 +495,7 @@ const messageStorage = multer.diskStorage({
     },
     filename: (req, file, cb) => {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        // Сохраняем оригинальное имя файла
         cb(null, uniqueSuffix + '-' + file.originalname);
     }
 });
@@ -501,61 +503,94 @@ const messageStorage = multer.diskStorage({
 const messageUpload = multer({ 
     storage: messageStorage,
     limits: {
-        fileSize: 50 * 1024 * 1024 // Увеличиваем до 50MB
-    },
-    fileFilter: (req, file, cb) => {
-        // Разрешаем все типы файлов
-        cb(null, true);
+        fileSize: 50 * 1024 * 1024 // 50MB
     }
-});
+}).single('file'); // Используем single вместо array
 
 // Эндпоинт для отправки сообщения с файлом
-app.post('/api/messages/send-with-file', upload.single('file'), async (req, res) => {
-    try {
-        const { senderId, receiverId, message, replyToMessageId } = req.body;
-        const file = req.file;
-        
-        // Создаем новое сообщение
-        const result = await pool.query(
-            `INSERT INTO messages 
-            (sender_id, receiver_id, message, attachment_url, reply_to) 
-            VALUES ($1, $2, $3, $4, $5) 
-            RETURNING *`,
-            [senderId, receiverId, message, file?.filename, replyToMessageId]
-        );
+app.post('/api/messages/send-with-file', (req, res) => {
+    messageUpload(req, res, async (err) => {
+        try {
+            if (err) {
+                console.error('Ошибка загрузки файла:', err);
+                return res.status(400).json({
+                    success: false,
+                    error: 'Ошибка при загрузке файла',
+                    details: err.message
+                });
+            }
 
-        const newMessage = result.rows[0];
+            if (!req.file) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Файл не был загружен'
+                });
+            }
 
-        // Получаем информацию об отправителе
-        const senderInfo = await pool.query(
-            'SELECT username FROM users WHERE id = $1',
-            [senderId]
-        );
+            const { senderId, receiverId, message } = req.body;
 
-        // Формируем полные данные сообщения
-        const messageData = {
-            ...newMessage,
-            sender_username: senderInfo.rows[0].username
-        };
+            // Проверяем обязательные поля
+            if (!senderId || !receiverId) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Отсутствуют обязательные параметры'
+                });
+            }
 
-        // Отправляем через WebSocket получателю
-        const receiverSocketId = activeConnections.get(receiverId);
-        if (receiverSocketId) {
-            io.to(receiverSocketId).emit('new_message', messageData);
+            // Начинаем транзакцию
+            await pool.query('BEGIN');
+
+            try {
+                // Создаем новое сообщение
+                const result = await pool.query(
+                    `INSERT INTO messages 
+                    (sender_id, receiver_id, message, attachment_url) 
+                    VALUES ($1, $2, $3, $4) 
+                    RETURNING *`,
+                    [senderId, receiverId, message || '', req.file.filename]
+                );
+
+                // Получаем информацию об отправителе
+                const senderInfo = await pool.query(
+                    'SELECT username FROM users WHERE id = $1',
+                    [senderId]
+                );
+
+                // Фиксируем транзакцию
+                await pool.query('COMMIT');
+
+                // Формируем полные данные сообщения
+                const messageData = {
+                    ...result.rows[0],
+                    sender_username: senderInfo.rows[0].username
+                };
+
+                // Отправляем через WebSocket получателю
+                const receiverSocketId = activeConnections.get(receiverId);
+                if (receiverSocketId) {
+                    io.to(receiverSocketId).emit('new_message', messageData);
+                }
+
+                res.json({
+                    success: true,
+                    message: messageData
+                });
+
+            } catch (error) {
+                // Откатываем транзакцию в случае ошибки
+                await pool.query('ROLLBACK');
+                throw error;
+            }
+
+        } catch (error) {
+            console.error('Ошибка при обработке сообщения:', error);
+            res.status(500).json({
+                success: false,
+                error: 'Ошибка при обработке сообщения',
+                details: error.message
+            });
         }
-
-        res.json({
-            success: true,
-            message: messageData
-        });
-    } catch (err) {
-        console.error('Error sending message:', err);
-        res.status(500).json({ 
-            success: false,
-            error: 'Error sending message',
-            details: err.message 
-        });
-    }
+    });
 });
 
 // Обновляем endpoint для загрузки истории сообщений
