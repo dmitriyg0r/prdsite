@@ -432,7 +432,7 @@ class ArcadeCollector {
         };
         
         // Добавим порядок появления б��������сов
-        this.bossOrder = ['basic']; // Первый босс всегда basic
+        this.bossOrder = ['basic']; // Первый босс всег��а basic
         this.currentBossIndex = 0;
         
         // Инициализируем состояние пользователя
@@ -577,13 +577,13 @@ class ArcadeCollector {
 
     async checkAuth() {
         try {
-            // Проверяем наличие токена в localStorage
+            // Сначала проверяем localStorage
             const token = localStorage.getItem('token');
             const userId = localStorage.getItem('userId');
             const username = localStorage.getItem('username');
 
+            // Если есть все необходимые данные в localStorage
             if (token && userId && username) {
-                // Если есть данные в localStorage, считаем пользователя авторизованным
                 this.currentUser = {
                     id: userId,
                     username: username,
@@ -594,60 +594,87 @@ class ArcadeCollector {
                 return;
             }
 
-            // Если нет данных в localStorage, делаем запрос к серверу
-            const response = await fetch('/api/check-auth', {
-                credentials: 'include',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                }
-            });
+            // Пробуем получить данные с сервера
+            try {
+                const response = await fetch('/api/check-auth', {
+                    credentials: 'include',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
 
-            if (response.status === 500) {
-                console.warn('Сервер временно недоступен, проверяем localStorage');
-                // Даже если сервер недоступен, но есть данные в localStorage,
-                // позволяем пользователю играть
-                if (this.currentUser) {
+                // Если сервер недоступен или вернул ошибку
+                if (!response.ok) {
+                    console.warn('Сервер недоступен или вернул ошибку:', response.status);
+                    // Если есть данные в localStorage, используем их
+                    if (token) {
+                        this.currentUser = {
+                            id: userId,
+                            username: username,
+                            token: token
+                        };
+                        console.log('Используем данные из localStorage:', this.currentUser);
+                        this.updateAuthUI();
+                    } else {
+                        // Если нет данных в localStorage, играем как гость
+                        this.currentUser = null;
+                        console.log('Играем как гость');
+                        this.updateAuthUI();
+                    }
                     return;
                 }
+
+                // Если сервер ответил успешно
+                const data = await response.json();
+                if (data.authenticated && data.user) {
+                    this.currentUser = data.user;
+                    // Сохраняем в localStorage
+                    localStorage.setItem('token', data.user.token);
+                    localStorage.setItem('userId', data.user.id);
+                    localStorage.setItem('username', data.user.username);
+                    console.log('Пользователь авторизован через сервер:', this.currentUser);
+                } else {
+                    this.currentUser = null;
+                    // Очищаем localStorage
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('userId');
+                    localStorage.removeItem('username');
+                    console.log('Пользователь не авторизован');
+                }
+            } catch (error) {
+                console.warn('Ошибка при запросе к серверу:', error);
+                // При ошибке запроса используем данные из localStorage
+                if (token) {
+                    this.currentUser = {
+                        id: userId,
+                        username: username,
+                        token: token
+                    };
+                    console.log('Используем данные из localStorage при ошибке:', this.currentUser);
+                } else {
+                    this.currentUser = null;
+                    console.log('Играем как гость при ошибке');
+                }
             }
 
-            if (!response.ok) {
-                throw new Error(`Ошибка проверки авторизации: ${response.status}`);
-            }
-
-            const data = await response.json();
-            
-            if (data.authenticated && data.user) {
-                this.currentUser = data.user;
-                // Сохраняем данные в localStorage
-                localStorage.setItem('token', data.user.token);
-                localStorage.setItem('userId', data.user.id);
-                localStorage.setItem('username', data.user.username);
-                console.log('Пользователь авторизован:', this.currentUser);
-                this.updateAuthUI();
-            } else {
-                this.currentUser = null;
-                // Очищаем localStorage
-                localStorage.removeItem('token');
-                localStorage.removeItem('userId');
-                localStorage.removeItem('username');
-                console.log('Пользователь не авторизован');
-                this.updateAuthUI();
-            }
+            this.updateAuthUI();
         } catch (err) {
-            console.error('Ошибка при проверке авторизации:', err);
-            // Проверяем localStorage в случае ошибки
+            console.error('Критическая ошибка при проверке авторизации:', err);
+            // При критической ошибке всё равно пытаемся использовать localStorage
             if (localStorage.getItem('token')) {
                 this.currentUser = {
                     id: localStorage.getItem('userId'),
                     username: localStorage.getItem('username'),
                     token: localStorage.getItem('token')
                 };
-                console.log('Использованы данные из localStorage:', this.currentUser);
-                this.updateAuthUI();
+                console.log('Используем данные из localStorage при критической ошибке:', this.currentUser);
+            } else {
+                this.currentUser = null;
+                console.log('Играем как гость при критической ошибке');
             }
+            this.updateAuthUI();
         }
     }
 
