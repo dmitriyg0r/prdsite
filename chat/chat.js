@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Загружаем список чатов
     await loadChatsList();
     
-    // Запускаем периодическ��е обновление списка чатов
+    // Запускаем периодическое обновление списка чатов
     setInterval(loadChatsList, 10000); // Обновляем каждые 10 секунд
 });
 
@@ -575,7 +575,7 @@ async function handleSendMessage() {
     }
 
     try {
-        messageInput.value = ''; // Очищаем поле сразу
+        messageInput.value = ''; // Очищаем поле сраз��
         
         const response = await fetch('https://adminflow.ru/api/messages/send', {
             method: 'POST',
@@ -1078,7 +1078,7 @@ function showReplyPreview(messageText) {
     // Сохраняем ID сообщения, на которое отвечаем
     replyToMessageId = selectedMessageId;
 
-    // Обрезаем текст, если он слишком дл��нный
+    // Обрезаем текст, если он слишком длинный
     const maxLength = 50;
     const displayText = messageText.length > maxLength 
         ? messageText.substring(0, maxLength) + '...' 
@@ -1203,28 +1203,14 @@ async function loadChatsList() {
 
         console.log('Loading chats for user:', currentUser.id);
 
-        const response = await fetch(`https://adminflow.ru/api/chats/${currentUser.id}`, {
-            method: 'GET',
-            credentials: 'include',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            }
-        });
-
+        const response = await fetch(`https://adminflow.ru/api/chats/${currentUser.id}`);
+        
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            console.error('Server response:', {
-                status: response.status,
-                statusText: response.statusText,
-                data: errorData
-            });
-            throw new Error(errorData.error || `Error ${response.status}`);
+            throw new Error(`Server error: ${response.status}`);
         }
 
         const data = await response.json();
-        console.log('Chats loaded:', data);
-
+        
         if (!data.success) {
             throw new Error(data.error || 'Failed to load chats');
         }
@@ -1233,9 +1219,9 @@ async function loadChatsList() {
 
     } catch (error) {
         console.error('Error loading chats:', error);
-        const friendsList = document.getElementById('friends-list');
-        if (friendsList) {
-            friendsList.innerHTML = `
+        const container = document.getElementById('friends-list');
+        if (container) {
+            container.innerHTML = `
                 <div class="error-message">
                     <p>Ошибка загрузки чатов: ${error.message}</p>
                     <button onclick="loadChatsList()" class="retry-btn">
@@ -1407,7 +1393,7 @@ async function selectChat(chat) {
             startMessageUpdates();
         }, 500);
         
-        // Помечаем сообщения как прочитанные
+        // Помечаем с��общения как прочитанные
         await markMessagesAsRead(chat.id);
 
     } catch (error) {
@@ -1631,29 +1617,32 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Socket.IO
+// Инициализация Socket.IO
 const socket = io('https://adminflow.ru', {
     path: '/socket.io/',
-    transports: ['websocket', 'polling'],
+    transports: ['polling', 'websocket'], // Сначала polling, потом websocket
     withCredentials: true,
     secure: true,
     reconnection: true,
-    reconnectionAttempts: 5,
-    reconnectionDelay: 1000
+    reconnectionAttempts: Infinity,
+    reconnectionDelay: 1000,
+    timeout: 20000
 });
 
-// Обработчики Socket.IO событий
+// Обработчики событий Socket.IO
 socket.on('connect', () => {
     console.log('Connected to Socket.IO server');
-    
-    // Отправляем ID пользователя после подключения
-    if (currentUser) {
+    if (currentUser?.id) {
         socket.emit('user_connected', { userId: currentUser.id });
     }
 });
 
-socket.on('disconnect', () => {
-    console.log('Disconnected from Socket.IO server');
+socket.on('connect_error', (error) => {
+    console.error('Socket connection error:', error);
+});
+
+socket.on('disconnect', (reason) => {
+    console.log('Disconnected from Socket.IO server:', reason);
 });
 
 socket.on('new_message', (message) => {
