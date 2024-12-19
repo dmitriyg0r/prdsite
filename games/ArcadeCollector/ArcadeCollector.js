@@ -448,14 +448,17 @@ class ArcadeCollector {
         this.loadImages = this.loadImages.bind(this);
         this.init = this.init.bind(this);
         
-        // Запускаем инициализацию
+        // Запускаем инициализа��ию
         this.init();
     }
 
     async init() {
         try {
             // Сначала загружаем изображения
-            await this.loadImages();
+            await this.loadImages().catch(err => {
+                console.warn('Ошибка загрузки изображений, используем заглушки:', err);
+                this.createFallbackImages();
+            });
             
             // Затем проверяем авторизацию
             await this.checkAuth();
@@ -465,36 +468,87 @@ class ArcadeCollector {
             this.startGame();
         } catch (err) {
             console.error('Ошибка инициализации игры:', err);
+            // Продолжаем работу игры даже при ошибках инициализации
+            this.bindEvents();
+            this.startGame();
         }
     }
 
     async loadImages() {
         try {
-            // Загрузка изображений бонусов
-            this.healthPerkImage = await this.loadImage('../ArcadeCollector/assets/perks/med_perk.png');
-            this.weaponPerkImage = await this.loadImage('../ArcadeCollector/assets/perks/w3_perk.png');
-            this.weapon2PerkImage = await this.loadImage('../ArcadeCollector/assets/perks/w2_perk.png');
+            // Загрузка изображений бонусов с правильными путями
+            this.healthPerkImage = await this.loadImage('./assets/perks/med_perk.png');
+            this.weaponPerkImage = await this.loadImage('./assets/perks/w3_perk.png');
+            this.weapon2PerkImage = await this.loadImage('./assets/perks/w2_perk.png');
 
             // Загрузка изображений врагов
             for (const enemyType of Object.keys(this.enemyTypes)) {
-                const image = await this.loadImage(`assets/enemies/${enemyType}.png`);
-                this.enemyTypes[enemyType].image = image;
-                console.log(`${enemyType} enemy image loaded successfully`);
+                try {
+                    const image = await this.loadImage(`./assets/enemies/${enemyType}.png`);
+                    this.enemyTypes[enemyType].image = image;
+                    console.log(`${enemyType} enemy image loaded successfully`);
+                } catch (err) {
+                    console.warn(`Не удалось загрузить изображение для ${enemyType}:`, err);
+                    // Создаем заглушку для отсутствующего изображения
+                    const fallbackImage = new Image();
+                    fallbackImage.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+                    this.enemyTypes[enemyType].image = fallbackImage;
+                }
             }
+
+            console.log('Все изображения загружены успешно');
         } catch (err) {
             console.error('Ошибка загрузки изображений:', err);
-            throw err;
+            // Создаем заглушки для отсутствующих изображений перков
+            this.createFallbackImages();
         }
+    }
+
+    createFallbackImages() {
+        // Создаем заглушки для всех изображений перков
+        const fallbackImage = new Image();
+        fallbackImage.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+        
+        this.healthPerkImage = fallbackImage.cloneNode();
+        this.weaponPerkImage = fallbackImage.cloneNode();
+        this.weapon2PerkImage = fallbackImage.cloneNode();
+        
+        console.warn('Используются заглушки изображений из-за ошибки загрузки');
     }
 
     loadImage(src) {
         return new Promise((resolve, reject) => {
             const img = new Image();
+            
             img.onload = () => {
-                console.log(`${src} loaded`);
+                console.log(`Изображение загружено: ${src}`);
                 resolve(img);
             };
-            img.onerror = () => reject(new Error(`Failed to load image: ${src}`));
+            
+            img.onerror = () => {
+                console.error(`Ошибка загрузки изображения: ${src}`);
+                reject(new Error(`Failed to load image: ${src}`));
+            };
+
+            // Добавляем обработку таймаута
+            const timeout = setTimeout(() => {
+                img.src = ''; // Отменяем загрузку
+                reject(new Error(`Timeout loading image: ${src}`));
+            }, 5000); // 5 секунд таймаут
+
+            img.onload = () => {
+                clearTimeout(timeout);
+                console.log(`Изображение загружено: ${src}`);
+                resolve(img);
+            };
+
+            img.onerror = () => {
+                clearTimeout(timeout);
+                console.error(`Ошибка загрузки изображения: ${src}`);
+                reject(new Error(`Failed to load image: ${src}`));
+            };
+
+            // Используем относительный путь от текущей директории
             img.src = src;
         });
     }
