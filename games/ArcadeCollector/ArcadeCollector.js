@@ -577,24 +577,25 @@ class ArcadeCollector {
 
     async checkAuth() {
         try {
-            // Сначала проверяем localStorage
+            // Проверяем данные в localStorage
             const token = localStorage.getItem('token');
             const userId = localStorage.getItem('userId');
             const username = localStorage.getItem('username');
+            const isAuthenticated = localStorage.getItem('isAuthenticated');
 
-            // Если есть все необходимые данные в localStorage
-            if (token && userId && username) {
+            // Если пользователь уже авторизован через localStorage
+            if (isAuthenticated === 'true' && token && userId && username) {
                 this.currentUser = {
                     id: userId,
                     username: username,
                     token: token
                 };
-                console.log('Пользователь авторизован из localStorage:', this.currentUser);
+                console.log('Авторизация из localStorage:', this.currentUser);
                 this.updateAuthUI();
                 return;
             }
 
-            // Пробуем получить данные с сервера
+            // Пытаемся получить данные с сервера
             try {
                 const response = await fetch('/api/check-auth', {
                     credentials: 'include',
@@ -605,74 +606,85 @@ class ArcadeCollector {
                     }
                 });
 
-                // Если сервер недоступен или вернул ошибку
                 if (!response.ok) {
-                    console.warn('Сервер недоступен или вернул ошибку:', response.status);
-                    // Если есть данные в localStorage, используем их
-                    if (token) {
+                    // Если есть сохраненные данные авторизации
+                    if (token && userId && username) {
                         this.currentUser = {
                             id: userId,
                             username: username,
                             token: token
                         };
-                        console.log('Используем данные из localStorage:', this.currentUser);
-                        this.updateAuthUI();
+                        localStorage.setItem('isAuthenticated', 'true');
+                        console.log('Используем сохраненные данные авторизации:', this.currentUser);
                     } else {
-                        // Если нет данных в localStorage, играем как гость
+                        // Только если нет сохраненных данных, играем как гость
                         this.currentUser = null;
-                        console.log('Играем как гость');
-                        this.updateAuthUI();
+                        localStorage.removeItem('isAuthenticated');
+                        console.log('Нет сохраненных данных, играем как гость');
                     }
+                    this.updateAuthUI();
                     return;
                 }
 
-                // Если сервер ответил успешно
                 const data = await response.json();
+                
                 if (data.authenticated && data.user) {
                     this.currentUser = data.user;
-                    // Сохраняем в localStorage
+                    // Сохраняем все данные авторизации
                     localStorage.setItem('token', data.user.token);
                     localStorage.setItem('userId', data.user.id);
                     localStorage.setItem('username', data.user.username);
-                    console.log('Пользователь авторизован через сервер:', this.currentUser);
+                    localStorage.setItem('isAuthenticated', 'true');
+                    console.log('Успешная авторизация через сервер:', this.currentUser);
                 } else {
-                    this.currentUser = null;
-                    // Очищаем localStorage
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('userId');
-                    localStorage.removeItem('username');
-                    console.log('Пользователь не авторизован');
+                    // Проверяем сохраненные данные перед тем как играть как гость
+                    if (token && userId && username) {
+                        this.currentUser = {
+                            id: userId,
+                            username: username,
+                            token: token
+                        };
+                        console.log('Используем сохраненные данные:', this.currentUser);
+                    } else {
+                        this.currentUser = null;
+                        // Очищаем все данные авторизации
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('userId');
+                        localStorage.removeItem('username');
+                        localStorage.removeItem('isAuthenticated');
+                        console.log('Играем как гость');
+                    }
                 }
             } catch (error) {
                 console.warn('Ошибка при запросе к серверу:', error);
-                // При ошибке запроса используем данные из localStorage
-                if (token) {
+                // Проверяем сохраненные данные при ошибке
+                if (token && userId && username) {
                     this.currentUser = {
                         id: userId,
                         username: username,
                         token: token
                     };
-                    console.log('Используем данные из localStorage при ошибке:', this.currentUser);
+                    console.log('Используем сохраненные данные при ошибке:', this.currentUser);
                 } else {
                     this.currentUser = null;
-                    console.log('Играем как гость при ошибке');
+                    console.log('Нет сохраненных данных, играем как гость');
                 }
             }
 
             this.updateAuthUI();
         } catch (err) {
-            console.error('Критическая ошибка при проверке авторизации:', err);
-            // При критической ошибке всё равно пытаемся использовать localStorage
-            if (localStorage.getItem('token')) {
+            console.error('Критическая ошибка:', err);
+            // Последняя попытка использовать сохраненные данные
+            if (localStorage.getItem('isAuthenticated') === 'true') {
                 this.currentUser = {
                     id: localStorage.getItem('userId'),
                     username: localStorage.getItem('username'),
                     token: localStorage.getItem('token')
                 };
-                console.log('Используем данные из localStorage при критической ошибке:', this.currentUser);
+                console.log('Восстановление сессии из localStorage:', this.currentUser);
             } else {
                 this.currentUser = null;
-                console.log('Играем как гость при критической ошибке');
+                console.log('Нет сохраненных данных, играем как гость');
             }
             this.updateAuthUI();
         }
@@ -1516,7 +1528,7 @@ class ArcadeCollector {
     drawEnemy(enemy) {
         this.ctx.save();
         
-        // Применяем прозрачность для стелс-врагов
+        // Применяем прозра��ность для стелс-врагов
         if (enemy.behavior === 'stealth') {
             this.ctx.globalAlpha = enemy.alpha || 1;
         }
@@ -2365,7 +2377,7 @@ class ArcadeCollector {
         }
     }
 
-    // Волновая атака
+    // Волнов��я атака
     bossWaveShot(boss) {
         const bulletCount = 12;
         const waveAmplitude = 100;
