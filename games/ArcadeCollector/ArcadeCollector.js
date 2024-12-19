@@ -433,7 +433,7 @@ class ArcadeCollector {
             }
         };
         
-        // Добавим порядок появлени���� б���ссов
+        // Добавим порядок появлени�������� б���ссов
         this.bossOrder = ['basic']; // Первый босс всегда basic
         this.currentBossIndex = 0;
         
@@ -512,6 +512,19 @@ class ArcadeCollector {
             { difficulty: 3.5, types: ['healer', 'swarm'] },
             { difficulty: 4, types: ['shielded', 'heavy'] }
         ];
+        
+        // Инициализация базовых значений
+        this.score = 0;
+        this.gameTime = 0;
+        this.difficulty = 1;
+        
+        // Обновляем начальное отображение
+        if (this.scoreElement) {
+            this.scoreElement.textContent = '0';
+        }
+        if (this.levelElement) {
+            this.levelElement.textContent = '1.0';
+        }
     }
 
     initializeMenuHandlers() {
@@ -607,26 +620,49 @@ class ArcadeCollector {
         document.getElementById('playAgainBtn').addEventListener('click', () => this.restartGame());
     }
 
-    updateDifficulty(dt) {
-        this.gameTime += dt;
-        
-        // Более плавное увеличение сложности
-        this.difficulty = 1 + Math.floor(this.gameTime / 60) * 0.5; // Каждую минуту +0.5 к сложности
-        
-        // Добавляем влияние очков, но с меньшим весом
-        this.difficulty += Math.floor(this.score / 500) * 0.2;
-        
-        // Корректируем частоту спавна в зависимости от количества типов врагов
-        const availableTypes = this.getAvailableEnemyTypes();
-        const baseSpawnRate = 2500;
-        this.enemySpawnRate = Math.max(
-            800, // Минимальный интервал спавна
-            baseSpawnRate - (availableTypes.length * 100) - (this.difficulty * 100)
-        );
-        
-        // Обновляем отображение уровня
-        if (this.levelElement) {
-            this.levelElement.textContent = Math.floor(this.difficulty * 10) / 10;
+    updateDifficulty() {
+        try {
+            // Проверяем, что необходимые значения существуют и являются числами
+            if (typeof this.gameTime !== 'number') {
+                this.gameTime = 0;
+            }
+            if (typeof this.score !== 'number') {
+                this.score = 0;
+            }
+
+            // Базовая сложность всегда начинается с 1
+            let newDifficulty = 1;
+            
+            // Увеличение сложности от времени (каждые 60 секунд +0.5)
+            const timeBonus = Math.floor(this.gameTime / 60) * 0.5;
+            
+            // Увеличение сложности от очков (каждые 500 очков +0.2)
+            const scoreBonus = Math.floor(this.score / 500) * 0.2;
+            
+            // Складываем бонусы
+            newDifficulty += timeBonus + scoreBonus;
+            
+            // Ограничиваем минимальную и максимальную сложность
+            this.difficulty = Math.max(1, Math.min(newDifficulty, 10));
+            
+            // Безопасное обновление отображения
+            if (this.levelElement) {
+                const formattedDifficulty = this.difficulty.toFixed(1);
+                // Дополнительная проверка на NaN
+                if (!isNaN(formattedDifficulty)) {
+                    this.levelElement.textContent = formattedDifficulty;
+                } else {
+                    this.levelElement.textContent = '1.0';
+                    console.error('Difficulty calculation resulted in NaN');
+                }
+            }
+        } catch (error) {
+            console.error('Error in updateDifficulty:', error);
+            // В случае ошибки устанавливаем базовые значения
+            this.difficulty = 1;
+            if (this.levelElement) {
+                this.levelElement.textContent = '1.0';
+            }
         }
     }
 
@@ -743,50 +779,38 @@ class ArcadeCollector {
     }
 
     createDestroyEffect(enemy) {
-        // Создаем эффект взрыва
-        const particles = 12;
-        const colors = ['#fcd34d', '#f59e0b', '#dc2626', '#ffffff'];
+        const particleCount = 10;
+        const color = this.enemyTypes[enemy.type].color;
         
-        for (let i = 0; i < particles; i++) {
-            const angle = (Math.PI * 2 * i) / particles;
-            const speed = 100 + Math.random() * 100;
-            const size = 4 + Math.random() * 4;
-            const lifetime = 0.5 + Math.random() * 0.5;
-            const color = colors[Math.floor(Math.random() * colors.length)];
+        for (let i = 0; i < particleCount; i++) {
+            const angle = (Math.PI * 2 * i) / particleCount;
+            const speed = 100 + Math.random() * 50;
             
             this.particles.push({
                 x: enemy.x + enemy.width / 2,
                 y: enemy.y + enemy.height / 2,
                 vx: Math.cos(angle) * speed,
                 vy: Math.sin(angle) * speed,
-                size: size,
+                size: 4 + Math.random() * 2,
                 color: color,
-                lifetime: lifetime,
+                lifetime: 0.5 + Math.random() * 0.3,
                 time: 0
             });
         }
     }
 
     createHitEffect(enemy) {
-        // Создаем эффект поадания
-        const particles = 6;
-        const colors = ['#ffffff', '#fcd34d'];
+        const particleCount = 5;
         
-        for (let i = 0; i < particles; i++) {
-            const angle = -Math.PI/2 + (Math.random() - 0.5);
-            const speed = 50 + Math.random() * 50;
-            const size = 2 + Math.random() * 2;
-            const lifetime = 0.2 + Math.random() * 0.2;
-            const color = colors[Math.floor(Math.random() * colors.length)];
-            
+        for (let i = 0; i < particleCount; i++) {
             this.particles.push({
                 x: enemy.x + enemy.width / 2,
                 y: enemy.y + enemy.height / 2,
-                vx: Math.cos(angle) * speed,
-                vy: Math.sin(angle) * speed,
-                size: size,
-                color: color,
-                lifetime: lifetime,
+                vx: (Math.random() - 0.5) * 100,
+                vy: (Math.random() - 0.5) * 100,
+                size: 2 + Math.random() * 2,
+                color: '#ffffff',
+                lifetime: 0.2,
                 time: 0
             });
         }
@@ -834,7 +858,7 @@ class ArcadeCollector {
     getAvailableEnemyTypes() {
         let availableTypes = [];
         
-        // Проходим по прогрессии и добавляем типы врагов, доступные для текущей сложности
+        // Проходим по прогрессии и добавляем типы врагов, доступные для тек��щей сложности
         this.enemyProgression.forEach(level => {
             if (this.difficulty >= level.difficulty) {
                 availableTypes = [...availableTypes, ...level.types];
@@ -1022,22 +1046,13 @@ class ArcadeCollector {
     update(dt) {
         if (this.gameState !== 'playing') return;
         
-        // Проверяем, нужно ли создать босса
-        if (!this.bossConfig.active) {
-            const threshold = this.currentBossIndex === 0 
-                ? this.bossConfig.scoreThreshold 
-                : this.bossConfig.lastBossScore + this.bossConfig.subsequentThreshold;
-            
-            if (this.score >= threshold) {
-                this.createBoss();
-                this.bossConfig.lastBossScore = this.score;
-            }
-        }
+        // Обновляем время и сложность
+        this.gameTime += dt;
+        this.updateDifficulty();
         
         // Обновляем босса
         this.updateBoss(dt);
         
-        this.updateDifficulty(dt);
         this.updatePlayerPosition(dt);
         this.updateSpawnTimers(dt);
         this.updateGameObjects(dt);
@@ -1208,7 +1223,7 @@ class ArcadeCollector {
             return coin.y < this.canvas.height;
         });
         
-        // Обновление препятствий
+        // Обновле��ие препятствий
         this.obstacles = this.obstacles.filter(obstacle => {
             obstacle.y += this.currentObstacleSpeed * dt;
             
@@ -1436,7 +1451,7 @@ class ArcadeCollector {
             );
         }
 
-        // Сначала отрисовываем частицы двигателя
+        // Сначала отрисовываем частицы двигат��ля
         this.engineParticles.forEach(particle => {
             const alpha = (1 - particle.time / particle.lifetime) * 0.7;
             this.ctx.save();
@@ -1481,7 +1496,7 @@ class ArcadeCollector {
             this.ctx.shadowColor = boss.color;
             this.ctx.shadowBlur = 20;
             
-            // Рисуем босса
+            // Рисуем ��осса
             this.ctx.fillStyle = boss.color;
             this.ctx.fillRect(boss.x, boss.y, boss.width, boss.height);
             
@@ -1997,7 +2012,7 @@ class ArcadeCollector {
         }
     }
 
-    // Добавляем метод обновления босса
+    // Добавляем метод обновлени�� бос��а
     updateBoss(dt) {
         if (!this.bossConfig.active || !this.bossConfig.boss) return;
         
@@ -2613,6 +2628,68 @@ class ArcadeCollector {
                 lifetime: 0.5,
                 time: 0
             });
+        }
+    }
+
+    handleEnemyDestruction(enemy) {
+        // Проверяем все необходимые условия
+        if (!enemy || !enemy.type || !this.enemyTypes[enemy.type]) {
+            console.error('Invalid enemy data:', enemy);
+            return;
+        }
+
+        // Получаем очки за врага
+        const points = this.enemyTypes[enemy.type].points || 0;
+        
+        // Проверяем, что this.score существует и является числом
+        if (typeof this.score !== 'number') {
+            this.score = 0;
+        }
+        
+        // Увеличиваем очки
+        this.score += points;
+        
+        // Безопасное обновление отображения очков
+        if (this.scoreElement) {
+            this.scoreElement.textContent = Math.floor(this.score).toString();
+        }
+        
+        // Обновляем сложность после изменения очков
+        this.updateDifficulty();
+        
+        // Создаем эффект уничтожения
+        this.createDestroyEffect(enemy);
+        
+        // Проверяем достижение порога для появления босса
+        this.checkBossSpawn();
+    }
+
+    updateBulletCollisions() {
+        for (let i = this.bullets.length - 1; i >= 0; i--) {
+            const bullet = this.bullets[i];
+            
+            for (let j = this.enemies.length - 1; j >= 0; j--) {
+                const enemy = this.enemies[j];
+                
+                if (this.checkCollision(bullet, enemy)) {
+                    // Удаляем пулю
+                    this.bullets.splice(i, 1);
+                    
+                    // Уменьшаем здоровье врага
+                    enemy.health -= bullet.damage || 1;
+                    
+                    // Создаем эффект попадания
+                    this.createHitEffect(bullet.x, bullet.y);
+                    
+                    // Если враг уничтожен
+                    if (enemy.health <= 0) {
+                        this.enemies.splice(j, 1);
+                        this.handleEnemyDestruction(enemy);
+                    }
+                    
+                    break; // Прерываем цикл, так как пуля уже удалена
+                }
+            }
         }
     }
 } // Закрывающая скобка класса
