@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Загружаем список чатов
     await loadChatsList();
     
-    // Запускаем периодическое обновление списка чатов
+    // Запускаем периодическ��е обновление списка чатов
     setInterval(loadChatsList, 10000); // Обновляем каждые 10 секунд
 });
 
@@ -756,7 +756,7 @@ function setupAttachmentHandlers() {
         const file = e.target.files[0];
         if (file) {
             if (file.size > 50 * 1024 * 1024) { // 50MB
-                alert('Файл слишком боль��ой (максимум 50MB)');
+                alert('Файл слишком большой (максимум 50MB)');
                 fileInput.value = '';
                 return;
             }
@@ -894,7 +894,7 @@ async function deleteMessage(messageId) {
         }
     } catch (error) {
         console.error('Ошибка при удалении сообщения:', error);
-        alert('Прои��ошла ошибка при удалении сообщения');
+        alert('Произошла ошибка при удалении сообщения');
     }
 }
 
@@ -1078,7 +1078,7 @@ function showReplyPreview(messageText) {
     // Сохраняем ID сообщения, на которое отвечаем
     replyToMessageId = selectedMessageId;
 
-    // Обрезаем текст, если он слишком длинный
+    // Обрезаем текст, если он слишком дл��нный
     const maxLength = 50;
     const displayText = messageText.length > maxLength 
         ? messageText.substring(0, maxLength) + '...' 
@@ -1184,7 +1184,7 @@ function updateLastMessage(message) {
     }
 }
 
-// Функция загрузки списка чатов с защитой от дёрганья
+// Функция загрузки списка чатов с обработкой ошибок
 let lastUpdateTime = 0;
 const UPDATE_INTERVAL = 2000; // Минимальный интервал между обновлениями
 
@@ -1196,46 +1196,54 @@ async function loadChatsList() {
         }
         lastUpdateTime = now;
 
+        if (!currentUser?.id) {
+            console.error('User ID not found');
+            return;
+        }
+
+        console.log('Loading chats for user:', currentUser.id);
+
         const response = await fetch(`https://adminflow.ru/api/chats/${currentUser.id}`, {
             method: 'GET',
             credentials: 'include',
             headers: {
                 'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'Origin': window.location.origin
+                'Content-Type': 'application/json'
             }
         });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            console.error('Server response:', {
+                status: response.status,
+                statusText: response.statusText,
+                data: errorData
+            });
+            throw new Error(errorData.error || `Error ${response.status}`);
+        }
+
         const data = await response.json();
+        console.log('Chats loaded:', data);
 
-        if (!data.success) return;
+        if (!data.success) {
+            throw new Error(data.error || 'Failed to load chats');
+        }
 
-        const friendsList = document.getElementById('friends-list');
-        if (!friendsList) return;
-
-        data.chats.forEach(chat => {
-            const chatId = chat.id.toString();
-            const existingElement = friendsList.querySelector(`.chat-partner[data-friend-id="${chatId}"]`);
-            
-            if (existingElement) {
-                // Обновляем только содержимое существующего элемента
-                updateExistingChatElement(existingElement, chat);
-            } else {
-                // Добавляем новый элемент только если его нет
-                const chatElement = createChatElement(chat);
-                friendsList.appendChild(chatElement);
-            }
-        });
-
-        // Удаляем чаты, которых больше нет в списке
-        const currentChatIds = new Set(data.chats.map(chat => chat.id.toString()));
-        friendsList.querySelectorAll('.chat-partner').forEach(el => {
-            if (!currentChatIds.has(el.dataset.friendId)) {
-                el.remove();
-            }
-        });
+        updateChatsList(data.chats);
 
     } catch (error) {
-        console.error('Ошибка при загрузке списка чатов:', error);
+        console.error('Error loading chats:', error);
+        const friendsList = document.getElementById('friends-list');
+        if (friendsList) {
+            friendsList.innerHTML = `
+                <div class="error-message">
+                    <p>Ошибка загрузки чатов: ${error.message}</p>
+                    <button onclick="loadChatsList()" class="retry-btn">
+                        Повторить
+                    </button>
+                </div>
+            `;
+        }
     }
 }
 
@@ -1407,7 +1415,7 @@ async function selectChat(chat) {
     }
 }
 
-// Функция п��лучения времени последней активност пользователя
+// Функция получения времени последней активност пользователя
 function getLastActivityTime(lastActivity) {
    if (!lastActivity) return 'неизвестно';
    
@@ -1551,7 +1559,7 @@ setupReplyFunctionality();
 document.addEventListener('DOMContentLoaded', () => {
     const messageInput = document.getElementById('messageInput');
     if (messageInput) {
-        messageInput.placeholder = 'Сообщение... (*курсив*, **жирный**, `��од`, ```блок кода```, > цитата)';
+        messageInput.placeholder = 'Сообщение... (*курсив*, **жирный**, `од`, ```блок кода```, > цитата)';
     }
 });
 
@@ -1629,7 +1637,9 @@ const socket = io('https://adminflow.ru', {
     transports: ['websocket', 'polling'],
     withCredentials: true,
     secure: true,
-    rejectUnauthorized: false
+    reconnection: true,
+    reconnectionAttempts: 5,
+    reconnectionDelay: 1000
 });
 
 // Обработчики Socket.IO событий
