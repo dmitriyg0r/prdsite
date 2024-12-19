@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Загружаем список чатов
     await loadChatsList();
     
-    // Запускаем периодическ��е обновление списка чатов
+    // Запускаем периодическое обновление списка чатов
     setInterval(loadChatsList, 10000); // Обновляем каждые 10 секунд
 });
 
@@ -380,64 +380,56 @@ function formatTime(seconds) {
     return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 }
 
-function createAttachmentElement(attachmentUrl) {
+function createAttachmentElement(message) {
     const attachmentElement = document.createElement('div');
     attachmentElement.className = 'message-attachment';
-    
-    // Очищаем и нормализуем путь к файлу
-    let fullUrl = attachmentUrl;
-    
-    // Удаляем дублирование ти
-    if (attachmentUrl.includes('/uploads/messages')) {
-        fullUrl = `https://adminflow.ru${attachmentUrl}`;
-    } else {
-        fullUrl = `https://adminflow.ru/uploads/messages/${attachmentUrl}`;
-    }
-    
-    // Удаляем возможные двойные слеши
-    fullUrl = fullUrl.replace(/([^:]\/)\/+/g, '$1');
-    
-    try{
-     fullUrl = new URL(fullUrl).href
-    } catch(e){
-        console.error('Error while processing url', fullUrl, e)
-    }
 
+    if (!message.attachment_url) return attachmentElement;
 
-    console.log('Оработанный URL вложения:', fullUrl); // Для отладки
+    const fileUrl = `https://adminflow.ru${message.attachment_url}`;
+    const fileName = message.attachment_name || message.attachment_url.split('/').pop();
+    const fileType = message.attachment_type || '';
 
-    if (isImageFile(attachmentUrl)) {
+    // Определяем тип файла
+    if (fileType.startsWith('image/')) {
+        // Для изображений
         const img = document.createElement('img');
-        img.src = fullUrl;
-        img.alt = 'Изображение';
-        img.onerror = () => {
-            console.error('Ошибка загрузки изображения:', fullUrl);
-            img.src = '../uploads/avatars/default.png'; // Заглушка при ошибке
-        };
-        img.onload = () => {
-            console.log('Изоб��ажение успешно загружено:', fullUrl);
-        };
-        img.onclick = () => showImageModal(fullUrl);
+        img.src = fileUrl;
+        img.alt = fileName;
+        img.onclick = () => showImageModal(fileUrl);
         attachmentElement.appendChild(img);
     } else {
-        const fileInfo = document.createElement('div');
-        fileInfo.className = 'file-info';
-        const fileName = attachmentUrl.split('/').pop();
-        fileInfo.innerHTML = `
-            <i class="fas fa-file file-icon"></i>
-            <a href="${fullUrl}" target="_blank" class="file-name" download>${fileName}</a>
+        // Для всех остальных файлов
+        const fileContainer = document.createElement('div');
+        fileContainer.className = 'file-container';
+
+        // Выбираем иконку в зависимости от типа файла
+        let iconClass = 'fa-file';
+        if (fileType.includes('pdf')) iconClass = 'fa-file-pdf';
+        else if (fileType.includes('word') || fileType.includes('document')) iconClass = 'fa-file-word';
+        else if (fileType.includes('excel') || fileType.includes('sheet')) iconClass = 'fa-file-excel';
+        else if (fileType.includes('video')) iconClass = 'fa-file-video';
+        else if (fileType.includes('audio')) iconClass = 'fa-file-audio';
+        else if (fileType.includes('zip') || fileType.includes('rar')) iconClass = 'fa-file-archive';
+        else if (fileType.includes('code') || fileType.includes('text')) iconClass = 'fa-file-code';
+
+        fileContainer.innerHTML = `
+            <div class="file-icon">
+                <i class="fas ${iconClass}"></i>
+            </div>
+            <div class="file-info">
+                <span class="file-name">${fileName}</span>
+                <a href="${fileUrl}" class="file-download" download="${fileName}">
+                    <i class="fas fa-download"></i> Скачать
+                </a>
+            </div>
         `;
-        attachmentElement.appendChild(fileInfo);
+        
+        attachmentElement.appendChild(fileContainer);
     }
 
     return attachmentElement;
 }
-
-// Вспомогательная функция для проверки типа файла
-function isImageFile(url) {
-    return /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
-}
-
 
 async function sendMessage() {
     const messageInput = document.getElementById('messageInput');
