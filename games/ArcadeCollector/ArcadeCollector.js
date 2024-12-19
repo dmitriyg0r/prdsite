@@ -52,199 +52,199 @@ class ArcadeCollector {
         // Добавляем больше типов врагов
         this.enemyTypes = {
             basic: {
-            width: 60,
-            height: 60,
-            speed: 120,
-            color: '#ef4444',
-            health: 2,
-            points: 15,
-            shootRate: 2500,
-            bulletSpeed: 200,
-            behavior: 'straight',
-            damage: 10,
-            bulletDamage: 5,
+                width: 60,
+                height: 60,
+                speed: 120,
+                color: '#ef4444',
+                health: 2,
+                points: 15,
+                shootRate: 2500,
+                bulletSpeed: 200,
+                behavior: 'straight',
+                damage: 10,
+                bulletDamage: 5,
             },
             shooter: {
-            width: 80,
-            height: 80,
-            speed: 90,
-            color: '#fb923c',
-            health: 3,
-            points: 25,
-            shootRate: 2000,
-            bulletSpeed: 250,
-            behavior: 'strafe',
-            damage: 15,
-            bulletDamage: 8,
+                width: 80,
+                height: 80,
+                speed: 90,
+                color: '#fb923c',
+                health: 3,
+                points: 25,
+                shootRate: 2000,
+                bulletSpeed: 250,
+                behavior: 'strafe',
+                damage: 15,
+                bulletDamage: 8,
             },
             boss: {
-            width: 120,
-            height: 120,
-            speed: 60,
-            color: '#dc2626',
-            health: 8,
-            points: 75,
-            shootRate: 1500,
-            bulletSpeed: 300,
-            behavior: 'sine',
-            damage: 25,
-            bulletDamage: 12,
+                width: 120,
+                height: 120,
+                speed: 60,
+                color: '#dc2626',
+                health: 8,
+                points: 75,
+                shootRate: 1500,
+                bulletSpeed: 300,
+                behavior: 'sine',
+                damage: 25,
+                bulletDamage: 12,
             },
             fast: {
-            width: 50,
-            height: 50,
-            speed: 150,
-            color: '#3b82f6',
-            health: 1,
-            points: 10,
-            shootRate: 3000,
-            bulletSpeed: 150,
-            behavior: 'straight',
-            damage: 5,
-            bulletDamage: 3,
+                width: 50,
+                height: 50,
+                speed: 150,
+                color: '#3b82f6',
+                health: 1,
+                points: 10,
+                shootRate: 3000,
+                bulletSpeed: 150,
+                behavior: 'straight',
+                damage: 5,
+                bulletDamage: 3,
             },
             tank: {
-            width: 100,
-            height: 100,
-            speed: 50,
-            color: '#22c55e',
-            health: 5,
-            points: 50,
-            shootRate: 2500,
-            bulletSpeed: 100,
-            behavior: 'straight',
-            damage: 20,
-            bulletDamage: 10,
+                width: 100,
+                height: 100,
+                speed: 50,
+                color: '#22c55e',
+                health: 5,
+                points: 50,
+                shootRate: 2500,
+                bulletSpeed: 100,
+                behavior: 'straight',
+                damage: 20,
+                bulletDamage: 10,
             },
             zigzag: {
-            width: 70,
-            height: 70,
-            speed: 100,
-            color: '#8b5cf6',
-            health: 2,
-            points: 20,
-            shootRate: 2000,
-            bulletSpeed: 200,
-            behavior: 'zigzag',
-            damage: 10,
-            bulletDamage: 5,
+                width: 70,
+                height: 70,
+                speed: 100,
+                color: '#8b5cf6',
+                health: 2,
+                points: 20,
+                shootRate: 2000,
+                bulletSpeed: 200,
+                behavior: 'zigzag',
+                damage: 10,
+                bulletDamage: 5,
             },
             kamikaze: {
-            width: 60,
-            height: 60,
-            speed: 200,
-            color: '#f59e0b',
-            health: 1,
-            points: 30,
-            shootRate: 0,
-            bulletSpeed: 0,
-            behavior: 'kamikaze',
-            damage: 50,
-            bulletDamage: 0,
+                width: 60,
+                height: 60,
+                speed: 200,
+                color: '#f59e0b',
+                health: 1,
+                points: 30,
+                shootRate: 0,
+                bulletSpeed: 0,
+                behavior: 'kamikaze',
+                damage: 50,
+                bulletDamage: 0,
             },
             sniper: {
-            width: 70,
-            height: 70,
-            speed: 80,
-            color: '#10b981',
-            health: 3,
-            points: 40,
-            shootRate: 4000,
-            bulletSpeed: 300,
-            behavior: 'straight',
-            damage: 15,
-            bulletDamage: 20,
+                width: 70,
+                height: 70,
+                speed: 80,
+                color: '#10b981',
+                health: 3,
+                points: 40,
+                shootRate: 4000,
+                bulletSpeed: 300,
+                behavior: 'straight',
+                damage: 15,
+                bulletDamage: 20,
             },
             bomber: {
-            width: 90,
-            height: 90,
-            speed: 70,
-            color: '#f87171',
-            health: 4,
-            points: 60,
-            shootRate: 3000,
-            bulletSpeed: 150,
-            behavior: 'bomb',
-            damage: 20,
-            bulletDamage: 15,
+                width: 90,
+                height: 90,
+                speed: 70,
+                color: '#f87171',
+                health: 4,
+                points: 60,
+                shootRate: 3000,
+                bulletSpeed: 150,
+                behavior: 'bomb',
+                damage: 20,
+                bulletDamage: 15,
             },
             stealth: {
-            width: 80,
-            height: 80,
-            speed: 110,
-            color: '#9ca3af',
-            health: 2,
-            points: 35,
-            shootRate: 2500,
-            bulletSpeed: 200,
-            behavior: 'stealth',
-            damage: 10,
-            bulletDamage: 5,
+                width: 80,
+                height: 80,
+                speed: 110,
+                color: '#9ca3af',
+                health: 2,
+                points: 35,
+                shootRate: 2500,
+                bulletSpeed: 200,
+                behavior: 'stealth',
+                damage: 10,
+                bulletDamage: 5,
             },
             shielded: {
-            width: 100,
-            height: 100,
-            speed: 60,
-            color: '#d97706',
-            health: 6,
-            points: 70,
-            shootRate: 2000,
-            bulletSpeed: 150,
-            behavior: 'straight',
-            damage: 25,
-            bulletDamage: 10,
+                width: 100,
+                height: 100,
+                speed: 60,
+                color: '#d97706',
+                health: 6,
+                points: 70,
+                shootRate: 2000,
+                bulletSpeed: 150,
+                behavior: 'straight',
+                damage: 25,
+                bulletDamage: 10,
             },
             healer: {
-            width: 80,
-            height: 80,
-            speed: 90,
-            color: '#34d399',
-            health: 3,
-            points: 45,
-            shootRate: 3000,
-            bulletSpeed: 200,
-            behavior: 'heal',
-            damage: 0,
-            bulletDamage: 0,
+                width: 80,
+                height: 80,
+                speed: 90,
+                color: '#34d399',
+                health: 3,
+                points: 45,
+                shootRate: 3000,
+                bulletSpeed: 200,
+                behavior: 'heal',
+                damage: 0,
+                bulletDamage: 0,
             },
             drone: {
-            width: 50,
-            height: 50,
-            speed: 130,
-            color: '#60a5fa',
-            health: 1,
-            points: 15,
-            shootRate: 1500,
-            bulletSpeed: 250,
-            behavior: 'drone',
-            damage: 5,
-            bulletDamage: 5,
+                width: 50,
+                height: 50,
+                speed: 130,
+                color: '#60a5fa',
+                health: 1,
+                points: 15,
+                shootRate: 1500,
+                bulletSpeed: 250,
+                behavior: 'drone',
+                damage: 5,
+                bulletDamage: 5,
             },
             swarm: {
-            width: 40,
-            height: 40,
-            speed: 140,
-            color: '#f472b6',
-            health: 1,
-            points: 5,
-            shootRate: 1000,
-            bulletSpeed: 200,
-            behavior: 'swarm',
-            damage: 5,
-            bulletDamage: 3,
+                width: 40,
+                height: 40,
+                speed: 140,
+                color: '#f472b6',
+                health: 1,
+                points: 5,
+                shootRate: 1000,
+                bulletSpeed: 200,
+                behavior: 'swarm',
+                damage: 5,
+                bulletDamage: 3,
             },
             heavy: {
-            width: 120,
-            height: 120,
-            speed: 50,
-            color: '#6b7280',
-            health: 7,
-            points: 80,
-            shootRate: 3500,
-            bulletSpeed: 100,
-            behavior: 'straight',
-            damage: 30,
-            bulletDamage: 20,
+                width: 120,
+                height: 120,
+                speed: 50,
+                color: '#6b7280',
+                health: 7,
+                points: 80,
+                shootRate: 3500,
+                bulletSpeed: 100,
+                behavior: 'straight',
+                damage: 30,
+                bulletDamage: 20,
             }
         };
         
@@ -456,7 +456,7 @@ class ArcadeCollector {
                 bulletPatterns: ['swarm', 'multiSwarm', 'chaosSwarm'],
                 bulletSpeed: 180,
                 bulletDamage: 12,
-                name: 'Повелитель роя'
+                name: 'Повели������ель роя'
             },
             tank: {
                 width: 160,
@@ -796,9 +796,26 @@ class ArcadeCollector {
     }
 
     spawnEnemy() {
-        const types = ['basic', 'shooter', 'boss'];
-        const weights = [0.6, 0.3, 0.1];
-        const type = this.weightedRandom(types, weights);
+        const types = Object.keys(this.enemyTypes);
+        const weights = {
+            basic: 0.2,
+            shooter: 0.15,
+            fast: 0.1,
+            tank: 0.08,
+            zigzag: 0.08,
+            kamikaze: 0.07,
+            sniper: 0.06,
+            bomber: 0.06,
+            stealth: 0.05,
+            shielded: 0.05,
+            healer: 0.03,
+            drone: 0.03,
+            swarm: 0.02,
+            heavy: 0.02
+            // boss не включен, так как имеет особую логику появления
+        };
+
+        const type = this.weightedRandom(types, Object.values(weights));
         const enemyType = this.enemyTypes[type];
 
         const enemy = {
@@ -828,10 +845,8 @@ class ArcadeCollector {
 
     updateEnemies(dt) {
         this.enemies = this.enemies.filter(enemy => {
-            // Обновление времени для п��в��дения
             enemy.time += dt;
 
-            // Обновление позиции в зависиости от поведения
             switch(enemy.behavior) {
                 case 'straight':
                     enemy.y += enemy.speed * dt;
@@ -844,10 +859,41 @@ class ArcadeCollector {
                     enemy.y += enemy.speed * dt;
                     enemy.x = enemy.initialX + Math.sin(enemy.time * 2) * 150;
                     break;
+                case 'zigzag':
+                    enemy.y += enemy.speed * dt;
+                    enemy.x = enemy.initialX + Math.sin(enemy.time * 4) * 80;
+                    break;
+                case 'kamikaze':
+                    // Движение к игроку
+                    const dx = this.player.x - enemy.x;
+                    const dy = this.player.y - enemy.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    enemy.x += (dx / dist) * enemy.speed * dt;
+                    enemy.y += (dy / dist) * enemy.speed * dt;
+                    break;
+                case 'stealth':
+                    enemy.y += enemy.speed * dt;
+                    // Периодическое исчезновение
+                    enemy.alpha = 0.2 + Math.abs(Math.sin(enemy.time * 2));
+                    break;
+                case 'heal':
+                    enemy.y += enemy.speed * dt;
+                    // Лечение ближайших врагов
+                    this.healNearbyEnemies(enemy);
+                    break;
+                case 'swarm':
+                    enemy.y += enemy.speed * dt;
+                    // Движение в группе
+                    this.updateSwarmBehavior(enemy);
+                    break;
+                case 'drone':
+                    enemy.y += enemy.speed * dt;
+                    enemy.x += Math.sin(enemy.time * 5) * 3;
+                    break;
             }
 
-            // Стрельба противников
-            if (enemy.time - enemy.lastShot > enemy.shootRate / 1000) {
+            // Стрельба врагов
+            if (enemy.shootRate > 0 && enemy.time - enemy.lastShot > enemy.shootRate / 1000) {
                 this.enemyShoot(enemy);
                 enemy.lastShot = enemy.time;
             }
@@ -1112,17 +1158,19 @@ class ArcadeCollector {
     }
 
     drawEnemy(enemy) {
-        const image = this.enemyImages[enemy.type];
+        this.ctx.save();
         
+        // Применяем прозрачность для стелс-врагов
+        if (enemy.behavior === 'stealth') {
+            this.ctx.globalAlpha = enemy.alpha || 1;
+        }
+        
+        // Добавляем свечение
+        this.ctx.shadowColor = enemy.color;
+        this.ctx.shadowBlur = 10;
+        
+        const image = this.enemyImages[enemy.type];
         if (image && image.complete) {
-            // Рисуем изображение противника
-            this.ctx.save();
-            
-            // Добавляем свечение
-            this.ctx.shadowColor = enemy.color;
-            this.ctx.shadowBlur = 10;
-            
-            // Рисуем изображение
             this.ctx.drawImage(
                 image,
                 enemy.x,
@@ -1130,70 +1178,13 @@ class ArcadeCollector {
                 enemy.width,
                 enemy.height
             );
-            
-            this.ctx.restore();
-            
-            // Если это босс, добавляем полоску здоровья
-            if (enemy.type === 'boss') {
-                const healthPercentage = enemy.health / this.enemyTypes.boss.health;
-                const healthBarWidth = enemy.width * 1.2;
-                const healthBarHeight = 8;
-                const healthBarX = enemy.x + (enemy.width - healthBarWidth) / 2;
-                const healthBarY = enemy.y - healthBarHeight - 5;
-
-                // Фон полоски здоровья
-                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-                this.ctx.fillRect(healthBarX, healthBarY, healthBarWidth, healthBarHeight);
-
-                // Заполнение полоски здоровья
-                const healthGradient = this.ctx.createLinearGradient(
-                    healthBarX, healthBarY,
-                    healthBarX + healthBarWidth, healthBarY
-                );
-                healthGradient.addColorStop(0, '#22c55e');
-                healthGradient.addColorStop(1, '#4ade80');
-                
-                this.ctx.fillStyle = healthGradient;
-                this.ctx.fillRect(
-                    healthBarX,
-                    healthBarY,
-                    healthBarWidth * healthPercentage,
-                    healthBarHeight
-                );
-            }
         } else {
-            // Fallback: рисуем базовые фигуры, если изображения не загрузились
-            switch(enemy.type) {
-                case 'basic':
-                    // Треугольный враг
-                    this.ctx.fillStyle = enemy.color;
-                    this.ctx.beginPath();
-                    this.ctx.moveTo(enemy.x + enemy.width / 2, enemy.y);
-                    this.ctx.lineTo(enemy.x + enemy.width, enemy.y + enemy.height);
-                    this.ctx.lineTo(enemy.x, enemy.y + enemy.height);
-                    this.ctx.closePath();
-                    this.ctx.fill();
-                    break;
-
-                case 'shooter':
-                    // Шестиугольный враг
-                    this.ctx.fillStyle = enemy.color;
-                    this.ctx.beginPath();
-                    this.drawHexagon(
-                        enemy.x + enemy.width / 2,
-                        enemy.y + enemy.height / 2,
-                        enemy.width / 2
-                    );
-                    this.ctx.fill();
-                    break;
-
-                case 'boss':
-                    // Прямоугольный босс
-                    this.ctx.fillStyle = enemy.color;
-                    this.ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
-                    break;
-            }
+            // Fallback отрисовка
+            this.ctx.fillStyle = enemy.color;
+            this.ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
         }
+        
+        this.ctx.restore();
     }
 
     drawHexagon(x, y, size) {
@@ -1625,7 +1616,7 @@ class ArcadeCollector {
         const particleCount = movingUp ? 3 : 2; // Больше частиц при двжении вверх
         const baseSpeed = movingUp ? 200 : 150; // Быстрее при двжении вверх
 
-        // Корректируем позиции двигателей в соответствии со спрайтом
+        // Корректируем позиции двигателей в соответств��и со спрайтом
         const enginePositions = [
             { x: this.player.x + 10, y: this.player.y + this.player.height - 20 },  // Левый двигатель (сместили левее)
             { x: this.player.x + this.player.width - 15, y: this.player.y + this.player.height - 20 }  // Правый двигатель
@@ -1692,7 +1683,7 @@ class ArcadeCollector {
         this.perks = this.perks.filter(perk => {
             perk.y += perk.speed * dt;
             
-            // Проверка коллизии с игроком
+            // Проверка ко��лизии с игроком
             if (this.checkCollision(this.player, perk)) {
                 this.perkTypes[perk.type].effect();
                 return false;
@@ -2130,7 +2121,7 @@ createBossBullet(boss, speedX, speedY, isHeavy = false) {
     }
 
     bossMultiSwarmShot(boss) {
-        // Несколько волн роя
+        // Несколько вол�� роя
         for(let wave = 0; wave < 3; wave++) {
             setTimeout(() => {
                 this.bossSwarmShot(boss);
@@ -2269,7 +2260,7 @@ createBossBullet(boss, speedX, speedY, isHeavy = false) {
             return particle.time < particle.lifetime && particle.size > 0;
         });
 
-        // Создаем новые частицы для каждого противника
+        // Создаем новы�� частицы для каждого противника
         if (this.gameState === 'playing') {
             this.enemies.forEach(enemy => {
                 this.createEnemyEngineParticles(enemy);
