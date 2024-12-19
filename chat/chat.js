@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Загружаем список чатов
     await loadChatsList();
     
-    // Запускаем периодическ��е обновление списка чатов
+    // Запускаем периодическое обновление списка чатов
     setInterval(loadChatsList, 10000); // Обновляем каждые 10 секунд
 });
 
@@ -224,7 +224,7 @@ function createMessageElement(message) {
     messageElement.className = `message message-${message.sender_id === currentUser.id ? 'sent' : 'received'}`;
     messageElement.dataset.messageId = message.id;
 
-    // Добавляем информацию об отправителе для полученных сообщений
+    // Добавляем информацию об отпр��вителе для полученных сообщений
     if (message.sender_id !== currentUser.id) {
         const senderInfo = document.createElement('div');
         senderInfo.className = 'message-sender';
@@ -361,7 +361,7 @@ function createMessageElement(message) {
         messageElement.appendChild(messageContent);
     }
 
-    // Добав��яем время отправки
+    // Добавляем время отправки
     const timestamp = document.createElement('div');
     timestamp.className = 'message-timestamp';
     timestamp.textContent = new Date(message.created_at).toLocaleTimeString([], { 
@@ -464,7 +464,7 @@ async function sendMessage() {
         const responseData = await response.json();
 
         if (!response.ok) {
-            throw new Error(responseData.details || responseData.error || 'Ошибка при отп��авке сообщения');
+            throw new Error(responseData.details || responseData.error || 'Ошибка при отправке сообщения');
         }
 
         if (responseData.success) {
@@ -508,7 +508,7 @@ async function markMessagesAsRead(friendId) {
             // Обновляем счетчик олько если успешно обновили статус
             await updateUnreadCount(friendId);
         } else {
-            console.error('Ошибка при обновлении статуса сообщений:', data.error);
+            console.error('Ошибка ��ри обновлении статуса сообщений:', data.error);
         }
     } catch (err) {
         console.error('Error marking messages as read:', err);
@@ -740,8 +740,9 @@ if(closeModalBtn){
 function setupAttachmentHandlers() {
     const attachButton = document.getElementById('attachButton');
     const fileInput = document.getElementById('fileInput');
+    const sendButton = document.getElementById('sendMessage');
     
-    if (!attachButton || !fileInput) {
+    if (!attachButton || !fileInput || !sendButton) {
         console.error('Элементы прикрепления файлов не найдены');
         return;
     }
@@ -753,8 +754,8 @@ function setupAttachmentHandlers() {
     fileInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (file) {
-            if (file.size > 5 * 1024 * 1024) {
-                alert('Файл слишком большой (максимум 5MB)');
+            if (file.size > 50 * 1024 * 1024) { // 50MB
+                alert('Файл слишком большой (максимум 50MB)');
                 fileInput.value = '';
                 return;
             }
@@ -762,67 +763,85 @@ function setupAttachmentHandlers() {
             showFilePreview(file);
         }
     });
+
+    // Обновляем обработчик отправки сообщения
+    sendButton.addEventListener('click', async () => {
+        if (selectedFile) {
+            await sendMessageWithFile(selectedFile);
+        } else {
+            // Обычная отправка сообщения
+            await sendMessage();
+        }
+    });
 }
 
-function showFilePreview(file) {
-    let previewContainer = document.getElementById('filePreview');
-    
-    // Есл контейнер не существует, создаем его
-    if (!previewContainer) {
-        previewContainer = document.createElement('div');
-        previewContainer.id = 'filePreview';
-        const inputArea = document.querySelector('.input-area');
-        if (inputArea) {
-            inputArea.insertBefore(previewContainer, inputArea.firstChild);
-        } else {
-            console.error('Элемент input-area не найден');
-            return;
+// Обновляем функцию для отправки сообщения с файлом
+async function sendMessageWithFile(file) {
+    try {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('senderId', currentUser.id);
+        formData.append('receiverId', currentChatPartner.id);
+        formData.append('message', ''); // Пустое сообщение или можно добавить текст из messageInput
+
+        const response = await fetch('https://adminflow.ru/api/messages/send-with-file', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!response.ok) {
+            throw new Error('Ошибка при отправке файла');
         }
+
+        const data = await response.json();
+        
+        if (data.success) {
+            // Очищаем превью файла
+            document.getElementById('filePreview').innerHTML = '';
+            selectedFile = null;
+            
+            // Добавляем сообщение в чат
+            const messageElement = createMessageElement(data.message);
+            const messagesContainer = document.getElementById('messages');
+            messagesContainer.appendChild(messageElement);
+            scrollToBottom();
+        } else {
+            throw new Error(data.error || 'Ошибка при отправке файла');
+        }
+    } catch (error) {
+        console.error('Ошибка при отправке файла:', error);
+        alert('Не удалось отправить файл: ' + error.message);
     }
+}
+
+// Обновляем функцию для показа превью файла
+function showFilePreview(file) {
+    const previewContainer = document.getElementById('filePreview');
+    const extension = file.name.split('.').pop().toLowerCase();
+    const fileIcon = getFileIcon(file.type, file.name);
     
-    const isImage = file.type.startsWith('image/');
-    
-    // Создаем превью
-    const previewContent = document.createElement('div');
-    previewContent.className = 'file-preview';
-    previewContent.innerHTML = `
-        ${isImage ? `<img src="${URL.createObjectURL(file)}" class="file-preview-image" alt="Preview">` : ''}
-        <div class="file-preview-info">
-            <i class="fas ${isImage ? 'fa-image' : 'fa-file'}"></i>
-            <span class="file-name">${file.name}</span>
-            <button class="remove-file" type="button">
+    previewContainer.innerHTML = `
+        <div class="file-preview">
+            <i class="fas ${fileIcon} file-icon"></i>
+            <div class="file-preview-info">
+                <div class="file-name">${file.name}</div>
+                <div class="file-size">${formatFileSize(file.size)}</div>
+            </div>
+            <button class="remove-file" onclick="removeSelectedFile()">
                 <i class="fas fa-times"></i>
             </button>
         </div>
     `;
-    
-     // чищаем предыдущее превью
-    while(previewContainer.firstChild) {
-        previewContainer.removeChild(previewContainer.firstChild);
-    }
-    previewContainer.appendChild(previewContent);
-    
-    // Добавляем обработчик для кнопки удаления
-    const removeButton = previewContent.querySelector('.remove-file');
-    if (removeButton) {
-        removeButton.addEventListener('click', removeFilePreview);
-    }
 }
 
-function removeFilePreview() {
-    const previewContainer = document.getElementById('filePreview');
-    if (previewContainer) {
-        while(previewContainer.firstChild) {
-        previewContainer.removeChild(previewContainer.firstChild);
-    }
-    }
-    selectedFile = null;
-    
-    // Очищаем input файла
+// Добавляем функцию для удаления выбранного файла
+function removeSelectedFile() {
     const fileInput = document.getElementById('fileInput');
-    if (fileInput) {
-        fileInput.value = '';
-    }
+    const previewContainer = document.getElementById('filePreview');
+    
+    fileInput.value = '';
+    previewContainer.innerHTML = '';
+    selectedFile = null;
 }
 
 // Функция удаления сообщения
@@ -939,7 +958,7 @@ function setupContextMenu() {
         return;
     }
 
-    // Обработчик правого клика на сообщении
+    // Обработчик правого клика ��а сообщении
     messagesArea.addEventListener('contextmenu', (e) => {
         e.preventDefault();
         
@@ -994,7 +1013,7 @@ function setupContextMenu() {
         }
     });
 
-    // Обработчик для кнопки ответа
+    // Обработчик для кн��пки ответа
     const replyButton = document.getElementById('replyMessageBtn');
     if (replyButton) {
         replyButton.addEventListener('click', () => {
@@ -1197,7 +1216,7 @@ async function loadChatsList() {
             const existingElement = friendsList.querySelector(`.chat-partner[data-friend-id="${chatId}"]`);
             
             if (existingElement) {
-                // Обновляем только содержимое существующего элемента
+                // Обновляем только содержимое существующ��го элемента
                 updateExistingChatElement(existingElement, chat);
             } else {
                 // Добавляем новый элемент только если его нет
@@ -1226,7 +1245,7 @@ function updateExistingChatElement(element, chat) {
     const statusIndicator = element.querySelector('.status-indicator');
     const avatarImg = element.querySelector('.chat-avatar');
 
-    // Обновляем последнее сообщение
+    // Обновляем последнее сооб��ение
     if (lastMessageEl) {
         const newMessageText = formatLastMessage(chat);
         if (lastMessageEl.textContent !== newMessageText) {
@@ -1253,7 +1272,7 @@ function updateExistingChatElement(element, chat) {
         statusIndicator.className = `status-indicator ${chat.is_online ? 'online' : 'offline'}`;
     }
 
-    // Обновляем аватар только если ��зменился
+    // Обновляем аватар только если изменился
     if (avatarImg && avatarImg.src !== chat.avatar_url) {
         avatarImg.src = chat.avatar_url || '../uploads/avatars/default.png';
     }
