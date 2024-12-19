@@ -433,7 +433,7 @@ class ArcadeCollector {
             }
         };
         
-        // Добавим порядок появлени�� б���ссов
+        // Добавим порядок появлени���� б���ссов
         this.bossOrder = ['basic']; // Первый босс всегда basic
         this.currentBossIndex = 0;
         
@@ -501,6 +501,17 @@ class ArcadeCollector {
         // Добавляем проверку авторизации при инициализации
         this.checkAuth();
         this.updateLeaderboard();
+
+        // Добавляем порядок появления врагов по уровням сложности
+        this.enemyProgression = [
+            { difficulty: 1, types: ['basic', 'fast'] },
+            { difficulty: 1.5, types: ['shooter', 'zigzag'] },
+            { difficulty: 2, types: ['tank', 'kamikaze'] },
+            { difficulty: 2.5, types: ['sniper', 'drone'] },
+            { difficulty: 3, types: ['bomber', 'stealth'] },
+            { difficulty: 3.5, types: ['healer', 'swarm'] },
+            { difficulty: 4, types: ['shielded', 'heavy'] }
+        ];
     }
 
     initializeMenuHandlers() {
@@ -598,16 +609,22 @@ class ArcadeCollector {
 
     updateDifficulty(dt) {
         this.gameTime += dt;
-        // Замедляем рост сложности
-        this.difficulty = 1 + Math.floor(this.gameTime / 45) * 0.15; // ыло 30 сек и 0.2
         
-        // Уменьшаем влияние очков на сложность
-        this.difficulty += Math.floor(this.score / 150) * 0.08; // Было 100 и 0.1
+        // Более плавное увеличение сложности
+        this.difficulty = 1 + Math.floor(this.gameTime / 60) * 0.5; // Каждую минуту +0.5 к сложности
         
-        // Более плавное изменение частоты спавна
-        this.enemySpawnRate = Math.max(800, 2500 - this.difficulty * 150); // Корректируем значения
-        this.coinSpawnRate = Math.max(600, 1500 - this.difficulty * 75);
+        // Добавляем влияние очков, но с меньшим весом
+        this.difficulty += Math.floor(this.score / 500) * 0.2;
         
+        // Корректируем частоту спавна в зависимости от количества типов врагов
+        const availableTypes = this.getAvailableEnemyTypes();
+        const baseSpawnRate = 2500;
+        this.enemySpawnRate = Math.max(
+            800, // Минимальный интервал спавна
+            baseSpawnRate - (availableTypes.length * 100) - (this.difficulty * 100)
+        );
+        
+        // Обновляем отображение уровня
         if (this.levelElement) {
             this.levelElement.textContent = Math.floor(this.difficulty * 10) / 10;
         }
@@ -785,142 +802,205 @@ class ArcadeCollector {
     }
 
     spawnEnemy() {
-        const types = Object.keys(this.enemyTypes);
-        const weights = {
-            basic: 0.2,
-            shooter: 0.15,
-            fast: 0.1,
-            tank: 0.08,
-            zigzag: 0.08,
-            kamikaze: 0.07,
-            sniper: 0.06,
-            bomber: 0.06,
-            stealth: 0.05,
-            shielded: 0.05,
-            healer: 0.03,
-            drone: 0.03,
-            swarm: 0.02,
-            heavy: 0.02
-            // boss не включен, так как имеет особую логику появления
-        };
+        // Получаем доступные типы врагов в зависимости от текущей сложности
+        const availableTypes = this.getAvailableEnemyTypes();
+        if (availableTypes.length === 0) return;
 
-        const type = this.weightedRandom(types, Object.values(weights));
-        const enemyType = this.enemyTypes[type];
+        // Выбираем случайный тип из доступных
+        const enemyType = availableTypes[Math.floor(Math.random() * availableTypes.length)];
+        const enemyConfig = this.enemyTypes[enemyType];
 
+        // Рассчитываем случайную позицию по X
+        const x = Math.random() * (this.canvas.width - enemyConfig.width);
+
+        // Создаем врага
         const enemy = {
-            ...enemyType,
-            x: Math.random() * (this.canvas.width - enemyType.width),
-            y: -enemyType.height,
-            initialX: 0,
+            x: x,
+            y: -enemyConfig.height,
+            width: enemyConfig.width,
+            height: enemyConfig.height,
+            type: enemyType,
+            health: enemyConfig.health,
+            speed: enemyConfig.speed,
+            behavior: enemyConfig.behavior,
             time: 0,
-            lastShot: 0,
-            type: type
+            lastShot: 0
         };
 
-        enemy.initialX = enemy.x;
         this.enemies.push(enemy);
     }
 
-    weightedRandom(items, weights) {
-        const total = weights.reduce((a, b) => a + b);
-        let random = Math.random() * total;
+    // Добавьте новый метод для определения доступных типов врагов
+    getAvailableEnemyTypes() {
+        let availableTypes = [];
         
-        for (let i = 0; i < items.length; i++) {
-            if (random < weights[i]) return items[i];
-            random -= weights[i];
+        // Проходим по прогрессии и добавляем типы врагов, доступные для текущей сложности
+        this.enemyProgression.forEach(level => {
+            if (this.difficulty >= level.difficulty) {
+                availableTypes = [...availableTypes, ...level.types];
+            }
+        });
+
+        // Всегда добавляем базовый тип
+        if (!availableTypes.includes('basic')) {
+            availableTypes.push('basic');
         }
-        return items[0];
+
+        return availableTypes;
     }
 
     updateEnemies(dt) {
         this.enemies = this.enemies.filter(enemy => {
-            enemy.time += dt;
+            // Добавляем время с последнего выстрела, если его нет
+            enemy.lastShot = enemy.lastShot || 0;
+            enemy.lastShot += dt * 1000; // Конвертируем в миллисекунды
 
-            switch(enemy.behavior) {
+            // Обновляем поведение в зависимости от типа
+            switch (enemy.behavior) {
                 case 'straight':
                     enemy.y += enemy.speed * dt;
                     break;
-                case 'strafe':
-                    enemy.y += enemy.speed * dt;
-                    enemy.x = enemy.initialX + Math.sin(enemy.time) * 100;
-                    break;
                 case 'sine':
-                    enemy.y += enemy.speed * dt;
-                    enemy.x = enemy.initialX + Math.sin(enemy.time * 2) * 150;
+                    enemy.time = enemy.time || 0;
+                    enemy.time += dt;
+                    enemy.x += Math.sin(enemy.time * 2) * enemy.speed * dt;
+                    enemy.y += enemy.speed * dt * 0.5;
+                    break;
+                case 'strafe':
+                    enemy.time = enemy.time || 0;
+                    enemy.time += dt;
+                    enemy.x += Math.sin(enemy.time) * enemy.speed * dt * 2;
+                    enemy.y += enemy.speed * dt * 0.3;
                     break;
                 case 'zigzag':
-                    enemy.y += enemy.speed * dt;
-                    enemy.x = enemy.initialX + Math.sin(enemy.time * 4) * 80;
+                    enemy.time = enemy.time || 0;
+                    enemy.time += dt;
+                    enemy.x += Math.sin(enemy.time * 3) * enemy.speed * dt * 1.5;
+                    enemy.y += enemy.speed * dt * 0.7;
                     break;
                 case 'kamikaze':
-                    // Движение к игроку
-                    const dx = this.player.x - enemy.x;
-                    const dy = this.player.y - enemy.y;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-                    enemy.x += (dx / dist) * enemy.speed * dt;
-                    enemy.y += (dy / dist) * enemy.speed * dt;
-                    break;
-                case 'stealth':
-                    enemy.y += enemy.speed * dt;
-                    // Периодическое исчезновение
-                    enemy.alpha = 0.2 + Math.abs(Math.sin(enemy.time * 2));
+                    this.updateKamikazeBehavior(enemy);
                     break;
                 case 'heal':
-                    enemy.y += enemy.speed * dt;
-                    // Лечение ближайших вр��гов
+                    enemy.y += enemy.speed * dt * 0.5;
                     this.healNearbyEnemies(enemy);
                     break;
+                case 'drone':
+                    this.updateDroneBehavior(enemy);
+                    break;
                 case 'swarm':
-                    enemy.y += enemy.speed * dt;
-                    // Движение в группе
                     this.updateSwarmBehavior(enemy);
                     break;
-                case 'drone':
-                    enemy.y += enemy.speed * dt;
-                    enemy.x += Math.sin(enemy.time * 5) * 3;
+                case 'stealth':
+                    this.updateStealthBehavior(enemy);
                     break;
             }
 
-            // Стрельба врагов
-            if (enemy.shootRate > 0 && enemy.time - enemy.lastShot > enemy.shootRate / 1000) {
+            // Стрельба для всех врагов, у которых есть shootRate
+            if (enemy.lastShot >= this.enemyTypes[enemy.type].shootRate) {
                 this.enemyShoot(enemy);
-                enemy.lastShot = enemy.time;
+                enemy.lastShot = 0;
             }
 
-            return enemy.y < this.canvas.height && enemy.health > 0;
+            // Проверяем столкновение с игроком
+            if (this.checkCollision(enemy, this.player)) {
+                this.player.health -= this.enemyTypes[enemy.type].damage;
+                this.updateHealthDisplay();
+                return false;
+            }
+
+            return enemy.y < this.canvas.height;
         });
     }
 
+    // Добавим новый метод для стрельбы врагов
     enemyShoot(enemy) {
-        const bulletSpeed = enemy.bulletSpeed * this.difficulty;
+        const type = this.enemyTypes[enemy.type];
         
+        // Пропускаем стрельбу для типов врагов, которые не должны стрелять
+        if (type.shootRate === 0 || type.bulletSpeed === 0) return;
+
         switch(enemy.type) {
-            case 'basic':
-                this.createEnemyBullet(enemy, 0, bulletSpeed);
+            case 'sniper':
+                // Снайпер стреляет прямо в игрока
+                const dx = this.player.x - enemy.x;
+                const dy = this.player.y - enemy.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                this.createEnemyBullet(
+                    enemy,
+                    (dx / distance) * type.bulletSpeed,
+                    (dy / distance) * type.bulletSpeed
+                );
                 break;
-            case 'shooter':
-                this.createEnemyBullet(enemy, -bulletSpeed/4, bulletSpeed);
-                this.createEnemyBullet(enemy, bulletSpeed/4, bulletSpeed);
-                break;
-            case 'boss':
-                for(let i = -2; i <= 2; i++) {
-                    this.createEnemyBullet(enemy, bulletSpeed/3 * i, bulletSpeed);
+
+            case 'bomber':
+                // Бомбардировщик выпускает несколько пуль по дуге
+                for (let i = -1; i <= 1; i++) {
+                    this.createEnemyBullet(
+                        enemy,
+                        type.bulletSpeed * i * 0.5,
+                        type.bulletSpeed
+                    );
                 }
+                break;
+
+            case 'shooter':
+                // Стрелок выпускает две пули
+                this.createEnemyBullet(enemy, -type.bulletSpeed * 0.3, type.bulletSpeed);
+                this.createEnemyBullet(enemy, type.bulletSpeed * 0.3, type.bulletSpeed);
+                break;
+
+            case 'drone':
+                // Дрон стреляет в сторону игрока с небольшим разбросом
+                const angle = Math.atan2(this.player.y - enemy.y, this.player.x - enemy.x);
+                const spread = (Math.random() - 0.5) * 0.5;
+                this.createEnemyBullet(
+                    enemy,
+                    Math.cos(angle + spread) * type.bulletSpeed,
+                    Math.sin(angle + spread) * type.bulletSpeed
+                );
+                break;
+
+            default:
+                // Стандартная стрельба вниз
+                this.createEnemyBullet(enemy, 0, type.bulletSpeed);
                 break;
         }
     }
 
+    // Вспомогательный метод для создания пуль врагов
     createEnemyBullet(enemy, speedX, speedY) {
+        const type = this.enemyTypes[enemy.type];
         this.enemyBullets.push({
-            x: enemy.x + enemy.width/2,
+            x: enemy.x + enemy.width / 2,
             y: enemy.y + enemy.height,
-            width: 8,
-            height: 12,
+            width: 6,
+            height: 6,
             speedX: speedX,
             speedY: speedY,
-            color: enemy.color,
-            damage: enemy.bulletDamage
+            color: type.color,
+            damage: type.bulletDamage
         });
+
+        // Добавляем эффект выстрела
+        this.createEnemyShootEffect(enemy);
+    }
+
+    // Добавляем эффект выстрела врага
+    createEnemyShootEffect(enemy) {
+        const particleCount = 3;
+        for (let i = 0; i < particleCount; i++) {
+            this.particles.push({
+                x: enemy.x + enemy.width / 2,
+                y: enemy.y + enemy.height,
+                vx: (Math.random() - 0.5) * 50,
+                vy: Math.random() * 50 + 50,
+                size: 2 + Math.random() * 2,
+                color: this.enemyTypes[enemy.type].color,
+                lifetime: 0.2,
+                time: 0
+            });
+        }
     }
 
     updateEnemyBullets(dt) {
@@ -1628,7 +1708,7 @@ class ArcadeCollector {
         });
     }
 
-    // Добавим метод обновления частиц двигателя
+    // Добавим мето�� обновления частиц двигателя
     updateEngineParticles(dt) {
         this.engineParticles = this.engineParticles.filter(particle => {
             particle.x += particle.vx * dt;
@@ -1844,18 +1924,14 @@ class ArcadeCollector {
 
     // Добавляем метод создания босса
     createBoss() {
-        let bossType;
+        // Выбираем тип босса в зависимости от сложности
+        let availableBossTypes = ['basic'];
         
-        if (this.currentBossIndex === 0) {
-            // Первый босс всегда basic
-            bossType = this.bossTypes.basic;
-        } else {
-            // Для последующих боссов выбираем случайного из доступных (кроме basic)
-            const availableBossTypes = Object.entries(this.bossTypes)
-                .filter(([key]) => key !== 'basic')
-                .map(([key, value]) => value);
-            bossType = availableBossTypes[Math.floor(Math.random() * availableBossTypes.length)];
-        }
+        if (this.difficulty >= 2) availableBossTypes.push('laser');
+        if (this.difficulty >= 3) availableBossTypes.push('swarm');
+        if (this.difficulty >= 4) availableBossTypes.push('tank');
+        
+        const bossType = availableBossTypes[Math.floor(Math.random() * availableBossTypes.length)];
         
         this.enemies = []; // Очищаем врагов
         
