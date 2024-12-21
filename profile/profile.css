@@ -288,7 +288,9 @@ body {
 
 /* Стили для текстового поля */
 .post-content {
+    position: relative;
     width: 100%;
+    top: -7px;
     min-height: 50px;
     padding: 16px;
     border-radius: 12px;
