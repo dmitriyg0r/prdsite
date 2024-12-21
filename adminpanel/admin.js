@@ -1,4 +1,4 @@
-const API_URL = 'https://adminflow.ru:5003';
+const API_URL = 'https://adminflow.ru';
 
 let currentPage = 1;
 let totalPages = 1;
