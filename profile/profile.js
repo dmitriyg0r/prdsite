@@ -1854,7 +1854,7 @@ async function submitComment(postId, button) {
                 </div>
                 <div class="comment-content">${data.comment.content}</div>
             </div>
-        `;
+        `;ц
         container.insertAdjacentHTML('afterbegin', commentHtml);
         
         // Очищаем поле ввода
