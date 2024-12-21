@@ -96,7 +96,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             statusElement.className = 'online-status online';
         }
 
-        // Загружаем список своих друзей
+        // Загружаем список своих друзей с явным указанием currentUser.id
         await loadFriends(currentUser.id);
         
         // Запускаем обновление своего статуса
@@ -241,7 +241,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Загружаем список друзей
-    loadFriends();
     loadFriendRequests();
 
     // Загрузка аватара
@@ -475,9 +474,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Функции для работы с друзьями
     async function loadFriends(userId) {
+        // Добавляем проверку на userId в начале функции
         if (!userId) {
-            console.warn('loadFriends: userId is undefined');
-            return;
+            console.warn('loadFriends: userId is undefined, using currentUser.id');
+            userId = currentUser?.id;
+            if (!userId) {
+                console.error('loadFriends: Unable to determine user ID');
+                return;
+            }
         }
 
         try {
@@ -1065,7 +1069,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     `;
     document.head.appendChild(style);
 
-    // Обрабо��чики для мены пароля
+    // Обработчики для мены пароля
     const requestPasswordChangeBtn = document.getElementById('request-password-change');
     const passwordChangeModal = document.getElementById('password-change-modal');
     const sendVerificationCodeBtn = document.getElementById('send-verification-code');
@@ -1632,7 +1636,7 @@ window.closeImageModal = function(modal) {
     }, 300);
 };
 
-// ��обавляем функцию в глобальную область видимости
+// Добавляем функцию в глобальную область видимости
 window.openFriendsModal = function() {
     const friendsModal = document.getElementById('friends-modal');
     const friendsTab = document.querySelector('[data-tab="friends-tab"]');
