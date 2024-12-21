@@ -393,7 +393,7 @@ app.post('/api/friend-request', async (req, res) => {
     }
 });
 
-// Принятие/отклонение заявки в друзь��
+// Принятие/отклонение заявки в друзья
 app.post('/api/friend-request/respond', async (req, res) => {
     try {
         const { userId, friendId, status } = req.body; // status: 'accepted' или 'rejected'
@@ -406,7 +406,7 @@ app.post('/api/friend-request/respond', async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         console.error('Friend response error:', err);
-        res.status(500).json({ error: 'Ошибка при обработке заяв����' });
+        res.status(500).json({ error: 'Ошибка при обработке заявки' });
     }
 });
 
@@ -440,7 +440,7 @@ app.get('/api/friends', async (req, res) => {
         console.error('Get friends error:', err);
         res.status(500).json({ 
             success: false, 
-            error: 'Ошибка при получении ��писка друзей' 
+            error: 'Ошибка при получении списка друзей' 
         });
     }
 });
@@ -460,11 +460,11 @@ app.get('/api/friend-requests', async (req, res) => {
         res.json({ requests: result.rows });
     } catch (err) {
         console.error('Get friend requests error:', err);
-        res.status(500).json({ error: 'Ош��бк�� при получении заявок в друзья' });
+        res.status(500).json({ error: 'Ошибка при получении заявок в друзья' });
     }
 });
 
-// Добавляем новый endpoint для удаления из дру��ей
+// Добавляем новый endpoint для удаления из друзей
 app.post('/api/friend/remove', async (req, res) => {
     try {
         const { userId, friendId } = req.body;
@@ -839,7 +839,7 @@ app.get('/api/users/:id', async (req, res) => {
     }
 });
 
-// О�����овле����ие п��о��иля пользователя
+// Обновление профиля пользователя
 app.post('/api/users/update-profile', async (req, res) => {
     try {
         const { userId, username, email } = req.body;
@@ -853,12 +853,12 @@ app.post('/api/users/update-profile', async (req, res) => {
             if (emailCheck.rows.length > 0) {
                 return res.status(400).json({
                     success: false,
-                    error: 'Это email уже используется другим пол��з��вателем'
+                    error: 'Это email уже используется другим пользователем'
                 });
             }
         }
 
-        // Про��ер��ем, ��е занято ли имя пользователя
+        // Проверяем, не занято ли имя пользователя
         if (username) {
             const usernameCheck = await pool.query(
                 'SELECT id FROM users WHERE username = $1 AND id != $2',
@@ -893,7 +893,7 @@ app.post('/api/users/update-profile', async (req, res) => {
         if (updates.length === 0) {
             return res.status(400).json({
                 success: false,
-                error: 'Нет данных для об��овления'
+                error: 'Нет данных для обновления'
             });
         }
 
@@ -903,7 +903,7 @@ app.post('/api/users/update-profile', async (req, res) => {
 
         await pool.query(query, values);
 
-        // Получаем обновленные данные по��ьзователя
+        // Получаем обновленные данные пользователя
         const result = await pool.query(
             'SELECT id, username, email, role, created_at, last_login, avatar_url FROM users WHERE id = $1',
             [userId]
@@ -917,12 +917,12 @@ app.post('/api/users/update-profile', async (req, res) => {
         console.error('Update profile error:', err);
         res.status(500).json({
             success: false,
-            error: 'Ошибка при обновлении профил��'
+            error: 'Ошибка при обновлении профиля'
         });
     }
 });
 
-// ��бновляем эн��поинт отправки сообщения с файлом
+// Обновляем эндпоинт отправки сообщения с файлом
 app.post('/api/messages/send-with-file', messageUpload.single('file'), async (req, res) => {
     try {
         const { senderId, receiverId, message, replyTo } = req.body;
@@ -951,7 +951,7 @@ app.post('/api/messages/send-with-file', messageUpload.single('file'), async (re
 // Обновляем middleware checkAdmin
 const checkAdmin = async (req, res, next) => {
     try {
-        // Проверя��м adminId в query пара��етрах или в теле зпроса
+        // Проверяем adminId в query параметрах или в теле зпроса
         const adminId = req.query.adminId || req.body.adminId;
         
         console.log('Checking admin rights for:', adminId); // Добавляем лог
@@ -959,7 +959,7 @@ const checkAdmin = async (req, res, next) => {
         if (!adminId) {
             return res.status(401).json({ 
                 success: false,
-                error: 'Требу���тся авторизация' 
+                error: 'Требуется авторизация' 
             });
         }
 
@@ -1041,7 +1041,7 @@ app.get('/api/admin/users', checkAdmin, async (req, res) => {
         });
     } catch (err) {
         console.error('Admin users error:', err);
-        res.status(500).json({ error: 'Оши��ка при получении списка пользователей' });
+        res.status(500).json({ error: 'Ошибка при получении списка пользователей' });
     }
 });
 
@@ -1307,7 +1307,7 @@ app.delete('/api/posts/delete/:postId', async (req, res) => {
             return res.status(403).json({ error: 'У вас нет прав на удаление этого поста' });
         }
 
-        // Удаляем все связанные зап��си (лайки, комментарии)
+        // Удаляем все связанные записи (лайки, комментарии)
         await pool.query('DELETE FROM posts WHERE parent_id = $1', [postId]);
         // Удаляем сам пост
         await pool.query('DELETE FROM posts WHERE id = $1', [postId]);
@@ -1315,11 +1315,11 @@ app.delete('/api/posts/delete/:postId', async (req, res) => {
         res.json({ success: true });
     } catch (err) {
         console.error('Error deleting post:', err);
-        res.status(500).json({ error: 'Ошибка при удале��ии поста' });
+        res.status(500).json({ error: 'Ошибка при удалении поста' });
     }
 });
 
-// Добавляем раздачу статическ��х файлов для постов
+// Добавляем раздачу статических файлов для постов
 app.use('/uploads/posts', express.static('/var/www/html/uploads/posts')); 
 
 // Получение статуса пользователя
@@ -1365,7 +1365,7 @@ app.post('/api/users/update-status', async (req, res) => {
     try {
         const { userId, is_online, last_activity } = req.body;
         
-        // Проверяем вход��ые данные
+        // Проверяем входные данные
         if (!userId) {
             return res.status(400).json({
                 success: false,
@@ -1373,7 +1373,7 @@ app.post('/api/users/update-status', async (req, res) => {
             });
         }
 
-        // Проверяем, не было ли неда��него обновления для этого пользователя
+        // Проверяем, не было ли недавнего обновления для этого пользователя
         const lastUpdate = STATUS_UPDATE_CACHE.get(userId);
         const now = Date.now();
         
@@ -1381,7 +1381,7 @@ app.post('/api/users/update-status', async (req, res) => {
             return res.json({ success: true, cached: true });
         }
 
-        // Обновляем стату�� в БД
+        // Обновляем статус в БД
         await pool.query(`
             UPDATE users 
             SET is_online = $2,
@@ -1392,7 +1392,7 @@ app.post('/api/users/update-status', async (req, res) => {
         // Обновляем кэш
         STATUS_UPDATE_CACHE.set(userId, now);
 
-        // Получаем списо�� друзей пользователя для уведомления
+        // Получаем список друзей пользователя для уведомления
         const friendsResult = await pool.query(`
             SELECT friend_id as id FROM friendships 
             WHERE user_id = $1 AND status = 'accepted'
@@ -1623,7 +1623,7 @@ app.delete('/api/comments/:commentId', async (req, res) => {
         if (comment.rows.length === 0) {
             return res.status(403).json({
                 success: false,
-                error: 'Нет прав на удаление этого коммента��ия'
+                error: 'Нет прав на удаление этого комментария'
             });
         }
 
@@ -1640,7 +1640,7 @@ app.delete('/api/comments/:commentId', async (req, res) => {
     }
 });
 
-// Редактирование комментари��
+// Редактирование комментария
 app.put('/api/comments/:commentId', async (req, res) => {
     try {
         const { commentId } = req.params;
@@ -1686,7 +1686,7 @@ app.post('/api/messages/typing', async (req, res) => {
     try {
         const { userId, friendId, isTyping } = req.body;
         
-        // Сохраняем ��татус в Redis или другом быстром хранилище
+        // Сохраняем статус в Redis или другом быстром хранилище
         // Здесь используем глобальную переменную для примера
         global.typingStatus = global.typingStatus || {};
         global.typingStatus[`${userId}-${friendId}`] = {
@@ -1896,7 +1896,7 @@ app.post('/api/send-verification-code', async (req, res) => {
 
         const verificationCode = generateVerificationCode();
 
-        // ��охрняем код в базу
+        // Сохраняем код в базу
         await pool.query(`
             INSERT INTO verification_codes (user_id, code, expires_at)
             VALUES ($1, $2, NOW() + INTERVAL '5 minutes')
@@ -2197,7 +2197,7 @@ io.on('connection', async (socket) => {
         try {
             const { senderId, receiverId, audioBlob } = data;
             
-            // Сохраняе�� аудио и создаем сообщение
+            // Сохраняем аудио и создаем сообщение
             // Этот код будет вызываться через HTTP эндпоинт
             
         } catch (err) {
@@ -2288,10 +2288,22 @@ app.get('/api/chats/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
 
-        // Модифицированный запрос для получения списка чатов
+        // Модифицированный запрос для получения списка чатов, включая друзей без сообщений
         const result = await pool.query(`
-            WITH ChatPartners AS (
-                -- Получаем уникальных собеседников
+            WITH FriendsAndChats AS (
+                -- Получаем всех друзей
+                SELECT 
+                    CASE 
+                        WHEN user_id = $1 THEN friend_id
+                        ELSE user_id 
+                    END as partner_id
+                FROM friendships 
+                WHERE (user_id = $1 OR friend_id = $1)
+                AND status = 'accepted'
+                
+                UNION
+                
+                -- Добавляем собеседников из существующих чатов
                 SELECT DISTINCT 
                     CASE 
                         WHEN sender_id = $1 THEN receiver_id
@@ -2339,13 +2351,17 @@ app.get('/api/chats/:userId', async (req, res) => {
                     AND m.receiver_id = $1 
                     AND m.is_read = false
                 ) as unread_count
-            FROM ChatPartners cp
-            JOIN users u ON u.id = cp.partner_id
+            FROM FriendsAndChats fc
+            JOIN users u ON u.id = fc.partner_id
             LEFT JOIN LastMessages lm ON lm.partner_id = u.id
-            ORDER BY lm.created_at DESC NULLS LAST
+            ORDER BY 
+                CASE 
+                    WHEN lm.created_at IS NOT NULL THEN 0
+                    ELSE 1
+                END,
+                lm.created_at DESC NULLS LAST,
+                u.username ASC
         `, [userId]);
-
-        console.log('Chats found:', result.rows.length); // Для отладки
 
         res.json({
             success: true,
@@ -2488,7 +2504,7 @@ app.get('/api/users-list', async (req, res) => {
     }
 });
 
-// Периодическая очистка уста���евших записей кэша
+// Периодическая очистка устаревших записей кэша
 setInterval(() => {
     const now = Date.now();
     for (const [userId, timestamp] of STATUS_UPDATE_CACHE.entries()) {
@@ -2541,7 +2557,7 @@ app.post('/api/messages/voice', uploadVoice.single('audio'), async (req, res) =>
 
         const messageId = messageResult.rows[0].id;
 
-        // Затем соз��аем запись в таблице voice_messages
+        // Затем создаем запись в таблице voice_messages
         await pool.query(`
             INSERT INTO voice_messages 
             (message_id, duration, file_path)
