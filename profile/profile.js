@@ -249,6 +249,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         const file = e.target.files[0];
         if (!file) return;
 
+        // Проверяем размер файла
+        if (file.size > 5 * 1024 * 1024) { // 5MB
+            alert('Файл слишком большой. Максимальный размер: 5MB');
+            e.target.value = '';
+            return;
+        }
+
+        // Проверяем тип файла
+        if (!file.type.match(/^image\/(jpeg|png|gif|webp)$/)) {
+            alert('Разрешены только изображения (JPEG, PNG, GIF, WEBP)');
+            e.target.value = '';
+            return;
+        }
+
         const formData = new FormData();
         formData.append('avatar', file);
         formData.append('userId', currentUser.id);
@@ -256,25 +270,31 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const response = await fetch('https://adminflow.ru/api/upload-avatar', {
                 method: 'POST',
-                body: formData,
-                credentials: 'include'
+                body: formData
             });
 
             const data = await response.json();
             
-            if (response.ok) {
-                const newAvatarUrl = data.avatarUrl + '?t=' + new Date().getTime();
-                document.getElementById('profile-avatar').src = newAvatarUrl;
+            if (response.ok && data.success) {
+                // Обновляем аватар на странице
+                document.getElementById('profile-avatar').src = data.avatarUrl + '?t=' + new Date().getTime();
                 
-                // Обновляем URL аватарки в localStorage
-                currentUser.avatar_url = data.avatarUrl;
+                // Обновляем данные пользователя в localStorage
+                currentUser = {
+                    ...currentUser,
+                    avatar_url: data.avatarUrl
+                };
                 localStorage.setItem('user', JSON.stringify(currentUser));
+
+                // Показываем сообщение об успехе
+                alert('Аватар успешно обновлен');
             } else {
-                alert(data.error || 'Ошибка при загрузке аватара');
+                throw new Error(data.error || 'Ошибка при загрузке аватара');
             }
         } catch (err) {
             console.error('Error uploading avatar:', err);
-            alert('Ошибка при загрузке аватара');
+            alert(err.message || 'Ошибка при загрузке аватара');
+            e.target.value = '';
         }
     });
 

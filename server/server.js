@@ -2687,3 +2687,72 @@ app.delete('/api/messages/:messageId', async (req, res) => {
         });
     }
 });
+
+// Обновляем конфигурацию multer для аватаров
+const avatarStorage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        const uploadPath = '/var/www/html/uploads/avatars';
+        // Создаем директорию, если она не существует
+        if (!fs.existsSync(uploadPath)) {
+            fs.mkdirSync(uploadPath, { recursive: true });
+        }
+        cb(null, uploadPath);
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const ext = path.extname(file.originalname);
+        cb(null, `avatar-${uniqueSuffix}${ext}`);
+    }
+});
+
+const uploadAvatar = multer({
+    storage: avatarStorage,
+    limits: {
+        fileSize: 5 * 1024 * 1024 // 5MB
+    },
+    fileFilter: function (req, file, cb) {
+        if (!file.originalname.match(/\.(jpg|jpeg|png|gif|webp)$/)) {
+            return cb(new Error('Разрешены только изображения!'), false);
+        }
+        cb(null, true);
+    }
+});
+
+// Обновляем маршрут загрузки аватара
+app.post('/api/upload-avatar', uploadAvatar.single('avatar'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'Файл не был загружен' });
+        }
+
+        const userId = req.body.userId;
+        if (!userId) {
+            return res.status(400).json({ error: 'ID пользователя не указан' });
+        }
+
+        // Формируем URL для доступа к аватару
+        const avatarUrl = `/uploads/avatars/${req.file.filename}`;
+
+        // Обновляем URL аватара в базе данных
+        await pool.query(
+            'UPDATE users SET avatar_url = $1 WHERE id = $2',
+            [avatarUrl, userId]
+        );
+
+        // Получаем обновленные данные пользователя
+        const result = await pool.query(
+            'SELECT id, username, email, role, avatar_url FROM users WHERE id = $1',
+            [userId]
+        );
+
+        res.json({ 
+            success: true, 
+            avatarUrl: avatarUrl,
+            user: result.rows[0]
+        });
+
+    } catch (err) {
+        console.error('Error uploading avatar:', err);
+        res.status(500).json({ error: 'Ошибка при загрузке аватара' });
+    }
+});
