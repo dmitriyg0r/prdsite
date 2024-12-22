@@ -649,41 +649,6 @@
    }
 /* Мобильное меню */
 .mobile-nav {
-    display: none; /* По умолчанию скрыто */
-}
-
-/* Медиа-запрос для адаптивности */
-@media (max-width: 768px) {
-    .mobile-nav {
-        display: block; /* Показываем на мобильных устройствах */
-    }
-    
-    .sidebar {
-        display: none; /* Скрываем боковое меню на мобильных */
-    }
-    
-    /* Добавляем отступ снизу для контента, чтобы он не перекрывался мобильным меню */
-    .lenta-layout {
-        padding-bottom: 60px;
-    }
-    
-    /* Изменяем позиционирование основного контейнера */
-    #posts-container {
-        transform: translatex(0) !important;
-        margin: 0 auto;
-        width: 100%;
-        max-width: 100%;
-    }
-    
-    /* Сбрасываем трансформации для адаптивности */
-    .lenta-layout {
-        padding-right: 20px;
-        transform: none;
-    }
-}
-
-/* Мобильное меню */
-.mobile-nav {
     display: none;
     position: fixed;
     bottom: 0;
@@ -732,15 +697,19 @@
 
 .mobile-nav ul li a:hover {
     color: var(--primary-color);
-}   
-/* Медиа-запрос для адаптивности */
-@media (max-width: 1024px) {
-    .lenta-layout {
-        grid-template-columns: 1fr;
-        max-width: 800px;
+}
+
+/* Адаптивность */
+@media screen and (max-width: 768px) {
+    .mobile-nav {
+        display: block;
     }
 
-    .users-sidebar {
+    .sidebar {
         display: none;
+    }
+
+    body {
+        padding-bottom: 60px;
     }
 }
