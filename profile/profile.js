@@ -1198,7 +1198,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (err) {
             alert(err.message);
         }
-    });
+    })
 });
 
 function initializePostHandlers() {

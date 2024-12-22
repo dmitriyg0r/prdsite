@@ -1,0 +1,43 @@
+/* Стили для кнопки очистки кэша */
+.clear-cache-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    margin-top: 12px;
+    background: var(--surface-color);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    width: 100%;
+}
+
+.clear-cache-btn:hover {
+    background: var(--background-color);
+    border-color: var(--primary-color);
+}
+
+.clear-cache-btn i {
+    transition: transform 0.3s ease;
+}
+
+.clear-cache-btn:hover i {
+    transform: rotate(180deg);
+}
+
+.clear-cache-btn.loading {
+    opacity: 0.7;
+    cursor: wait;
+}
+
+.clear-cache-btn.loading i {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
