@@ -1,6 +1,6 @@
 const clearCacheBtn = document.getElementById('clearCacheBtn');
 clearCacheBtn?.addEventListener('click', async () => {
-    if (!confirm('Вы уверены, что хотите очистить кэш?')) return;
+    if (!confirm('КЭШ УДАЛИ!')) return;
 
     try {
         clearCacheBtn.classList.add('loading');
