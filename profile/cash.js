@@ -6,17 +6,24 @@ clearCacheBtn?.addEventListener('click', async () => {
         clearCacheBtn.classList.add('loading');
         clearCacheBtn.disabled = true;
 
-        // Forcefully clear browser cache using window.location reload
-        window.location.reload(true);
-        
-        // For modern browsers, clear application cache
+        // Clear browser cache
         if ('caches' in window) {
             const keys = await caches.keys();
             await Promise.all(keys.map(key => caches.delete(key)));
         }
 
-        // Force reload from server
-        window.location.href = window.location.href;
+        // Clear local and session storage
+        localStorage.clear();
+        sessionStorage.clear();
+
+        // Hard reload the page with cache bypass
+        window.location.reload(true);
+
+        // If the above doesn't work in some browsers, force reload through URL
+        setTimeout(() => {
+            window.location.href = window.location.href + '?t=' + Date.now();
+        }, 100);
+        
     } catch (error) {
         console.error('Ошибка при очистке кэша:', error);
         alert('Произошла ошибка при очистке кэша');
