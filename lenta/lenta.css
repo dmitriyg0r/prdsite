@@ -1,3 +1,32 @@
+:root {
+    --primary-color: #6366F1;
+    --primary-light: #818CF8;
+    --primary-dark: #4F46E5;
+    --accent-color: #10B981;
+    --background-color: #F9FAFB;
+    --surface-color: #FFFFFF;
+    --text-primary: #111827;
+    --text-secondary: #4B5563;
+    --text-tertiary: #9CA3AF;
+    --success-color: #10B981;
+    --warning-color: #F59E0B;
+    --error-color: #EF4444;
+    --info-color: #3B82F6;
+    --border-light: rgba(0, 0, 0, 0.08);
+    --border-medium: rgba(0, 0, 0, 0.12);
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+    --radius-sm: 6px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+}
 body {
     margin: 0;
     padding: 0;
