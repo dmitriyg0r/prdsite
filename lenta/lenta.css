@@ -749,6 +749,15 @@ body {
         display: none;
     }
 
+    .users-sidebar {
+        display: none; /* Added this line */
+    }
+
+    .lenta-layout {
+        grid-template-columns: 1fr; /* Added this line */
+        padding-right: 16px; /* Modified padding */
+    }
+
     body {
         padding-bottom: 60px;
     }
