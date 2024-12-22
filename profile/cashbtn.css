@@ -1,10 +1,6 @@
 /* Стили для кнопки очистки кэша */
 .clear-cache-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
     padding: 8px 12px;
-    margin-top: 12px;
     background: var(--surface-color);
     border: 1px solid var(--border-light);
     border-radius: var(--radius-md);
@@ -12,7 +8,6 @@
     cursor: pointer;
     transition: all 0.3s ease;
     font-size: 14px;
-    width: 100%;
 }
 
 .clear-cache-btn:hover {
