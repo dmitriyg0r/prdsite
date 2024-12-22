@@ -160,6 +160,7 @@ body {
         var(--surface-color) 98%,
         var(--background-color) 100%
     );
+    margin-bottom: 7px; /* Отступ между постами */
 }
 
 .post:hover {
