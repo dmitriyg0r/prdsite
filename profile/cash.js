@@ -1,4 +1,4 @@
-const clearCacheBtn = document.getElementById('clear-cache-btn');
+const clearCacheBtn = document.getElementById('clearCacheBtn');
 clearCacheBtn?.addEventListener('click', async () => {
     if (!confirm('Вы уверены, что хотите очистить кэш? Это может помочь при проблемах с отображением сайта.')) {
         return;
