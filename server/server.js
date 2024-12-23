@@ -2756,3 +2756,27 @@ app.post('/api/upload-avatar', uploadAvatar.single('avatar'), async (req, res) =
         res.status(500).json({ error: 'Ошибка при загрузке аватара' });
     }
 });
+
+// Обновляем настройку раздачи статических файлов для аватаров
+app.use('/uploads/avatars', (req, res, next) => {
+    // Разрешаем кеширование аватаров на стороне клиента
+    res.setHeader('Cache-Control', 'public, max-age=86400'); // кеширование на 24 часа
+    
+    // Продолжаем обработку запроса
+    next();
+}, express.static('/var/www/html/uploads/avatars', {
+    index: false, // запрещаем листинг директории
+    dotfiles: 'deny', // запрещаем доступ к скрытым файлам
+    fallthrough: true // продолжаем обработку при ошибках
+}));
+
+// Добавляем обработчик ошибок для раздачи аватаров
+app.use('/uploads/avatars', (err, req, res, next) => {
+    if (err) {
+        console.error('Avatar serving error:', err);
+        // В случае ошибки отдаем дефолтный аватар
+        res.redirect('/uploads/avatars/default.png');
+    } else {
+        next();
+    }
+});
