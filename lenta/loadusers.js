@@ -6,11 +6,21 @@ async function loadUsers() {
             throw new Error('Пользователь не авторизован');
         }
 
+        console.log('Loading users for:', currentUser.id); // Добавляем для отладки
+
         // Добавляем userId в запрос
         const response = await fetch(`https://adminflow.ru/api/users-list?userId=${currentUser.id}`);
-        if (!response.ok) throw new Error('Ошибка при загрузке пользователей');
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Ошибка при загрузке пользователей');
+        }
         
         const data = await response.json();
+        if (!data.success) {
+            throw new Error(data.error || 'Ошибка при загрузке пользователей');
+        }
+
+        console.log('Loaded users:', data.users); // Добавляем для отладки
         displayUsers(data.users);
     } catch (err) {
         console.error('Error loading users:', err);
