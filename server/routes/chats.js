@@ -6,44 +6,32 @@ const { pool } = require('../utils/db');
 router.get('/:userId', async (req, res) => {
     try {
         const userId = req.params.userId;
-        
-        // Получаем последние сообщения для каждого чата
+        console.log('Getting chats for user:', userId);
+
+        // Упрощенный запрос для отладки
         const query = `
-            WITH LastMessages AS (
-                SELECT DISTINCT ON (
-                    CASE 
-                        WHEN sender_id < receiver_id 
-                        THEN sender_id || '_' || receiver_id 
-                        ELSE receiver_id || '_' || sender_id 
-                    END
-                )
-                    m.*,
-                    CASE 
-                        WHEN sender_id < receiver_id 
-                        THEN sender_id || '_' || receiver_id 
-                        ELSE receiver_id || '_' || sender_id 
-                    END as chat_id
-                FROM messages m
-                WHERE sender_id = $1 OR receiver_id = $1
-                ORDER BY chat_id, created_at DESC
-            )
-            SELECT 
-                lm.*,
-                s.username as sender_username,
-                s.avatar as sender_avatar,
-                r.username as receiver_username,
-                r.avatar as receiver_avatar
-            FROM LastMessages lm
-            JOIN users s ON lm.sender_id = s.id
-            JOIN users r ON lm.receiver_id = r.id
-            ORDER BY lm.created_at DESC;
+            SELECT DISTINCT 
+                m.*,
+                u1.username as sender_username,
+                u2.username as receiver_username
+            FROM messages m
+            JOIN users u1 ON m.sender_id = u1.id
+            JOIN users u2 ON m.receiver_id = u2.id
+            WHERE m.sender_id = $1 OR m.receiver_id = $1
+            ORDER BY m.created_at DESC;
         `;
         
+        console.log('Executing query:', query);
         const result = await pool.query(query, [userId]);
+        console.log('Query result:', result.rows.length, 'rows found');
+        
         res.json(result.rows);
     } catch (err) {
-        console.error('Error getting chats:', err);
-        res.status(500).json({ error: 'Internal server error' });
+        console.error('Detailed error in /chats/:userId:', err);
+        res.status(500).json({ 
+            error: 'Internal server error',
+            details: err.message 
+        });
     }
 });
 
