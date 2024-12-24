@@ -19,6 +19,7 @@ body::-webkit-scrollbar {
     width: 300px;
     border: 1px solid var(--border-light);
     overflow-y: auto;
+    transform: translatex(239px) translatey(0px);
 }
 
 .users-sidebar::-webkit-scrollbar {
@@ -31,7 +32,6 @@ body::-webkit-scrollbar {
 }
 
 .users-sidebar-title {
-    color: var(--text-primary);
     margin-bottom: 16px;
     font-size: 18px;
     font-weight: 600;
@@ -67,7 +67,6 @@ body::-webkit-scrollbar {
 }
 
 .user-name {
-    color: var(--text-primary);
     font-weight: 500;
     font-size: 14px;
 }

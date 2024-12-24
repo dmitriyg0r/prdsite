@@ -154,12 +154,6 @@ body {
     border: 1px solid var(--border-light);
     position: relative;
     border-bottom: 2px solid var(--border-light);
-    background: linear-gradient(
-        to bottom,
-        var(--surface-color) 0%,
-        var(--surface-color) 98%,
-        var(--background-color) 100%
-    );
     margin-bottom: 7px; /* Отступ между постами */
 }
 
@@ -199,7 +193,6 @@ body {
 
 .post-author {
     font-weight: 600;
-    color: var(--text-primary);
     text-decoration: none;
     font-size: 18px;
     transition: color 0.3s ease;
@@ -216,7 +209,6 @@ body {
 }
 
 .post-content {
-    color: var(--text-primary);
     margin-bottom: 20px;
     line-height: 1.6;
     font-size: 16px;
@@ -600,7 +592,6 @@ body {
 
 .comment-author {
     font-weight: 600;
-    color: var(--text-primary);
     font-size: 14px;
 }
 
@@ -610,7 +601,6 @@ body {
 }
 
 .comment-content {
-    color: var(--text-primary);
     font-size: 14px;
     line-height: 1.5;
 }
@@ -662,15 +652,6 @@ body {
 
 #posts-container {
     padding-bottom: 32px;
-}
-
-.users-sidebar {
-    position: sticky;
-    top: 20px;
-    height: calc(100vh - 40px);
-    width: 300px;
-    margin-left: auto;
-    transform:translatex(239px) translatey(0px);
 }
 
 .lenta-layout{

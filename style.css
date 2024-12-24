@@ -61,7 +61,7 @@
     --table-background: #1E1F22;         /* Темнее */
     --input-background: #1E1F22;         /* Темнее */
     --border-color: #2A2B2F;             /* Темнее */
-    
+    --surface-color: #1F2937;
     /* Текст */
     --text-secondary: rgba(224, 226, 229, 0.7);
     --header-text: #FFFFFF;
