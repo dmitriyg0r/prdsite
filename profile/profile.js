@@ -357,7 +357,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
-    // Поиск д��узей
+    // Поиск друзей
     const searchInput = document.querySelector('.search-input');
     const searchBtn = document.querySelector('.search-btn');
     const searchResults = document.querySelector('.search-results');
@@ -562,7 +562,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function respondToFriendRequest(friendId, accept) {
         try {
-            console.log('Responding to request:', { friendId, accept }); // Добавим для отладки
+            console.log('Responding to request:', { friendId, accept });
 
             const response = await fetch('https://adminflow.ru/api/friend-request/respond', {
                 method: 'POST',
@@ -572,7 +572,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 body: JSON.stringify({
                     userId: currentUser.id,
                     friendId: friendId,
-                    accept: accept // Убедимся, что этот параметр передается
+                    status: accept ? 'accepted' : 'rejected'
                 })
             });
 
@@ -581,29 +581,32 @@ document.addEventListener('DOMContentLoaded', async () => {
                 throw new Error(data.error || 'Failed to respond to friend request');
             }
 
-            // Обновляем списки друзей и заявок
+            // Обновляем списки
             await Promise.all([
                 loadFriendRequests(),
                 loadFriends(currentUser.id)
             ]);
 
-            // Показываем уведомление
-            alert(accept ? 'Заявка принята' : 'Заявка отклонена');
+            // Обновляем UI
+            const requestElement = document.querySelector(`.friend-request[data-id="${friendId}"]`);
+            if (requestElement) {
+                requestElement.remove();
+            }
 
+            alert(accept ? 'Заявка принята' : 'Заявка отклонена');
         } catch (err) {
             console.error('Error responding to friend request:', err);
             alert('Ошибка при обработке заявки');
         }
     }
 
-    // Обновляем функции принятия/отклонения
     function acceptFriend(friendId) {
-        console.log('Accepting friend request:', friendId); // Добавим для отладки
+        console.log('Accepting friend request:', friendId);
         respondToFriendRequest(friendId, true);
     }
 
     function rejectFriend(friendId) {
-        console.log('Rejecting friend request:', friendId); // Добавим для отладки
+        console.log('Rejecting friend request:', friendId);
         respondToFriendRequest(friendId, false);
     }
 
@@ -673,7 +676,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Обновляем обработчик открытия модальн��го окна
+    // Обновляем обработчик открытия модального окна
     document.querySelector('.friends-header-btn').addEventListener('click', () => {
         // Обновляем списки при открытии модального окна
         loadFriends();
@@ -740,7 +743,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Перенаправляем на страницу профиля с параметром
                 window.location.href = `/profile/profile.html?id=${userId}`;
             } else {
-                alert('Пользователь н�� найден');
+                alert('Пользователь не найден');
             }
         } catch (err) {
             console.error('Error loading user profile:', err);
@@ -774,7 +777,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             clearTimeout(statusUpdateTimeout);
         }
 
-        // Откладываем выполнение запроса
+        // О��кладываем выполнение запроса
         statusUpdateTimeout = setTimeout(async () => {
             try {
                 const response = await fetch('https://adminflow.ru/api/users/update-status', {
@@ -1228,7 +1231,7 @@ async function loadPosts() {
     try {
         const serverHealthy = await checkServerHealth();
         if (!serverHealthy) {
-            throw new Error('Сервер временно недоступен');
+            throw new Error('Сервер времен��о недоступен');
         }
 
         const response = await fetch(`https://adminflow.ru/api/posts/${currentUser.id}`);
@@ -1470,7 +1473,7 @@ window.openImageInFullscreen = function(imageSrc, postData) {
     // Закрытие по клику на кнопку
     modal.querySelector('.close-modal').onclick = closeModal;
     
-    // Закрытие по клику вне изображения
+    // Зак��ытие по клику вне изображения
     modal.onclick = (e) => {
         if (e.target === modal) {
             closeModal();

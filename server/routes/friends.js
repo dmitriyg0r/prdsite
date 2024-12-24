@@ -195,7 +195,7 @@ router.get('/friend-requests', async (req, res) => {
         console.error('Get friend requests error:', err);
         res.status(500).json({
             success: false,
-            error: 'Ошибка ��ри получении заявок в друзья'
+            error: 'Ошибка при получении заявок в друзья'
         });
     }
 });
@@ -244,59 +244,42 @@ router.post('/friend-request', async (req, res) => {
 // Ответ на заявку в друзья (принятие/отклонение)
 router.post('/friend-request/respond', async (req, res) => {
     try {
-        const { userId, friendId, accept } = req.body;
+        const { userId, friendId, status } = req.body;
         console.log('Request body:', req.body);
-        console.log('Responding to friend request:', { userId, friendId, accept });
+        console.log('Responding to friend request:', { userId, friendId, status });
 
-        if (accept === undefined) {
+        if (!userId || !friendId || !status) {
             return res.status(400).json({
                 success: false,
-                error: 'Параметр accept обязателен'
+                error: 'Отсутствуют обязательные параметры'
             });
         }
 
-        if (accept) {
-            // Принимаем заявку в транзакции
-            const client = await pool.connect();
-            try {
-                await client.query('BEGIN');
+        if (status === 'accepted') {
+            // Принимаем заявку
+            const result = await pool.query(`
+                UPDATE friendships 
+                SET status = 'accepted', 
+                    updated_at = NOW()
+                WHERE user_id = $1 
+                AND friend_id = $2 
+                AND status = 'pending'
+                RETURNING *
+            `, [friendId, userId]);
 
-                const result = await client.query(`
-                    UPDATE friendships 
-                    SET status = 'accepted', 
-                        updated_at = NOW()
-                    WHERE user_id = $1 
-                    AND friend_id = $2 
-                    AND status = 'pending'
-                    RETURNING *
-                `, [friendId, userId]);
-
-                if (result.rows.length === 0) {
-                    throw new Error('Заявка не найдена');
-                }
-
-                // Получаем информацию о пользователе для ответа
-                const userInfo = await client.query(`
-                    SELECT id, username, avatar_url, last_activity
-                    FROM users
-                    WHERE id = $1
-                `, [friendId]);
-
-                await client.query('COMMIT');
-
-                console.log('Friend request accepted:', result.rows[0]);
-                res.json({
-                    success: true,
-                    friendship: result.rows[0],
-                    friend: userInfo.rows[0]
+            if (result.rows.length === 0) {
+                return res.status(404).json({
+                    success: false,
+                    error: 'Заявка не найдена'
                 });
-            } catch (err) {
-                await client.query('ROLLBACK');
-                throw err;
-            } finally {
-                client.release();
             }
-        } else {
+
+            console.log('Friend request accepted:', result.rows[0]);
+            res.json({
+                success: true,
+                friendship: result.rows[0]
+            });
+        } else if (status === 'rejected') {
             // Отклоняем заявку
             await pool.query(`
                 DELETE FROM friendships 
@@ -309,6 +292,11 @@ router.post('/friend-request/respond', async (req, res) => {
             res.json({
                 success: true,
                 message: 'Заявка отклонена'
+            });
+        } else {
+            res.status(400).json({
+                success: false,
+                error: 'Неверный статус'
             });
         }
     } catch (err) {
