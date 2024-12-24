@@ -66,58 +66,64 @@ app.get('/api/test', (req, res) => {
     }
 });
 
-// HTTPS Server с обработкой ошибок
-const httpsServer = https.createServer(sslOptions, app);
+// Обновляем запуск сервера
+const startServer = async () => {
+    try {
+        // Проверяем SSL сертификаты
+        const sslFiles = {
+            key: '/etc/letsencrypt/live/adminflow.ru/privkey.pem',
+            cert: '/etc/letsencrypt/live/adminflow.ru/fullchain.pem',
+            ca: '/etc/letsencrypt/live/adminflow.ru/chain.pem'
+        };
 
-httpsServer.on('error', (error) => {
-    console.error('Ошибка HTTPS сервера:', error);
-    process.exit(1);
-});
-
-try {
-    httpsServer.listen(PORT, '0.0.0.0', () => {
-        console.log(`HTTPS Сервер запущен на порту ${PORT} (0.0.0.0:${PORT})`);
-    });
-} catch (error) {
-    console.error('Ошибка при запуске сервера:', error);
-    process.exit(1);
-}
-
-// Добавляем проверку SSL сертификатов
-try {
-    const sslFiles = {
-        key: '/etc/letsencrypt/live/adminflow.ru/privkey.pem',
-        cert: '/etc/letsencrypt/live/adminflow.ru/fullchain.pem',
-        ca: '/etc/letsencrypt/live/adminflow.ru/chain.pem'
-    };
-
-    for (const [key, path] of Object.entries(sslFiles)) {
-        if (!fs.existsSync(path)) {
-            console.error(`SSL файл не найден: ${path}`);
-            process.exit(1);
+        for (const [key, path] of Object.entries(sslFiles)) {
+            if (!fs.existsSync(path)) {
+                console.error(`SSL файл не найден: ${path}`);
+                process.exit(1);
+            }
         }
+
+        // Создаем HTTPS сервер
+        const httpsServer = https.createServer(sslOptions, app);
+
+        // Настраиваем Socket.IO
+        const io = new Server(httpsServer, {
+            cors: {
+                origin: ['https://adminflow.ru', 'http://adminflow.ru'],
+                methods: ['GET', 'POST'],
+                credentials: true
+            }
+        });
+
+        // Обработка WebSocket подключений
+        io.on('connection', (socket) => {
+            console.log('New Socket.IO connection:', socket.id);
+        });
+
+        // Запускаем сервер
+        httpsServer.listen(PORT, '0.0.0.0', () => {
+            console.log(`HTTPS Сервер запущен на порту ${PORT} (0.0.0.0:${PORT})`);
+        });
+
+        // Обработка ошибок сервера
+        httpsServer.on('error', (error) => {
+            console.error('Ошибка HTTPS сервера:', error);
+            process.exit(1);
+        });
+
+    } catch (error) {
+        console.error('Ошибка при запуске сервера:', error);
+        process.exit(1);
     }
-} catch (error) {
-    console.error('Ошибка при проверке SSL сертификатов:', error);
-    process.exit(1);
-}
+};
 
-// Socket.IO
-const io = new Server(httpsServer, {
-    cors: {
-        origin: ['https://adminflow.ru', 'http://adminflow.ru'],
-        methods: ['GET', 'POST'],
-        credentials: true
-    }
-});
+// Запускаем сервер
+startServer();
 
-io.on('connection', (socket) => {
-    console.log('New Socket.IO connection:', socket.id);
-});
-
-// Error handling
+// Обработка необработанных ошибок
 process.on('uncaughtException', (error) => {
     console.error('Uncaught Exception:', error);
+    setTimeout(() => process.exit(1), 1000);
 });
 
 process.on('unhandledRejection', (error) => {
@@ -133,9 +139,3 @@ app.use((err, req, res, next) => {
         details: process.env.NODE_ENV === 'development' ? err.message : undefined
     });
 });
-
-// Проверяем логи nginx
-console.log('Checking nginx logs...');
-console.log('=====================');
-console.log(require('child_process').execSync('tail -f /var/log/nginx/error.log').toString());
-console.log('=====================');
