@@ -103,3 +103,9 @@ app.use((err, req, res, next) => {
         details: process.env.NODE_ENV === 'development' ? err.message : undefined
     });
 });
+
+// Проверяем логи nginx
+console.log('Checking nginx logs...');
+console.log('=====================');
+console.log(require('child_process').execSync('tail -f /var/log/nginx/error.log').toString());
+console.log('=====================');
