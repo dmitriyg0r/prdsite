@@ -126,10 +126,9 @@ router.post('/friends/respond', async (req, res) => {
 });
 
 // Удаление из друзей
-router.delete('/friends/:friendId', async (req, res) => {
+router.post('/friend/remove', async (req, res) => {
     try {
-        const { friendId } = req.params;
-        const { userId } = req.query;
+        const { userId, friendId } = req.body;
         console.log('Removing friend:', { userId, friendId });
 
         await pool.query(`
@@ -138,10 +137,10 @@ router.delete('/friends/:friendId', async (req, res) => {
             OR (user_id = $2 AND friend_id = $1)
         `, [userId, friendId]);
 
-        console.log('Friend removed');
+        console.log('Friend removed successfully');
         res.json({ 
             success: true,
-            message: 'Друг удален' 
+            message: 'Друг успешно удален' 
         });
     } catch (err) {
         console.error('Remove friend error:', err);

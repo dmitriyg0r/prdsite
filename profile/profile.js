@@ -317,7 +317,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Обновляем селектор для кнопки открытия модального окна
     const friendsHeaderBtn = document.querySelector('.friends-header-btn');
     
-    // Открытие м��дального окна при клике на заголовок "Дузья"
+    // Открытие модального окна при клике на заголовок "Дузья"
     friendsHeaderBtn.addEventListener('click', (e) => {
         e.preventDefault();
         friendsModal.classList.add('active');
@@ -801,7 +801,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
 
             if (response.ok) {
-                // Обновляем реултаты поиска
+                // ��бновляем реултаты поиска
                 searchUsers(document.querySelector('.search-input').value.trim());
             }
         } catch (err) {
@@ -835,32 +835,27 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Добавляем функцию удаления из друзей
     async function removeFriend(friendId) {
-        if (!confirm('Вы уверены, что хотите удалить пол��зователя из друзей?')) {
-            return;
-        }
-
         try {
             const response = await fetch('https://adminflow.ru/api/friend/remove', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     userId: currentUser.id,
-                    friendId
+                    friendId: friendId
                 })
             });
 
-            if (response.ok) {
-                // Перезагружаем список друзей
-                loadFriends();
-            } else {
-                const data = await response.json();
-                alert(data.error || 'Ошибка при удалении из друзей');
+            const data = await response.json();
+            if (!data.success) {
+                throw new Error(data.error || 'Failed to remove friend');
             }
+
+            // Обновляем список друзей
+            await loadFriends(currentUser.id);
         } catch (err) {
             console.error('Error removing friend:', err);
-            alert('Ошибка при удалении из друзей');
         }
     }
 
@@ -960,7 +955,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }, 1000); // Задержка в 1 секунду
         };
         
-        // Оптимизированное отслеживание событий
+        // Оптимизированное от��леживание событий
         const events = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
         const throttledUpdateActivity = throttle(updateActivity, 5000); // Ограничиваем частоту вызовов
 
@@ -1058,7 +1053,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const diffMinutes = Math.floor((now - lastActiveTime) / (1000 * 60));
         
         if (diffMinutes < 1) return 'Только что';
-        if (diffMinutes < 5) return 'Активен';
+        if (diffMinutes < 5) return 'Активе��';
         if (diffMinutes < 60) return `Был ${diffMinutes} мин. назад`;
         
         const hours = Math.floor(diffMinutes / 60);
@@ -1144,7 +1139,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Таймер для повторной о��правки кода
+    // Таймер для повторной отправки кода
     function startResendTimer() {
         let timeLeft = 60;
         resendCodeBtn.disabled = true;
@@ -1348,7 +1343,7 @@ async function createPost() {
         }
         
         if (data.success) {
-            // Очища��м фрму
+            // Очищаем фрму
             document.getElementById('post-content').value = '';
             document.getElementById('image-preview').innerHTML = '';
             document.getElementById('post-form').style.display = 'none';
@@ -1651,7 +1646,7 @@ window.openFriendsModal = function() {
     }
 };
 
-// Функция для определения иконки файла
+// Функция для опреде��ения иконки файла
 function getFileIcon(extension) {
     const iconMap = {
         'pdf': 'fas fa-file-pdf',
