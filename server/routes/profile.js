@@ -31,7 +31,7 @@ router.get('/users/:id', async (req, res) => {
         console.error('Get user error:', err);
         res.status(500).json({ 
             success: false,
-            error: 'Ошибка при получении данных пользователя' 
+            error: 'Ошибка при получении данн��х пользователя' 
         });
     }
 });
@@ -137,6 +137,48 @@ router.get('/friend-requests', async (req, res) => {
         res.status(500).json({ 
             success: false,
             error: 'Ошибка при получении запросов в друзья' 
+        });
+    }
+});
+
+// Поиск пользователей
+router.get('/search-users', async (req, res) => {
+    try {
+        const { q, userId } = req.query;
+        console.log('Searching users:', { query: q, userId });
+
+        const result = await pool.query(`
+            SELECT 
+                u.id,
+                u.username,
+                u.avatar_url,
+                u.last_activity,
+                CASE
+                    WHEN f.status IS NOT NULL THEN f.status
+                    ELSE 'none'
+                END as friendship_status
+            FROM users u
+            LEFT JOIN friendships f ON 
+                (f.user_id = $1 AND f.friend_id = u.id) OR 
+                (f.friend_id = $1 AND f.user_id = u.id)
+            WHERE 
+                u.id != $1 AND
+                u.username ILIKE $2
+            ORDER BY 
+                u.username ASC
+            LIMIT 10
+        `, [userId, `%${q}%`]);
+
+        console.log(`Found ${result.rows.length} users`);
+        res.json({
+            success: true,
+            users: result.rows
+        });
+    } catch (err) {
+        console.error('Search users error:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при поиске пользователей'
         });
     }
 });

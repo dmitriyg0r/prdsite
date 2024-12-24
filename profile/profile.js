@@ -373,113 +373,43 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Функция поиска пользователей (заглушка)
     async function searchUsers(query) {
         try {
-            const response = await fetch(`https://adminflow.ru/api/search-users?q=${query}&userId=${currentUser.id}`);
+            const response = await fetch(`https://adminflow.ru/api/search-users?q=${encodeURIComponent(query)}&userId=${currentUser.id}`);
             const data = await response.json();
             
-            if (response.ok) {
-                displaySearchResults(data.users);
-            } else {
-                alert(data.error || 'Ошибка при поиске пользователей');
+            if (!data.success) {
+                throw new Error(data.error || 'Failed to search users');
             }
+
+            displaySearchResults(data.users);
         } catch (err) {
             console.error('Search error:', err);
-            alert('Ошибка при поиске пользователей');
         }
     }
 
-    // Добавляем функцию getFriendStatus
-    function getFriendStatus(userId) {
-        // Получаем статус из атрибута data-friendship-status
-        const userCard = document.querySelector(`.user-card[data-user-id="${userId}"]`);
-        if (userCard) {
-            return userCard.dataset.friendshipStatus;
-        }
-        return 'none';
-    }
-
-    // Обновляем функцию displaySearchResults
     function displaySearchResults(users) {
         const searchResults = document.querySelector('.search-results');
-        
         if (!searchResults) return;
 
-        if (!users.length) {
-            searchResults.innerHTML = `
-                <div class="empty-search">
-                    <i class="fas fa-search"></i>
-                    <p>Пользователи не найдены</p>
-                </div>
-            `;
-            return;
+        searchResults.innerHTML = users.map(user => `
+            <div class="user-item" data-id="${user.id}">
+                <img src="${user.avatar_url}" alt="${user.username}">
+                <span class="user-name">${user.username}</span>
+                ${getFriendshipButton(user)}
+            </div>
+        `).join('');
+    }
+
+    function getFriendshipButton(user) {
+        switch(user.friendship_status) {
+            case 'none':
+                return `<button onclick="addFriend(${user.id})">Добавить в друзья</button>`;
+            case 'pending':
+                return `<button disabled>Запрос отправлен</button>`;
+            case 'accepted':
+                return `<button onclick="removeFriend(${user.id})">Удалить из друзей</button>`;
+            default:
+                return '';
         }
-
-        searchResults.innerHTML = users.map(user => {
-            const isOnline = user.last_activity && 
-                (new Date() - new Date(user.last_activity)) < 5 * 60 * 1000;
-
-            // Используем статус дружбы из ответа сервера
-            const friendStatus = user.friendship_status || 'none';
-            
-            let buttonClass = '';
-            let buttonText = '';
-            let buttonIcon = '';
-            
-            switch (friendStatus) {
-                case 'accepted':
-                    buttonClass = 'friends';
-                    buttonText = 'В друзьях';
-                    buttonIcon = 'fas fa-check';
-                    break;
-                case 'pending':
-                    buttonClass = 'pending';
-                    buttonText = 'Заявка отправлена';
-                    buttonIcon = 'fas fa-clock';
-                    break;
-                default:
-                    buttonClass = '';
-                    buttonText = 'Добавить в друзья';
-                    buttonIcon = 'fas fa-user-plus';
-            }
-
-            return `
-                <div class="user-card" data-user-id="${user.id}" data-friendship-status="${friendStatus}">
-                    <img src="${user.avatar_url || '/uploads/avatars/default.png'}" 
-                         alt="${user.username}" 
-                         class="user-avatar">
-                    <div class="user-info">
-                        <div class="user-name">${user.username}</div>
-                        <div class="user-meta">
-                            <div class="user-status">
-                                <span class="status-indicator ${isOnline ? 'online' : 'offline'}"></span>
-                                ${isOnline ? 'В сети' : 'Не в сети'}
-                            </div>
-                            ${user.mutual_friends ? `
-                                <span class="mutual-friends">
-                                    <i class="fas fa-user-friends"></i>
-                                    ${user.mutual_friends} общих друзей
-                                </span>
-                            ` : ''}
-                        </div>
-                    </div>
-                    <button class="add-friend-btn ${buttonClass}" 
-                            ${friendStatus === 'pending' || friendStatus === 'accepted' ? 'disabled' : ''}
-                            data-user-id="${user.id}">
-                        <i class="${buttonIcon}"></i>
-                        ${buttonText}
-                    </button>
-                </div>
-            `;
-        }).join('');
-
-        // Добавляем обработчики для кнопок
-        document.querySelectorAll('.add-friend-btn:not(.pending):not(.friends)').forEach(btn => {
-            btn.addEventListener('click', () => {
-                sendFriendRequest(btn.dataset.userId);
-                btn.classList.add('pending');
-                btn.innerHTML = '<i class="fas fa-clock"></i> Заявка отправлена';
-                btn.disabled = true;
-            });
-        });
     }
 
     // Функция для отображения состояния загрузки
@@ -690,101 +620,44 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Обновляем функцию поиска
     async function searchUsers(query) {
         try {
-            const response = await fetch(`https://adminflow.ru/api/search-users?q=${query}&userId=${currentUser.id}`);
+            const response = await fetch(`https://adminflow.ru/api/search-users?q=${encodeURIComponent(query)}&userId=${currentUser.id}`);
             const data = await response.json();
             
-            if (response.ok) {
-                displaySearchResults(data.users);
+            if (!data.success) {
+                throw new Error(data.error || 'Failed to search users');
             }
+
+            displaySearchResults(data.users);
         } catch (err) {
             console.error('Search error:', err);
-            alert('Ошибка при поиске пользователей');
         }
     }
 
     // Обновляем отображение результатов поиска
     function displaySearchResults(users) {
         const searchResults = document.querySelector('.search-results');
-        
         if (!searchResults) return;
 
-        if (!users.length) {
-            searchResults.innerHTML = `
-                <div class="empty-search">
-                    <i class="fas fa-search"></i>
-                    <p>Пользователи не найдены</p>
-                </div>
-            `;
-            return;
+        searchResults.innerHTML = users.map(user => `
+            <div class="user-item" data-id="${user.id}">
+                <img src="${user.avatar_url}" alt="${user.username}">
+                <span class="user-name">${user.username}</span>
+                ${getFriendshipButton(user)}
+            </div>
+        `).join('');
+    }
+
+    function getFriendshipButton(user) {
+        switch(user.friendship_status) {
+            case 'none':
+                return `<button onclick="addFriend(${user.id})">Добавить в друзья</button>`;
+            case 'pending':
+                return `<button disabled>Запрос отправлен</button>`;
+            case 'accepted':
+                return `<button onclick="removeFriend(${user.id})">Удалить из друзей</button>`;
+            default:
+                return '';
         }
-
-        searchResults.innerHTML = users.map(user => {
-            const isOnline = user.last_activity && 
-                (new Date() - new Date(user.last_activity)) < 5 * 60 * 1000;
-
-            // Используем статус дружбы из ответа сервера
-            const friendStatus = user.friendship_status || 'none';
-            
-            let buttonClass = '';
-            let buttonText = '';
-            let buttonIcon = '';
-            
-            switch (friendStatus) {
-                case 'accepted':
-                    buttonClass = 'friends';
-                    buttonText = 'В друзьях';
-                    buttonIcon = 'fas fa-check';
-                    break;
-                case 'pending':
-                    buttonClass = 'pending';
-                    buttonText = 'Заявка отправлена';
-                    buttonIcon = 'fas fa-clock';
-                    break;
-                default:
-                    buttonClass = '';
-                    buttonText = 'Добавить в друзья';
-                    buttonIcon = 'fas fa-user-plus';
-            }
-
-            return `
-                <div class="user-card" data-user-id="${user.id}" data-friendship-status="${friendStatus}">
-                    <img src="${user.avatar_url || '/uploads/avatars/default.png'}" 
-                         alt="${user.username}" 
-                         class="user-avatar">
-                    <div class="user-info">
-                        <div class="user-name">${user.username}</div>
-                        <div class="user-meta">
-                            <div class="user-status">
-                                <span class="status-indicator ${isOnline ? 'online' : 'offline'}"></span>
-                                ${isOnline ? 'В сети' : 'Не в сети'}
-                            </div>
-                            ${user.mutual_friends ? `
-                                <span class="mutual-friends">
-                                    <i class="fas fa-user-friends"></i>
-                                    ${user.mutual_friends} общих друзей
-                                </span>
-                            ` : ''}
-                        </div>
-                    </div>
-                    <button class="add-friend-btn ${buttonClass}" 
-                            ${friendStatus === 'pending' || friendStatus === 'accepted' ? 'disabled' : ''}
-                            data-user-id="${user.id}">
-                        <i class="${buttonIcon}"></i>
-                        ${buttonText}
-                    </button>
-                </div>
-            `;
-        }).join('');
-
-        // Добавляем обработчики для кнопок
-        document.querySelectorAll('.add-friend-btn:not(.pending):not(.friends)').forEach(btn => {
-            btn.addEventListener('click', () => {
-                sendFriendRequest(btn.dataset.userId);
-                btn.classList.add('pending');
-                btn.innerHTML = '<i class="fas fa-clock"></i> Заявка отправлена';
-                btn.disabled = true;
-            });
-        });
     }
 
     async function sendFriendRequest(friendId) {
@@ -801,7 +674,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
 
             if (response.ok) {
-                // ��бновляем реултаты поиска
+                // Обновляем результаты поиска
                 searchUsers(document.querySelector('.search-input').value.trim());
             }
         } catch (err) {
@@ -955,7 +828,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }, 1000); // Задержка в 1 секунду
         };
         
-        // Оптимизированное от��леживание событий
+        // Оптимизированное отслеживание событий
         const events = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
         const throttledUpdateActivity = throttle(updateActivity, 5000); // Ограничиваем частоту вызовов
 
@@ -1053,7 +926,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const diffMinutes = Math.floor((now - lastActiveTime) / (1000 * 60));
         
         if (diffMinutes < 1) return 'Только что';
-        if (diffMinutes < 5) return 'Активе��';
+        if (diffMinutes < 5) return 'Активен';
         if (diffMinutes < 60) return `Был ${diffMinutes} мин. назад`;
         
         const hours = Math.floor(diffMinutes / 60);
@@ -1646,7 +1519,7 @@ window.openFriendsModal = function() {
     }
 };
 
-// Функция для опреде��ения иконки файла
+// Функция для определения иконки файла
 function getFileIcon(extension) {
     const iconMap = {
         'pdf': 'fas fa-file-pdf',
