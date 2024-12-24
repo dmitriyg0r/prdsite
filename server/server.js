@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const { Server } = require('socket.io');
 const http = require('http');
+const authRoutes = require('./routes/auth');
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -20,6 +21,9 @@ app.use((req, res, next) => {
     console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
     next();
 });
+
+// Подключаем маршруты авторизации
+app.use('/api', authRoutes);
 
 // Тестовый маршрут
 app.get('/api/test', (req, res) => {
