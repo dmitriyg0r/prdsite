@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const pool = require('../db');
+const pool = require('../utils/db');
 
 // Получение списка пользователей
 router.get('/users-list', async (req, res) => {
