@@ -579,11 +579,42 @@ document.addEventListener('DOMContentLoaded', async () => {
                 throw new Error(data.error || 'Failed to respond to friend request');
             }
 
-            // Обновляем список заявок и друзей
-            await Promise.all([
-                loadFriendRequests(),
-                loadFriends(currentUser.id)
-            ]);
+            // Удаляем заявку из списка
+            const requestElement = document.querySelector(`.friend-request[data-id="${friendId}"]`);
+            if (requestElement) {
+                requestElement.remove();
+            }
+
+            if (accept && data.friend) {
+                // Добавляем нового друга в список
+                const friendsList = document.querySelector('.friends-list');
+                if (friendsList) {
+                    const friendElement = document.createElement('div');
+                    friendElement.className = 'friend-item';
+                    friendElement.dataset.id = data.friend.id;
+                    friendElement.innerHTML = `
+                        <img src="${data.friend.avatar_url}" alt="${data.friend.username}">
+                        <span class="friend-name">${data.friend.username}</span>
+                        <span class="friend-status ${getStatusClass(data.friend.last_activity)}"></span>
+                        <button onclick="removeFriend(${data.friend.id})">Удалить из друзей</button>
+                    `;
+                    friendsList.appendChild(friendElement);
+                }
+            }
+
+            // Обновляем кнопку в результатах поиска, если она есть
+            const searchButton = document.querySelector(`.user-item[data-id="${friendId}"] button`);
+            if (searchButton) {
+                if (accept) {
+                    searchButton.textContent = 'Удалить из друзей';
+                    searchButton.onclick = () => removeFriend(friendId);
+                } else {
+                    searchButton.textContent = 'Добавить в друзья';
+                    searchButton.disabled = false;
+                    searchButton.onclick = () => addFriend(friendId);
+                }
+            }
+
         } catch (err) {
             console.error('Error responding to friend request:', err);
             alert('Ошибка при обработке заявки');
@@ -789,7 +820,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             } catch (err) {
                 console.error('Error updating user status:', err);
             }
-        }, 100); // Небольшая задержка для группировки обновлений
+        }, 100); // Небольшая задержка для группировк�� обновлений
     }
 
     // Оптимизированная функция отслеживания активности
@@ -1146,7 +1177,7 @@ async function createPost() {
         formData.append('content', content);
         
         if (file) {
-            // Пр��веряем размер файла (например, 10MB максимум)
+            // Проверяем размер файла (например, 10MB максимум)
             const maxSize = 10 * 1024 * 1024; // 10MB в байтах
             if (file.size > maxSize) {
                 alert('Файл слишком большой. Максимальный размер: 10MB');
