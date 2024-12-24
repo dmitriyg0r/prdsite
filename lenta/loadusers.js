@@ -13,8 +13,8 @@ async function loadUsers() {
 
         console.log('Loading users for:', currentUser.id);
 
-        // Добавляем userId в запрос
-        const response = await fetch(`/api/users-list?userId=${currentUser.id}`);
+        // Исправляем URL запроса
+        const response = await fetch(`https://adminflow.ru/api/users-list?userId=${currentUser.id}`);
         
         if (!response.ok) {
             const error = await response.json();
@@ -36,7 +36,10 @@ async function loadUsers() {
 
 function displayUsers(users) {
     const container = document.getElementById('users-list');
-    if (!container) return;
+    if (!container) {
+        console.error('Users container not found');
+        return;
+    }
     
     container.innerHTML = users.map(user => `
         <div class="user-item">
@@ -52,6 +55,8 @@ function displayUsers(users) {
             ${getFriendshipButton(user)}
         </div>
     `).join('');
+
+    console.log('Users displayed:', users.length);
 }
 
 function getStatusClass(lastActivity) {
@@ -96,7 +101,7 @@ async function addFriend(friendId) {
             throw new Error(data.error || 'Failed to send friend request');
         }
 
-        // Обновляем спи��ок пользователей
+        // Обновляем список пользователей
         await loadUsers();
     } catch (err) {
         console.error('Error sending friend request:', err);
