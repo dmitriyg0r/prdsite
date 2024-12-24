@@ -2,6 +2,9 @@ let selectedPostImage = null;
 let currentUser = null;
 let editProfileBtn = null;
 
+// Добавляем переменную для отслеживания последнего обновления
+let lastStatusUpdate = null;
+
 document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const profileId = urlParams.get('id');
@@ -48,7 +51,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('logout-btn').style.display = 'none';
             document.querySelector('.avatar-overlay').style.display = 'none';
             
-            // Скрываем вкла��ку запросов в модальном окне
+            // Скрываем вкладку запросов в модальном окне
             const requestsTab = document.querySelector('[data-tab="requests-tab"]');
             if (requestsTab) {
                 requestsTab.style.display = 'none';
@@ -72,7 +75,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 profileActions.appendChild(messageButton);
             }
 
-            // Загружаем посты друга
+            // Загру��аем посты друга
             await loadPosts();
 
         } catch (err) {
@@ -251,7 +254,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Проверяем размер файла
         if (file.size > 5 * 1024 * 1024) { // 5MB
-            alert('Файл слишком большой. Максимальный размер: 5MB');
+            alert('Файл слишком большой. Максимальны�� размер: 5MB');
             e.target.value = '';
             return;
         }
@@ -286,8 +289,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 };
                 localStorage.setItem('user', JSON.stringify(currentUser));
 
-                // Показываем сообщение об успехе
-                alert('Аватар успеш��о обновлен');
+                // Показываем сообщен��е об успехе
+                alert('Аватар успешно обновлен');
             } else {
                 throw new Error(data.error || 'Ошибка при загрузке аватара');
             }
@@ -908,7 +911,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        // Отменяем предыдущий отложенный запрос
+        // Отмен��ем предыдущий отложенный запрос
         if (statusUpdateTimeout) {
             clearTimeout(statusUpdateTimeout);
         }
@@ -1365,19 +1368,22 @@ async function createPost() {
 
 async function loadPosts() {
     try {
-        const userId = new URLSearchParams(window.location.search).get('id') || currentUser.id;
-        console.log('Loading posts for userId:', userId); // Отладочная информация
-        
-        const response = await fetch(`https://adminflow.ru/api/posts/${userId}?currentUserId=${currentUser.id}`);
+        const serverHealthy = await checkServerHealth();
+        if (!serverHealthy) {
+            throw new Error('Сервер временно недоступен');
+        }
+
+        const response = await fetch(`https://adminflow.ru/api/posts/${currentUser.id}`);
         const data = await response.json();
         
-        console.log('Posts response:', data); // Отладочная информация
-
-        if (data.success) {
-            displayPosts(data.posts);
+        if (!data.success) {
+            throw new Error(data.error || 'Failed to load posts');
         }
+
+        displayPosts(data.posts);
     } catch (err) {
         console.error('Error loading posts:', err);
+        throw err;
     }
 }
 
@@ -1875,6 +1881,11 @@ async function submitComment(postId, button) {
 // Функция обновления статуса пользователя
 async function updateUserStatus() {
     try {
+        // Предотвращаем слишком частые обновления
+        if (lastStatusUpdate && Date.now() - lastStatusUpdate < 2000) {
+            return;
+        }
+
         const response = await fetch('https://adminflow.ru/api/users/update-status', {
             method: 'POST',
             headers: {
@@ -1888,6 +1899,7 @@ async function updateUserStatus() {
             throw new Error(data.error || 'Failed to update status');
         }
 
+        lastStatusUpdate = Date.now();
         return data.lastActivity;
     } catch (err) {
         console.error('Error updating user status:', err);
@@ -1909,5 +1921,45 @@ async function loadFriends(userId) {
     } catch (err) {
         console.error('Error loading friends:', err);
         throw new Error('Failed to load friends: ' + err.message);
+    }
+}
+
+// Обновляем функцию загрузки постов
+async function loadPosts() {
+    try {
+        const serverHealthy = await checkServerHealth();
+        if (!serverHealthy) {
+            throw new Error('Сервер временно недоступен');
+        }
+
+        const response = await fetch(`https://adminflow.ru/api/posts/${currentUser.id}`);
+        const data = await response.json();
+        
+        if (!data.success) {
+            throw new Error(data.error || 'Failed to load posts');
+        }
+
+        displayPosts(data.posts);
+    } catch (err) {
+        console.error('Error loading posts:', err);
+        throw err;
+    }
+}
+
+// Обновляем функцию проверки здоровья сервера
+async function checkServerHealth() {
+    try {
+        const response = await fetch('https://adminflow.ru/api/health');
+        const data = await response.json();
+        
+        if (!data.success || !data.services?.database === false) {
+            console.error('Server health check failed:', data);
+            return false;
+        }
+        
+        return true;
+    } catch (err) {
+        console.error('Server health check error:', err);
+        return false;
     }
 }
