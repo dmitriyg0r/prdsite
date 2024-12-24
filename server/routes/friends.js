@@ -129,15 +129,23 @@ router.post('/friends/respond', async (req, res) => {
 router.post('/friend/remove', async (req, res) => {
     try {
         const { userId, friendId } = req.body;
-        console.log('Removing friend:', { userId, friendId });
+        console.log('Removing friendship:', { userId, friendId });
 
-        await pool.query(`
+        const result = await pool.query(`
             DELETE FROM friendships 
             WHERE (user_id = $1 AND friend_id = $2)
             OR (user_id = $2 AND friend_id = $1)
+            RETURNING *
         `, [userId, friendId]);
 
-        console.log('Friend removed successfully');
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'Дружба не найдена'
+            });
+        }
+
+        console.log('Friendship removed:', result.rows[0]);
         res.json({ 
             success: true,
             message: 'Друг успешно удален' 

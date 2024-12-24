@@ -47,6 +47,7 @@ app.use('/api', profileRoutes);
 app.use('/api', postsRoutes);
 app.use('/api', feedRoutes);
 app.use('/api', healthRoutes);
+app.use('/api', friendsRoutes);
 
 // Маршрут проверки здоровья сервера
 app.get('/api/health', (req, res) => {
