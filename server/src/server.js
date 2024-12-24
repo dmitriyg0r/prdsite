@@ -66,11 +66,41 @@ app.get('/api/test', (req, res) => {
     }
 });
 
-// HTTPS Server
+// HTTPS Server с обработкой ошибок
 const httpsServer = https.createServer(sslOptions, app);
-httpsServer.listen(PORT, '0.0.0.0', () => {
-    console.log(`HTTPS Сервер запущен на порту ${PORT} (0.0.0.0:${PORT})`);
+
+httpsServer.on('error', (error) => {
+    console.error('Ошибка HTTPS сервера:', error);
+    process.exit(1);
 });
+
+try {
+    httpsServer.listen(PORT, '0.0.0.0', () => {
+        console.log(`HTTPS Сервер запущен на порту ${PORT} (0.0.0.0:${PORT})`);
+    });
+} catch (error) {
+    console.error('Ошибка при запуске сервера:', error);
+    process.exit(1);
+}
+
+// Добавляем проверку SSL сертификатов
+try {
+    const sslFiles = {
+        key: '/etc/letsencrypt/live/adminflow.ru/privkey.pem',
+        cert: '/etc/letsencrypt/live/adminflow.ru/fullchain.pem',
+        ca: '/etc/letsencrypt/live/adminflow.ru/chain.pem'
+    };
+
+    for (const [key, path] of Object.entries(sslFiles)) {
+        if (!fs.existsSync(path)) {
+            console.error(`SSL файл не найден: ${path}`);
+            process.exit(1);
+        }
+    }
+} catch (error) {
+    console.error('Ошибка при проверке SSL сертификатов:', error);
+    process.exit(1);
+}
 
 // Socket.IO
 const io = new Server(httpsServer, {
