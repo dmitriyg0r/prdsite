@@ -9,6 +9,7 @@ const feedRoutes = require('./routes/feed');
 const friendsRoutes = require('./routes/friends');
 const healthRoutes = require('./routes/health');
 const usersRoutes = require('./routes/users');
+const chatsRouter = require('./routes/chats');
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -46,6 +47,7 @@ app.use('/api', feedRoutes);
 app.use('/api', healthRoutes);
 app.use('/api', friendsRoutes);
 app.use('/api', usersRoutes);
+app.use('/api/chats', chatsRouter);
 
 // Маршрут проверки здоровья сервера
 app.get('/api/health', (req, res) => {
