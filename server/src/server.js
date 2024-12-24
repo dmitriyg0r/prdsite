@@ -10,7 +10,11 @@ const app = express();
 const PORT = 5003;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: ['https://adminflow.ru', 'http://adminflow.ru'],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+}));
 app.use(express.json());
 
 // SSL Configuration
@@ -39,8 +43,8 @@ app.use('/api', require('./routes/messages'));
 
 // HTTPS Server
 const httpsServer = https.createServer(sslOptions, app);
-httpsServer.listen(PORT, 'localhost', () => {
-    console.log(`HTTPS Server running on localhost:${PORT}`);
+httpsServer.listen(PORT, '0.0.0.0', () => {
+    console.log(`HTTPS Server running on port ${PORT}`);
 });
 
 // Socket.IO
@@ -48,8 +52,11 @@ const io = new Server(httpsServer, {
     cors: {
         origin: ['https://adminflow.ru', 'http://adminflow.ru'],
         methods: ['GET', 'POST'],
-        credentials: true
-    }
+        credentials: true,
+        allowedHeaders: ['Content-Type', 'Authorization']
+    },
+    pingTimeout: 60000,
+    pingInterval: 25000
 });
 
 io.on('connection', (socket) => {
@@ -63,4 +70,13 @@ process.on('uncaughtException', (error) => {
 
 process.on('unhandledRejection', (error) => {
     console.error('Unhandled Rejection:', error);
+});
+
+// Add error handling for Express
+app.use((err, req, res, next) => {
+    console.error('Express error:', err);
+    res.status(500).json({ 
+        error: 'Внутренняя ошибка сервера',
+        details: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
 });
