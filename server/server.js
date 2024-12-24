@@ -4,8 +4,8 @@ const { Server } = require('socket.io');
 const http = require('http');
 const authRoutes = require('./routes/auth');
 const profileRoutes = require('./routes/profile');
-const feedRoutes = require('./routes/feed');
 const postsRoutes = require('./routes/posts');
+const feedRoutes = require('./routes/feed');
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -19,21 +19,43 @@ app.use(cors({
 // Парсинг JSON
 app.use(express.json());
 
-// Middleware для логирования
+// Расширенное логирование
 app.use((req, res, next) => {
     console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    if (req.method === 'POST') {
+        console.log('Request body:', req.body);
+    }
+    if (req.method === 'GET') {
+        console.log('Query params:', req.query);
+    }
+
+    // Логирование ответа
+    const oldJson = res.json;
+    res.json = function(data) {
+        console.log('Response:', data);
+        return oldJson.apply(res, arguments);
+    };
+
     next();
 });
 
 // Подключаем маршруты
 app.use('/api', authRoutes);
 app.use('/api', profileRoutes);
-app.use('/api', feedRoutes);
 app.use('/api', postsRoutes);
+app.use('/api', feedRoutes);
 
 // Маршрут проверки здоровья сервера
 app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+    res.json({ 
+        success: true,
+        status: 'ok', 
+        timestamp: new Date().toISOString(),
+        services: {
+            database: true,
+            server: true
+        }
+    });
 });
 
 // Тестовый маршрут
@@ -41,6 +63,7 @@ app.get('/api/test', (req, res) => {
     console.log('Test endpoint hit');
     try {
         res.status(200).json({ 
+            success: true,
             status: 'success',
             message: 'API работает',
             timestamp: new Date().toISOString()
@@ -48,11 +71,22 @@ app.get('/api/test', (req, res) => {
     } catch (error) {
         console.error('Ошибка в тестовом маршруте:', error);
         res.status(500).json({ 
+            success: false,
             status: 'error',
             message: 'Внутренняя ошибка сервера',
             error: error.message
         });
     }
+});
+
+// Обработка ошибок
+app.use((err, req, res, next) => {
+    console.error('Global error handler:', err);
+    res.status(500).json({
+        success: false,
+        error: 'Внутренняя ошибка сервера',
+        message: err.message
+    });
 });
 
 // Настройка Socket.IO
