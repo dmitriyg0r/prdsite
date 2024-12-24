@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Загружаем список чатов
     await loadChatsList();
     
-    // Запускаем периодическое обновление списка чатов
+    // Запускаем периодическ��е обновление списка чатов
     setInterval(loadChatsList, 10000); // Обновляем каждые 10 секунд
 });
 
@@ -472,7 +472,7 @@ async function sendMessage() {
         const responseData = await response.json();
 
         if (!response.ok) {
-            throw new Error(responseData.details || responseData.error || 'Ошибка при отправке сообщения');
+            throw new Error(responseData.details || responseData.error || 'Ошибка при отп��авке сообщения');
         }
 
         if (responseData.success) {
@@ -937,7 +937,7 @@ chatStyles.textContent = `
 `;
 document.head.appendChild(chatStyles);
 
-// ��бновляем обработчики контекстного меню
+// Обновляем обработчики контекстного меню
 function setupContextMenu() {
     const contextMenu = document.getElementById('contextMenu');
     const messagesArea = document.getElementById('messages');
@@ -990,7 +990,7 @@ function setupContextMenu() {
                 contextMenu.style.left = `${x}px`;
             }
 
-            // Проверем и крректируем поз��цию по вертикали
+            // Проверем и крректируем позцию по вертикали
             if (y + menuRect.height > windowHeight) {
                 contextMenu.style.top = `${y - menuRect.height}px`;
             } else {
@@ -1174,7 +1174,7 @@ function updateLastMessage(message) {
 
 // Функция загрузки списка чатов с защитой от дёрганья
 let lastUpdateTime = 0;
-const UPDATE_INTERVAL = 2000; // Минимальный интервал между обновлениями
+const UPDATE_INTERVAL = 2000; // Минимальный интерв��л между обновлениями
 
 async function loadChatsList() {
     try {
@@ -1192,23 +1192,17 @@ async function loadChatsList() {
 
         console.log('Loading chats for user:', currentUser.id);
         const response = await fetch(`https://adminflow.ru/api/chats/${currentUser.id}`);
-        
-        if (!response.ok) {
-            const error = await response.json();
-            console.error('Server error:', error);
-            throw new Error(error.error || 'Ошибка при загрузке чатов');
-        }
-
         const data = await response.json();
         console.log('Chats data:', data);
-
-        if (!data.success) {
-            throw new Error(data.error || 'Ошибка при загрузке чатов');
+        
+        if (!response.ok || !data.success) {
+            throw new Error(data.error || 'Failed to load chats');
         }
 
         displayChats(data.chats);
     } catch (err) {
         console.error('Error loading chats:', err);
+        throw new Error('Failed to load chats');
     }
 }
 
@@ -1473,7 +1467,7 @@ async function sendMessage() {
     }
 }
 
-// Добавляем обра��отчик контекстного меню
+// Добавляем обработчик контекстного меню
 document.getElementById('replyMessageBtn').addEventListener('click', () => {
     const messageElement = document.querySelector(`.message[data-message-id="${selectedMessageId}"]`);
     if (messageElement) {

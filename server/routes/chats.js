@@ -25,12 +25,21 @@ router.get('/:userId', async (req, res) => {
         const result = await pool.query(query, [userId]);
         console.log('Query result:', result.rows.length, 'rows found');
         
-        res.json(result.rows);
+        // Всегда возвращаем объект с полем chats
+        res.json({
+            success: true,
+            chats: result.rows,
+            count: result.rows.length
+        });
+
     } catch (err) {
         console.error('Detailed error in /chats/:userId:', err);
+        // Возвращаем структурированную ошибку
         res.status(500).json({ 
+            success: false,
             error: 'Internal server error',
-            details: err.message 
+            details: err.message,
+            chats: [] // Пустой массив чатов в случае ошибки
         });
     }
 });
