@@ -165,21 +165,28 @@ router.get('/friend-requests', async (req, res) => {
         const { userId } = req.query;
         console.log('Getting friend requests for user:', userId);
 
-        const result = await pool.query(`
+        // Добавляем логирование SQL запроса
+        const query = `
             SELECT 
                 u.id,
                 u.username,
                 u.avatar_url,
                 u.last_activity,
-                f.created_at as request_date
+                f.created_at as request_date,
+                f.status
             FROM friendships f
             JOIN users u ON f.user_id = u.id
             WHERE f.friend_id = $1 
             AND f.status = 'pending'
             ORDER BY f.created_at DESC
-        `, [userId]);
+        `;
+        console.log('SQL Query:', query);
 
-        console.log(`Found ${result.rows.length} friend requests`);
+        const result = await pool.query(query, [userId]);
+
+        // Добавляем логирование результата
+        console.log('Found friend requests:', result.rows);
+        
         res.json({
             success: true,
             requests: result.rows
