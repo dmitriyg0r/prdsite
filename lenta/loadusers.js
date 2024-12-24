@@ -14,10 +14,15 @@ async function loadUsers() {
         console.log('Loading users for:', currentUser.id);
 
         // Исправляем URL запроса
-        const response = await fetch(`https://adminflow.ru/api/users-list?userId=${currentUser.id}`);
+        const url = `https://adminflow.ru/api/users-list?userId=${currentUser.id}`;
+        console.log('Fetching users from:', url);
+
+        const response = await fetch(url);
+        console.log('Response status:', response.status);
         
         if (!response.ok) {
             const error = await response.json();
+            console.error('Server error:', error);
             throw new Error(error.error || 'Ошибка при загрузке пользователей');
         }
         
