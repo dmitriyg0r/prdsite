@@ -8,27 +8,40 @@ router.get('/users-list', async (req, res) => {
         const { userId } = req.query;
         console.log('Getting users list for:', userId);
 
-        const result = await pool.query(`
+        // Добавляем подробное логирование
+        const query = `
             SELECT 
                 u.id,
                 u.username,
                 u.avatar_url,
                 u.last_activity,
                 u.role,
-                CASE
-                    WHEN f.status IS NOT NULL THEN f.status
-                    ELSE 'none'
-                END as friendship_status
+                COALESCE(
+                    (SELECT status 
+                     FROM friendships 
+                     WHERE (user_id = $1 AND friend_id = u.id) 
+                     OR (user_id = u.id AND friend_id = $1)
+                     LIMIT 1
+                    ),
+                    'none'
+                ) as friendship_status
             FROM users u
-            LEFT JOIN friendships f ON 
-                (f.user_id = $1 AND f.friend_id = u.id) OR 
-                (f.friend_id = $1 AND f.user_id = u.id)
             WHERE u.id != $1
             ORDER BY 
+                CASE 
+                    WHEN u.last_activity > NOW() - INTERVAL '5 minutes' THEN 1
+                    WHEN u.last_activity > NOW() - INTERVAL '15 minutes' THEN 2
+                    ELSE 3
+                END,
                 u.username ASC
-        `, [userId]);
+        `;
 
-        console.log(`Found ${result.rows.length} users`);
+        console.log('Executing query:', query);
+        console.log('With userId:', userId);
+
+        const result = await pool.query(query, [userId]);
+
+        console.log('Query result:', result.rows);
         res.json({
             success: true,
             users: result.rows
