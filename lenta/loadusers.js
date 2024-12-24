@@ -3,35 +3,27 @@ console.log('loadusers.js loaded');
 
 async function loadUsers() {
     try {
-        // Получаем текущего пользователя
         const currentUser = JSON.parse(localStorage.getItem('user'));
+        console.log('Current user from localStorage:', currentUser);
+
         if (!currentUser || !currentUser.id) {
-            console.error('User not found in localStorage');
-            window.location.href = '/authreg/authreg.html';
-            return;
+            throw new Error('Пользователь не авторизован');
         }
 
-        console.log('Loading users for:', currentUser.id);
-
-        // Исправляем URL запроса
         const url = `https://adminflow.ru/api/users-list?userId=${currentUser.id}`;
         console.log('Fetching users from:', url);
 
         const response = await fetch(url);
-        console.log('Response status:', response.status);
-        
+        console.log('Response:', response.status, response.statusText);
+
         if (!response.ok) {
-            const error = await response.json();
-            console.error('Server error:', error);
-            throw new Error(error.error || 'Ошибка при загрузке пользователей');
+            const errorData = await response.json();
+            console.error('Server error response:', errorData);
+            throw new Error(errorData.error || 'Ошибка при загрузке пользователей');
         }
-        
+
         const data = await response.json();
         console.log('Users data:', data);
-
-        if (!data.success) {
-            throw new Error(data.error || 'Ошибка при загрузке пользователей');
-        }
 
         displayUsers(data.users);
     } catch (err) {

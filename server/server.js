@@ -25,20 +25,7 @@ app.use(express.json());
 // Расширенное логирование
 app.use((req, res, next) => {
     console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
-    if (req.method === 'POST') {
-        console.log('Request body:', req.body);
-    }
-    if (req.method === 'GET') {
-        console.log('Query params:', req.query);
-    }
-
-    // Логирование ответа
-    const oldJson = res.json;
-    res.json = function(data) {
-        console.log('Response:', data);
-        return oldJson.apply(res, arguments);
-    };
-
+    console.log('Query params:', req.query);
     next();
 });
 
@@ -87,11 +74,10 @@ app.get('/api/test', (req, res) => {
 
 // Обработка ошибок
 app.use((err, req, res, next) => {
-    console.error('Global error handler:', err);
+    console.error('Server error:', err);
     res.status(500).json({
         success: false,
-        error: 'Внутренняя ошибка сервера',
-        message: err.message
+        error: 'Internal Server Error'
     });
 });
 
