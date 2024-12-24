@@ -713,7 +713,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const data = await response.json();
             
             if (data.user) {
-                // Сохраняем данные профиля друга во временное хранилище
+                // Сохраняем да��ные профиля друга во временное хранилище
                 sessionStorage.setItem('viewing_profile', JSON.stringify(data.user));
                 // Перенаправляем на страницу профиля с параметром
                 window.location.href = `/profile/profile.html?id=${userId}`;
@@ -775,7 +775,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             } catch (err) {
                 console.error('Error updating user status:', err);
             }
-        }, 100); // Небольшая задержка для группировки обновлений
+        }, 100); // Небольшая задержка для группировки о��новлений
     }
 
     // Оптимизированная функция отслеживания активности
@@ -1206,7 +1206,7 @@ async function loadPosts() {
     try {
         const serverHealthy = await checkServerHealth();
         if (!serverHealthy) {
-            throw new Error('Сервер времен��о недоступен');
+            throw new Error('Сервер временно недоступен');
         }
 
         const response = await fetch(`https://adminflow.ru/api/posts/${currentUser.id}`);
@@ -1436,7 +1436,7 @@ window.openImageInFullscreen = function(imageSrc, postData) {
     // Блокируем прокрутку body
     document.body.style.overflow = 'hidden';
     
-    // Обработчики закрытия
+    // Обработчики закр��тия
     const closeModal = () => {
         modal.classList.remove('active');
         document.body.style.overflow = '';
@@ -1697,7 +1697,7 @@ async function submitComment(postId, button) {
         input.value = '';
     } catch (err) {
         console.error('Error submitting comment:', err);
-        alert('Ошибка при отправке комментария');
+        alert('Ошибка при отправке ��омментария');
     }
 }
 
@@ -1784,5 +1784,35 @@ async function checkServerHealth() {
     } catch (err) {
         console.error('Server health check error:', err);
         return false;
+    }
+}
+
+async function addFriend(friendId) {
+    try {
+        const response = await fetch('https://adminflow.ru/api/friend-request', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                userId: currentUser.id,
+                friendId: friendId
+            })
+        });
+
+        const data = await response.json();
+        if (!data.success) {
+            throw new Error(data.error || 'Failed to send friend request');
+        }
+
+        // Обновляем результаты поиска
+        const button = document.querySelector(`.user-item[data-id="${friendId}"] button`);
+        if (button) {
+            button.disabled = true;
+            button.textContent = 'Запрос отправлен';
+        }
+    } catch (err) {
+        console.error('Error sending friend request:', err);
+        alert('Ошибка при отправке заявки в друзья');
     }
 }

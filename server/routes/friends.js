@@ -193,4 +193,45 @@ router.get('/friend-requests', async (req, res) => {
     }
 });
 
+// Отправка заявки в друзья
+router.post('/friend-request', async (req, res) => {
+    try {
+        const { userId, friendId } = req.body;
+        console.log('Creating friend request:', { userId, friendId });
+
+        // Проверяем, существует ли уже заявка или дружба
+        const checkResult = await pool.query(`
+            SELECT * FROM friendships 
+            WHERE (user_id = $1 AND friend_id = $2)
+            OR (user_id = $2 AND friend_id = $1)
+        `, [userId, friendId]);
+
+        if (checkResult.rows.length > 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'Заявка или дружба уже существует'
+            });
+        }
+
+        // Создаем новую заявку
+        const result = await pool.query(`
+            INSERT INTO friendships (user_id, friend_id, status)
+            VALUES ($1, $2, 'pending')
+            RETURNING *
+        `, [userId, friendId]);
+
+        console.log('Friend request created:', result.rows[0]);
+        res.json({
+            success: true,
+            request: result.rows[0]
+        });
+    } catch (err) {
+        console.error('Create friend request error:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при создании заявки в друзья'
+        });
+    }
+});
+
 module.exports = router; 
