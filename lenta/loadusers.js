@@ -1,26 +1,34 @@
+// Проверяем, что скрипт загрузился
+console.log('loadusers.js loaded');
+
 async function loadUsers() {
     try {
         // Получаем текущего пользователя
         const currentUser = JSON.parse(localStorage.getItem('user'));
         if (!currentUser) {
-            throw new Error('Пользователь не авторизован');
+            console.error('User not found in localStorage');
+            window.location.href = '/authreg/authreg.html';
+            return;
         }
 
-        console.log('Loading users for:', currentUser.id); // Добавляем для отладки
+        console.log('Loading users for:', currentUser.id); // Отладочный вывод
 
         // Добавляем userId в запрос
         const response = await fetch(`https://adminflow.ru/api/users-list?userId=${currentUser.id}`);
+        console.log('Users response:', response); // Отладочный вывод
+
         if (!response.ok) {
             const error = await response.json();
             throw new Error(error.error || 'Ошибка при загрузке пользователей');
         }
         
         const data = await response.json();
+        console.log('Users data:', data); // Отладочный вывод
+
         if (!data.success) {
             throw new Error(data.error || 'Ошибка при загрузке пользователей');
         }
 
-        console.log('Loaded users:', data.users); // Добавляем для отладки
         displayUsers(data.users);
     } catch (err) {
         console.error('Error loading users:', err);
@@ -126,17 +134,9 @@ async function removeFriend(friendId) {
 
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', async () => {
+    console.log('DOM loaded, initializing users...'); // Отладочный вывод
     try {
-        const currentUser = JSON.parse(localStorage.getItem('user'));
-        if (!currentUser) {
-            window.location.href = '/authreg/authreg.html';
-            return;
-        }
-        
-        await Promise.all([
-            loadFeedPosts(),
-            loadUsers()
-        ]);
+        await loadUsers();
     } catch (err) {
         console.error('Initialization error:', err);
     }

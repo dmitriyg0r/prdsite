@@ -83,8 +83,16 @@
         </div>
     </div>
 
-    <script src="lenta.js"></script>
-    <script src="../main.js"></script>
+    <!-- Скрипты -->
+    <script>
+        // Проверяем авторизацию перед загрузкой остальных скриптов
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user) {
+            window.location.href = '/authreg/authreg.html';
+        }
+        console.log('Current user:', user); // Добавляем для отладки
+    </script>
     <script src="loadusers.js"></script>
+    <script src="lenta.js"></script>
 </body>
 </html>
