@@ -195,7 +195,7 @@ router.get('/friend-requests', async (req, res) => {
         console.error('Get friend requests error:', err);
         res.status(500).json({
             success: false,
-            error: 'Ошибка при получении заявок в друзья'
+            error: 'Ошибка ��ри получении заявок в друзья'
         });
     }
 });
@@ -245,7 +245,15 @@ router.post('/friend-request', async (req, res) => {
 router.post('/friend-request/respond', async (req, res) => {
     try {
         const { userId, friendId, accept } = req.body;
+        console.log('Request body:', req.body);
         console.log('Responding to friend request:', { userId, friendId, accept });
+
+        if (accept === undefined) {
+            return res.status(400).json({
+                success: false,
+                error: 'Параметр accept обязателен'
+            });
+        }
 
         if (accept) {
             // Принимаем заявку в транзакции

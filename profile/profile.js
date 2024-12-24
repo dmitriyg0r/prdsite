@@ -357,7 +357,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
-    // Поиск друзей
+    // Поиск д��узей
     const searchInput = document.querySelector('.search-input');
     const searchBtn = document.querySelector('.search-btn');
     const searchResults = document.querySelector('.search-results');
@@ -562,6 +562,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function respondToFriendRequest(friendId, accept) {
         try {
+            console.log('Responding to request:', { friendId, accept }); // Добавим для отладки
+
             const response = await fetch('https://adminflow.ru/api/friend-request/respond', {
                 method: 'POST',
                 headers: {
@@ -570,7 +572,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 body: JSON.stringify({
                     userId: currentUser.id,
                     friendId: friendId,
-                    accept: accept
+                    accept: accept // Убедимся, что этот параметр передается
                 })
             });
 
@@ -579,41 +581,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 throw new Error(data.error || 'Failed to respond to friend request');
             }
 
-            // Удаляем заявку из списка
-            const requestElement = document.querySelector(`.friend-request[data-id="${friendId}"]`);
-            if (requestElement) {
-                requestElement.remove();
-            }
+            // Обновляем списки друзей и заявок
+            await Promise.all([
+                loadFriendRequests(),
+                loadFriends(currentUser.id)
+            ]);
 
-            if (accept && data.friend) {
-                // Добавляем нового друга в список
-                const friendsList = document.querySelector('.friends-list');
-                if (friendsList) {
-                    const friendElement = document.createElement('div');
-                    friendElement.className = 'friend-item';
-                    friendElement.dataset.id = data.friend.id;
-                    friendElement.innerHTML = `
-                        <img src="${data.friend.avatar_url}" alt="${data.friend.username}">
-                        <span class="friend-name">${data.friend.username}</span>
-                        <span class="friend-status ${getStatusClass(data.friend.last_activity)}"></span>
-                        <button onclick="removeFriend(${data.friend.id})">Удалить из друзей</button>
-                    `;
-                    friendsList.appendChild(friendElement);
-                }
-            }
-
-            // Обновляем кнопку в результатах поиска, если она есть
-            const searchButton = document.querySelector(`.user-item[data-id="${friendId}"] button`);
-            if (searchButton) {
-                if (accept) {
-                    searchButton.textContent = 'Удалить из друзей';
-                    searchButton.onclick = () => removeFriend(friendId);
-                } else {
-                    searchButton.textContent = 'Добавить в друзья';
-                    searchButton.disabled = false;
-                    searchButton.onclick = () => addFriend(friendId);
-                }
-            }
+            // Показываем уведомление
+            alert(accept ? 'Заявка принята' : 'Заявка отклонена');
 
         } catch (err) {
             console.error('Error responding to friend request:', err);
@@ -621,13 +596,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Функции для принятия и отклонения заявок
-    async function acceptFriend(friendId) {
-        await respondToFriendRequest(friendId, true);
+    // Обновляем функции принятия/отклонения
+    function acceptFriend(friendId) {
+        console.log('Accepting friend request:', friendId); // Добавим для отладки
+        respondToFriendRequest(friendId, true);
     }
 
-    async function rejectFriend(friendId) {
-        await respondToFriendRequest(friendId, false);
+    function rejectFriend(friendId) {
+        console.log('Rejecting friend request:', friendId); // Добавим для отладки
+        respondToFriendRequest(friendId, false);
     }
 
     // Обновляем функцию поиска
@@ -696,7 +673,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Обновляем обработчик открытия модального окна
+    // Обновляем обработчик открытия модальн��го окна
     document.querySelector('.friends-header-btn').addEventListener('click', () => {
         // Обновляем списки при открытии модального окна
         loadFriends();
@@ -763,7 +740,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Перенаправляем на страницу профиля с параметром
                 window.location.href = `/profile/profile.html?id=${userId}`;
             } else {
-                alert('Пользователь не найден');
+                alert('Пользователь н�� найден');
             }
         } catch (err) {
             console.error('Error loading user profile:', err);
@@ -820,7 +797,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             } catch (err) {
                 console.error('Error updating user status:', err);
             }
-        }, 100); // Небольшая задержка для группировк�� обновлений
+        }, 100); // Небольшая задержка для группировки обновлений
     }
 
     // Оптимизированная функция отслеживания активности
