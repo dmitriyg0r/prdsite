@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const pool = require('../db');
+const pool = require('../utils/db');
 
 // Получение списка чатов
 router.get('/chats/:userId', async (req, res) => {
@@ -80,6 +80,26 @@ router.get('/messages/history/:userId/:friendId', async (req, res) => {
     } catch (err) {
         console.error('Error getting message history:', err);
         res.status(500).json({ error: 'Ошибка при получении истории сообщений' });
+    }
+});
+
+// Получение голосовых сообщений
+router.get('/:chatId/voice', async (req, res) => {
+    try {
+        const chatId = req.params.chatId;
+        const query = `
+            SELECT * FROM voice_messages 
+            WHERE message_id IN (
+                SELECT id FROM messages WHERE sender_id = $1 OR receiver_id = $1
+            )
+            ORDER BY created_at DESC
+        `;
+        
+        const result = await pool.query(query, [chatId]);
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Error getting voice messages:', err);
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
 
