@@ -62,4 +62,29 @@ router.get('/users-list', async (req, res) => {
     }
 });
 
+// Обновление статуса пользователя
+router.post('/update-status', async (req, res) => {
+    const { userId, is_online, last_activity } = req.body;
+    
+    if (!userId) {
+        return res.status(400).json({ error: 'User ID is required' });
+    }
+
+    try {
+        const result = await pool.query(
+            'UPDATE users SET is_online = $1, last_activity = $2 WHERE id = $3 RETURNING *',
+            [is_online, last_activity, userId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error('Error updating user status:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 module.exports = router; 
