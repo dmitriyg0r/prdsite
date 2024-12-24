@@ -154,12 +154,6 @@ body {
     border: 1px solid var(--border-light);
     position: relative;
     border-bottom: 2px solid var(--border-light);
-    background: linear-gradient(
-        to bottom,
-        var(--surface-color) 0%,
-        var(--surface-color) 98%,
-        var(--background-color) 100%
-    );
     margin-bottom: 7px; /* Отступ между постами */
 }
 
