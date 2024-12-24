@@ -117,33 +117,34 @@ router.get('/posts/:postId/comments', async (req, res) => {
 });
 
 // Добавление/удаление лайка
-router.post('/posts/:postId/like', async (req, res) => {
+router.post('/posts/like', async (req, res) => {
     try {
-        const { postId } = req.params;
-        const { userId } = req.body;
+        const { userId, postId } = req.body;
         console.log('Toggle like:', { userId, postId });
 
         // Проверяем существование лайка
         const checkResult = await pool.query(`
             SELECT id FROM posts 
-            WHERE type = 'like' AND parent_id = $1 AND user_id = $2
+            WHERE type = 'like' 
+            AND parent_id = $1 
+            AND user_id = $2
         `, [postId, userId]);
 
         let result;
         if (checkResult.rows.length > 0) {
             // Удаляем лайк
-            result = await pool.query(`
+            await pool.query(`
                 DELETE FROM posts 
-                WHERE type = 'like' AND parent_id = $1 AND user_id = $2
-                RETURNING id
+                WHERE type = 'like' 
+                AND parent_id = $1 
+                AND user_id = $2
             `, [postId, userId]);
             console.log('Like removed');
         } else {
             // Добавляем лайк
-            result = await pool.query(`
+            await pool.query(`
                 INSERT INTO posts (user_id, parent_id, type)
                 VALUES ($1, $2, 'like')
-                RETURNING id
             `, [userId, postId]);
             console.log('Like added');
         }
@@ -152,7 +153,8 @@ router.post('/posts/:postId/like', async (req, res) => {
         const likesCount = await pool.query(`
             SELECT COUNT(*) as count 
             FROM posts 
-            WHERE type = 'like' AND parent_id = $1
+            WHERE type = 'like' 
+            AND parent_id = $1
         `, [postId]);
 
         res.json({ 

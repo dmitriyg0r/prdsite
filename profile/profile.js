@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 profileActions.appendChild(messageButton);
             }
 
-            // Загру��аем посты друга
+            // Загружаем посты друга
             await loadPosts();
 
         } catch (err) {
@@ -254,7 +254,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Проверяем размер файла
         if (file.size > 5 * 1024 * 1024) { // 5MB
-            alert('Файл слишком большой. Максимальны�� размер: 5MB');
+            alert('Файл слишком большой. Максимальный размер: 5MB');
             e.target.value = '';
             return;
         }
@@ -289,7 +289,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 };
                 localStorage.setItem('user', JSON.stringify(currentUser));
 
-                // Показываем сообщен��е об успехе
+                // Показываем сообщение об успехе
                 alert('Аватар успешно обновлен');
             } else {
                 throw new Error(data.error || 'Ошибка при загрузке аватара');
@@ -317,7 +317,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Обновляем селектор для кнопки открытия модального окна
     const friendsHeaderBtn = document.querySelector('.friends-header-btn');
     
-    // Открытие модального окна при клике на заголовок "Дузья"
+    // Открытие м��дального окна при клике на заголовок "Дузья"
     friendsHeaderBtn.addEventListener('click', (e) => {
         e.preventDefault();
         friendsModal.classList.add('active');
@@ -835,7 +835,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Добавляем функцию удаления из друзей
     async function removeFriend(friendId) {
-        if (!confirm('Вы уверены, что хотите удалить пользователя из друзей?')) {
+        if (!confirm('Вы уверены, что хотите удалить пол��зователя из друзей?')) {
             return;
         }
 
@@ -911,7 +911,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        // Отмен��ем предыдущий отложенный запрос
+        // Отменяем предыдущий отложенный запрос
         if (statusUpdateTimeout) {
             clearTimeout(statusUpdateTimeout);
         }
@@ -1144,7 +1144,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Таймер для повторной отправки кода
+    // Таймер для повторной о��правки кода
     function startResendTimer() {
         let timeLeft = 60;
         resendCodeBtn.disabled = true;
@@ -1348,7 +1348,7 @@ async function createPost() {
         }
         
         if (data.success) {
-            // Очищаем фрму
+            // Очища��м фрму
             document.getElementById('post-content').value = '';
             document.getElementById('image-preview').innerHTML = '';
             document.getElementById('post-form').style.display = 'none';
@@ -1484,7 +1484,7 @@ async function toggleLike(postId) {
         const response = await fetch('https://adminflow.ru/api/posts/like', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 userId: currentUser.id,
@@ -1493,31 +1493,18 @@ async function toggleLike(postId) {
         });
 
         const data = await response.json();
-        
-        if (response.ok) {
-            // Находим элементы конкреного поста
-            const postElement = document.querySelector(`.post[data-post-id="${postId}"]`);
-            const likeButton = postElement.querySelector('.like-action');
-            const heartIcon = postElement.querySelector('.like-action i');
-            const likesCountElement = postElement.querySelector('.likes-count');
-            
-            // Обновляем UI на основе ответа сервер
-            if (data.liked) {
-                heartIcon.classList.replace('far', 'fas');
-                likeButton.classList.add('liked');
-            } else {
-                heartIcon.classList.replace('fas', 'far');
-                likeButton.classList.remove('liked');
-            }
-            
-            // Устанавливаем точное количество лайков из ответа сервера
-            likesCountElement.textContent = data.likes_count;
-        } else {
-            throw new Error(data.error || 'Ошибка при обрботке лайка');
+        if (!data.success) {
+            throw new Error(data.error || 'Failed to toggle like');
+        }
+
+        // Обновляем UI
+        const likeBtn = document.querySelector(`.post-item[data-id="${postId}"] .like-btn`);
+        if (likeBtn) {
+            likeBtn.classList.toggle('liked', data.liked);
+            likeBtn.textContent = `${data.likesCount} likes`;
         }
     } catch (err) {
         console.error('Error toggling like:', err);
-        alert('Ошибка при обработке лайка');
     }
 }
 
