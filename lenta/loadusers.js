@@ -5,25 +5,24 @@ async function loadUsers() {
     try {
         // Получаем текущего пользователя
         const currentUser = JSON.parse(localStorage.getItem('user'));
-        if (!currentUser) {
+        if (!currentUser || !currentUser.id) {
             console.error('User not found in localStorage');
             window.location.href = '/authreg/authreg.html';
             return;
         }
 
-        console.log('Loading users for:', currentUser.id); // Отладочный вывод
+        console.log('Loading users for:', currentUser.id);
 
         // Добавляем userId в запрос
-        const response = await fetch(`https://adminflow.ru/api/users-list?userId=${currentUser.id}`);
-        console.log('Users response:', response); // Отладочный вывод
-
+        const response = await fetch(`/api/users-list?userId=${currentUser.id}`);
+        
         if (!response.ok) {
             const error = await response.json();
             throw new Error(error.error || 'Ошибка при загрузке пользователей');
         }
         
         const data = await response.json();
-        console.log('Users data:', data); // Отладочный вывод
+        console.log('Users data:', data);
 
         if (!data.success) {
             throw new Error(data.error || 'Ошибка при загрузке пользователей');
@@ -97,7 +96,7 @@ async function addFriend(friendId) {
             throw new Error(data.error || 'Failed to send friend request');
         }
 
-        // Обновляем список пользователей
+        // Обновляем спи��ок пользователей
         await loadUsers();
     } catch (err) {
         console.error('Error sending friend request:', err);
@@ -134,7 +133,7 @@ async function removeFriend(friendId) {
 
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log('DOM loaded, initializing users...'); // Отладочный вывод
+    console.log('DOM loaded, initializing users...');
     try {
         await loadUsers();
     } catch (err) {

@@ -6,9 +6,16 @@ const { pool } = require('../utils/db');
 router.get('/users-list', async (req, res) => {
     try {
         const { userId } = req.query;
+        
+        if (!userId) {
+            return res.status(400).json({
+                success: false,
+                error: 'userId is required'
+            });
+        }
+
         console.log('Getting users list for:', userId);
 
-        // Добавляем подробное логирование
         const query = `
             SELECT 
                 u.id,
@@ -27,21 +34,12 @@ router.get('/users-list', async (req, res) => {
                 ) as friendship_status
             FROM users u
             WHERE u.id != $1
-            ORDER BY 
-                CASE 
-                    WHEN u.last_activity > NOW() - INTERVAL '5 minutes' THEN 1
-                    WHEN u.last_activity > NOW() - INTERVAL '15 minutes' THEN 2
-                    ELSE 3
-                END,
-                u.username ASC
+            ORDER BY u.username ASC
         `;
 
-        console.log('Executing query:', query);
-        console.log('With userId:', userId);
-
         const result = await pool.query(query, [userId]);
+        console.log(`Found ${result.rows.length} users for userId: ${userId}`);
 
-        console.log('Query result:', result.rows);
         res.json({
             success: true,
             users: result.rows
