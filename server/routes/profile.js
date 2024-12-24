@@ -24,38 +24,72 @@ router.get('/users/:id', async (req, res) => {
     }
 });
 
-// Обновление профиля пользователя
-router.post('/users/update-profile', async (req, res) => {
+// Обновление статуса пользователя
+router.post('/users/update-status', async (req, res) => {
     try {
-        const { userId, username, email } = req.body;
-
-        // Проверка существования email и username
-        const emailCheck = await pool.query(
-            'SELECT id FROM users WHERE email = $1 AND id != $2',
-            [email, userId]
-        );
-        if (emailCheck.rows.length > 0) {
-            return res.status(400).json({ error: 'Этот email уже используется' });
-        }
-
-        const usernameCheck = await pool.query(
-            'SELECT id FROM users WHERE username = $1 AND id != $2',
-            [username, userId]
-        );
-        if (usernameCheck.rows.length > 0) {
-            return res.status(400).json({ error: 'Это имя пользователя уже занято' });
-        }
-
-        // Обновление данных
+        const { userId, status } = req.body;
         await pool.query(
-            'UPDATE users SET username = $1, email = $2 WHERE id = $3',
-            [username, email, userId]
+            'UPDATE users SET last_activity = NOW() WHERE id = $1',
+            [userId]
         );
-
         res.json({ success: true });
     } catch (err) {
-        console.error('Update profile error:', err);
-        res.status(500).json({ error: 'Ошибка при обновлении профиля' });
+        console.error('Update status error:', err);
+        res.status(500).json({ error: 'Ошибка при обновлении статуса' });
+    }
+});
+
+// Получение списка друзей
+router.get('/friends', async (req, res) => {
+    try {
+        const { userId } = req.query;
+        const result = await pool.query(`
+            SELECT 
+                u.id, 
+                u.username, 
+                u.avatar_url,
+                u.last_activity,
+                f.status,
+                f.created_at as friendship_date
+            FROM friendships f
+            JOIN users u ON (
+                CASE 
+                    WHEN f.user_id = $1 THEN f.friend_id = u.id
+                    WHEN f.friend_id = $1 THEN f.user_id = u.id
+                END
+            )
+            WHERE (f.user_id = $1 OR f.friend_id = $1)
+            AND f.status = 'accepted'
+            ORDER BY u.username
+        `, [userId]);
+
+        res.json({ friends: result.rows });
+    } catch (err) {
+        console.error('Get friends error:', err);
+        res.status(500).json({ error: 'Ошибка при получении списка друзей' });
+    }
+});
+
+// Получение запросов в друзья
+router.get('/friend-requests', async (req, res) => {
+    try {
+        const { userId } = req.query;
+        const result = await pool.query(`
+            SELECT 
+                u.id, 
+                u.username, 
+                u.avatar_url,
+                f.created_at as request_date
+            FROM friendships f
+            JOIN users u ON f.user_id = u.id
+            WHERE f.friend_id = $1 AND f.status = 'pending'
+            ORDER BY f.created_at DESC
+        `, [userId]);
+
+        res.json({ requests: result.rows });
+    } catch (err) {
+        console.error('Get friend requests error:', err);
+        res.status(500).json({ error: 'Ошибка при получении запросов в друзья' });
     }
 });
 
