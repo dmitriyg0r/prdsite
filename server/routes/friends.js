@@ -234,4 +234,58 @@ router.post('/friend-request', async (req, res) => {
     }
 });
 
+// Ответ на заявку в друзья (принятие/отклонение)
+router.post('/friend-request/respond', async (req, res) => {
+    try {
+        const { userId, friendId, accept } = req.body;
+        console.log('Responding to friend request:', { userId, friendId, accept });
+
+        if (accept) {
+            // Принимаем заявку
+            const result = await pool.query(`
+                UPDATE friendships 
+                SET status = 'accepted', 
+                    updated_at = NOW()
+                WHERE user_id = $1 
+                AND friend_id = $2 
+                AND status = 'pending'
+                RETURNING *
+            `, [friendId, userId]);
+
+            if (result.rows.length === 0) {
+                return res.status(404).json({
+                    success: false,
+                    error: 'Заявка не найдена'
+                });
+            }
+
+            console.log('Friend request accepted:', result.rows[0]);
+            res.json({
+                success: true,
+                friendship: result.rows[0]
+            });
+        } else {
+            // Отклоняем заявку
+            await pool.query(`
+                DELETE FROM friendships 
+                WHERE user_id = $1 
+                AND friend_id = $2 
+                AND status = 'pending'
+            `, [friendId, userId]);
+
+            console.log('Friend request rejected');
+            res.json({
+                success: true,
+                message: 'Заявка отклонена'
+            });
+        }
+    } catch (err) {
+        console.error('Respond to friend request error:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при обработке заявки'
+        });
+    }
+});
+
 module.exports = router; 

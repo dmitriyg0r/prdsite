@@ -560,29 +560,43 @@ document.addEventListener('DOMContentLoaded', async () => {
         `).join('');
     }
 
-    async function respondToFriendRequest(friendId, status) {
+    async function respondToFriendRequest(friendId, accept) {
         try {
             const response = await fetch('https://adminflow.ru/api/friend-request/respond', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     userId: currentUser.id,
-                    friendId,
-                    status
+                    friendId: friendId,
+                    accept: accept
                 })
             });
 
-            if (response.ok) {
-                // Перезагружаем списки друзей и заявок
-                loadFriendRequests();
-                loadFriends();
+            const data = await response.json();
+            if (!data.success) {
+                throw new Error(data.error || 'Failed to respond to friend request');
             }
+
+            // Обновляем список заявок и друзей
+            await Promise.all([
+                loadFriendRequests(),
+                loadFriends(currentUser.id)
+            ]);
         } catch (err) {
             console.error('Error responding to friend request:', err);
             alert('Ошибка при обработке заявки');
         }
+    }
+
+    // Функции для принятия и отклонения заявок
+    async function acceptFriend(friendId) {
+        await respondToFriendRequest(friendId, true);
+    }
+
+    async function rejectFriend(friendId) {
+        await respondToFriendRequest(friendId, false);
     }
 
     // Обновляем функцию поиска
@@ -713,7 +727,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const data = await response.json();
             
             if (data.user) {
-                // Сохраняем да��ные профиля друга во временное хранилище
+                // Сохраняем данные профиля друга во временное хранилище
                 sessionStorage.setItem('viewing_profile', JSON.stringify(data.user));
                 // Перенаправляем на страницу профиля с параметром
                 window.location.href = `/profile/profile.html?id=${userId}`;
@@ -775,7 +789,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             } catch (err) {
                 console.error('Error updating user status:', err);
             }
-        }, 100); // Небольшая задержка для группировки о��новлений
+        }, 100); // Небольшая задержка для группировки обновлений
     }
 
     // Оптимизированная функция отслеживания активности
@@ -1132,7 +1146,7 @@ async function createPost() {
         formData.append('content', content);
         
         if (file) {
-            // Проверяем размер файла (например, 10MB максимум)
+            // Пр��веряем размер файла (например, 10MB максимум)
             const maxSize = 10 * 1024 * 1024; // 10MB в байтах
             if (file.size > maxSize) {
                 alert('Файл слишком большой. Максимальный размер: 10MB');
@@ -1436,7 +1450,7 @@ window.openImageInFullscreen = function(imageSrc, postData) {
     // Блокируем прокрутку body
     document.body.style.overflow = 'hidden';
     
-    // Обработчики закр��тия
+    // Обработчики закрытия
     const closeModal = () => {
         modal.classList.remove('active');
         document.body.style.overflow = '';
@@ -1697,7 +1711,7 @@ async function submitComment(postId, button) {
         input.value = '';
     } catch (err) {
         console.error('Error submitting comment:', err);
-        alert('Ошибка при отправке ��омментария');
+        alert('Ошибка при отправке комментария');
     }
 }
 
