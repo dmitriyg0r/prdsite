@@ -159,4 +159,38 @@ router.post('/friend/remove', async (req, res) => {
     }
 });
 
+// Получение входящих заявок в друзья
+router.get('/friend-requests', async (req, res) => {
+    try {
+        const { userId } = req.query;
+        console.log('Getting friend requests for user:', userId);
+
+        const result = await pool.query(`
+            SELECT 
+                u.id,
+                u.username,
+                u.avatar_url,
+                u.last_activity,
+                f.created_at as request_date
+            FROM friendships f
+            JOIN users u ON f.user_id = u.id
+            WHERE f.friend_id = $1 
+            AND f.status = 'pending'
+            ORDER BY f.created_at DESC
+        `, [userId]);
+
+        console.log(`Found ${result.rows.length} friend requests`);
+        res.json({
+            success: true,
+            requests: result.rows
+        });
+    } catch (err) {
+        console.error('Get friend requests error:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при получении заявок в друзья'
+        });
+    }
+});
+
 module.exports = router; 

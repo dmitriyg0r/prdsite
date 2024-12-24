@@ -447,10 +447,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             const response = await fetch(`https://adminflow.ru/api/friend-requests?userId=${currentUser.id}`);
             const data = await response.json();
             
-            if (response.ok) {
-                displayFriendRequests(data.requests);
-                updateRequestsCount(data.requests.length);
+            if (!data.success) {
+                throw new Error(data.error || 'Failed to load friend requests');
             }
+
+            displayFriendRequests(data.requests);
         } catch (err) {
             console.error('Error loading friend requests:', err);
         }
@@ -536,60 +537,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function displayFriendRequests(requests) {
-        const requestsList = document.querySelector('.requests-list');
-        
-        if (!requestsList) return;
+        const requestsContainer = document.querySelector('.friend-requests');
+        if (!requestsContainer) return;
 
-        if (!requests.length) {
-            requestsList.innerHTML = `
-                <div class="empty-requests">
-                    <i class="fas fa-user-friends"></i>
-                    <p>У вас нет новых заявок в друзья</p>
-                </div>
-            `;
+        if (requests.length === 0) {
+            requestsContainer.innerHTML = '<p>Нет новых заявок в друзья</p>';
             return;
         }
 
-        requestsList.innerHTML = requests.map((request, index) => `
-            <div class="friend-request-card" style="animation-delay: ${index * 0.1}s">
-                <img src="${request.avatar_url || '/uploads/avatars/default.png'}" 
-                     alt="${request.username}" 
-                     class="request-avatar">
+        requestsContainer.innerHTML = requests.map(request => `
+            <div class="friend-request" data-id="${request.id}">
+                <img src="${request.avatar_url}" alt="${request.username}">
                 <div class="request-info">
-                    <div class="request-name">${request.username}</div>
-                    <div class="request-meta">Хочет добавить вас в друзья</div>
+                    <span class="username">${request.username}</span>
+                    <span class="date">${formatDate(request.request_date)}</span>
                 </div>
                 <div class="request-actions">
-                    <button class="accept-btn" data-user-id="${request.id}">
-                        <i class="fas fa-check"></i>
-                        Принять
-                    </button>
-                    <button class="reject-btn" data-user-id="${request.id}">
-                        <i class="fas fa-times"></i>
-                        Отклонить
-                    </button>
+                    <button onclick="acceptFriend(${request.id})" class="accept-btn">Принять</button>
+                    <button onclick="rejectFriend(${request.id})" class="reject-btn">Отклонить</button>
                 </div>
             </div>
         `).join('');
-
-        // Обновляем обработчики событий
-        document.querySelectorAll('.accept-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                respondToFriendRequest(btn.dataset.userId, 'accepted');
-                btn.closest('.friend-request-card').style.opacity = '0.5';
-                btn.disabled = true;
-                btn.nextElementSibling.disabled = true;
-            });
-        });
-
-        document.querySelectorAll('.reject-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                respondToFriendRequest(btn.dataset.userId, 'rejected');
-                btn.closest('.friend-request-card').style.opacity = '0.5';
-                btn.disabled = true;
-                btn.previousElementSibling.disabled = true;
-            });
-        });
     }
 
     async function respondToFriendRequest(friendId, status) {
@@ -1238,7 +1206,7 @@ async function loadPosts() {
     try {
         const serverHealthy = await checkServerHealth();
         if (!serverHealthy) {
-            throw new Error('Сервер временно недоступен');
+            throw new Error('Сервер времен��о недоступен');
         }
 
         const response = await fetch(`https://adminflow.ru/api/posts/${currentUser.id}`);
