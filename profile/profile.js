@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('logout-btn').style.display = 'none';
             document.querySelector('.avatar-overlay').style.display = 'none';
             
-            // Скрываем вкладку запросов в модальном окне
+            // Скрываем вкла��ку запросов в модальном окне
             const requestsTab = document.querySelector('[data-tab="requests-tab"]');
             if (requestsTab) {
                 requestsTab.style.display = 'none';
@@ -287,7 +287,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 localStorage.setItem('user', JSON.stringify(currentUser));
 
                 // Показываем сообщение об успехе
-                alert('Аватар успешно обновлен');
+                alert('Аватар успеш��о обновлен');
             } else {
                 throw new Error(data.error || 'Ошибка при загрузке аватара');
             }
@@ -492,33 +492,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Функции для работы с друзьями
+    // Функция загрузки друзей
     async function loadFriends(userId) {
-        // Добавляем проверку на userId в начале функции
-        if (!userId) {
-            console.warn('loadFriends: userId is undefined, using currentUser.id');
-            userId = currentUser?.id;
-            if (!userId) {
-                console.error('loadFriends: Unable to determine user ID');
-                return;
-            }
-        }
-
         try {
             const response = await fetch(`https://adminflow.ru/api/friends?userId=${userId}`);
-            if (!response.ok) {
-                throw new Error(`Failed to load friends: ${response.status}`);
-            }
             const data = await response.json();
             
-            if (data.success) {
-                displayFriends(data.friends, userId === currentUser?.id);
-                updateFriendsCount(data.friends.length);
-            } else {
-                throw new Error('Failed to load friends: server returned false success');
+            if (!data.success) {
+                throw new Error(data.error || 'Failed to load friends');
             }
+
+            displayFriends(data.friends);
         } catch (err) {
             console.error('Error loading friends:', err);
+            throw new Error('Failed to load friends: ' + err.message);
         }
     }
 
@@ -1874,7 +1861,7 @@ async function submitComment(postId, button) {
                 </div>
                 <div class="comment-content">${data.comment.content}</div>
             </div>
-        `;ц
+        `;
         container.insertAdjacentHTML('afterbegin', commentHtml);
         
         // Очищаем поле ввода
@@ -1882,5 +1869,45 @@ async function submitComment(postId, button) {
     } catch (err) {
         console.error('Error submitting comment:', err);
         alert('Ошибка при отправке комментария');
+    }
+}
+
+// Функция обновления статуса пользователя
+async function updateUserStatus() {
+    try {
+        const response = await fetch('https://adminflow.ru/api/users/update-status', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ userId: currentUser.id })
+        });
+
+        const data = await response.json();
+        if (!data.success) {
+            throw new Error(data.error || 'Failed to update status');
+        }
+
+        return data.lastActivity;
+    } catch (err) {
+        console.error('Error updating user status:', err);
+        throw err;
+    }
+}
+
+// Функция загрузки друзей
+async function loadFriends(userId) {
+    try {
+        const response = await fetch(`https://adminflow.ru/api/friends?userId=${userId}`);
+        const data = await response.json();
+        
+        if (!data.success) {
+            throw new Error(data.error || 'Failed to load friends');
+        }
+
+        displayFriends(data.friends);
+    } catch (err) {
+        console.error('Error loading friends:', err);
+        throw new Error('Failed to load friends: ' + err.message);
     }
 }
