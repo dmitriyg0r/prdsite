@@ -5,6 +5,7 @@ const http = require('http');
 const authRoutes = require('./routes/auth');
 const profileRoutes = require('./routes/profile');
 const feedRoutes = require('./routes/feed');
+const postsRoutes = require('./routes/posts');
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -28,6 +29,7 @@ app.use((req, res, next) => {
 app.use('/api', authRoutes);
 app.use('/api', profileRoutes);
 app.use('/api', feedRoutes);
+app.use('/api', postsRoutes);
 
 // Маршрут проверки здоровья сервера
 app.get('/api/health', (req, res) => {
