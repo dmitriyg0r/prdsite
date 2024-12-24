@@ -24,12 +24,20 @@ const sslOptions = {
     ca: fs.readFileSync('/etc/letsencrypt/live/adminflow.ru/chain.pem')
 };
 
-// Test database connection
+// Улучшаем тестирование соединения с базой данных
+let dbConnected = false;
 testConnection().then(connected => {
     if (!connected) {
-        console.error('Unable to connect to the database');
+        console.error('Не удалось подключиться к базе данных');
         process.exit(1);
     }
+    if (!dbConnected) {
+        dbConnected = true;
+        console.log('Успешное подключение к базе данных');
+    }
+}).catch(err => {
+    console.error('Ошибка подключения к базе данных:', err);
+    process.exit(1);
 });
 
 // Routes
@@ -44,7 +52,7 @@ app.use('/api', require('./routes/messages'));
 // HTTPS Server
 const httpsServer = https.createServer(sslOptions, app);
 httpsServer.listen(PORT, '0.0.0.0', () => {
-    console.log(`HTTPS Server running on port ${PORT}`);
+    console.log(`HTTPS Сервер запущен на порту ${PORT} (0.0.0.0:${PORT})`);
 });
 
 // Socket.IO
@@ -52,11 +60,8 @@ const io = new Server(httpsServer, {
     cors: {
         origin: ['https://adminflow.ru', 'http://adminflow.ru'],
         methods: ['GET', 'POST'],
-        credentials: true,
-        allowedHeaders: ['Content-Type', 'Authorization']
-    },
-    pingTimeout: 60000,
-    pingInterval: 25000
+        credentials: true
+    }
 });
 
 io.on('connection', (socket) => {
@@ -70,13 +75,4 @@ process.on('uncaughtException', (error) => {
 
 process.on('unhandledRejection', (error) => {
     console.error('Unhandled Rejection:', error);
-});
-
-// Add error handling for Express
-app.use((err, req, res, next) => {
-    console.error('Express error:', err);
-    res.status(500).json({ 
-        error: 'Внутренняя ошибка сервера',
-        details: process.env.NODE_ENV === 'development' ? err.message : undefined
-    });
 });
