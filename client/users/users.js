@@ -4,15 +4,15 @@ let lastStatusUpdate = null;
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        const currentUser = JSON.parse(localStorage.getItem('user'));
-        if (!currentUser) {
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user) {
             window.location.href = '/authreg/authreg.html';
             return;
         }
 
         await Promise.all([
-            loadUsers(currentUser),
-            startStatusUpdates(currentUser)
+            loadUsers(user),
+            startStatusUpdates(user)
         ]);
     } catch (err) {
         console.error('Initialization error:', err);
@@ -20,16 +20,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 // Загрузка пользователей
-async function loadUsers(currentUser) {
+async function loadUsers(user) {
     try {
-        const response = await fetch(`https://adminflow.ru/api/users-list?userId=${currentUser.id}`);
+        const response = await fetch(`https://adminflow.ru/api/users-list?userId=${user.id}`);
         const data = await response.json();
 
         if (!data.success) {
             throw new Error(data.error || 'Ошибка при загрузке пользователей');
         }
 
-        displayUsers(data.users, currentUser.id);
+        displayUsers(data.users, user.id);
     } catch (err) {
         console.error('Error loading users:', err);
         throw new Error('Ошибка при загрузке пользователей');
@@ -37,7 +37,7 @@ async function loadUsers(currentUser) {
 }
 
 // Обновление статуса
-async function updateUserStatus(currentUser) {
+async function updateUserStatus(user) {
     try {
         if (lastStatusUpdate && Date.now() - lastStatusUpdate < 2000) {
             return;
@@ -49,7 +49,7 @@ async function updateUserStatus(currentUser) {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                userId: currentUser.id,
+                userId: user.id,
                 is_online: true,
                 last_activity: new Date().toISOString()
             })
@@ -67,16 +67,16 @@ async function updateUserStatus(currentUser) {
 }
 
 // Запуск обновления статуса
-function startStatusUpdates(currentUser) {
+function startStatusUpdates(user) {
     // Обновляем статус каждые 30 секунд
-    setInterval(() => updateUserStatus(currentUser), 30000);
+    setInterval(() => updateUserStatus(user), 30000);
     
     // Обновляем при активности пользователя
-    document.addEventListener('mousemove', () => updateUserStatus(currentUser));
-    document.addEventListener('keydown', () => updateUserStatus(currentUser));
+    document.addEventListener('mousemove', () => updateUserStatus(user));
+    document.addEventListener('keydown', () => updateUserStatus(user));
     
     // Первое обновление
-    updateUserStatus(currentUser);
+    updateUserStatus(user);
 }
 
 // Отображение пользователей
@@ -123,14 +123,14 @@ function getFriendshipButton(user, currentUserId) {
 // Функции для работы с друзьями
 async function addFriend(friendId) {
     try {
-        const currentUser = JSON.parse(localStorage.getItem('user'));
+        const user = JSON.parse(localStorage.getItem('user'));
         const response = await fetch('https://adminflow.ru/api/friend-request', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                userId: currentUser.id,
+                userId: user.id,
                 friendId: friendId
             })
         });
@@ -141,7 +141,7 @@ async function addFriend(friendId) {
         }
 
         // Обновляем список пользователей
-        await loadUsers(currentUser);
+        await loadUsers(user);
     } catch (err) {
         console.error('Error sending friend request:', err);
         alert('Ошибка при отправке заявки в друзья');
@@ -150,14 +150,14 @@ async function addFriend(friendId) {
 
 async function removeFriend(friendId) {
     try {
-        const currentUser = JSON.parse(localStorage.getItem('user'));
+        const user = JSON.parse(localStorage.getItem('user'));
         const response = await fetch('https://adminflow.ru/api/friend/remove', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                userId: currentUser.id,
+                userId: user.id,
                 friendId: friendId
             })
         });
@@ -168,7 +168,7 @@ async function removeFriend(friendId) {
         }
 
         // Обновляем список пользователей
-        await loadUsers(currentUser);
+        await loadUsers(user);
     } catch (err) {
         console.error('Error removing friend:', err);
         alert('Ошибка при удалении из друзей');
