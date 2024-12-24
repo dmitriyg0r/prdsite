@@ -592,7 +592,6 @@ body {
 
 .comment-author {
     font-weight: 600;
-    color: var(--text-primary);
     font-size: 14px;
 }
 
@@ -602,7 +601,6 @@ body {
 }
 
 .comment-content {
-    color: var(--text-primary);
     font-size: 14px;
     line-height: 1.5;
 }
