@@ -3,6 +3,8 @@ const cors = require('cors');
 const { Server } = require('socket.io');
 const http = require('http');
 const authRoutes = require('./routes/auth');
+const profileRoutes = require('./routes/profile');
+const feedRoutes = require('./routes/feed');
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -22,8 +24,15 @@ app.use((req, res, next) => {
     next();
 });
 
-// Подключаем маршруты авторизации
+// Подключаем маршруты
 app.use('/api', authRoutes);
+app.use('/api', profileRoutes);
+app.use('/api', feedRoutes);
+
+// Маршрут проверки здоровья сервера
+app.get('/api/health', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
 
 // Тестовый маршрут
 app.get('/api/test', (req, res) => {
