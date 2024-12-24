@@ -7,14 +7,16 @@ async function loadUsers() {
         console.log('Current user from localStorage:', currentUser);
 
         if (!currentUser || !currentUser.id) {
-            throw new Error('Пользователь не авторизован');
+            console.error('No user found in localStorage');
+            return;
         }
 
-        const url = `https://adminflow.ru/api/users-list?userId=${currentUser.id}`;
-        console.log('Fetching users from:', url);
+        const url = new URL('https://adminflow.ru/api/users-list');
+        url.searchParams.append('userId', currentUser.id);
+        console.log('Fetching users from:', url.toString());
 
-        const response = await fetch(url);
-        console.log('Response:', response.status, response.statusText);
+        const response = await fetch(url.toString());
+        console.log('Response status:', response.status);
 
         if (!response.ok) {
             const errorData = await response.json();
@@ -24,6 +26,10 @@ async function loadUsers() {
 
         const data = await response.json();
         console.log('Users data:', data);
+
+        if (!data.success) {
+            throw new Error(data.error || 'Ошибка при загрузке пользователей');
+        }
 
         displayUsers(data.users);
     } catch (err) {
@@ -98,7 +104,7 @@ async function addFriend(friendId) {
             throw new Error(data.error || 'Failed to send friend request');
         }
 
-        // Обновляем список пользователей
+        // Обновляем список польз��вателей
         await loadUsers();
     } catch (err) {
         console.error('Error sending friend request:', err);

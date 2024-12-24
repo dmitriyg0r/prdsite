@@ -25,7 +25,16 @@ app.use(express.json());
 // Расширенное логирование
 app.use((req, res, next) => {
     console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
-    console.log('Query params:', req.query);
+    console.log('Headers:', req.headers);
+    console.log('Query:', req.query);
+    console.log('Body:', req.body);
+    next();
+});
+
+// CORS middleware
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
     next();
 });
 
