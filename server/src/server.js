@@ -49,6 +49,23 @@ app.use('/api', require('./routes/admin'));
 app.use('/api', require('./routes/upload'));
 app.use('/api', require('./routes/messages'));
 
+// Добавляем тестовый маршрут
+app.get('/api/test', (req, res) => {
+    try {
+        res.status(200).json({ 
+            status: 'success',
+            message: 'API работает',
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('Ошибка в тестовом маршруте:', error);
+        res.status(500).json({ 
+            status: 'error',
+            message: 'Внутренняя ошибка сервера'
+        });
+    }
+});
+
 // HTTPS Server
 const httpsServer = https.createServer(sslOptions, app);
 httpsServer.listen(PORT, '0.0.0.0', () => {
@@ -75,4 +92,14 @@ process.on('uncaughtException', (error) => {
 
 process.on('unhandledRejection', (error) => {
     console.error('Unhandled Rejection:', error);
+});
+
+// Обновляем обработчик ошибок
+app.use((err, req, res, next) => {
+    console.error('Express error:', err);
+    res.status(500).json({ 
+        status: 'error',
+        message: 'Внутренняя ошибка сервера',
+        details: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
 });
