@@ -656,15 +656,6 @@ body {
     padding-bottom: 32px;
 }
 
-.users-sidebar {
-    position: sticky;
-    top: 20px;
-    height: calc(100vh - 40px);
-    width: 300px;
-    margin-left: auto;
-    transform:translatex(239px) translatey(0px);
-}
-
 .lenta-layout{
     padding-right:350px;
     transform:translatex(38px) translatey(-15px);
