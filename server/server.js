@@ -1360,7 +1360,7 @@ app.get('/api/users/status/:userId', async (req, res) => {
     }
 });
 
-// Обновление статуса пользователя
+// ��бновление статуса пользователя
 app.post('/api/users/update-status', async (req, res) => {
     try {
         const { userId, is_online, last_activity } = req.body;
@@ -1804,9 +1804,9 @@ app.get('/api/users/check-email', async (req, res) => {
 });
 
 // Создаем трнспорт для отправки почты
-const transporter = nodemailer.createTransport({
+let transporter = nodemailer.createTransport({
     host: 'smtp.timeweb.ru',
-    port: 2525,  // еняем порт на 2525
+    port: 2525,
     secure: false,
     auth: {
         user: 'adminflow@adminflow.ru',
@@ -1992,8 +1992,15 @@ const httpServer = http.createServer((req, res) => {
 });
 
 const httpsServer = https.createServer(sslOptions, app);
-httpsServer.listen(PORT, 'localhost', () => {
-    console.log(`HTTPS Server running on localhost:${PORT}`);
+
+// Запускаем HTTP сервер на порту 80 для редиректа
+httpServer.listen(80, () => {
+    console.log('HTTP Server running on port 80 (redirect)');
+});
+
+// Запускаем HTTPS сервер на указанном порту
+httpsServer.listen(PORT, () => {
+    console.log(`HTTPS Server running on port ${PORT}`);
 });
 
 // Удаляем HTTP сервер, так как используем только HTTPS
@@ -2232,7 +2239,7 @@ app.get('/socket.io/test', (req, res) => {
     });
 });
 
-// Добавляем новый endpoint для получения информации о пользователе
+// Добавляем н��вый endpoint для получения информации о пользователе
 app.get('/api/users/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
