@@ -60,22 +60,40 @@
     transition: all 0.3s ease;
 }
 
-/* Анимации при наведении */
-.sidebar:hover {
+.sidebar.expanded {
     width: 250px;
 }
 
-.sidebar:hover .sidebar-link {
+/* Добавляем стили для кнопки */
+.sidebar-toggle {
+    position: absolute;
+    right: -40px;
+    top: 20px;
+    background: var(--sidebar-background);
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 0 8px 8px 0;
+    color: rgba(255, 255, 255, 0.85);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+/* Заменяем все .sidebar:hover на .sidebar.expanded */
+.sidebar.expanded .sidebar-link {
     padding: 12px 24px;
     background: rgba(255, 255, 255, 0.05);
 }
 
-.sidebar:hover .sidebar-link i {
+.sidebar.expanded .sidebar-link i {
     margin: 0;
     margin-right: 16px;
 }
 
-.sidebar:hover .sidebar-link span {
+.sidebar.expanded .sidebar-link span {
     opacity: 1;
 }
 
