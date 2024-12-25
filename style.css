@@ -34,6 +34,11 @@
     --table-background: var(--text-container-background);
     --table-text: var(--text-color);
     --table-text-secondary: var(--text-secondary);
+    
+    --sidebar-background: #2c3e50;
+    --sidebar-background-rgb: 44, 62, 80;
+    --sidebar-hover: #3498db;
+    --sidebar-hover-rgb: 52, 152, 219;
 }
 
 /* Темная тема - улучшенная тёмная тема */
@@ -81,6 +86,11 @@
     --card-background: #1E1F22;          /* Темнее */
     --hover-background: #2A2B2F;         /* Темнее */
     --today-highlight: rgba(139, 68, 196, 0.1);
+    
+    --sidebar-background: #1a1a1a;
+    --sidebar-background-rgb: 26, 26, 26;
+    --sidebar-hover: #3498db;
+    --sidebar-hover-rgb: 52, 152, 219;
 }
 
 /* Добавим общее правило для всего текста */
@@ -203,7 +213,7 @@ table {
     min-width: 800px;
 }
 
-/* Улучшенные стили для кнопки создания поста */
+/* Улучшенны�� стили для кнопки создания поста */
 .add-post-btn {
     background: linear-gradient(45deg, var(--button-background), var(--header-gradient));
     color: white;
