@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             const data = await response.json();
             
-            // Заполняем инфор��ацию профиля друга
+            // Заполняем информацию профиля друга
             document.getElementById('username').textContent = data.user.username;
             document.getElementById('role').textContent = data.user.role;
             document.getElementById('created_at').textContent = new Date(data.user.created_at).toLocaleString();
@@ -108,7 +108,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('logout-btn').style.display = 'none';
             document.querySelector('.avatar-overlay').style.display = 'none';
             
-            // Скрываем вкладку запросов в модальном окне
+            // Ск��ываем вкладку запросов в модальном окне
             const requestsTab = document.querySelector('[data-tab="requests-tab"]');
             if (requestsTab) {
                 requestsTab.style.display = 'none';
@@ -329,15 +329,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                 throw new Error(data.error || 'Ошибка при загрузке аватара');
             }
 
-            if (!data.success || !data.user) {
+            if (!data.success || !data.avatarUrl) {
                 console.error('Некорректный ответ:', data);
                 throw new Error('Некорректный ответ от сервера');
             }
 
-            // Обновляем данные пользователя в localStorage
+            // Обновляем только аватар в данных пользователя
             const updatedUser = {
                 ...currentUser,
-                ...data.user
+                avatar_url: data.avatarUrl
             };
             
             console.log('4. Обновленные данные пользователя:', updatedUser);
@@ -346,7 +346,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             currentUser = updatedUser;
 
             // Обновляем аватар на странице
-            const avatarUrl = formatAvatarUrl(data.user.avatar_url);
+            const avatarUrl = formatAvatarUrl(data.avatarUrl);
             const avatarElement = document.getElementById('profile-avatar');
             if (avatarElement) {
                 avatarElement.src = avatarUrl;
@@ -672,7 +672,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }
 
-        // Добавляем отладочную и��формацию
+        // Добавляем от��адочную информацию
         console.log('Displaying friends:', {
             total: friends.length,
             displayed: Math.min(friends.length, maxFriendsInGrid),
@@ -900,7 +900,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Обновляем функцию для отображения количества друзей
+    // Обновл��ем функцию для отображения количества друзей
     function updateFriendsCount(count) {
         const friendsCount = document.querySelector('.friends-count');
         if (friendsCount) {
@@ -974,7 +974,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Оптимизированная функция обновления статуса пользователя
     let statusUpdateTimeout = null;
     let lastStatusUpdate = 0;
-    const MIN_UPDATE_INTERVAL = 10000; // Минимальный интер��ал между обновлениями (10 секунд)
+    const MIN_UPDATE_INTERVAL = 10000; // Минимальный интервал между обновлениями (10 секунд)
 
     async function updateUserStatus(force = false) {
         if (!currentUser) return;
@@ -1599,7 +1599,7 @@ function removePostImage() {
     document.getElementById('image-preview').innerHTML = '';
 }
 
-// Добавляем ф��нкцию удаления поста
+// Добавляем функцию удаления поста
 async function deletePost(postId) {
     if (!confirm('Вы уверены, что хотите удалить эту публикацию?')) {
         return;
