@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             const data = await response.json();
             
-            // Заполняем инфор��ацию профиля друга
+            // Заполняем информацию профиля друга
             document.getElementById('username').textContent = data.user.username;
             document.getElementById('role').textContent = data.user.role;
             document.getElementById('created_at').textContent = new Date(data.user.created_at).toLocaleString();
@@ -159,7 +159,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Загружаем список своих друзей с явным указанием currentUser.id
         await loadFriends(currentUser.id);
         
-        // Запускаем обнов��ение своего статуса
+        // Запус��аем обновление своего статуса
         startStatusUpdates();
         
         // Загружаем посты
@@ -251,7 +251,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     if (response.ok) {
                         if (!data.available) {
-                            editEmailInput.setCustomValidity('Этот email уже используется');
+                            editEmailInput.setCustomValidity('Этот email уже использу��тся');
                             editEmailInput.reportValidity();
                         } else {
                             editEmailInput.setCustomValidity('');
@@ -324,35 +324,42 @@ document.addEventListener('DOMContentLoaded', async () => {
             const data = await response.json();
             console.log('Получен ответ от сервера:', data);
             
-            if (response.ok && data.success && data.user) {
-                // Обновляем данные пользователя в localStorage с данными из БД
-                const updatedUser = {
-                    ...currentUser,
-                    ...data.user // Используем все обновленные данные из БД
-                };
-                
-                console.log('Обновляем данные пользователя:', updatedUser);
-                
-                // Сохраняем обновленные данные в localStorage
-                localStorage.setItem('user', JSON.stringify(updatedUser));
-                currentUser = updatedUser;
-
-                // Обновляем аватар на странице
-                const avatarUrl = formatAvatarUrl(data.user.avatar_url);
-                document.getElementById('profile-avatar').src = avatarUrl;
-                
-                console.log('Аватар обновлен:', avatarUrl);
-                alert('Аватар успешно обновлен');
-                
-                // Принудительно обновляем данные пользователя
-                await loadUserData();
-            } else {
+            if (!response.ok) {
                 throw new Error(data.error || 'Ошибка при загрузке аватара');
             }
+
+            if (!data.success || !data.user) {
+                throw new Error('Некорректный ответ от сервера');
+            }
+
+            // Обновляем данные пользователя в localStorage
+            const updatedUser = {
+                ...currentUser,
+                ...data.user
+            };
+            
+            console.log('Обновляем данные пользователя:', updatedUser);
+            
+            // Сохраняем обновленные данные в localStorage
+            localStorage.setItem('user', JSON.stringify(updatedUser));
+            currentUser = updatedUser;
+
+            // Обновляем аватар на странице
+            const avatarUrl = formatAvatarUrl(data.user.avatar_url);
+            const avatarElement = document.getElementById('profile-avatar');
+            if (avatarElement) {
+                avatarElement.src = avatarUrl;
+            }
+            
+            console.log('Аватар обновлен:', avatarUrl);
+            alert('Аватар успешно обновлен');
+
         } catch (err) {
-            console.error('Error uploading avatar:', err);
+            console.error('Ошибка загрузки аватара:', err);
             alert(err.message || 'Ошибка при загрузке аватара');
         }
+        
+        // Очищаем input файла
         e.target.value = '';
     });
 
@@ -954,7 +961,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         } catch (err) {
             console.error('Error loading user profile:', err);
-            alert('Ошибка при загрузке профиля пользова��еля');
+            alert('Ошибка при загрузке профиля пользователя');
         }
     }
 
@@ -1309,7 +1316,7 @@ function initializePostHandlers() {
 
         // Проверяем размер файла
         if (file.size > 10 * 1024 * 1024) { // 10MB
-            alert('Файл слишк��м большой. Максимальный размер: 10MB');
+            alert('Файл слишком большой. Максимальный размер: 10MB');
             e.target.value = '';
             return;
         }
@@ -1412,7 +1419,7 @@ async function createPost() {
         }
 
         if (!response.ok) {
-            throw new Error(data.error || 'Ошибка при создании пуб��икации');
+            throw new Error(data.error || 'Ошибка при создании публикации');
         }
         
         if (data.success) {
@@ -1765,7 +1772,7 @@ async function downloadFile(fileUrl) {
         link.href = url;
         link.download = filename;
         
-        // Добавляем ссылку �� DOM и эмуируем клик
+        // Добавляем ссылку  DOM и эмуируем клик
         document.body.appendChild(link);
         link.click();
         
