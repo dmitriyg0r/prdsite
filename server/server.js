@@ -645,7 +645,7 @@ app.get('/api/messages/last/:userId/:friendId', async (req, res) => {
         res.json({ success: true, message: result.rows[0] });
     } catch (err) {
         console.error('Error getting last message:', err);
-        res.status(500).json({ error: '����шибка при получении последнего сообщения' });
+        res.status(500).json({ error: '������шибка при получении последнего сообщения' });
     }
 });
 
@@ -2752,10 +2752,10 @@ const uploadAvatar = multer({
 app.post('/api/upload-avatar', uploadAvatar.single('avatar'), async (req, res) => {
     try {
         const userId = req.body.userId;
-        console.log('Upload avatar request for user:', userId);
+        console.log('1. Upload avatar request for user:', userId);
 
         if (!userId || !req.file) {
-            console.error('Missing required data:', { userId, file: !!req.file });
+            console.error('2. Missing required data:', { userId, file: !!req.file });
             return res.status(400).json({ 
                 success: false, 
                 error: !userId ? 'ID пользователя не указан' : 'Файл не был загружен' 
@@ -2768,23 +2768,35 @@ app.post('/api/upload-avatar', uploadAvatar.single('avatar'), async (req, res) =
         const avatarUrl = `/uploads/avatars/${filename}`;
         const finalPath = path.join('/var/www/html/uploads/avatars', filename);
 
+        console.log('3. File paths:', {
+            filename,
+            avatarUrl,
+            finalPath
+        });
+
         try {
             // Обрабатываем файл
             if (fs.existsSync(finalPath)) {
                 fs.unlinkSync(finalPath);
+                console.log('4. Deleted existing file');
             }
             fs.renameSync(req.file.path, finalPath);
+            console.log('5. Moved new file');
 
-            // Обновляем базу данных
-            const result = await pool.query(`
-                WITH updated AS (
-                    UPDATE users 
-                    SET 
-                        avatar_url = $1, 
-                        updated_at = NOW() 
-                    WHERE id = $2 
-                    RETURNING *
-                )
+            // Обновляем данные в БД
+            const updateQuery = `
+                UPDATE users 
+                SET 
+                    avatar_url = $1, 
+                    updated_at = NOW() 
+                WHERE id = $2;
+            `;
+            
+            await pool.query(updateQuery, [avatarUrl, userId]);
+            console.log('6. Updated avatar_url in database');
+
+            // Получаем обновленные данные пользователя
+            const getUserQuery = `
                 SELECT 
                     id, 
                     username, 
@@ -2794,28 +2806,28 @@ app.post('/api/upload-avatar', uploadAvatar.single('avatar'), async (req, res) =
                     created_at, 
                     last_login, 
                     updated_at
-                FROM updated;
-            `, [avatarUrl, userId]);
+                FROM users 
+                WHERE id = $1;
+            `;
 
-            if (result.rows.length === 0) {
-                throw new Error('Пользователь не найден');
+            const userResult = await pool.query(getUserQuery, [userId]);
+            console.log('7. Retrieved user data:', userResult.rows[0]);
+
+            if (!userResult.rows[0]) {
+                throw new Error('User not found after update');
             }
-
-            const userData = result.rows[0];
-            console.log('User data after update:', userData);
 
             const response = {
                 success: true,
-                avatarUrl: avatarUrl,
-                user: userData
+                avatarUrl,
+                user: userResult.rows[0]
             };
 
-            console.log('Sending response:', response);
-            res.json(response);
+            console.log('8. Sending response:', response);
+            return res.json(response);
 
         } catch (err) {
-            console.error('Error processing avatar:', err);
-            // Удаляем загруженный файл в случае ошибки
+            console.error('9. Database error:', err);
             if (fs.existsSync(req.file.path)) {
                 fs.unlinkSync(req.file.path);
             }
@@ -2823,8 +2835,11 @@ app.post('/api/upload-avatar', uploadAvatar.single('avatar'), async (req, res) =
         }
 
     } catch (err) {
-        console.error('Avatar upload error:', err);
-        res.status(500).json({ 
+        console.error('10. Avatar upload error:', {
+            message: err.message,
+            stack: err.stack
+        });
+        return res.status(500).json({ 
             success: false, 
             error: 'Ошибка при загрузке аватара',
             details: err.message 
