@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('logout-btn').style.display = 'none';
             document.querySelector('.avatar-overlay').style.display = 'none';
             
-            // Скрываем вкладку запросов в модальном окне
+            // Скрываем вкла��ку запросов в модальном окне
             const requestsTab = document.querySelector('[data-tab="requests-tab"]');
             if (requestsTab) {
                 requestsTab.style.display = 'none';
@@ -276,17 +276,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             const data = await response.json();
             
             if (response.ok && data.success) {
-                // Обновляем аватар на странице
-                document.getElementById('profile-avatar').src = data.avatarUrl + '?t=' + new Date().getTime();
+                // Добавляем базовый URL к пути аватара
+                const fullAvatarUrl = `https://adminflow.ru${data.avatarUrl}`;
                 
-                // Обновляем данные пользователя в localStorage
+                // Обновляем аватар на странице
+                document.getElementById('profile-avatar').src = fullAvatarUrl + '?t=' + new Date().getTime();
+                
+                // Обновляем данные пользователя в localStorage с полным URL
                 currentUser = {
                     ...currentUser,
-                    avatar_url: data.avatarUrl
+                    avatar_url: fullAvatarUrl
                 };
                 localStorage.setItem('user', JSON.stringify(currentUser));
 
-                // Показываем сообщение об успехе
                 alert('Аватар успешно обновлен');
             } else {
                 throw new Error(data.error || 'Ошибка при загрузке аватара');
@@ -314,7 +316,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Обновляем селектор для кнопки открытия модального окна
     const friendsHeaderBtn = document.querySelector('.friends-header-btn');
     
-    // Открытие модального окна при клике на заголовок "Дузья"
+    // Открыти�� модального окна при клике на заголовок "Дузья"
     friendsHeaderBtn.addEventListener('click', (e) => {
         e.preventDefault();
         friendsModal.classList.add('active');
@@ -384,7 +386,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Добавляем функцию getFriendStatus
+    // Добавл��ем функцию getFriendStatus
     function getFriendStatus(userId) {
         // Получаем статус из атрибута data-friendship-status
         const userCard = document.querySelector(`.user-card[data-user-id="${userId}"]`);
@@ -473,7 +475,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             btn.addEventListener('click', () => {
                 sendFriendRequest(btn.dataset.userId);
                 btn.classList.add('pending');
-                btn.innerHTML = '<i class="fas fa-clock"></i> Заявка отправлена';
+                btn.innerHTML = '<i class="fas fa-clock"></i> Заявка отпра��лена';
                 btn.disabled = true;
             });
         });

@@ -301,8 +301,8 @@ app.post('/api/upload-avatar', upload.single('avatar'), (req, res) => {
             return res.status(400).json({ error: 'Файл не был загружен' });
         }
 
-        // Формируем URL для доступа к файлу
-        const fileUrl = `/uploads/avatars/${req.file.filename}`;
+        // Формируем полный URL для доступа к файлу
+        const fileUrl = `https://adminflow.ru/uploads/avatars/${req.file.filename}`;
         res.json({ success: true, avatarUrl: fileUrl });
 
     } catch (err) {
@@ -1681,7 +1681,7 @@ app.put('/api/comments/:commentId', async (req, res) => {
     }
 });
 
-// Обработка статуса набора текста
+// Обраб��тка статуса набора текста
 app.post('/api/messages/typing', async (req, res) => {
     try {
         const { userId, friendId, isTyping } = req.body;
