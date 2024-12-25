@@ -44,15 +44,14 @@ function initMobileChat() {
 
     // Делегирование события клика на список чатов
     elements.chatList.addEventListener('click', async (e) => {
-        // Находим ближайший родительский элемент чата
         const chatItem = e.target.closest('.chat-item, .chat-partner, .friend-item');
-        if (!chatItem) return; // Если клик был не по чату, выходим
+        if (!chatItem) return;
 
         e.preventDefault();
         e.stopPropagation();
 
-        // Получаем userId из data-атрибута или из href
-        const userId = chatItem.dataset.userId || chatItem.getAttribute('href')?.split('=')[1];
+        // Получаем userId из data-атрибута
+        const userId = chatItem.dataset.friendId || chatItem.dataset.userId || chatItem.getAttribute('href')?.split('=')[1];
         if (!userId) {
             console.error('UserId not found');
             return;
@@ -76,9 +75,7 @@ function initMobileChat() {
                     status: document.getElementById('chat-header-status')
                 };
 
-                if (headerElements.name) {
-                    headerElements.name.textContent = currentChatPartner.username;
-                }
+                if (headerElements.name) headerElements.name.textContent = currentChatPartner.username;
                 if (headerElements.avatar) {
                     headerElements.avatar.src = currentChatPartner.avatar_url || '../uploads/avatars/default.png';
                     headerElements.avatar.alt = currentChatPartner.username;
@@ -89,8 +86,9 @@ function initMobileChat() {
                 }
             }
 
-            // Загружаем историю сообщений
+            // Загружаем историю сообщений и запускаем обновления
             await loadChatHistory();
+            startMessageUpdates();
 
             // Переключаем отображение
             elements.chatList.style.display = 'none';
@@ -98,12 +96,8 @@ function initMobileChat() {
             elements.chatArea.style.display = 'flex';
             elements.chatArea.style.animation = 'slideInFromRight 0.3s ease-out';
 
-            if (elements.chatPlaceholder) {
-                elements.chatPlaceholder.style.display = 'none';
-            }
-            if (elements.messagesArea) {
-                elements.messagesArea.style.display = 'flex';
-            }
+            if (elements.chatPlaceholder) elements.chatPlaceholder.style.display = 'none';
+            if (elements.messagesArea) elements.messagesArea.style.display = 'flex';
 
             // Прокручиваем к последнему сообщению
             scrollToBottom();
