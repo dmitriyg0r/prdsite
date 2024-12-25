@@ -1060,7 +1060,7 @@ body {
     color: var(--text-secondary);
 }
 
-/* Стили для цитат в отправленных сообщениях */
+/* Стили для цитат в отправленн��х сообщениях */
 .message-sent .quoted-message {
     background: rgba(255, 255, 255, 0.15);
     border-left-color: rgba(255, 255, 255, 0.4);
@@ -1220,7 +1220,7 @@ body {
         left: 0;
         width: 100%;
         height: calc(100vh - 60px);
-        z-index: 100;
+        z-index: 1000;
         background: var(--surface-color);
     }
 
@@ -1231,7 +1231,7 @@ body {
         left: 0;
         width: 100%;
         height: calc(100vh - 60px);
-        z-index: 99;
+        z-index: 990;
         display: flex;
         flex-direction: column;
     }
@@ -1253,13 +1253,14 @@ body {
         padding: 10px;
         box-sizing: border-box;
         border-top: 1px solid var(--border-light);
+        z-index: 992;
     }
 
     /* Заголовок чата */
     .chat-header {
         position: sticky;
         top: 0;
-        z-index: 101;
+        z-index: 991;
         background: var(--surface-color);
     }
 
@@ -1292,6 +1293,14 @@ body {
     .message {
         max-width: 80%;
         box-sizing: border-box;
+    }
+
+    .context-menu {
+        z-index: 993;
+    }
+
+    .image-modal {
+        z-index: 9000; /* Меньше чем у мобильного меню, но больше остальных элементов */
     }
 }
 
