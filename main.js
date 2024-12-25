@@ -1,30 +1,29 @@
-// Элементы управления темой
-const themeToggle = document.getElementById('theme-toggle');
-const body = document.body;
+document.addEventListener('DOMContentLoaded', () => {
+    // Элементы управления темой
+    const themeToggle = document.querySelector('.theme-toggle-container');
+    const themeCheckbox = document.querySelector('.theme-checkbox');
+    const body = document.body;
 
-// Загрузка сохраненной темы
-const savedTheme = localStorage.getItem('theme');
-if (savedTheme === 'dark') {
-    body.setAttribute('data-theme', 'dark');
-    if (themeToggle) themeToggle.checked = true;
-}
-
-// Функция переключения темы
-function toggleTheme() {
-    const isDark = themeToggle.checked;
-    if (isDark) {
-        body.setAttribute('data-theme', 'dark');
-        localStorage.setItem('theme', 'dark');
-    } else {
-        body.removeAttribute('data-theme');
-        localStorage.setItem('theme', 'light');
+    // Загрузка сохраненной темы
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    if (themeCheckbox) {
+        themeCheckbox.checked = savedTheme === 'dark';
     }
-}
 
-// Добавляем обработчик события
-if (themeToggle) {
-    themeToggle.addEventListener('change', toggleTheme);
-}
+    // Обработчик переключения темы
+    if (themeToggle && themeCheckbox) {
+        themeToggle.addEventListener('click', () => {
+            themeCheckbox.checked = !themeCheckbox.checked;
+            const newTheme = themeCheckbox.checked ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
+    }
+
+    // Обновление навигационного меню
+    updateNavigationMenu();
+});
 
 // Добавляем функцию для обновления меню
 function updateNavigationMenu() {
@@ -57,12 +56,6 @@ function updateNavigationMenu() {
         existingChatLink.remove();
     }
 }
-
-// Вызываем функцию при загрузке страницы
-document.addEventListener('DOMContentLoaded', () => {
-    updateNavigationMenu();
-    // ... остальной код ...
-});
 
 // Обновляем меню при изменении состояния авторизации
 window.addEventListener('storage', (e) => {
