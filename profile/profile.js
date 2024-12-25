@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('created_at').textContent = new Date(data.user.created_at).toLocaleString();
             document.getElementById('last_login').textContent = data.user.last_login ? 
                 new Date(data.user.last_login).toLocaleString() : 'Нет данных';
-            document.getElementById('profile-avatar').src = formatAvatarUrl(data.user.avatar_url);
+            document.getElementById('profile-avatar').src = data.user.avatar_url || '/uploads/avatars/default.png';
 
             // Загружаем список друзей профиля друга
             await loadFriends(profileId);
@@ -143,7 +143,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('created_at').textContent = new Date(currentUser.created_at).toLocaleString();
         document.getElementById('last_login').textContent = currentUser.last_login ? 
             new Date(currentUser.last_login).toLocaleString() : 'Нет данных';
-        document.getElementById('profile-avatar').src = formatAvatarUrl(currentUser.avatar_url);
+        document.getElementById('profile-avatar').src = currentUser.avatar_url || '/uploads/avatars/default.png';
 
         // Добавляем отображение своего статуса
         const statusElement = document.querySelector('.online-status');
@@ -275,7 +275,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.body.style.overflow = 'hidden';
         });
 
-        // Обр��ботчик для закрытия модального окна
+        // Обработчик для закрытия модального окна
         editProfileModal.querySelector('.modal-close')?.addEventListener('click', () => {
             editProfileModal.classList.remove('active');
             document.body.style.overflow = '';
@@ -500,7 +500,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             return `
                 <div class="user-card" data-user-id="${user.id}" data-friendship-status="${friendStatus}">
-                    <img src="${formatAvatarUrl(user.avatar_url)}" 
+                    <img src="${user.avatar_url || '/uploads/avatars/default.png'}" 
                          alt="${user.username}" 
                          class="user-avatar">
                     <div class="user-info">
@@ -622,7 +622,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             friendsGrid.innerHTML = friends.length > 0 
                 ? friends.slice(0, maxFriendsInGrid).map(friend => `
                     <a href="/profile/profile.html?id=${friend.id}" class="friend-item">
-                        <img src="${formatAvatarUrl(friend.avatar_url)}" 
+                        <img src="${friend.avatar_url || '/uploads/avatars/default.png'}" 
                              alt="${friend.username}"
                              class="friend-avatar">
                         <span class="friend-name">${friend.username}</span>
@@ -643,7 +643,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (friendsList) {
             friendsList.innerHTML = friends.map(friend => `
                 <div class="friend-card">
-                    <img src="${formatAvatarUrl(friend.avatar_url)}" 
+                    <img src="${friend.avatar_url || '/uploads/avatars/default.png'}" 
                          alt="${friend.username}" 
                          class="friend-avatar">
                     <div class="friend-info">
@@ -692,7 +692,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         requestsList.innerHTML = requests.map((request, index) => `
             <div class="friend-request-card" style="animation-delay: ${index * 0.1}s">
-                <img src="${formatAvatarUrl(request.avatar_url)}" 
+                <img src="${request.avatar_url || '/uploads/avatars/default.png'}" 
                      alt="${request.username}" 
                      class="request-avatar">
                 <div class="request-info">
@@ -747,7 +747,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
 
             if (response.ok) {
-                // ��ерезагружаем списки друзей и заявок
+                // Перезагружаем списки друзей и заявок
                 loadFriendRequests();
                 loadFriends();
             }
@@ -792,7 +792,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const isOnline = user.last_activity && 
                 (new Date() - new Date(user.last_activity)) < 5 * 60 * 1000;
 
-            // Используем ста��ус дружбы из ответа сервера
+            // Используем статус дружбы из ответа сервера
             const friendStatus = user.friendship_status || 'none';
             
             let buttonClass = '';
@@ -818,7 +818,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             return `
                 <div class="user-card" data-user-id="${user.id}" data-friendship-status="${friendStatus}">
-                    <img src="${formatAvatarUrl(user.avatar_url)}" 
+                    <img src="${user.avatar_url || '/uploads/avatars/default.png'}" 
                          alt="${user.username}" 
                          class="user-avatar">
                     <div class="user-info">
@@ -882,7 +882,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Обновляем обработчик открытия модального окна
     document.querySelector('.friends-header-btn').addEventListener('click', () => {
-        // Обновляем списки при откры��ии модального окна
+        // Обновляем списки при открытии модального окна
         loadFriends();
         loadFriendRequests();
     });
@@ -1009,7 +1009,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             } catch (err) {
                 console.error('Error updating user status:', err);
             }
-        }, 100); // Небольшая задержка для г��уппировки обновлений
+        }, 100); // Небольшая задержка для группировки обновлений
     }
 
     // Оптимизированная функция отслеживания активности
@@ -1297,14 +1297,14 @@ function initializePostHandlers() {
             }, 10);
         } else {
             postForm.classList.remove('active');
-            // Скрываем форму после завершения анимации
+            // Скрываем форм�� после завершения анимации
             setTimeout(() => {
                 postForm.style.display = 'none';
             }, 300);
         }
     });
 
-    // Обработ з��грузки изображения
+    // Обработ загрузки изображения
     postImage?.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -1330,7 +1330,7 @@ function initializePostHandlers() {
             };
             reader.readAsDataURL(file);
         } else {
-            // Для не-изображений показываем иконку файла
+            // Для не-изображений показы��аем иконку файла
             const preview = document.getElementById('image-preview');
             const fileIcon = getFileIcon(file.name.split('.').pop().toLowerCase());
             preview.innerHTML = `
@@ -1414,7 +1414,7 @@ async function createPost() {
         }
 
         if (!response.ok) {
-            throw new Error(data.error || 'Ош��бка при создании публикации');
+            throw new Error(data.error || 'Ошибка при создании публикации');
         }
         
         if (data.success) {
@@ -1432,7 +1432,7 @@ async function createPost() {
         }
     } catch (err) {
         console.error('Error creating post:', err);
-        alert('Ошибка при создании публикации: ' + (err.message || 'Неизвестная ошибка'));
+        alert('Ошибка при создании публикации: ' + (err.message || 'Не��звестная ошибка'));
     }
 }
 
@@ -1498,7 +1498,7 @@ function displayPosts(posts) {
         return `
             <div class="post" data-post-id="${post.id}">
                 <div class="post-header">
-                    <img src="${formatAvatarUrl(post.author_avatar)}" 
+                    <img src="${post.author_avatar || '/uploads/avatars/default.png'}" 
                          alt="${post.author_name}" 
                          class="post-avatar">
                     <div class="post-info">
@@ -1614,7 +1614,7 @@ async function deletePost(postId) {
         const data = await response.json();
         
         if (response.ok || data.success) {
-            // Перезагружаем посты после удаления
+            // Перезагруж��ем посты после удаления
             loadPosts();
         } else {
             alert(data.error || 'Ошибка при удалении публикации');
@@ -1780,7 +1780,7 @@ async function downloadFile(fileUrl) {
     }
 }
 
-// Обновляем отображение файла в пост��
+// Обновляем отображение файла в посте
 function getFilePreview(file) {
     const extension = file.split('.').pop().toLowerCase();
     const filename = file.split('/').pop();
