@@ -44,17 +44,13 @@ function initMobileChat() {
         });
     }
 
-    // Обработчик выбора чата - теперь слушаем клики на родительском элементе
-    const friendsList = document.querySelector('.friends-list');
-    if (friendsList) {
-        friendsList.addEventListener('click', async (e) => {
-            // Находим ближайший родительский элемент с классом chat-partner
-            const chatPartner = e.target.closest('.chat-partner');
-            if (!chatPartner) return; // Если клик был не по чату, выходим
-
-            e.preventDefault(); // Предотвращаем стандартное поведение
+    // Обработчик выбора чата
+    document.querySelectorAll('.chat-partner').forEach(partner => {
+        partner.addEventListener('click', async (e) => {
+            e.preventDefault(); // Предотвращаем стандартное поведение ссылки
+            e.stopPropagation(); // Останавливаем всплытие события
             
-            const userId = chatPartner.dataset.userId;
+            const userId = partner.dataset.userId;
             if (!userId) return;
 
             try {
@@ -114,9 +110,9 @@ function initMobileChat() {
                 alert('Не удалось загрузить чат');
             }
         });
-    }
+    });
 
-    // Оставляем обработчик свайпов как дополнительную функцию
+    // Обработчик свайпов
     let touchStartX = 0;
     let touchEndX = 0;
 
