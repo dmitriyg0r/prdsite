@@ -1218,7 +1218,7 @@ body {
     }
 }
 
-/* Добавляем адаптивность */
+/* Добавляем адаптив��ость */
 @media (max-width: 768px) {
     .message {
         max-width: 80%;
@@ -1260,33 +1260,54 @@ body {
 }
 
 @media screen and (max-width: 768px) {
-    /* Изменяем структуру грида для мобильных устройств */
     .chat-container {
         margin-left: 0;
         grid-template-columns: 1fr;
-        height: calc(100vh - 60px); /* Учитываем высоту мобильного меню */
+        height: calc(100vh - 60px);
+        overflow: hidden;
     }
 
     /* Показываем список чатов на весь экран */
     .chat-list {
         width: 100%;
         height: calc(100vh - 60px);
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        z-index: 1;
+        background: var(--surface-color);
     }
 
-    /* Скрываем область чата по умолчанию */
+    .friends-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: var(--spacing-md);
+    }
+
+    /* Корректируем отступы в шапке списка */
+    .chat-list-header {
+        padding: 16px;
+        position: sticky;
+        top: 0;
+        background: var(--surface-color);
+        z-index: 2;
+    }
+
+    /* Стили для области чата */
     .chat-area {
-        display: none;
         position: fixed;
         top: 0;
         left: 0;
         width: 100%;
         height: calc(100vh - 60px);
-        z-index: 1001; /* Выше чем у списка чатов */
+        z-index: 1001;
+        background: var(--surface-color);
+        display: none;
     }
 
-    /* Стили для отображения области чата при активном чате */
     .chat-area.active {
         display: flex;
+        animation: slideInChat 0.3s ease-out;
     }
 
     /* Показываем кнопку возврата в шапке чата */
