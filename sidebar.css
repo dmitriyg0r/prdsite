@@ -182,12 +182,6 @@
                 0 4px 8px rgba(255, 255, 255, 0.2);
 }
 
-.theme-icon {
-    font-size: 18px;
-    color: #fff;
-    transition: all 0.3s ease;
-}
-
 .theme-checkbox {
     display: none;
 }
@@ -217,6 +211,7 @@
 .theme-icon {
     position: absolute;
     font-size: 14px;
+    color: #fff;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -240,30 +235,6 @@
     transform: translateY(-100%) rotate(45deg);
 }
 
-/* Уменьшаем размер эмодзи */
-.theme-label::before,
-.theme-label::after {
-    font-size: 10px;
-    line-height: 22px;
-}
-
-.theme-label::before {
-    content: '🌞';
-    position: absolute;
-    left: 7px;
-}
-
-.theme-label::after {
-    content: '🌙';
-    position: absolute;
-    right: 7px;
-}
-
-/* Анимация при наведении */
-.theme-toggle-container:hover .ball {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
 /* Стили для развернутого состояния */
 .sidebar.expanded .theme-switch-wrapper {
     padding: 8px 16px;
@@ -276,30 +247,4 @@
 
 .sidebar.expanded .theme-label {
     width: 46px;
-}
-
-.sidebar.expanded .theme-checkbox:checked + .theme-label .ball {
-    transform: translateX(24px);
-}
-
-/* Эффект свечения при переключении */
-.theme-checkbox:checked + .theme-label .ball::after {
-    content: '';
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    background: rgba(52, 152, 219, 0.2);
-    animation: glow 1s ease-out;
-}
-
-@keyframes glow {
-    0% {
-        transform: scale(1);
-        opacity: 0.5;
-    }
-    100% {
-        transform: scale(2);
-        opacity: 0;
-    }
 }
