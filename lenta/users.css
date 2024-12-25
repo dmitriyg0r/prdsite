@@ -77,12 +77,3 @@ body::-webkit-scrollbar {
         display: none;
     }
 }
-
-.lenta-layout {
-    max-width: calc(100% - 340px);
-    margin: 0 20px;
-    padding: 20px;
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 24px;
-}
