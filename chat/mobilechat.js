@@ -35,6 +35,12 @@ function initMobileChat() {
     // Обработчик для кнопки "Назад"
     if (elements.backButton) {
         elements.backButton.addEventListener('click', () => {
+            // Показываем мобильное меню при возврате к списку чатов
+            const mobileNav = document.querySelector('.mobile-nav');
+            if (mobileNav) {
+                mobileNav.style.display = 'block';
+            }
+
             elements.chatArea.style.display = 'none';
             elements.chatArea.style.animation = '';
             elements.chatList.style.display = 'flex';
@@ -89,6 +95,12 @@ function initMobileChat() {
             // Загружаем историю сообщений и запускаем обновления
             await loadChatHistory();
             startMessageUpdates();
+
+            // Скрываем мобильное меню
+            const mobileNav = document.querySelector('.mobile-nav');
+            if (mobileNav) {
+                mobileNav.style.display = 'none';
+            }
 
             // Переключаем отображение
             elements.chatList.style.display = 'none';
