@@ -33,28 +33,21 @@
         width: 100%;
         background: var(--surface-color);
         border-top: 1px solid var(--border-light);
-        z-index: 9999;
-        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-        margin: 0;
+        z-index: 1000;
         padding: 0;
     }
 
     .mobile-nav ul {
         display: flex;
-        justify-content: space-between;
+        justify-content: space-around;
         align-items: center;
         margin: 0;
         padding: 0;
         list-style: none;
-        width: 100vw;
-        background: var(--surface-color);
     }
 
     .mobile-nav ul li {
         flex: 1;
-        text-align: center;
-        margin: 0;
-        padding: 0;
     }
 
     .mobile-nav ul li a {
@@ -63,16 +56,25 @@
         align-items: center;
         justify-content: center;
         text-decoration: none;
-        color: var(--text-primary);
+        color: var(--text-secondary);
         font-size: 0.75rem;
         padding: 8px 0;
-        width: 100%;
+        transition: all 0.3s ease;
     }
 
     .mobile-nav ul li a i {
         font-size: 1.4rem;
         margin-bottom: 4px;
-        color: var(--text-primary);
+    }
+
+    /* Добавляем стили для активного состояния */
+    .mobile-nav ul li a.active {
+        color: var(--primary-color);
+    }
+
+    /* Добавляем стили для hover эффекта */
+    .mobile-nav ul li a:hover {
+        color: var(--primary-color);
     }
 
     /* Фиксированная ширина контейнера */
