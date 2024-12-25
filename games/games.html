@@ -6,14 +6,18 @@
     <title>Игры - AdminFlow</title>
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="games.css">
+    <link rel="stylesheet" href="../sidebar.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="icon" type="image/x-icon" href="../flow.ico">
 </head>
 <body>
     <!-- Боковое меню -->
-    <nav class="sidebar glass-effect">
-        <div class="sidebar-logo hover-lift">
-            <img src="../flow.ico" alt="Flow Logo" class="sidebar-icon">
+    <nav class="sidebar">
+        <button class="sidebar-toggle">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+        <div class="sidebar-logo">
+            <img src="../flow.ico" alt="Logo" class="sidebar-icon">
         </div>
         <div class="sidebar-nav">
             <a href="../profile/profile.html" class="sidebar-link">
@@ -35,12 +39,10 @@
         </div>
         <div class="theme-switch-wrapper">
             <div class="theme-toggle-container">
-                <i class="fas fa-sun theme-icon"></i>
                 <input type="checkbox" id="theme-toggle" class="theme-checkbox">
                 <label for="theme-toggle" class="theme-label">
                     <div class="ball"></div>
                 </label>
-                <span>Тёмная тема</span>
             </div>
         </div>
     </nav>
@@ -170,5 +172,6 @@
 
     <script src="../games/games.js"></script>
     <script src="../main.js"></script>
+    <script src="../sidebar.js"></script>
 </body>
 </html>

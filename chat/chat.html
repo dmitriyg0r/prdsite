@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="styles/scroll.css">
     <link rel="stylesheet" href="styles/markdown.css">
     <link rel="stylesheet" href="styles/voice.css">
+    <link rel="stylesheet" href="../sidebar.css">
     <link rel="icon" href="../flow.ico" type="image/x-icon">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
@@ -17,17 +18,21 @@
 <body>
     <!-- Боковое меню -->
     <nav class="sidebar">
+        <button class="sidebar-toggle">
+            <i class="fas fa-chevron-right"></i>
+        </button>
         <div class="sidebar-logo">
-            <img src="../flow.ico" alt="Flow Logo" class="sidebar-icon">
+            <img src="../flow.ico" alt="Logo" class="sidebar-icon">
         </div>
         <div class="sidebar-nav">
             <a href="../profile/profile.html" class="sidebar-link">
                 <i class="fas fa-user"></i>
                 <span>Профиль</span>
             </a>
-            <a herf="'../lenta/lenta.html" class="sidebar-link">
+            <a href="../lenta/lenta.html" class="sidebar-link">
                 <i class="fas fa-stream"></i>
                 <span>Лента</span>
+            </a>
             <a href="../games/games.html" class="sidebar-link">
                 <i class="fas fa-gamepad"></i>
                 <span>Игры</span>
@@ -35,17 +40,14 @@
             <a href="../about/about.html" class="sidebar-link">
                 <i class="fas fa-info-circle"></i>
                 <span>О нас</span>
-        </a>
+            </a>
         </div>
-        <!-- Переключатель темы -->
         <div class="theme-switch-wrapper">
             <div class="theme-toggle-container">
-                <i class="fas fa-sun theme-icon"></i>
                 <input type="checkbox" id="theme-toggle" class="theme-checkbox">
                 <label for="theme-toggle" class="theme-label">
                     <div class="ball"></div>
                 </label>
-                <span>Тёмная тема</span>
             </div>
         </div>
     </nav>
@@ -142,5 +144,6 @@
     <script src="chat.js"></script>
     <script src="scroll.js"></script>
     <script src="voice.js"></script>
+    <script src="../sidebar.js"></script>
 </body>
 </html>
