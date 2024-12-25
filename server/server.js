@@ -1623,7 +1623,7 @@ app.delete('/api/comments/:commentId', async (req, res) => {
         if (comment.rows.length === 0) {
             return res.status(403).json({
                 success: false,
-                error: 'Нет прав на удаление этого комментария'
+                error: 'Нет прав н�� уда��ение этого комментария'
             });
         }
 
@@ -2765,13 +2765,25 @@ app.post('/api/upload-avatar', uploadAvatar.single('avatar'), async (req, res) =
             return res.status(400).json({ error: 'ID пользователя не указан' });
         }
 
-        // Формируем URL для доступа к аватару
-        const avatarUrl = `/uploads/avatars/avatar-${userId}${path.extname(req.file.originalname)}`;
-        console.log('URL аватара:', avatarUrl);
+        // Используем фиксированное имя файла на основе ID пользователя
+        const fileExt = path.extname(req.file.originalname);
+        const filename = `avatar-${userId}${fileExt}`;
+        const avatarUrl = `/uploads/avatars/${filename}`;
+
+        // Перемещаем загруженный файл с правильным именем
+        const finalPath = path.join('/var/www/html/uploads/avatars', filename);
+        
+        // Удаляем старый файл, если он существует
+        if (fs.existsSync(finalPath)) {
+            fs.unlinkSync(finalPath);
+        }
+        
+        // Перемещаем новый файл
+        fs.renameSync(req.file.path, finalPath);
 
         // Обновляем URL аватара в базе данных
-        const updateResult = await pool.query(
-            'UPDATE users SET avatar_url = $1, updated_at = NOW() WHERE id = $2 RETURNING *',
+        await pool.query(
+            'UPDATE users SET avatar_url = $1, updated_at = NOW() WHERE id = $2',
             [avatarUrl, userId]
         );
 

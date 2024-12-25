@@ -8,7 +8,9 @@ const formatAvatarUrl = (url) => {
     if (url.startsWith('http')) return url;
     const baseUrl = 'https://adminflow.ru';
     const timestamp = new Date().getTime();
-    return `${baseUrl}${url}?t=${timestamp}`;
+    // Убираем существующий timestamp из URL, если он есть
+    const cleanUrl = url.split('?')[0];
+    return `${baseUrl}${cleanUrl}?t=${timestamp}`;
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -249,7 +251,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     if (response.ok) {
                         if (!data.available) {
-                            editEmailInput.setCustomValidity('Этот email уже используется');
+                            editEmailInput.setCustomValidity('Э��от email уже используется');
                             editEmailInput.reportValidity();
                         } else {
                             editEmailInput.setCustomValidity('');
@@ -298,7 +300,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Загружаем список друзей
+    // За��ружаем список друзей
     loadFriendRequests();
 
     // Обновляем обработчик загрузки аватара
@@ -323,22 +325,25 @@ document.addEventListener('DOMContentLoaded', async () => {
             console.log('Получен ответ от сервера:', data);
             
             if (response.ok && data.success) {
-                // Добавляем timestamp к URL аватара
-                const avatarUrl = formatAvatarUrl(data.avatarUrl);
-                
-                // Обновляем аватар на странице
-                document.getElementById('profile-avatar').src = avatarUrl;
-                
-                // Обновляем данные пользователя в localStorage
+                // Обновляем данные пользователя в localStorage с новым avatar_url
                 const updatedUser = {
                     ...currentUser,
-                    ...data.user
+                    avatar_url: data.avatarUrl // Используем URL из ответа сервера
                 };
+                
+                // Сохраняем обновленные данные в localStorage
                 localStorage.setItem('user', JSON.stringify(updatedUser));
                 currentUser = updatedUser;
 
+                // Обновляем аватар на странице с timestamp для предотвращения кэширования
+                const avatarUrl = formatAvatarUrl(data.avatarUrl);
+                document.getElementById('profile-avatar').src = avatarUrl;
+                
                 console.log('Данные пользователя обновлены:', updatedUser);
                 alert('Аватар успешно обновлен');
+                
+                // Принудительно обновляем данные пользователя
+                await loadUserData();
             } else {
                 throw new Error(data.error || 'Ошибка при загрузке аватара');
             }
@@ -362,7 +367,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const tabButtons = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
 
-    // Обновляем селектор для кнопки открытия модального окна
+    // Обновляем селектор для кнопки открытия модальног�� окна
     const friendsHeaderBtn = document.querySelector('.friends-header-btn');
     
     // Открытие модального окна при клике на заголовок "Дузья"
@@ -593,13 +598,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        // Обновляем счетчик друзей в заголовке секции
+        // Обновляем счетчик друз��й в заголовке секции
         const friendsHeaderCount = document.querySelector('.friends-section .friends-count');
         if (friendsHeaderCount) {
             friendsHeaderCount.textContent = friends.length;
         }
 
-        // Обновляем счетчик в модальном окне
+        // Обновляем счетчик в ��одальном окне
         const modalFriendCount = document.querySelector('.modal-tabs .friend-count');
         if (modalFriendCount) {
             modalFriendCount.textContent = friends.length;
@@ -886,7 +891,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Обновляем функцию для отображения количества друзе��
+    // Обновляем функцию для отображения количества друзей
     function updateFriendsCount(count) {
         const friendsCount = document.querySelector('.friends-count');
         if (friendsCount) {
@@ -947,7 +952,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         } catch (err) {
             console.error('Error loading user profile:', err);
-            alert('Ошибка при загрузке профиля пользователя');
+            alert('Ошибка при загрузке профиля пользова��еля');
         }
     }
 
@@ -957,7 +962,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Загружаем посты
     loadPosts();
 
-    // Оптимизированная функция обновления статуса пользователя
+    // Оптимизированная ��ункция обновления статуса пользователя
     let statusUpdateTimeout = null;
     let lastStatusUpdate = 0;
     const MIN_UPDATE_INTERVAL = 10000; // Минимальный интервал между обновлениями (10 секунд)
@@ -1058,7 +1063,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Обновляем обработчик перед уходом со страницы
     window.addEventListener('beforeunload', (event) => {
         if (currentUser && currentUser.id) {
-            // Испоьзуем синхронный запрос для гарантированной отправки
+            // Испоьзуем синхронный запрос для гарантированной о��правки
             navigator.sendBeacon('https://adminflow.ru/api/users/update-status', JSON.stringify({
                 userId: currentUser.id,
                 is_online: false
@@ -1288,7 +1293,7 @@ function initializePostHandlers() {
             }, 10);
         } else {
             postForm.classList.remove('active');
-            // Скрываем форм�� после завершения анимации
+            // Скрываем форму после завершения анимации
             setTimeout(() => {
                 postForm.style.display = 'none';
             }, 300);
@@ -1321,7 +1326,7 @@ function initializePostHandlers() {
             };
             reader.readAsDataURL(file);
         } else {
-            // Для не-изображений показы��аем иконку файла
+            // Для не-изображений показываем иконку файла
             const preview = document.getElementById('image-preview');
             const fileIcon = getFileIcon(file.name.split('.').pop().toLowerCase());
             preview.innerHTML = `
@@ -1357,7 +1362,7 @@ async function createPost() {
         formData.append('content', content);
         
         if (file) {
-            // Проверяем размер файла (например, 10MB максимум)
+            // Проверяем размер ��айла (например, 10MB максимум)
             const maxSize = 10 * 1024 * 1024; // 10MB в байтах
             if (file.size > maxSize) {
                 alert('Файл слишком большой. Максимальный размер: 10MB');
@@ -1423,7 +1428,7 @@ async function createPost() {
         }
     } catch (err) {
         console.error('Error creating post:', err);
-        alert('Ошибка при создании публикации: ' + (err.message || 'Не��звестная ошибка'));
+        alert('Ошибка при создании публикации: ' + (err.message || 'Неизвестная ошибка'));
     }
 }
 
@@ -1716,7 +1721,7 @@ window.openFriendsModal = function() {
     friendsModal.classList.add('active');
     document.body.style.overflow = 'hidden';
     
-    // Активируем вкладку с друзьями
+    // Акт��вируем вкладку с друзьями
     if (friendsTab) {
         friendsTab.click();
     }
@@ -1752,7 +1757,7 @@ async function downloadFile(fileUrl) {
         // Получаем blob из ответа
         const blob = await response.blob();
         
-        // Создаем ссылку для скачивания
+        // Создаем ссылк�� для скачивания
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
@@ -1771,7 +1776,7 @@ async function downloadFile(fileUrl) {
     }
 }
 
-// Обновляем отображ��ние файла в посте
+// Обновляем отображение файла в посте
 function getFilePreview(file) {
     const extension = file.split('.').pop().toLowerCase();
     const filename = file.split('/').pop();
