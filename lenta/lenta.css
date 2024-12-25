@@ -701,7 +701,7 @@ body {
     height: calc(100vh - 40px);
     width: 300px;
     margin-left: auto;
-    transform:translatex(239px) translatey(0px);
+    transform: translatex(239px) translatey(0px);
     background: var(--surface-color);
     border-radius: 24px;
     padding: 24px;
@@ -794,12 +794,23 @@ body {
     }
 
     .users-sidebar {
-        display: none; /* Added this line */
+        display: none !important;
+        width: 0;
+        height: 0;
+        padding: 0;
+        margin: 0;
+        border: none;
+        position: absolute;
+        visibility: hidden;
+        opacity: 0;
     }
 
     .lenta-layout {
-        grid-template-columns: 1fr; /* Added this line */
-        padding-right: 16px; /* Modified padding */
+        grid-template-columns: 1fr;
+        padding: 0;
+        transform: none;
+        margin: 0;
+        width: 100%;
     }
 
     body {
