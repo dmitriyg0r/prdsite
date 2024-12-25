@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             const data = await response.json();
             
-            // Заполняем информацию профиля друга
+            // Заполняем инфор��ацию профиля друга
             document.getElementById('username').textContent = data.user.username;
             document.getElementById('role').textContent = data.user.role;
             document.getElementById('created_at').textContent = new Date(data.user.created_at).toLocaleString();
@@ -159,7 +159,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Загружаем список своих друзей с явным указанием currentUser.id
         await loadFriends(currentUser.id);
         
-        // Запус��аем обновление своего статуса
+        // Запускаем обновление своего статуса
         startStatusUpdates();
         
         // Загружаем посты
@@ -251,7 +251,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     if (response.ok) {
                         if (!data.available) {
-                            editEmailInput.setCustomValidity('Этот email уже использу��тся');
+                            editEmailInput.setCustomValidity('Этот email уже используется');
                             editEmailInput.reportValidity();
                         } else {
                             editEmailInput.setCustomValidity('');
@@ -309,26 +309,28 @@ document.addEventListener('DOMContentLoaded', async () => {
         const file = e.target.files[0];
         if (!file) return;
 
-        console.log('Выбран файл для загрузки:', file.name);
+        console.log('1. Выбран файл для загрузки:', file.name);
 
         const formData = new FormData();
         formData.append('avatar', file);
         formData.append('userId', currentUser.id);
 
         try {
+            console.log('2. Отправка запроса на сервер');
             const response = await fetch('https://adminflow.ru/api/upload-avatar', {
                 method: 'POST',
                 body: formData
             });
 
             const data = await response.json();
-            console.log('Получен ответ от сервера:', data);
+            console.log('3. Полный ответ от сервера:', JSON.stringify(data, null, 2));
             
             if (!response.ok) {
                 throw new Error(data.error || 'Ошибка при загрузке аватара');
             }
 
             if (!data.success || !data.user) {
+                console.error('Некорректный ответ:', data);
                 throw new Error('Некорректный ответ от сервера');
             }
 
@@ -338,9 +340,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 ...data.user
             };
             
-            console.log('Обновляем данные пользователя:', updatedUser);
+            console.log('4. Обновленные данные пользователя:', updatedUser);
             
-            // Сохраняем обновленные данные в localStorage
             localStorage.setItem('user', JSON.stringify(updatedUser));
             currentUser = updatedUser;
 
@@ -349,9 +350,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             const avatarElement = document.getElementById('profile-avatar');
             if (avatarElement) {
                 avatarElement.src = avatarUrl;
+                console.log('5. Обновлен src аватара:', avatarUrl);
             }
-            
-            console.log('Аватар обновлен:', avatarUrl);
+
             alert('Аватар успешно обновлен');
 
         } catch (err) {
@@ -359,7 +360,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             alert(err.message || 'Ошибка при загрузке аватара');
         }
         
-        // Очищаем input файла
         e.target.value = '';
     });
 
@@ -672,7 +672,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }
 
-        // Добавляем отладочную информацию
+        // Добавляем отладочную и��формацию
         console.log('Displaying friends:', {
             total: friends.length,
             displayed: Math.min(friends.length, maxFriendsInGrid),
@@ -974,7 +974,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Оптимизированная функция обновления статуса пользователя
     let statusUpdateTimeout = null;
     let lastStatusUpdate = 0;
-    const MIN_UPDATE_INTERVAL = 10000; // Минимальный интервал между обновлениями (10 секунд)
+    const MIN_UPDATE_INTERVAL = 10000; // Минимальный интер��ал между обновлениями (10 секунд)
 
     async function updateUserStatus(force = false) {
         if (!currentUser) return;
@@ -1599,7 +1599,7 @@ function removePostImage() {
     document.getElementById('image-preview').innerHTML = '';
 }
 
-// Добавляем функцию удаления поста
+// Добавляем ф��нкцию удаления поста
 async function deletePost(postId) {
     if (!confirm('Вы уверены, что хотите удалить эту публикацию?')) {
         return;
