@@ -58,6 +58,8 @@
     opacity: 0;
     margin-left: 16px;
     transition: all 0.3s ease;
+    color: rgba(255, 255, 255, 0.85);
+    font-weight: 500;
 }
 
 .sidebar.expanded {
@@ -95,6 +97,8 @@
 
 .sidebar.expanded .sidebar-link span {
     opacity: 1;
+    display: inline-block;
+    visibility: visible;
 }
 
 /* Активная ссылка */
@@ -114,4 +118,18 @@
 
 [data-theme="dark"] .sidebar-link:hover {
     background: rgba(255, 255, 255, 0.12);
+}
+
+/* Добавляем стили для текста в переключателе темы */
+.theme-switch-wrapper span {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 14px;
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.sidebar.expanded .theme-switch-wrapper span {
+    opacity: 1;
+    display: inline-block;
+    margin-left: 16px;
 }
