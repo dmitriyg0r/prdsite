@@ -20,6 +20,7 @@ function initMobileChat() {
     const backButton = document.getElementById('backToChats');
     const chatPlaceholder = document.getElementById('chat-placeholder');
     const messagesArea = document.getElementById('messages');
+    const chatHeader = document.getElementById('chat-header');
 
     // Начальное состояние
     if (chatArea) {
@@ -45,20 +46,65 @@ function initMobileChat() {
 
     // Обработчик выбора чата
     document.querySelectorAll('.chat-partner').forEach(partner => {
-        partner.addEventListener('click', () => {
-            if (chatList) {
-                chatList.style.display = 'none';
-                chatList.style.animation = '';
-            }
-            if (chatArea) {
-                chatArea.style.display = 'flex';
-                chatArea.style.animation = 'slideInFromRight 0.3s ease-out';
-            }
-            if (chatPlaceholder) {
-                chatPlaceholder.style.display = 'none';
-            }
-            if (messagesArea) {
-                messagesArea.style.display = 'flex';
+        partner.addEventListener('click', async () => {
+            const userId = partner.dataset.userId;
+            if (!userId) return;
+
+            try {
+                // Загружаем информацию о пользователе
+                const response = await fetch(`https://adminflow.ru/api/users/${userId}?currentUserId=${currentUser.id}`);
+                if (!response.ok) throw new Error('Ошибка загрузки данных пользователя');
+                const data = await response.json();
+                
+                // Обновляем currentChatPartner
+                currentChatPartner = data.user;
+
+                // Обновляем заголовок чата
+                if (chatHeader) {
+                    chatHeader.style.display = 'flex';
+                    const headerName = document.getElementById('chat-header-name');
+                    const headerAvatar = document.getElementById('chat-header-avatar');
+                    const headerStatus = document.getElementById('chat-header-status');
+                    
+                    if (headerName) headerName.textContent = currentChatPartner.username;
+                    if (headerAvatar) {
+                        headerAvatar.src = currentChatPartner.avatar_url || '../uploads/avatars/default.png';
+                        headerAvatar.alt = currentChatPartner.username;
+                    }
+                    if (headerStatus) {
+                        headerStatus.textContent = currentChatPartner.is_online ? 'онлайн' : 
+                            getLastActivityTime(currentChatPartner.last_activity);
+                    }
+                }
+
+                // Загружаем историю сообщений
+                await loadChatHistory();
+
+                // Переключаем отображение
+                if (chatList) {
+                    chatList.style.display = 'none';
+                    chatList.style.animation = '';
+                }
+                if (chatArea) {
+                    chatArea.style.display = 'flex';
+                    chatArea.style.animation = 'slideInFromRight 0.3s ease-out';
+                }
+                if (chatPlaceholder) {
+                    chatPlaceholder.style.display = 'none';
+                }
+                if (messagesArea) {
+                    messagesArea.style.display = 'flex';
+                }
+
+                // Прокручиваем к последнему сообщению
+                scrollToBottom();
+
+                // Помечаем сообщения как прочитанные
+                await markMessagesAsRead(userId);
+
+            } catch (error) {
+                console.error('Ошибка при открытии чата:', error);
+                alert('Не удалось загрузить чат');
             }
         });
     });
@@ -122,6 +168,7 @@ style.textContent = `
 
         .messages-area {
             height: calc(100vh - 180px) !important;
+            padding-bottom: 60px !important;
         }
 
         .input-area {
@@ -132,10 +179,19 @@ style.textContent = `
             background: var(--surface-color);
             padding: 10px;
             border-top: 1px solid var(--border-light);
+            z-index: 1000;
         }
 
         #messageInput {
             width: calc(100% - 80px) !important;
+        }
+
+        .chat-header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: var(--surface-color);
+            border-bottom: 1px solid var(--border-light);
         }
     }
 `;
