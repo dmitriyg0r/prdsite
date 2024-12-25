@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('logout-btn').style.display = 'none';
             document.querySelector('.avatar-overlay').style.display = 'none';
             
-            // Скрываем вкла��ку запросов в модальном окне
+            // Скрываем вкладку запросов в модальном окне
             const requestsTab = document.querySelector('[data-tab="requests-tab"]');
             if (requestsTab) {
                 requestsTab.style.display = 'none';
@@ -159,7 +159,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     editProfileModal.classList.remove('active');
                     document.body.style.overflow = '';
 
-                    alert('Профиль успешно обновлен');
+                    alert('Профиль у��пешно обновлен');
                 } else {
                     throw new Error(data.error || 'Ошибка при обновлении профиля');
                 }
@@ -276,16 +276,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             const data = await response.json();
             
             if (response.ok && data.success) {
-                // Добавляем базовый URL к пути аватара
-                const fullAvatarUrl = `https://adminflow.ru${data.avatarUrl}`;
+                // Убираем дублирование https:// из URL
+                const avatarUrl = data.avatarUrl.startsWith('http') ? 
+                    data.avatarUrl : 
+                    `https://adminflow.ru${data.avatarUrl}`;
                 
                 // Обновляем аватар на странице
-                document.getElementById('profile-avatar').src = fullAvatarUrl + '?t=' + new Date().getTime();
+                document.getElementById('profile-avatar').src = avatarUrl + '?t=' + new Date().getTime();
                 
-                // Обновляем данные пользователя в localStorage с полным URL
+                // Обновляем данные пользователя в localStorage
                 currentUser = {
                     ...currentUser,
-                    avatar_url: fullAvatarUrl
+                    avatar_url: avatarUrl
                 };
                 localStorage.setItem('user', JSON.stringify(currentUser));
 
@@ -316,7 +318,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Обновляем селектор для кнопки открытия модального окна
     const friendsHeaderBtn = document.querySelector('.friends-header-btn');
     
-    // Открыти�� модального окна при клике на заголовок "Дузья"
+    // Открытие модального окна при клике на заголовок "Дузья"
     friendsHeaderBtn.addEventListener('click', (e) => {
         e.preventDefault();
         friendsModal.classList.add('active');
@@ -386,7 +388,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Добавл��ем функцию getFriendStatus
+    // Добавляем функцию getFriendStatus
     function getFriendStatus(userId) {
         // Получаем статус из атрибута data-friendship-status
         const userCard = document.querySelector(`.user-card[data-user-id="${userId}"]`);
@@ -475,7 +477,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             btn.addEventListener('click', () => {
                 sendFriendRequest(btn.dataset.userId);
                 btn.classList.add('pending');
-                btn.innerHTML = '<i class="fas fa-clock"></i> Заявка отпра��лена';
+                btn.innerHTML = '<i class="fas fa-clock"></i> Заявка отправлена';
                 btn.disabled = true;
             });
         });
@@ -699,7 +701,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Обновляем функцию поиска
+    // Обновляем функцию п��иска
     async function searchUsers(query) {
         try {
             const response = await fetch(`https://adminflow.ru/api/search-users?q=${query}&userId=${currentUser.id}`);
@@ -908,7 +910,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Загружаем посты
     loadPosts();
 
-    // Оптимизированная функция обновления статуса пользователя
+    // Оптимизированная функц��я обновления статуса пользователя
     let statusUpdateTimeout = null;
     let lastStatusUpdate = 0;
     const MIN_UPDATE_INTERVAL = 10000; // Минимальный интервал между обновлениями (10 секунд)
@@ -1009,7 +1011,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Обновляем обработчик перед уходом со страницы
     window.addEventListener('beforeunload', (event) => {
         if (currentUser && currentUser.id) {
-            // Используем синхронный запрос для гарантированной отправки
+            // Испо��ьзуем синхронный запрос для гарантированной отправки
             navigator.sendBeacon('https://adminflow.ru/api/users/update-status', JSON.stringify({
                 userId: currentUser.id,
                 is_online: false
@@ -1220,7 +1222,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (err) {
             alert(err.message);
         }
-    })
+    });
 });
 
 function initializePostHandlers() {
@@ -1876,7 +1878,7 @@ async function submitComment(postId, button) {
                 </div>
                 <div class="comment-content">${data.comment.content}</div>
             </div>
-        `;ц
+        `;
         container.insertAdjacentHTML('afterbegin', commentHtml);
         
         // Очищаем поле ввода

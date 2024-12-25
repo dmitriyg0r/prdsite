@@ -301,8 +301,8 @@ app.post('/api/upload-avatar', upload.single('avatar'), (req, res) => {
             return res.status(400).json({ error: 'Файл не был загружен' });
         }
 
-        // Формируем полный URL для доступа к файлу
-        const fileUrl = `https://adminflow.ru/uploads/avatars/${req.file.filename}`;
+        // Возвращаем относительный путь без домена
+        const fileUrl = `/uploads/avatars/${req.file.filename}`;
         res.json({ success: true, avatarUrl: fileUrl });
 
     } catch (err) {
