@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             const data = await response.json();
             
-            // Заполняем информацию профиля друга
+            // Заполняем инфор��ацию профиля друга
             document.getElementById('username').textContent = data.user.username;
             document.getElementById('role').textContent = data.user.role;
             document.getElementById('created_at').textContent = new Date(data.user.created_at).toLocaleString();
@@ -108,7 +108,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('logout-btn').style.display = 'none';
             document.querySelector('.avatar-overlay').style.display = 'none';
             
-            // Ск��ываем вкладку запросов в модальном окне
+            // Скрываем вкладку запросов в модальном окне
             const requestsTab = document.querySelector('[data-tab="requests-tab"]');
             if (requestsTab) {
                 requestsTab.style.display = 'none';
@@ -156,7 +156,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             statusElement.className = 'online-status online';
         }
 
-        // Загружаем список своих друзей с явным указанием currentUser.id
+        // Загружаем список своих друзей с явн��м указанием currentUser.id
         await loadFriends(currentUser.id);
         
         // Запускаем обновление своего статуса
@@ -279,7 +279,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.body.style.overflow = 'hidden';
         });
 
-        // Обработчик для закрытия модального окна
+        // Обработчик для закры��ия модального окна
         editProfileModal.querySelector('.modal-close')?.addEventListener('click', () => {
             editProfileModal.classList.remove('active');
             document.body.style.overflow = '';
@@ -316,48 +316,65 @@ document.addEventListener('DOMContentLoaded', async () => {
         formData.append('userId', currentUser.id);
 
         try {
+            // Загружаем файл аватара
             console.log('2. Отправка запроса на сервер');
-            const response = await fetch('https://adminflow.ru/api/upload-avatar', {
+            const uploadResponse = await fetch('https://adminflow.ru/api/upload-avatar', {
                 method: 'POST',
                 body: formData
             });
 
-            const data = await response.json();
-            console.log('3. Полный ответ от сервера:', JSON.stringify(data, null, 2));
+            const uploadData = await uploadResponse.json();
+            console.log('3. Полный ответ от сервера:', JSON.stringify(uploadData, null, 2));
             
-            if (!response.ok) {
-                throw new Error(data.error || 'Ошибка при загрузке аватара');
+            if (!uploadResponse.ok || !uploadData.success || !uploadData.avatarUrl) {
+                throw new Error(uploadData.error || 'Ошибка при загрузке аватара');
             }
 
-            if (!data.success || !data.avatarUrl) {
-                console.error('Некорректный ответ:', data);
-                throw new Error('Некорректный ответ от сервера');
+            // Обновляем информацию о пользователе в базе данных
+            console.log('4. Обновление информации пользователя в БД');
+            const updateResponse = await fetch('https://adminflow.ru/api/users/update-profile', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    userId: currentUser.id,
+                    avatar_url: uploadData.avatarUrl,
+                    username: currentUser.username,
+                    email: currentUser.email
+                })
+            });
+
+            const updateData = await updateResponse.json();
+            
+            if (!updateResponse.ok || !updateData.success) {
+                throw new Error(updateData.error || 'Ошибка при обновлении профиля');
             }
 
-            // Обновляем только аватар в данных пользователя
+            // Обновляем данные пользователя в localStorage
             const updatedUser = {
                 ...currentUser,
-                avatar_url: data.avatarUrl
+                avatar_url: uploadData.avatarUrl
             };
             
-            console.log('4. Обновленные данные пользователя:', updatedUser);
+            console.log('5. Обновленные данные пользователя:', updatedUser);
             
             localStorage.setItem('user', JSON.stringify(updatedUser));
             currentUser = updatedUser;
 
             // Обновляем аватар на странице
-            const avatarUrl = formatAvatarUrl(data.avatarUrl);
+            const avatarUrl = formatAvatarUrl(uploadData.avatarUrl);
             const avatarElement = document.getElementById('profile-avatar');
             if (avatarElement) {
                 avatarElement.src = avatarUrl;
-                console.log('5. Обновлен src аватара:', avatarUrl);
+                console.log('6. Обновлен src аватара:', avatarUrl);
             }
 
             alert('Аватар успешно обновлен');
 
         } catch (err) {
-            console.error('Ошибка загрузки аватара:', err);
-            alert(err.message || 'Ошибка при загрузке аватара');
+            console.error('Ошибка обновления аватара:', err);
+            alert(err.message || 'Ошибка при обновлении аватара');
         }
         
         e.target.value = '';
@@ -672,7 +689,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }
 
-        // Добавляем от��адочную информацию
+        // Добавляем отадочную информацию
         console.log('Displaying friends:', {
             total: friends.length,
             displayed: Math.min(friends.length, maxFriendsInGrid),
@@ -900,7 +917,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Обновл��ем функцию для отображения количества друзей
+    // Обновляем функцию для отображения количества друзей
     function updateFriendsCount(count) {
         const friendsCount = document.querySelector('.friends-count');
         if (friendsCount) {
@@ -1567,7 +1584,7 @@ async function toggleLike(postId) {
         const data = await response.json();
         
         if (response.ok) {
-            // Находим элементы конкреного поста
+            // Находим э��ементы конкреного поста
             const postElement = document.querySelector(`.post[data-post-id="${postId}"]`);
             const likeButton = postElement.querySelector('.like-action');
             const heartIcon = postElement.querySelector('.like-action i');
@@ -1630,7 +1647,7 @@ async function deletePost(postId) {
     }
 }
 
-// Добавляем функции в глобальную область видимости (window)
+// Добавляем функции в глобальную область вид��мости (window)
 window.openImageInFullscreen = function(imageSrc, postData) {
     // Создаем модальное окно
     const modal = document.createElement('div');
