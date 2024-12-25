@@ -153,26 +153,25 @@ style.textContent = `
         .chat-area {
             display: flex;
             flex-direction: column;
+            padding-bottom: 60px;
         }
 
         .messages-area {
             flex: 1;
-            height: calc(100vh - 140px) !important;
-            padding-bottom: 90px !important;
+            height: calc(100vh - 180px) !important;
             overflow-y: auto;
-            margin-bottom: 60px;
+            padding-bottom: 20px;
         }
 
         .input-area {
             position: fixed;
-            bottom: 0;
+            bottom: 60px;
             left: 0;
             right: 0;
             background: var(--surface-color);
             padding: 10px;
             border-top: 1px solid var(--border-light);
             z-index: 1001;
-            margin-bottom: 60px;
         }
 
         .input-controls {
