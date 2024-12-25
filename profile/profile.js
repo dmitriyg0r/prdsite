@@ -13,6 +13,70 @@ const formatAvatarUrl = (url) => {
     return `${baseUrl}${cleanUrl}?t=${timestamp}`;
 };
 
+// Добавим функцию для проверки доступности аватара
+const checkAvatarAvailability = async (url) => {
+    try {
+        const response = await fetch(url, { method: 'HEAD' });
+        return response.ok;
+    } catch {
+        return false;
+    }
+};
+
+// Обновим функцию updateProfileData
+const updateProfileData = async (userData) => {
+    document.getElementById('username').textContent = userData.username;
+    document.getElementById('role').textContent = userData.role;
+    document.getElementById('created_at').textContent = new Date(userData.created_at).toLocaleString();
+    document.getElementById('last_login').textContent = userData.last_login ? 
+        new Date(userData.last_login).toLocaleString() : 'Нет данных';
+
+    // Проверяем доступность аватара
+    const avatarUrl = formatAvatarUrl(userData.avatar_url);
+    const avatarElement = document.getElementById('profile-avatar');
+    
+    const isAvatarAvailable = await checkAvatarAvailability(avatarUrl);
+    if (!isAvatarAvailable) {
+        // Если аватар недоступен, обновляем URL в базе данных
+        try {
+            const response = await fetch('https://adminflow.ru/api/users/update-profile', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    userId: userData.id,
+                    avatar_url: '/uploads/avatars/default.png',
+                    username: userData.username,
+                    email: userData.email
+                })
+            });
+
+            if (response.ok) {
+                // Обновляем локальные данные
+                userData.avatar_url = '/uploads/avatars/default.png';
+                if (currentUser && currentUser.id === userData.id) {
+                    currentUser.avatar_url = '/uploads/avatars/default.png';
+                    localStorage.setItem('user', JSON.stringify(currentUser));
+                }
+            }
+        } catch (err) {
+            console.error('Error updating avatar URL:', err);
+        }
+        
+        avatarElement.src = '/uploads/avatars/default.png';
+    } else {
+        avatarElement.src = avatarUrl;
+    }
+    
+    if (userData.email) {
+        const emailElement = document.getElementById('email');
+        if (emailElement) {
+            emailElement.textContent = userData.email;
+        }
+    }
+};
+
 document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const profileId = urlParams.get('id');
@@ -88,7 +152,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             const data = await response.json();
             
-            // Заполняем инфор��ацию профиля друга
+            // Заполняем информацию профиля друга
             document.getElementById('username').textContent = data.user.username;
             document.getElementById('role').textContent = data.user.role;
             document.getElementById('created_at').textContent = new Date(data.user.created_at).toLocaleString();
@@ -156,7 +220,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             statusElement.className = 'online-status online';
         }
 
-        // Загружаем список своих друзей с явн��м указанием currentUser.id
+        // Загружаем список своих друзей с явным указанием currentUser.id
         await loadFriends(currentUser.id);
         
         // Запускаем обновление своего статуса
@@ -279,7 +343,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.body.style.overflow = 'hidden';
         });
 
-        // Обработчик для закры��ия модального окна
+        // Обработчик для закрытия модального окна
         editProfileModal.querySelector('.modal-close')?.addEventListener('click', () => {
             editProfileModal.classList.remove('active');
             document.body.style.overflow = '';
@@ -1584,7 +1648,7 @@ async function toggleLike(postId) {
         const data = await response.json();
         
         if (response.ok) {
-            // Находим э��ементы конкреного поста
+            // Находим элементы конкретного поста
             const postElement = document.querySelector(`.post[data-post-id="${postId}"]`);
             const likeButton = postElement.querySelector('.like-action');
             const heartIcon = postElement.querySelector('.like-action i');
@@ -1647,7 +1711,7 @@ async function deletePost(postId) {
     }
 }
 
-// Добавляем функции в глобальную область вид��мости (window)
+// Добавляем функции в глобальную область видимости (window)
 window.openImageInFullscreen = function(imageSrc, postData) {
     // Создаем модальное окно
     const modal = document.createElement('div');
