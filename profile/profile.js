@@ -12,11 +12,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    // Функция для форматирования URL аватара
+    // Функция для форматирования URL аватара с timestamp для предотвращения кэширования
     const formatAvatarUrl = (url) => {
         if (!url) return '/uploads/avatars/default.png';
-        if (url.startsWith('http')) return url;
-        return `https://adminflow.ru${url}`;
+        const baseUrl = url.startsWith('http') ? url : `https://adminflow.ru${url}`;
+        return `${baseUrl}?t=${new Date().getTime()}`;
     };
 
     // Функция для обновления данных профиля
@@ -26,7 +26,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('created_at').textContent = new Date(userData.created_at).toLocaleString();
         document.getElementById('last_login').textContent = userData.last_login ? 
             new Date(userData.last_login).toLocaleString() : 'Нет данных';
-        document.getElementById('profile-avatar').src = formatAvatarUrl(userData.avatar_url);
+        
+        // Обновляем аватар с принудительным обходом кэша
+        const avatarElement = document.getElementById('profile-avatar');
+        avatarElement.src = formatAvatarUrl(userData.avatar_url);
         
         if (userData.email) {
             const emailElement = document.getElementById('email');
@@ -37,9 +40,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     try {
-        // Загружаем актуальные данные пользователя
+        // Загружаем актуальные данные пользователя с принудительным обходом кэша
         const userId = profileId || currentUser.id;
-        const response = await fetch(`https://adminflow.ru/api/users/${userId}`);
+        const response = await fetch(`https://adminflow.ru/api/users/${userId}`, {
+            cache: 'no-cache' // Отключаем кэширование запроса
+        });
         
         if (!response.ok) {
             throw new Error('Ошибка получения данных пользователя');
@@ -275,7 +280,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.body.style.overflow = 'hidden';
         });
 
-        // Обработчик для закрытия модального окна
+        // Обр��ботчик для закрытия модального окна
         editProfileModal.querySelector('.modal-close')?.addEventListener('click', () => {
             editProfileModal.classList.remove('active');
             document.body.style.overflow = '';
@@ -326,26 +331,36 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const response = await fetch('https://adminflow.ru/api/upload-avatar', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                cache: 'no-cache' // Отключаем кэширование запроса
             });
 
             const data = await response.json();
             
             if (response.ok && data.success) {
-                // Обновляем аватар на странице
+                // Принудительно обновляем кэш аватара
                 const avatarUrl = data.avatarUrl.startsWith('http') ? 
                     data.avatarUrl : 
                     `https://adminflow.ru${data.avatarUrl}`;
                 
-                document.getElementById('profile-avatar').src = avatarUrl + '?t=' + new Date().getTime();
+                // Обновляем аватар на странице с timestamp
+                document.getElementById('profile-avatar').src = `${avatarUrl}?t=${new Date().getTime()}`;
                 
                 // Обновляем данные пользователя в localStorage
                 currentUser = {
                     ...currentUser,
-                    ...data.user,
-                    avatar_url: data.avatarUrl // Сохраняем относительный путь
+                    ...data.user
                 };
                 localStorage.setItem('user', JSON.stringify(currentUser));
+
+                // Принудительно перезагружаем данные профиля
+                const refreshResponse = await fetch(`https://adminflow.ru/api/users/${currentUser.id}`, {
+                    cache: 'no-cache'
+                });
+                const refreshData = await refreshResponse.json();
+                if (refreshResponse.ok && refreshData.success) {
+                    updateProfileData(refreshData.user);
+                }
 
                 alert('Аватар успешно обновлен');
             } else {
@@ -747,7 +762,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
 
             if (response.ok) {
-                // Перезагружаем списки друзей и заявок
+                // ��ерезагружаем списки друзей и заявок
                 loadFriendRequests();
                 loadFriends();
             }
@@ -792,7 +807,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const isOnline = user.last_activity && 
                 (new Date() - new Date(user.last_activity)) < 5 * 60 * 1000;
 
-            // Используем статус дружбы из ответа сервера
+            // Используем ста��ус дружбы из ответа сервера
             const friendStatus = user.friendship_status || 'none';
             
             let buttonClass = '';
@@ -882,7 +897,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Обновляем обработчик открытия модального окна
     document.querySelector('.friends-header-btn').addEventListener('click', () => {
-        // Обновляем списки при открытии модального окна
+        // Обновляем списки при откры��ии модального окна
         loadFriends();
         loadFriendRequests();
     });
@@ -1297,14 +1312,14 @@ function initializePostHandlers() {
             }, 10);
         } else {
             postForm.classList.remove('active');
-            // Скрываем форм�� после завершения анимации
+            // Скрываем форму после завершения анимации
             setTimeout(() => {
                 postForm.style.display = 'none';
             }, 300);
         }
     });
 
-    // Обработ загрузки изображения
+    // Обработ з��грузки изображения
     postImage?.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -1330,7 +1345,7 @@ function initializePostHandlers() {
             };
             reader.readAsDataURL(file);
         } else {
-            // Для не-изображений показы��аем иконку файла
+            // Для не-изображений показываем иконку файла
             const preview = document.getElementById('image-preview');
             const fileIcon = getFileIcon(file.name.split('.').pop().toLowerCase());
             preview.innerHTML = `
@@ -1432,7 +1447,7 @@ async function createPost() {
         }
     } catch (err) {
         console.error('Error creating post:', err);
-        alert('Ошибка при создании публикации: ' + (err.message || 'Не��звестная ошибка'));
+        alert('Ошибка при создании публикации: ' + (err.message || 'Неизвестная ошибка'));
     }
 }
 
@@ -1614,7 +1629,7 @@ async function deletePost(postId) {
         const data = await response.json();
         
         if (response.ok || data.success) {
-            // Перезагруж��ем посты после удаления
+            // Перезагружаем посты после удаления
             loadPosts();
         } else {
             alert(data.error || 'Ошибка при удалении публикации');
@@ -1780,7 +1795,7 @@ async function downloadFile(fileUrl) {
     }
 }
 
-// Обновляем отображение файла в посте
+// Обновляем отображение файла в пост��
 function getFilePreview(file) {
     const extension = file.split('.').pop().toLowerCase();
     const filename = file.split('/').pop();
