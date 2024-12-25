@@ -213,7 +213,6 @@ body {
     height: 52px;
     border-radius: 16px;
     object-fit: cover;
-    border: 2px solid var(--primary-light);
     transition: transform 0.3s ease;
 }
 
@@ -259,11 +258,10 @@ body {
 .post-image {
     width: 100%;
     border-radius: 0;
-    transition: transform 0.3s ease;
 }
 
 .post-image:hover {
-    transform: scale(1.02);
+    transform: none;
 }
 
 .post-actions {
@@ -280,6 +278,13 @@ body {
     font-weight: 500;
     font-size: 0.95rem;
     transition: all 0.3s ease;
+    border: none;
+    outline: none;
+    background: transparent;
+}
+
+.post-action:focus {
+    outline: none;
 }
 
 .post-action:hover {
