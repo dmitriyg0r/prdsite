@@ -4,7 +4,7 @@
     --primary-dark: #4F46E5;
     --accent-color: #10B981;
     --background-color: #F9FAFB;
-    --surface-color: #FFFFFF;
+    --surface-color: #1f2937;
     --text-primary: #111827;
     --text-secondary: #4B5563;
     --text-tertiary: #9CA3AF;
@@ -26,6 +26,7 @@
     --radius-md: 12px;
     --radius-lg: 16px;
     --radius-xl: 24px;
+    
 }
 body {
     margin: 0;
@@ -154,12 +155,6 @@ body {
     border: 1px solid var(--border-light);
     position: relative;
     border-bottom: 2px solid var(--border-light);
-    background: linear-gradient(
-        to bottom,
-        var(--surface-color) 0%,
-        var(--surface-color) 98%,
-        var(--background-color) 100%
-    );
     margin-bottom: 7px; /* Отступ между постами */
 }
 
