@@ -44,10 +44,17 @@ function initMobileChat() {
         });
     }
 
-    // Обработчик выбора чата
-    document.querySelectorAll('.chat-partner').forEach(partner => {
-        partner.addEventListener('click', async () => {
-            const userId = partner.dataset.userId;
+    // Обработчик выбора чата - теперь слушаем клики на родительском элементе
+    const friendsList = document.querySelector('.friends-list');
+    if (friendsList) {
+        friendsList.addEventListener('click', async (e) => {
+            // Находим ближайший родительский элемент с классом chat-partner
+            const chatPartner = e.target.closest('.chat-partner');
+            if (!chatPartner) return; // Если клик был не по чату, выходим
+
+            e.preventDefault(); // Предотвращаем стандартное поведение
+            
+            const userId = chatPartner.dataset.userId;
             if (!userId) return;
 
             try {
@@ -107,9 +114,9 @@ function initMobileChat() {
                 alert('Не удалось загрузить чат');
             }
         });
-    });
+    }
 
-    // Добавляем обработчик свайпов
+    // Оставляем обработчик свайпов как дополнительную функцию
     let touchStartX = 0;
     let touchEndX = 0;
 
@@ -122,23 +129,12 @@ function initMobileChat() {
         handleSwipe();
     }, false);
 
-    // Обработка свайпов
     function handleSwipe() {
-        const swipeThreshold = 100; // Минимальное расстояние для свайпа
+        const swipeThreshold = 100;
         const diff = touchEndX - touchStartX;
 
-        // Свайп вправо (возврат к списку чатов)
         if (diff > swipeThreshold && chatArea && chatArea.style.display === 'flex') {
             backButton.click();
-        }
-        // Свайп влево (скрыть список чатов)
-        else if (diff < -swipeThreshold && chatList && chatList.style.display === 'flex') {
-            // Если есть активный чат, показываем его
-            if (currentChatPartner) {
-                chatList.style.display = 'none';
-                chatArea.style.display = 'flex';
-                chatArea.style.animation = 'slideInFromRight 0.3s ease-out';
-            }
         }
     }
 }
