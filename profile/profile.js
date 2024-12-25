@@ -12,6 +12,62 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
+    // Функция для форматирования URL аватара
+    const formatAvatarUrl = (url) => {
+        if (!url) return '/uploads/avatars/default.png';
+        if (url.startsWith('http')) return url;
+        return `https://adminflow.ru${url}`;
+    };
+
+    // Функция для обновления данных профиля
+    const updateProfileData = (userData) => {
+        document.getElementById('username').textContent = userData.username;
+        document.getElementById('role').textContent = userData.role;
+        document.getElementById('created_at').textContent = new Date(userData.created_at).toLocaleString();
+        document.getElementById('last_login').textContent = userData.last_login ? 
+            new Date(userData.last_login).toLocaleString() : 'Нет данных';
+        document.getElementById('profile-avatar').src = formatAvatarUrl(userData.avatar_url);
+        
+        if (userData.email) {
+            const emailElement = document.getElementById('email');
+            if (emailElement) {
+                emailElement.textContent = userData.email;
+            }
+        }
+    };
+
+    try {
+        // Загружаем актуальные данные пользователя
+        const userId = profileId || currentUser.id;
+        const response = await fetch(`https://adminflow.ru/api/users/${userId}`);
+        
+        if (!response.ok) {
+            throw new Error('Ошибка получения данных пользователя');
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            if (!profileId) {
+                // Обновляем данные текущего пользователя в localStorage
+                currentUser = {
+                    ...currentUser,
+                    ...data.user
+                };
+                localStorage.setItem('user', JSON.stringify(currentUser));
+            }
+            
+            // Обновляем данные на странице
+            updateProfileData(data.user);
+        } else {
+            throw new Error(data.error || 'Ошибка получения данных');
+        }
+    } catch (err) {
+        console.error('Error loading profile:', err);
+        // В случае ошибки используем данные из localStorage
+        updateProfileData(currentUser);
+    }
+
     // Если пользователь пытается открыть свой профиль через параметр id, 
     // перенаправляем его на основную страницу профиля
     if (profileId === currentUser.id.toString()) {
@@ -159,7 +215,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     editProfileModal.classList.remove('active');
                     document.body.style.overflow = '';
 
-                    alert('Профиль у��пешно обновлен');
+                    alert('Профиль успешно обновлен');
                 } else {
                     throw new Error(data.error || 'Ошибка при обновлении профиля');
                 }
@@ -243,7 +299,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Загружаем список друзей
     loadFriendRequests();
 
-    // Загрузка аватара
+    // Обновляем обработчик загрузки аватара
     const avatarUpload = document.getElementById('avatar-upload');
     avatarUpload.addEventListener('change', async (e) => {
         const file = e.target.files[0];
@@ -276,18 +332,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             const data = await response.json();
             
             if (response.ok && data.success) {
-                // Убираем дублирование https:// из URL
+                // Обновляем аватар на странице
                 const avatarUrl = data.avatarUrl.startsWith('http') ? 
                     data.avatarUrl : 
                     `https://adminflow.ru${data.avatarUrl}`;
                 
-                // Обновляем аватар на странице
                 document.getElementById('profile-avatar').src = avatarUrl + '?t=' + new Date().getTime();
                 
                 // Обновляем данные пользователя в localStorage
                 currentUser = {
                     ...currentUser,
-                    avatar_url: avatarUrl
+                    ...data.user,
+                    avatar_url: data.avatarUrl // Сохраняем относительный путь
                 };
                 localStorage.setItem('user', JSON.stringify(currentUser));
 
@@ -298,8 +354,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (err) {
             console.error('Error uploading avatar:', err);
             alert(err.message || 'Ошибка при загрузке аватара');
-            e.target.value = '';
         }
+        e.target.value = '';
     });
 
     // Обработчик выхода
@@ -701,7 +757,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Обновляем функцию п��иска
+    // Обновляем функцию поиска
     async function searchUsers(query) {
         try {
             const response = await fetch(`https://adminflow.ru/api/search-users?q=${query}&userId=${currentUser.id}`);
@@ -910,7 +966,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Загружаем посты
     loadPosts();
 
-    // Оптимизированная функц��я обновления статуса пользователя
+    // Оптимизированная функция обновления статуса пользователя
     let statusUpdateTimeout = null;
     let lastStatusUpdate = 0;
     const MIN_UPDATE_INTERVAL = 10000; // Минимальный интервал между обновлениями (10 секунд)
@@ -1011,7 +1067,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Обновляем обработчик перед уходом со страницы
     window.addEventListener('beforeunload', (event) => {
         if (currentUser && currentUser.id) {
-            // Испо��ьзуем синхронный запрос для гарантированной отправки
+            // Испоьзуем синхронный запрос для гарантированной отправки
             navigator.sendBeacon('https://adminflow.ru/api/users/update-status', JSON.stringify({
                 userId: currentUser.id,
                 is_online: false
@@ -1241,7 +1297,7 @@ function initializePostHandlers() {
             }, 10);
         } else {
             postForm.classList.remove('active');
-            // Скрываем форму после завершения анимации
+            // Скрываем форм�� после завершения анимации
             setTimeout(() => {
                 postForm.style.display = 'none';
             }, 300);
@@ -1274,7 +1330,7 @@ function initializePostHandlers() {
             };
             reader.readAsDataURL(file);
         } else {
-            // Для не-изображений показываем иконку файла
+            // Для не-изображений показы��аем иконку файла
             const preview = document.getElementById('image-preview');
             const fileIcon = getFileIcon(file.name.split('.').pop().toLowerCase());
             preview.innerHTML = `
@@ -1376,7 +1432,7 @@ async function createPost() {
         }
     } catch (err) {
         console.error('Error creating post:', err);
-        alert('Ошибка при создании публикации: ' + (err.message || 'Неизвестная ошибка'));
+        alert('Ошибка при создании публикации: ' + (err.message || 'Не��звестная ошибка'));
     }
 }
 
@@ -1558,7 +1614,7 @@ async function deletePost(postId) {
         const data = await response.json();
         
         if (response.ok || data.success) {
-            // Перезагружаем посты после удаления
+            // Перезагруж��ем посты после удаления
             loadPosts();
         } else {
             alert(data.error || 'Ошибка при удалении публикации');

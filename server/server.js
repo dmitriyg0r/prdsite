@@ -201,7 +201,7 @@ app.get('/api/download/:folder/:filename', (req, res) => {
         const mimeType = mimeTypes[ext] || 'application/octet-stream';
         const isImage = mimeType.startsWith('image/');
 
-        // Устанавливаем заголовки в зависимости от типа файла
+        // Устанавливаем заголовки в зависимост�� от типа файла
         if (!isImage) {
             res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(filename)}"`);
         }
@@ -2748,9 +2748,13 @@ app.post('/api/upload-avatar', uploadAvatar.single('avatar'), async (req, res) =
 
         // Получаем обновленные данные пользователя
         const result = await pool.query(
-            'SELECT id, username, email, role, avatar_url FROM users WHERE id = $1',
+            'SELECT id, username, email, role, avatar_url, created_at, last_login FROM users WHERE id = $1',
             [userId]
         );
+
+        if (result.rows.length === 0) {
+            throw new Error('Пользователь не найден');
+        }
 
         res.json({ 
             success: true, 
