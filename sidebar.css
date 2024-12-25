@@ -154,20 +154,25 @@
     margin-left: 16px;
 }
 
+/* Исправленные стили для переключателя темы */
 .theme-switch-wrapper {
     padding: 8px 16px;
     margin-top: auto;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .theme-toggle-container {
     background: rgba(255, 255, 255, 0.08);
     border-radius: 20px;
-    padding: 6px;
+    padding: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     transition: all 0.3s ease;
+    margin: 0 auto;
+    width: fit-content;
 }
 
 .theme-toggle-container:hover {
@@ -190,13 +195,13 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 4px;
     width: 44px;
     height: 24px;
     background: rgba(255, 255, 255, 0.15);
     border-radius: 50px;
     cursor: pointer;
     transition: all 0.3s ease;
+    padding: 0 2px;
 }
 
 .ball {
@@ -206,15 +211,16 @@
     height: 20px;
     background: #fff;
     border-radius: 50%;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     align-items: center;
     justify-content: center;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
+/* Состояния переключателя */
 .theme-checkbox:checked + .theme-label .ball {
-    transform: translateX(24px);
+    transform: translateX(20px);
     background: #3498db;
 }
 
@@ -222,21 +228,39 @@
     background: rgba(52, 152, 219, 0.3);
 }
 
-.sidebar.expanded .theme-switch-wrapper {
-    padding: 12px 24px;
+/* Иконки для темной/светлой темы */
+.theme-label::before,
+.theme-label::after {
+    font-size: 11px;
+    line-height: 24px;
+    transition: all 0.3s ease;
 }
 
-/* Иконки для темной/светлой темы */
 .theme-label::before {
     content: '🌞';
     position: absolute;
-    left: 8px;
-    font-size: 11px;
+    left: 6px;
 }
 
 .theme-label::after {
     content: '🌙';
     position: absolute;
-    right: 8px;
-    font-size: 11px;
+    right: 6px;
+}
+
+/* Стили для развернутого состояния */
+.sidebar.expanded .theme-switch-wrapper {
+    padding: 12px 24px;
+}
+
+.sidebar.expanded .theme-toggle-container {
+    width: 100%;
+}
+
+.sidebar.expanded .theme-label {
+    width: 52px;
+}
+
+.sidebar.expanded .theme-checkbox:checked + .theme-label .ball {
+    transform: translateX(28px);
 }
