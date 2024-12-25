@@ -201,7 +201,7 @@ app.get('/api/download/:folder/:filename', (req, res) => {
         const mimeType = mimeTypes[ext] || 'application/octet-stream';
         const isImage = mimeType.startsWith('image/');
 
-        // Устанавливаем заголовки в зависимост�� от типа файла
+        // Устанавливаем заголовки в зависимост от типа файла
         if (!isImage) {
             res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(filename)}"`);
         }
@@ -2725,7 +2725,7 @@ const uploadAvatar = multer({
     }
 });
 
-// Обновляем маршрут загрузки аватара
+// Обновляем маршрут загрузки ава��ара
 app.post('/api/upload-avatar', uploadAvatar.single('avatar'), async (req, res) => {
     try {
         if (!req.file) {
@@ -2742,18 +2742,24 @@ app.post('/api/upload-avatar', uploadAvatar.single('avatar'), async (req, res) =
 
         // Обновляем URL аватара в базе данных
         await pool.query(
-            'UPDATE users SET avatar_url = $1 WHERE id = $2',
+            'UPDATE users SET avatar_url = $1 WHERE id = $2 RETURNING *',
             [avatarUrl, userId]
         );
 
         // Получаем обновленные данные пользователя
-        const result = await pool.query(
-            'SELECT id, username, email, role, avatar_url, created_at, last_login FROM users WHERE id = $1',
-            [userId]
-        );
+        const result = await pool.query(`
+            SELECT id, username, email, role, avatar_url, created_at, last_login 
+            FROM users 
+            WHERE id = $1
+        `, [userId]);
 
         if (result.rows.length === 0) {
             throw new Error('Пользователь не найден');
+        }
+
+        // Очищаем кэш для этого пользователя
+        if (STATUS_UPDATE_CACHE) {
+            STATUS_UPDATE_CACHE.delete(userId);
         }
 
         res.json({ 
@@ -2768,26 +2774,11 @@ app.post('/api/upload-avatar', uploadAvatar.single('avatar'), async (req, res) =
     }
 });
 
-// Обновляем настройку раздачи статических файлов для аватаров
+// Обновляем настройки раздачи статических файлов для аватаров
 app.use('/uploads/avatars', (req, res, next) => {
-    // Разрешаем кеширование аватаров на стороне клиента
-    res.setHeader('Cache-Control', 'public, max-age=86400'); // кеширование на 24 часа
-    
-    // Продолжаем обработку запроса
+    // Отключаем кэширование для аватаров
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
     next();
-}, express.static('/var/www/html/uploads/avatars', {
-    index: false, // запрещаем листинг директории
-    dotfiles: 'deny', // запрещаем доступ к скрытым файлам
-    fallthrough: true // продолжаем обработку при ошибках
-}));
-
-// Добавляем обработчик ошибок для раздачи аватаров
-app.use('/uploads/avatars', (err, req, res, next) => {
-    if (err) {
-        console.error('Avatar serving error:', err);
-        // В случае ошибки отдаем дефолтный аватар
-        res.redirect('/uploads/avatars/default.png');
-    } else {
-        next();
-    }
-});
+}, express.static('/var/www/html/uploads/avatars'));

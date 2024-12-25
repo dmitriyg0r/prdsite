@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const formatAvatarUrl = (url) => {
         if (!url) return '/uploads/avatars/default.png';
         if (url.startsWith('http')) return url;
-        return `https://adminflow.ru${url}`;
+        return `https://adminflow.ru${url}?t=${new Date().getTime()}`;
     };
 
     // Функция для обновления данных профиля
@@ -332,20 +332,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             const data = await response.json();
             
             if (response.ok && data.success) {
-                // Обновляем аватар на странице
-                const avatarUrl = data.avatarUrl.startsWith('http') ? 
-                    data.avatarUrl : 
-                    `https://adminflow.ru${data.avatarUrl}`;
+                // Добавляем timestamp к URL аватара для предотвращения кэширования
+                const avatarUrl = data.avatarUrl + '?t=' + new Date().getTime();
                 
-                document.getElementById('profile-avatar').src = avatarUrl + '?t=' + new Date().getTime();
+                // Обновляем аватар на странице
+                document.getElementById('profile-avatar').src = avatarUrl;
                 
                 // Обновляем данные пользователя в localStorage
-                currentUser = {
+                const updatedUser = {
                     ...currentUser,
-                    ...data.user,
-                    avatar_url: data.avatarUrl // Сохраняем относительный путь
+                    ...data.user
                 };
-                localStorage.setItem('user', JSON.stringify(currentUser));
+                localStorage.setItem('user', JSON.stringify(updatedUser));
+                currentUser = updatedUser; // Обновляем текущего пользователя
 
                 alert('Аватар успешно обновлен');
             } else {
@@ -374,7 +373,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Обновляем селектор для кнопки открытия модального окна
     const friendsHeaderBtn = document.querySelector('.friends-header-btn');
     
-    // Открытие модального окна при клике на заголовок "Дузья"
+    // Открытие модальн��го окна при клике на заголовок "Дузья"
     friendsHeaderBtn.addEventListener('click', (e) => {
         e.preventDefault();
         friendsModal.classList.add('active');
@@ -444,7 +443,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Добавляем функцию getFriendStatus
+    // Добавляем функц��ю getFriendStatus
     function getFriendStatus(userId) {
         // Получаем статус из атрибута data-friendship-status
         const userCard = document.querySelector(`.user-card[data-user-id="${userId}"]`);
@@ -1232,7 +1231,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }, 1000);
     }
 
-    // Повторная отправка кода
+    // Повторная от��равка кода
     resendCodeBtn.addEventListener('click', async () => {
         resendCodeBtn.disabled = true;
         await sendVerificationCode();
@@ -1297,7 +1296,7 @@ function initializePostHandlers() {
             }, 10);
         } else {
             postForm.classList.remove('active');
-            // Скрываем форм�� после завершения анимации
+            // Скрываем форму после завершения анимации
             setTimeout(() => {
                 postForm.style.display = 'none';
             }, 300);
@@ -1330,7 +1329,7 @@ function initializePostHandlers() {
             };
             reader.readAsDataURL(file);
         } else {
-            // Для не-изображений показы��аем иконку файла
+            // Для не-изображений показываем иконку файла
             const preview = document.getElementById('image-preview');
             const fileIcon = getFileIcon(file.name.split('.').pop().toLowerCase());
             preview.innerHTML = `
@@ -1366,7 +1365,7 @@ async function createPost() {
         formData.append('content', content);
         
         if (file) {
-            // Проверяем размер файла (например, 10MB максимум)
+            // Проверяем размер ��айла (например, 10MB максимум)
             const maxSize = 10 * 1024 * 1024; // 10MB в байтах
             if (file.size > maxSize) {
                 alert('Файл слишком большой. Максимальный размер: 10MB');
@@ -1432,7 +1431,7 @@ async function createPost() {
         }
     } catch (err) {
         console.error('Error creating post:', err);
-        alert('Ошибка при создании публикации: ' + (err.message || 'Не��звестная ошибка'));
+        alert('Ошибка при создании публикации: ' + (err.message || 'Неизвестная ошибка'));
     }
 }
 
@@ -1614,7 +1613,7 @@ async function deletePost(postId) {
         const data = await response.json();
         
         if (response.ok || data.success) {
-            // Перезагруж��ем посты после удаления
+            // Перезагружаем посты после удаления
             loadPosts();
         } else {
             alert(data.error || 'Ошибка при удалении публикации');
