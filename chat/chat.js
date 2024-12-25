@@ -39,6 +39,24 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     `;
     document.head.appendChild(style);
+
+    // Обработчик для кнопки возврата к списку чатов
+    document.getElementById('backToChats').addEventListener('click', () => {
+        document.querySelector('.chat-list').classList.add('active');
+        if (window.innerWidth <= 768) {
+            document.querySelector('.chat-area').style.display = 'none';
+        }
+    });
+
+    // Обработчик выбора чата для мобильной версии
+    document.querySelectorAll('.chat-partner').forEach(partner => {
+        partner.addEventListener('click', () => {
+            if (window.innerWidth <= 768) {
+                document.querySelector('.chat-list').classList.remove('active');
+                document.querySelector('.chat-area').style.display = 'flex';
+            }
+        });
+    });
 });
 
 let currentChatPartner = null;
@@ -72,7 +90,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Загружаем список чатов
     await loadChatsList();
     
-    // Запускаем периодическ��е обновление списка чатов
+    // Запускаем периодическое обновление списка чатов
     setInterval(loadChatsList, 10000); // Обновляем каждые 10 секунд
 });
 
@@ -415,7 +433,7 @@ function createAttachmentElement(attachmentUrl) {
             img.src = '../uploads/avatars/default.png'; // Заглушка при ошибке
         };
         img.onload = () => {
-            console.log('Изоб��ажение успешно загружено:', fullUrl);
+            console.log('Изображение успешно загружено:', fullUrl);
         };
         img.onclick = () => showImageModal(fullUrl);
         attachmentElement.appendChild(img);
@@ -943,7 +961,7 @@ function setupContextMenu() {
     const messagesArea = document.getElementById('messages');
     
     if (!contextMenu || !messagesArea) {
-        console.error('Элементы контекстного меню не найдены');
+        console.error('Элементы контекстно��о меню не найдены');
         return;
     }
 
@@ -1118,7 +1136,7 @@ document.addEventListener('visibilitychange', () => {
     }
 });
 
-// Функция проверки прокрутки до конца
+// Функция проверки прокрутк�� до конца
 function isScrolledToBottom(element) {
     if (!element) return false;
     return Math.abs(element.scrollHeight - element.scrollTop - element.clientHeight) < 1;
@@ -1130,7 +1148,7 @@ function startMessageUpdates() {
         clearInterval(messageUpdateInterval);
     }
     
-    // Пер��ая загрука
+    // Первая загрука
     if(currentChatPartner) loadMessages(currentChatPartner.id);
     
     // Устанавливаем интервал обновления
@@ -1228,7 +1246,7 @@ async function loadChatsList() {
 }
 
 function updateExistingChatElement(element, chat) {
-    // Обновляем только текстовое содержимое и классы, не трогая стру��туру DOM
+    // Обновляем только текстовое содержимое и классы, не трогая структуру DOM
     const lastMessageEl = element.querySelector('.chat-last-message');
     const unreadCountEl = element.querySelector('.unread-count');
     const statusIndicator = element.querySelector('.status-indicator');

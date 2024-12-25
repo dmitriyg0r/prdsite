@@ -686,7 +686,7 @@ body {
     background-color: var(--text-tertiary);
 }
 
-/* Улучше��ные стили для информации о руге */
+/* Улучшенные стили для информации о руге */
 .friend-info {
     flex: 1;
     min-width: 0;
@@ -1179,5 +1179,24 @@ body {
 
 .message.highlight {
     animation: highlightMessage 2s ease-out;
+}
+
+/* Анимации для мобильной версии */
+@keyframes slideInChat {
+    from {
+        transform: translateX(100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideOutChat {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(100%);
+    }
 }
  
