@@ -251,3 +251,23 @@
 .sidebar.expanded .theme-label {
     width: 46px;
 }
+
+/* Медиа-запрос для мобильных устройств */
+@media screen and (max-width: 768px) {
+    .sidebar {
+        display: none;
+    }
+    
+    .sidebar-toggle {
+        display: none;
+    }
+    
+    /* Добавляем отступ слева для основного контента */
+    main, 
+    .chat-container,
+    .lenta-layout,
+    .games-layout {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+}
