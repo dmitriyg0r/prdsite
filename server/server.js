@@ -842,82 +842,63 @@ app.get('/api/users/:id', async (req, res) => {
 // Обновление профиля пользователя
 app.post('/api/users/update-profile', async (req, res) => {
     try {
-        const { userId, username, email } = req.body;
+        const { userId, avatar_url, username, email } = req.body;
+        
+        console.log('1. Получены данные для обновления профиля:', {
+            userId,
+            avatar_url,
+            username,
+            email
+        });
 
-        // Проверяем, не занят ли email другим пользователем
-        if (email) {
-            const emailCheck = await pool.query(
-                'SELECT id FROM users WHERE email = $1 AND id != $2',
-                [email, userId]
-            );
-            if (emailCheck.rows.length > 0) {
-                return res.status(400).json({
-                    success: false,
-                    error: 'Это email уже используется другим пользователем'
-                });
-            }
-        }
+        // Проверяем существование пользователя
+        const userCheck = await pool.query('SELECT * FROM users WHERE id = $1', [userId]);
+        console.log('2. Текущие данные пользователя:', userCheck.rows[0]);
 
-        // Проверяем, не занято ли имя пользователя
-        if (username) {
-            const usernameCheck = await pool.query(
-                'SELECT id FROM users WHERE username = $1 AND id != $2',
-                [username, userId]
-            );
-            if (usernameCheck.rows.length > 0) {
-                return res.status(400).json({
-                    success: false,
-                    error: 'Это имя пользователя уже занято'
-                });
-            }
-        }
-
-        // Формируем запрос на обновление
-        let query = 'UPDATE users SET ';
-        const updates = [];
-        const values = [];
-        let paramCount = 1;
-
-        if (username) {
-            updates.push(`username = $${paramCount}`);
-            values.push(username);
-            paramCount++;
-        }
-
-        if (email) {
-            updates.push(`email = $${paramCount}`);
-            values.push(email);
-            paramCount++;
-        }
-
-        if (updates.length === 0) {
-            return res.status(400).json({
+        if (userCheck.rows.length === 0) {
+            return res.status(404).json({
                 success: false,
-                error: 'Нет данных для обновления'
+                error: 'Пользователь не найден'
             });
         }
 
-        query += updates.join(', ');
-        query += ` WHERE id = $${paramCount}`;
-        values.push(userId);
+        // Обновляем данные пользователя
+        const updateQuery = `
+            UPDATE users 
+            SET 
+                avatar_url = COALESCE($1, avatar_url),
+                username = COALESCE($2, username),
+                email = COALESCE($3, email),
+                updated_at = NOW()
+            WHERE id = $4
+            RETURNING *;
+        `;
 
-        await pool.query(query, values);
+        console.log('3. Выполняем запрос обновления с параметрами:', [avatar_url, username, email, userId]);
 
-        // Получаем обновленные данные пользователя
-        const result = await pool.query(
-            'SELECT id, username, email, role, created_at, last_login, avatar_url FROM users WHERE id = $1',
-            [userId]
-        );
+        const result = await pool.query(updateQuery, [avatar_url, username, email, userId]);
+        
+        console.log('4. Результат обновления:', result.rows[0]);
+
+        if (result.rows.length === 0) {
+            throw new Error('Не удалось обновить данные пользователя');
+        }
+
+        // Проверяем обновление
+        const verifyQuery = 'SELECT * FROM users WHERE id = $1';
+        const verifyResult = await pool.query(verifyQuery, [userId]);
+        console.log('5. Проверка обновления:', verifyResult.rows[0]);
 
         res.json({
             success: true,
             user: result.rows[0]
         });
+
     } catch (err) {
-        console.error('Update profile error:', err);
+        console.error('Ошибка при обновлении профиля:', err);
         res.status(500).json({
             success: false,
-            error: 'Ошибка при обновлении профиля'
+            error: 'Ошибка при обновлении профиля: ' + err.message
         });
     }
 });
@@ -1857,7 +1838,7 @@ alternativeTransporter.verify(function(error, success) {
     }
 });
 
-// Функция для генерации кода подтверждения
+// Функция для генерации к��да подтверждения
 function generateVerificationCode() {
     return Math.floor(100000 + Math.random() * 900000).toString();
 }
@@ -2695,7 +2676,7 @@ app.delete('/api/messages/:messageId', async (req, res) => {
     }
 });
 
-// Обновляем конфигурацию multer для аватаров
+// Обно��ляем конфигурацию multer для аватаров
 const avatarStorage = multer.diskStorage({
     destination: function (req, file, cb) {
         const uploadPath = '/var/www/html/uploads/avatars';
