@@ -1119,7 +1119,7 @@ body {
     color: var(--text-secondary);
 }
 
-/* Стили для цитат в отправленн��х сообщениях */
+/* Стили для цитат в отправленных сообщениях */
 .message-sent .quoted-message {
     background: rgba(255, 255, 255, 0.15);
     border-left-color: rgba(255, 255, 255, 0.4);
@@ -1260,106 +1260,48 @@ body {
 }
 
 @media screen and (max-width: 768px) {
-    /* Базовые настройки для мобильного вида */
+    /* Изменяем структуру грида для мобильных устройств */
     .chat-container {
         margin-left: 0;
-        height: 100vh;
-        padding-bottom: 60px; /* Высота мобильного меню */
-        box-sizing: border-box;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
+        grid-template-columns: 1fr;
+        height: calc(100vh - 60px); /* Учитываем высоту мобильного меню */
     }
 
-    /* Список чатов */
+    /* Показываем список чатов на весь экран */
     .chat-list {
-        position: fixed;
-        top: 0;
-        left: 0;
         width: 100%;
         height: calc(100vh - 60px);
-        z-index: 1000;
-        background: var(--surface-color);
     }
 
-    /* Область чата */
+    /* Скрываем область чата по умолчанию */
     .chat-area {
+        display: none;
         position: fixed;
         top: 0;
         left: 0;
         width: 100%;
         height: calc(100vh - 60px);
-        z-index: 990;
+        z-index: 1001; /* Выше чем у списка чатов */
+    }
+
+    /* Стили для отображения области чата при активном чате */
+    .chat-area.active {
         display: flex;
-        flex-direction: column;
     }
 
-    /* Область сообщений */
-    .messages-area {
-        flex: 1;
-        height: auto;
-        padding-bottom: 80px; /* Место для поля ввода */
+    /* Показываем кнопку возврата в шапке чата */
+    .back-to-chats {
+        display: block !important;
+        background: none;
+        border: none;
+        color: var(--text-primary);
+        padding: 8px;
+        cursor: pointer;
     }
 
-    /* Поле ввода сообщений */
-    .input-area {
-        position: fixed;
-        bottom: 60px; /* Над мобильным меню */
-        left: 0;
-        width: 100%;
-        background: var(--surface-color);
-        padding: 10px;
-        box-sizing: border-box;
-        border-top: 1px solid var(--border-light);
-        z-index: 992;
-    }
-
-    /* Заголовок чата */
+    /* Корректируем отступы в шапке чата */
     .chat-header {
-        position: sticky;
-        top: 0;
-        z-index: 991;
-        background: var(--surface-color);
-    }
-
-    /* Плейсхолдер чата */
-    .chat-placeholder {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: calc(100vh - 60px);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: var(--background-color);
-    }
-
-    /* Исправление скролла */
-    .messages-area {
-        -webkit-overflow-scrolling: touch;
-        overflow-y: auto;
-    }
-
-    /* Убираем горизонтальный скролл */
-    body {
-        overflow-x: hidden;
-        width: 100%;
-    }
-
-    /* Корректировка размера сообщений */
-    .message {
-        max-width: 80%;
-        box-sizing: border-box;
-    }
-
-    .context-menu {
-        z-index: 993;
-    }
-
-    .image-modal {
-        z-index: 9000; /* Меньше чем у мобильного меню, но больше остальных элементов */
+        padding: 12px;
     }
 }
 
