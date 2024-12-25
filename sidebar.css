@@ -196,29 +196,48 @@
     position: relative;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     width: 40px;
     height: 22px;
     background: rgba(255, 255, 255, 0.12);
     border-radius: 20px;
     cursor: pointer;
-    transition: all 0.3s ease;
-    padding: 0 2px;
+    overflow: hidden;
 }
 
-.ball {
+.theme-icons {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.theme-icon {
     position: absolute;
-    left: 2px;
-    width: 18px;
-    height: 18px;
-    background: #fff;
-    border-radius: 50%;
-    transition: all 0.3s ease;
+    font-size: 14px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.theme-checkbox:checked + .theme-label .ball {
-    transform: translateX(18px);
-    background: #3498db;
+.moon-icon {
+    opacity: 0;
+    transform: translateY(100%) rotate(-45deg);
+}
+
+.sun-icon {
+    opacity: 1;
+    transform: translateY(0) rotate(0);
+}
+
+.theme-checkbox:checked ~ .theme-label .moon-icon {
+    opacity: 1;
+    transform: translateY(0) rotate(0);
+}
+
+.theme-checkbox:checked ~ .theme-label .sun-icon {
+    opacity: 0;
+    transform: translateY(-100%) rotate(45deg);
 }
 
 /* Уменьшаем размер эмодзи */

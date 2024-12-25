@@ -38,13 +38,14 @@
                 <span>О нас</span>
             </a>
         </div>
-        <div class="theme-switch-wrapper">
-            <div class="theme-toggle-container">
-                <input type="checkbox" id="theme-toggle" class="theme-checkbox">
-                <label for="theme-toggle" class="theme-label">
-                    <div class="ball"></div>
-                </label>
-            </div>
+        <div class="theme-toggle-container">
+            <input type="checkbox" class="theme-checkbox" id="theme-toggle" hidden>
+            <label class="theme-label" for="theme-toggle">
+                <div class="theme-icons">
+                    <i class="fas fa-sun theme-icon sun-icon"></i>
+                    <i class="fas fa-moon theme-icon moon-icon"></i>
+                </div>
+            </label>
         </div>
     </nav>
     <nav class="mobile-nav">
@@ -155,7 +156,7 @@
                         <div id="image-preview" class="post-preview"></div>
                         <button id="publish-post-btn" class="action-btn">
                             <i class="fas fa-paper-plane"></i>
-                            <span>Опубликовать</span>
+                            <span>Опубликоват��</span>
                         </button>
                     </div>
                 </div>
@@ -217,7 +218,7 @@
         </div>
     </div>
 
-    <!-- После существующих модальных окон, перед закрывающим тегом body -->
+    <!-- После существующих модальных ��кон, перед закрывающим тегом body -->
     <div id="edit-profile-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -264,7 +265,7 @@
                     <div class="verification-step">
                         <p class="info-text">На вашу почту будет отправлен код подтверждения</p>
                         <button type="button" id="send-verification-code" class="verification-btn">
-                            Отправи��ь код
+                            Отправить код
                         </button>
                     </div>
                     <div class="code-verification-step" style="display: none;">
@@ -283,7 +284,7 @@
                         <div class="form-group">
                             <label for="new-password">Новый пароль</label>
                             <div class="password-input-wrapper">
-                                <input type="password" id="new-password" class="form-input" placeholder="Введите новый паро��ь">
+                                <input type="password" id="new-password" class="form-input" placeholder="Введите новый пароль">
                                 <button type="button" class="toggle-password">
                                     <i class="far fa-eye"></i>
                                 </button>
