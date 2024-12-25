@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             const data = await response.json();
             
-            // Заполняем информацию профиля друга
+            // Заполняем инфор��ацию профиля друга
             document.getElementById('username').textContent = data.user.username;
             document.getElementById('role').textContent = data.user.role;
             document.getElementById('created_at').textContent = new Date(data.user.created_at).toLocaleString();
@@ -159,7 +159,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Загружаем список своих друзей с явным указанием currentUser.id
         await loadFriends(currentUser.id);
         
-        // Запускаем обновление своего статуса
+        // Запускаем обнов��ение своего статуса
         startStatusUpdates();
         
         // Загружаем посты
@@ -251,7 +251,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     if (response.ok) {
                         if (!data.available) {
-                            editEmailInput.setCustomValidity('Э��от email уже используется');
+                            editEmailInput.setCustomValidity('Этот email уже используется');
                             editEmailInput.reportValidity();
                         } else {
                             editEmailInput.setCustomValidity('');
@@ -300,7 +300,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // За��ружаем список друзей
+    // Загружаем список друзей
     loadFriendRequests();
 
     // Обновляем обработчик загрузки аватара
@@ -324,22 +324,24 @@ document.addEventListener('DOMContentLoaded', async () => {
             const data = await response.json();
             console.log('Получен ответ от сервера:', data);
             
-            if (response.ok && data.success) {
-                // Обновляем данные пользователя в localStorage с новым avatar_url
+            if (response.ok && data.success && data.user) {
+                // Обновляем данные пользователя в localStorage с данными из БД
                 const updatedUser = {
                     ...currentUser,
-                    avatar_url: data.avatarUrl // Используем URL из ответа сервера
+                    ...data.user // Используем все обновленные данные из БД
                 };
+                
+                console.log('Обновляем данные пользователя:', updatedUser);
                 
                 // Сохраняем обновленные данные в localStorage
                 localStorage.setItem('user', JSON.stringify(updatedUser));
                 currentUser = updatedUser;
 
-                // Обновляем аватар на странице с timestamp для предотвращения кэширования
-                const avatarUrl = formatAvatarUrl(data.avatarUrl);
+                // Обновляем аватар на странице
+                const avatarUrl = formatAvatarUrl(data.user.avatar_url);
                 document.getElementById('profile-avatar').src = avatarUrl;
                 
-                console.log('Данные пользователя обновлены:', updatedUser);
+                console.log('Аватар обновлен:', avatarUrl);
                 alert('Аватар успешно обновлен');
                 
                 // Принудительно обновляем данные пользователя
@@ -367,7 +369,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const tabButtons = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
 
-    // Обновляем селектор для кнопки открытия модальног�� окна
+    // Обновляем селектор для кнопки открытия модального окна
     const friendsHeaderBtn = document.querySelector('.friends-header-btn');
     
     // Открытие модального окна при клике на заголовок "Дузья"
@@ -598,13 +600,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        // Обновляем счетчик друз��й в заголовке секции
+        // Обновляем счетчик друзей в заголовке секции
         const friendsHeaderCount = document.querySelector('.friends-section .friends-count');
         if (friendsHeaderCount) {
             friendsHeaderCount.textContent = friends.length;
         }
 
-        // Обновляем счетчик в ��одальном окне
+        // Обновляем счетчик в окне друзей
         const modalFriendCount = document.querySelector('.modal-tabs .friend-count');
         if (modalFriendCount) {
             modalFriendCount.textContent = friends.length;
@@ -962,7 +964,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Загружаем посты
     loadPosts();
 
-    // Оптимизированная ��ункция обновления статуса пользователя
+    // Оптимизированная функция обновления статуса пользователя
     let statusUpdateTimeout = null;
     let lastStatusUpdate = 0;
     const MIN_UPDATE_INTERVAL = 10000; // Минимальный интервал между обновлениями (10 секунд)
@@ -1063,7 +1065,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Обновляем обработчик перед уходом со страницы
     window.addEventListener('beforeunload', (event) => {
         if (currentUser && currentUser.id) {
-            // Испоьзуем синхронный запрос для гарантированной о��правки
+            // Испоьзуем синхронный запрос для гарантированной отправки
             navigator.sendBeacon('https://adminflow.ru/api/users/update-status', JSON.stringify({
                 userId: currentUser.id,
                 is_online: false
@@ -1307,7 +1309,7 @@ function initializePostHandlers() {
 
         // Проверяем размер файла
         if (file.size > 10 * 1024 * 1024) { // 10MB
-            alert('Файл слишком большой. Максимальный размер: 10MB');
+            alert('Файл слишк��м большой. Максимальный размер: 10MB');
             e.target.value = '';
             return;
         }
@@ -1362,7 +1364,7 @@ async function createPost() {
         formData.append('content', content);
         
         if (file) {
-            // Проверяем размер ��айла (например, 10MB максимум)
+            // Проверяем размер файла (например, 10MB максимум)
             const maxSize = 10 * 1024 * 1024; // 10MB в байтах
             if (file.size > maxSize) {
                 alert('Файл слишком большой. Максимальный размер: 10MB');
@@ -1410,7 +1412,7 @@ async function createPost() {
         }
 
         if (!response.ok) {
-            throw new Error(data.error || 'Ошибка при создании публикации');
+            throw new Error(data.error || 'Ошибка при создании пуб��икации');
         }
         
         if (data.success) {
@@ -1721,7 +1723,7 @@ window.openFriendsModal = function() {
     friendsModal.classList.add('active');
     document.body.style.overflow = 'hidden';
     
-    // Акт��вируем вкладку с друзьями
+    // Активируем вкладку с друзьями
     if (friendsTab) {
         friendsTab.click();
     }
@@ -1757,13 +1759,13 @@ async function downloadFile(fileUrl) {
         // Получаем blob из ответа
         const blob = await response.blob();
         
-        // Создаем ссылк�� для скачивания
+        // Создаем ссылку для скачивания
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
         link.download = filename;
         
-        // Добавляем ссылку в DOM и эмуируем клик
+        // Добавляем ссылку �� DOM и эмуируем клик
         document.body.appendChild(link);
         link.click();
         

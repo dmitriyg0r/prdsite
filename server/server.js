@@ -645,7 +645,7 @@ app.get('/api/messages/last/:userId/:friendId', async (req, res) => {
         res.json({ success: true, message: result.rows[0] });
     } catch (err) {
         console.error('Error getting last message:', err);
-        res.status(500).json({ error: 'Ошибка при получении последнего сообщения' });
+        res.status(500).json({ error: '��шибка при получении последнего сообщения' });
     }
 });
 
@@ -1360,7 +1360,7 @@ app.get('/api/users/status/:userId', async (req, res) => {
     }
 });
 
-// ��бн����вление статуса пользователя
+// ��б�������вление статуса пользователя
 app.post('/api/users/update-status', async (req, res) => {
     try {
         const { userId, is_online, last_activity } = req.body;
@@ -2781,30 +2781,33 @@ app.post('/api/upload-avatar', uploadAvatar.single('avatar'), async (req, res) =
         // Перемещаем новый файл
         fs.renameSync(req.file.path, finalPath);
 
-        // Обновляем URL аватара в базе данных
-        await pool.query(
-            'UPDATE users SET avatar_url = $1, updated_at = NOW() WHERE id = $2',
-            [avatarUrl, userId]
-        );
+        console.log('Файл сохранен:', finalPath);
+        console.log('URL аватара для БД:', avatarUrl);
 
-        // Получаем обновленные данные пользователя
-        const result = await pool.query(`
-            SELECT 
-                id, 
-                username, 
-                email, 
-                role, 
-                avatar_url, 
-                created_at, 
-                last_login,
-                updated_at
+        // Обновляем URL аватара в базе данных и получаем обновленные данные
+        const updateResult = await pool.query(`
+            UPDATE users 
+            SET 
+                avatar_url = $1, 
+                updated_at = NOW() 
+            WHERE id = $2 
+            RETURNING *
+        `, [avatarUrl, userId]);
+
+        console.log('Результат обновления в БД:', updateResult.rows[0]);
+
+        if (updateResult.rows.length === 0) {
+            throw new Error('Не удалось обновить данные пользователя');
+        }
+
+        // Проверяем обновление в базе
+        const verifyUpdate = await pool.query(`
+            SELECT id, username, email, role, avatar_url, created_at, last_login, updated_at
             FROM users 
             WHERE id = $1
         `, [userId]);
 
-        if (result.rows.length === 0) {
-            throw new Error('Пользователь не найден');
-        }
+        console.log('Проверка обновления в БД:', verifyUpdate.rows[0]);
 
         // Очищаем кэш
         if (STATUS_UPDATE_CACHE) {
@@ -2814,15 +2817,23 @@ app.post('/api/upload-avatar', uploadAvatar.single('avatar'), async (req, res) =
         const responseData = {
             success: true,
             avatarUrl: avatarUrl,
-            user: result.rows[0]
+            user: verifyUpdate.rows[0]
         };
         console.log('Отправляем ответ:', responseData);
 
         res.json(responseData);
 
     } catch (err) {
-        console.error('Error uploading avatar:', err);
-        res.status(500).json({ error: 'Ошибка при загрузке аватара' });
+        console.error('Детальная ошибка загрузки аватара:', {
+            error: err.message,
+            stack: err.stack,
+            code: err.code,
+            detail: err.detail
+        });
+        res.status(500).json({ 
+            error: 'Ошибка при загрузке аватара',
+            details: err.message
+        });
     }
 });
 
