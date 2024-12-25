@@ -164,6 +164,7 @@ style.textContent = `
         }
 
         .input-area {
+            position: fixed;
             bottom: 60px;
             left: 0;
             right: 0;
