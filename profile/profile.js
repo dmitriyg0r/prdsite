@@ -12,11 +12,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    // Функция для форматирования URL аватара с timestamp для предотвращения кэширования
+    // Функция для форматирования URL аватара
     const formatAvatarUrl = (url) => {
         if (!url) return '/uploads/avatars/default.png';
-        const baseUrl = url.startsWith('http') ? url : `https://adminflow.ru${url}`;
-        return `${baseUrl}?t=${new Date().getTime()}`;
+        if (url.startsWith('http')) return url;
+        return `https://adminflow.ru${url}`;
     };
 
     // Функция для обновления данных профиля
@@ -26,10 +26,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('created_at').textContent = new Date(userData.created_at).toLocaleString();
         document.getElementById('last_login').textContent = userData.last_login ? 
             new Date(userData.last_login).toLocaleString() : 'Нет данных';
-        
-        // Обновляем аватар с принудительным обходом кэша
-        const avatarElement = document.getElementById('profile-avatar');
-        avatarElement.src = formatAvatarUrl(userData.avatar_url);
+        document.getElementById('profile-avatar').src = formatAvatarUrl(userData.avatar_url);
         
         if (userData.email) {
             const emailElement = document.getElementById('email');
@@ -40,11 +37,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     try {
-        // Загружаем актуальные данные пользователя с принудительным обходом кэша
+        // Загружаем актуальные данные пользователя
         const userId = profileId || currentUser.id;
-        const response = await fetch(`https://adminflow.ru/api/users/${userId}`, {
-            cache: 'no-cache' // Отключаем кэширование запроса
-        });
+        const response = await fetch(`https://adminflow.ru/api/users/${userId}`);
         
         if (!response.ok) {
             throw new Error('Ошибка получения данных пользователя');
@@ -95,7 +90,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('created_at').textContent = new Date(data.user.created_at).toLocaleString();
             document.getElementById('last_login').textContent = data.user.last_login ? 
                 new Date(data.user.last_login).toLocaleString() : 'Нет данных';
-            document.getElementById('profile-avatar').src = data.user.avatar_url || '/uploads/avatars/default.png';
+            document.getElementById('profile-avatar').src = formatAvatarUrl(data.user.avatar_url);
 
             // Загружаем список друзей профиля друга
             await loadFriends(profileId);
@@ -148,7 +143,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('created_at').textContent = new Date(currentUser.created_at).toLocaleString();
         document.getElementById('last_login').textContent = currentUser.last_login ? 
             new Date(currentUser.last_login).toLocaleString() : 'Нет данных';
-        document.getElementById('profile-avatar').src = currentUser.avatar_url || '/uploads/avatars/default.png';
+        document.getElementById('profile-avatar').src = formatAvatarUrl(currentUser.avatar_url);
 
         // Добавляем отображение своего статуса
         const statusElement = document.querySelector('.online-status');
@@ -331,36 +326,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const response = await fetch('https://adminflow.ru/api/upload-avatar', {
                 method: 'POST',
-                body: formData,
-                cache: 'no-cache' // Отключаем кэширование запроса
+                body: formData
             });
 
             const data = await response.json();
             
             if (response.ok && data.success) {
-                // Принудительно обновляем кэш аватара
+                // Обновляем аватар на странице
                 const avatarUrl = data.avatarUrl.startsWith('http') ? 
                     data.avatarUrl : 
                     `https://adminflow.ru${data.avatarUrl}`;
                 
-                // Обновляем аватар на странице с timestamp
-                document.getElementById('profile-avatar').src = `${avatarUrl}?t=${new Date().getTime()}`;
+                document.getElementById('profile-avatar').src = avatarUrl + '?t=' + new Date().getTime();
                 
                 // Обновляем данные пользователя в localStorage
                 currentUser = {
                     ...currentUser,
-                    ...data.user
+                    ...data.user,
+                    avatar_url: data.avatarUrl // Сохраняем относительный путь
                 };
                 localStorage.setItem('user', JSON.stringify(currentUser));
-
-                // Принудительно перезагружаем данные профиля
-                const refreshResponse = await fetch(`https://adminflow.ru/api/users/${currentUser.id}`, {
-                    cache: 'no-cache'
-                });
-                const refreshData = await refreshResponse.json();
-                if (refreshResponse.ok && refreshData.success) {
-                    updateProfileData(refreshData.user);
-                }
 
                 alert('Аватар успешно обновлен');
             } else {
@@ -515,7 +500,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             return `
                 <div class="user-card" data-user-id="${user.id}" data-friendship-status="${friendStatus}">
-                    <img src="${user.avatar_url || '/uploads/avatars/default.png'}" 
+                    <img src="${formatAvatarUrl(user.avatar_url)}" 
                          alt="${user.username}" 
                          class="user-avatar">
                     <div class="user-info">
@@ -637,7 +622,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             friendsGrid.innerHTML = friends.length > 0 
                 ? friends.slice(0, maxFriendsInGrid).map(friend => `
                     <a href="/profile/profile.html?id=${friend.id}" class="friend-item">
-                        <img src="${friend.avatar_url || '/uploads/avatars/default.png'}" 
+                        <img src="${formatAvatarUrl(friend.avatar_url)}" 
                              alt="${friend.username}"
                              class="friend-avatar">
                         <span class="friend-name">${friend.username}</span>
@@ -658,7 +643,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (friendsList) {
             friendsList.innerHTML = friends.map(friend => `
                 <div class="friend-card">
-                    <img src="${friend.avatar_url || '/uploads/avatars/default.png'}" 
+                    <img src="${formatAvatarUrl(friend.avatar_url)}" 
                          alt="${friend.username}" 
                          class="friend-avatar">
                     <div class="friend-info">
@@ -707,7 +692,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         requestsList.innerHTML = requests.map((request, index) => `
             <div class="friend-request-card" style="animation-delay: ${index * 0.1}s">
-                <img src="${request.avatar_url || '/uploads/avatars/default.png'}" 
+                <img src="${formatAvatarUrl(request.avatar_url)}" 
                      alt="${request.username}" 
                      class="request-avatar">
                 <div class="request-info">
@@ -833,7 +818,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             return `
                 <div class="user-card" data-user-id="${user.id}" data-friendship-status="${friendStatus}">
-                    <img src="${user.avatar_url || '/uploads/avatars/default.png'}" 
+                    <img src="${formatAvatarUrl(user.avatar_url)}" 
                          alt="${user.username}" 
                          class="user-avatar">
                     <div class="user-info">
@@ -1024,7 +1009,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             } catch (err) {
                 console.error('Error updating user status:', err);
             }
-        }, 100); // Небольшая задержка для группировки обновлений
+        }, 100); // Небольшая задержка для г��уппировки обновлений
     }
 
     // Оптимизированная функция отслеживания активности
@@ -1429,7 +1414,7 @@ async function createPost() {
         }
 
         if (!response.ok) {
-            throw new Error(data.error || 'Ошибка при создании публикации');
+            throw new Error(data.error || 'Ош��бка при создании публикации');
         }
         
         if (data.success) {
@@ -1513,7 +1498,7 @@ function displayPosts(posts) {
         return `
             <div class="post" data-post-id="${post.id}">
                 <div class="post-header">
-                    <img src="${post.author_avatar || '/uploads/avatars/default.png'}" 
+                    <img src="${formatAvatarUrl(post.author_avatar)}" 
                          alt="${post.author_name}" 
                          class="post-avatar">
                     <div class="post-info">
