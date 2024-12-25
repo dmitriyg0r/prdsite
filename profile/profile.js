@@ -2,6 +2,15 @@ let selectedPostImage = null;
 let currentUser = null;
 let editProfileBtn = null;
 
+// Сначала определяем вспомогательные функции
+const formatAvatarUrl = (url) => {
+    if (!url) return '/uploads/avatars/default.png';
+    if (url.startsWith('http')) return url;
+    const baseUrl = 'https://adminflow.ru';
+    const timestamp = new Date().getTime();
+    return `${baseUrl}${url}?t=${timestamp}`;
+};
+
 document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const profileId = urlParams.get('id');
@@ -11,15 +20,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.location.href = '/authreg/authreg.html';
         return;
     }
-
-    // Функция для форматирования URL аватара
-    const formatAvatarUrl = (url) => {
-        if (!url) return '/uploads/avatars/default.png';
-        if (url.startsWith('http')) return url;
-        const baseUrl = 'https://adminflow.ru';
-        const timestamp = new Date().getTime();
-        return `${baseUrl}${url}?t=${timestamp}`;
-    };
 
     // Функция для обновления данных профиля
     const updateProfileData = (userData) => {
@@ -431,7 +431,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         } catch (err) {
             console.error('Search error:', err);
-            alert('Ошибка при поиске пользователе��');
+            alert('Ошибка при поиске пользователей');
         }
     }
 
@@ -524,7 +524,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             btn.addEventListener('click', () => {
                 sendFriendRequest(btn.dataset.userId);
                 btn.classList.add('pending');
-                btn.innerHTML = '<i class="fas fa-clock"></i> Заявка отп��авлена';
+                btn.innerHTML = '<i class="fas fa-clock"></i> Заявка отправлена';
                 btn.disabled = true;
             });
         });
@@ -886,7 +886,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Обновляем функцию для отображения количества друзей
+    // Обновляем функцию для отображения количества друзе��
     function updateFriendsCount(count) {
         const friendsCount = document.querySelector('.friends-count');
         if (friendsCount) {
@@ -1259,7 +1259,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const data = await response.json();
 
             if (response.ok) {
-                alert('Пароль успешно измен��н');
+                alert('Пароль успешно изменен');
                 passwordChangeModal.classList.remove('active');
                 document.body.style.overflow = '';
                 resetPasswordChangeForm();
@@ -1288,7 +1288,7 @@ function initializePostHandlers() {
             }, 10);
         } else {
             postForm.classList.remove('active');
-            // Скрываем форму после завершения анимации
+            // Скрываем форм�� после завершения анимации
             setTimeout(() => {
                 postForm.style.display = 'none';
             }, 300);
@@ -1321,7 +1321,7 @@ function initializePostHandlers() {
             };
             reader.readAsDataURL(file);
         } else {
-            // Для не-изображений показываем иконку файла
+            // Для не-изображений показы��аем иконку файла
             const preview = document.getElementById('image-preview');
             const fileIcon = getFileIcon(file.name.split('.').pop().toLowerCase());
             preview.innerHTML = `
@@ -1423,7 +1423,7 @@ async function createPost() {
         }
     } catch (err) {
         console.error('Error creating post:', err);
-        alert('Ошибка при создании публикации: ' + (err.message || 'Неизвестная ошибка'));
+        alert('Ошибка при создании публикации: ' + (err.message || 'Не��звестная ошибка'));
     }
 }
 
@@ -1771,7 +1771,7 @@ async function downloadFile(fileUrl) {
     }
 }
 
-// Обновляем отображение файла в посте
+// Обновляем отображ��ние файла в посте
 function getFilePreview(file) {
     const extension = file.split('.').pop().toLowerCase();
     const filename = file.split('/').pop();
