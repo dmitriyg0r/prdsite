@@ -645,7 +645,7 @@ app.get('/api/messages/last/:userId/:friendId', async (req, res) => {
         res.json({ success: true, message: result.rows[0] });
     } catch (err) {
         console.error('Error getting last message:', err);
-        res.status(500).json({ error: '������шибка при получении последнего сообщения' });
+        res.status(500).json({ error: '��������шибка при получении последнего сообщения' });
     }
 });
 
@@ -1360,7 +1360,7 @@ app.get('/api/users/status/:userId', async (req, res) => {
     }
 });
 
-// ��б���������вление статуса пользователя
+// ���б���������вление статуса пользователя
 app.post('/api/users/update-status', async (req, res) => {
     try {
         const { userId, is_online, last_activity } = req.body;
@@ -2762,9 +2762,10 @@ app.post('/api/upload-avatar', uploadAvatar.single('avatar'), async (req, res) =
             });
         }
 
-        // Формируем имя файла и пути
+        // Формируем имя файла с timestamp для уникальности
+        const timestamp = Date.now();
         const fileExt = path.extname(req.file.originalname);
-        const filename = `avatar-${userId}${fileExt}`;
+        const filename = `avatar-${timestamp}-${Math.floor(Math.random() * 1000000000)}${fileExt}`;
         const avatarUrl = `/uploads/avatars/${filename}`;
         const finalPath = path.join('/var/www/html/uploads/avatars', filename);
 
@@ -2775,70 +2776,56 @@ app.post('/api/upload-avatar', uploadAvatar.single('avatar'), async (req, res) =
         });
 
         try {
-            // Обрабатываем файл
-            if (fs.existsSync(finalPath)) {
-                fs.unlinkSync(finalPath);
-                console.log('4. Deleted existing file');
-            }
-            fs.renameSync(req.file.path, finalPath);
-            console.log('5. Moved new file');
+            // Получаем текущий аватар пользователя
+            const currentAvatarResult = await pool.query('SELECT avatar_url FROM users WHERE id = $1', [userId]);
+            const currentAvatarUrl = currentAvatarResult.rows[0]?.avatar_url;
 
-            // Обновляем данные в БД
+            // Удаляем старый файл аватара, если он существует и не является default.png
+            if (currentAvatarUrl && !currentAvatarUrl.includes('default.png')) {
+                const oldPath = path.join('/var/www/html/uploads/avatars', path.basename(currentAvatarUrl));
+                if (fs.existsSync(oldPath)) {
+                    fs.unlinkSync(oldPath);
+                    console.log('4. Deleted old avatar file:', oldPath);
+                }
+            }
+
+            // Перемещаем новый файл
+            fs.renameSync(req.file.path, finalPath);
+            console.log('5. Moved new file to:', finalPath);
+
+            // Обновляем URL в базе данных
             const updateQuery = `
                 UPDATE users 
-                SET 
-                    avatar_url = $1, 
+                SET avatar_url = $1,
                     updated_at = NOW() 
-                WHERE id = $2;
+                WHERE id = $2
+                RETURNING *;
             `;
             
-            await pool.query(updateQuery, [avatarUrl, userId]);
-            console.log('6. Updated avatar_url in database');
+            const updateResult = await pool.query(updateQuery, [avatarUrl, userId]);
+            console.log('6. Updated database:', updateResult.rows[0]);
 
-            // Получаем обновленные данные пользователя
-            const getUserQuery = `
-                SELECT 
-                    id, 
-                    username, 
-                    email, 
-                    role, 
-                    avatar_url, 
-                    created_at, 
-                    last_login, 
-                    updated_at
-                FROM users 
-                WHERE id = $1;
-            `;
-
-            const userResult = await pool.query(getUserQuery, [userId]);
-            console.log('7. Retrieved user data:', userResult.rows[0]);
-
-            if (!userResult.rows[0]) {
-                throw new Error('User not found after update');
+            if (!updateResult.rows[0]) {
+                throw new Error('Failed to update user data');
             }
 
-            const response = {
+            return res.json({
                 success: true,
                 avatarUrl,
-                user: userResult.rows[0]
-            };
-
-            console.log('8. Sending response:', response);
-            return res.json(response);
+                user: updateResult.rows[0]
+            });
 
         } catch (err) {
-            console.error('9. Database error:', err);
-            if (fs.existsSync(req.file.path)) {
-                fs.unlinkSync(req.file.path);
+            console.error('7. Database error:', err);
+            // Очищаем загруженный файл в случае ошибки
+            if (fs.existsSync(finalPath)) {
+                fs.unlinkSync(finalPath);
             }
             throw err;
         }
 
     } catch (err) {
-        console.error('10. Avatar upload error:', {
-            message: err.message,
-            stack: err.stack
-        });
+        console.error('8. Avatar upload error:', err);
         return res.status(500).json({ 
             success: false, 
             error: 'Ошибка при загрузке аватара',
