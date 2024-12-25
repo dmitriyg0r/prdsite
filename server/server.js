@@ -1360,7 +1360,7 @@ app.get('/api/users/status/:userId', async (req, res) => {
     }
 });
 
-// ��бн��вление статуса пользователя
+// ��бн����вление статуса пользователя
 app.post('/api/users/update-status', async (req, res) => {
     try {
         const { userId, is_online, last_activity } = req.body;
@@ -2699,16 +2699,39 @@ app.delete('/api/messages/:messageId', async (req, res) => {
 const avatarStorage = multer.diskStorage({
     destination: function (req, file, cb) {
         const uploadPath = '/var/www/html/uploads/avatars';
-        // Создаем директорию, если она не существует
         if (!fs.existsSync(uploadPath)) {
             fs.mkdirSync(uploadPath, { recursive: true });
         }
         cb(null, uploadPath);
     },
-    filename: function (req, file, cb) {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        const ext = path.extname(file.originalname);
-        cb(null, `avatar-${uniqueSuffix}${ext}`);
+    filename: async function (req, file, cb) {
+        try {
+            const userId = req.body.userId;
+            // Получаем текущий аватар пользователя
+            const result = await pool.query('SELECT avatar_url FROM users WHERE id = $1', [userId]);
+            let filename;
+            
+            if (result.rows[0]?.avatar_url) {
+                // Используем существующее имя файла
+                filename = path.basename(result.rows[0].avatar_url);
+            } else {
+                // Создаем новое имя файла
+                filename = `avatar-${userId}${path.extname(file.originalname)}`;
+            }
+            
+            // Если старый файл существует, удаляем его
+            const oldPath = path.join('/var/www/html/uploads/avatars', filename);
+            if (fs.existsSync(oldPath)) {
+                fs.unlinkSync(oldPath);
+            }
+            
+            cb(null, filename);
+        } catch (err) {
+            console.error('Error in filename generation:', err);
+            // В случае ошибки используем запасной вариант
+            const fallbackFilename = `avatar-${req.body.userId}${path.extname(file.originalname)}`;
+            cb(null, fallbackFilename);
+        }
     }
 });
 
@@ -2725,7 +2748,7 @@ const uploadAvatar = multer({
     }
 });
 
-// Обновляем маршрут загрузки ава��ара
+// Обновляем маршрут загрузки аватара
 app.post('/api/upload-avatar', uploadAvatar.single('avatar'), async (req, res) => {
     try {
         console.log('Получен запрос на загрузку аватара:', {
@@ -2743,23 +2766,14 @@ app.post('/api/upload-avatar', uploadAvatar.single('avatar'), async (req, res) =
         }
 
         // Формируем URL для доступа к аватару
-        const avatarUrl = `/uploads/avatars/${req.file.filename}`;
-        console.log('Новый URL аватара:', avatarUrl);
-
-        // Получаем старый аватар перед обновлением
-        const oldAvatarResult = await pool.query(
-            'SELECT avatar_url FROM users WHERE id = $1',
-            [userId]
-        );
-        const oldAvatarUrl = oldAvatarResult.rows[0]?.avatar_url;
-        console.log('Старый URL аватара:', oldAvatarUrl);
+        const avatarUrl = `/uploads/avatars/avatar-${userId}${path.extname(req.file.originalname)}`;
+        console.log('URL аватара:', avatarUrl);
 
         // Обновляем URL аватара в базе данных
         const updateResult = await pool.query(
             'UPDATE users SET avatar_url = $1, updated_at = NOW() WHERE id = $2 RETURNING *',
             [avatarUrl, userId]
         );
-        console.log('Результат обновления в БД:', updateResult.rows[0]);
 
         // Получаем обновленные данные пользователя
         const result = await pool.query(`
@@ -2778,19 +2792,6 @@ app.post('/api/upload-avatar', uploadAvatar.single('avatar'), async (req, res) =
 
         if (result.rows.length === 0) {
             throw new Error('Пользователь не найден');
-        }
-
-        // Удаляем старый файл аватара, если он существует
-        if (oldAvatarUrl && oldAvatarUrl !== avatarUrl) {
-            const oldAvatarPath = path.join('/var/www/html', oldAvatarUrl);
-            try {
-                if (fs.existsSync(oldAvatarPath)) {
-                    fs.unlinkSync(oldAvatarPath);
-                    console.log('Старый аватар удален:', oldAvatarPath);
-                }
-            } catch (err) {
-                console.error('Ошибка при удалении старого аватара:', err);
-            }
         }
 
         // Очищаем кэш
@@ -2813,7 +2814,7 @@ app.post('/api/upload-avatar', uploadAvatar.single('avatar'), async (req, res) =
     }
 });
 
-// Обновляем получение информации о пользователе
+// Получение информации о пользователе
 app.get('/api/users/:id', async (req, res) => {
     try {
         const { id } = req.params;
