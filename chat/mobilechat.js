@@ -46,12 +46,20 @@ function initMobileChat() {
 
     // Обработчик выбора чата
     document.querySelectorAll('.chat-partner').forEach(partner => {
+        console.log('Found chat partner:', partner); // Отладка
+
         partner.addEventListener('click', async (e) => {
-            e.preventDefault(); // Предотвращаем стандартное поведение ссылки
-            e.stopPropagation(); // Останавливаем всплытие события
+            console.log('Chat partner clicked'); // Отладка
+            e.preventDefault();
+            e.stopPropagation();
             
             const userId = partner.dataset.userId;
-            if (!userId) return;
+            console.log('UserId:', userId); // Отладка
+
+            if (!userId) {
+                console.log('No userId found'); // Отладка
+                return;
+            }
 
             try {
                 // Загружаем информацию о пользователе
@@ -61,6 +69,7 @@ function initMobileChat() {
                 
                 // Обновляем currentChatPartner
                 currentChatPartner = data.user;
+                console.log('Chat partner loaded:', currentChatPartner); // Отладка
 
                 // Обновляем заголовок чата
                 if (chatHeader) {
@@ -82,6 +91,7 @@ function initMobileChat() {
 
                 // Загружаем историю сообщений
                 await loadChatHistory();
+                console.log('Chat history loaded'); // Отладка
 
                 // Переключаем отображение
                 if (chatList) {
@@ -104,11 +114,23 @@ function initMobileChat() {
 
                 // Помечаем сообщения как прочитанные
                 await markMessagesAsRead(userId);
+                console.log('Chat opened successfully'); // Отладка
 
             } catch (error) {
                 console.error('Ошибка при открытии чата:', error);
                 alert('Не удалось загрузить чат');
             }
+        });
+
+        // Добавляем обработчик для всего элемента чата
+        partner.style.cursor = 'pointer';
+        partner.style.touchAction = 'manipulation';
+        
+        // Добавляем обработчик touchend для мобильных устройств
+        partner.addEventListener('touchend', (e) => {
+            console.log('Touch end on chat partner'); // Отладка
+            e.preventDefault();
+            partner.click(); // Эмулируем клик
         });
     });
 
@@ -184,6 +206,24 @@ style.textContent = `
             z-index: 1000;
             background: var(--surface-color);
             border-bottom: 1px solid var(--border-light);
+        }
+    }
+`;
+document.head.appendChild(style);
+
+// Добавляем стили для улучшения отзывчивости на мобильных устройствах
+const style = document.createElement('style');
+style.textContent = `
+    .chat-partner {
+        cursor: pointer;
+        -webkit-tap-highlight-color: rgba(0,0,0,0);
+        user-select: none;
+        touch-action: manipulation;
+    }
+
+    @media (hover: none) {
+        .chat-partner:active {
+            background-color: rgba(0,0,0,0.1);
         }
     }
 `;
