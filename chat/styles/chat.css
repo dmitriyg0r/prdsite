@@ -1201,41 +1201,97 @@ body {
 }
 
 @media screen and (max-width: 768px) {
-    /* Корректировка высоты контейнера чата с учетом мобильного меню */
+    /* Базовые настройки для мобильного вида */
     .chat-container {
         margin-left: 0;
-        height: calc(100vh - 60px); /* 60px - высота мобильного меню */
-        padding-bottom: 60px; /* Добавляем отступ снизу равный высоте меню */
+        height: 100vh;
+        padding-bottom: 60px; /* Высота мобильного меню */
+        box-sizing: border-box;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
     }
 
-    /* Корректировка высоты списка чатов */
+    /* Список чатов */
     .chat-list {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
         height: calc(100vh - 60px);
+        z-index: 100;
+        background: var(--surface-color);
     }
 
-    /* Корректировка высоты области чата */
+    /* Область чата */
     .chat-area {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
         height: calc(100vh - 60px);
+        z-index: 99;
+        display: flex;
+        flex-direction: column;
     }
 
-    /* Корректировка позиции области ввода */
+    /* Область сообщений */
+    .messages-area {
+        flex: 1;
+        height: auto;
+        padding-bottom: 80px; /* Место для поля ввода */
+    }
+
+    /* Поле ввода сообщений */
     .input-area {
         position: fixed;
-        bottom: 60px; /* Располагаем над мобильным меню */
+        bottom: 60px; /* Над мобильным меню */
         left: 0;
-        right: 0;
+        width: 100%;
         background: var(--surface-color);
-        z-index: 999;
+        padding: 10px;
+        box-sizing: border-box;
+        border-top: 1px solid var(--border-light);
     }
 
-    /* Корректировка области сообщений */
+    /* Заголовок чата */
+    .chat-header {
+        position: sticky;
+        top: 0;
+        z-index: 101;
+        background: var(--surface-color);
+    }
+
+    /* Плейсхолдер чата */
+    .chat-placeholder {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: calc(100vh - 60px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--background-color);
+    }
+
+    /* Исправление скролла */
     .messages-area {
-        padding-bottom: 80px; /* Добавляем отступ для области ввода */
+        -webkit-overflow-scrolling: touch;
+        overflow-y: auto;
     }
 
-    /* Корректировка кнопки прокрутки вниз */
-    .scroll-bottom-btn {
-        bottom: 140px; /* Располагаем над областью ввода и мобильным меню */
+    /* Убираем горизонтальный скролл */
+    body {
+        overflow-x: hidden;
+        width: 100%;
+    }
+
+    /* Корректировка размера сообщений */
+    .message {
+        max-width: 80%;
+        box-sizing: border-box;
     }
 }
 
