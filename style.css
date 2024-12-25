@@ -126,17 +126,38 @@ body {
     border-radius: 2px;
 }
 
-/* Скрываем кнопку меню на ПК */
-#menu-toggle {
-    display: none;
+/* Общие стили */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Roboto', sans-serif;
+    background-color: var(--background-color);
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Основной контент */
-main {
-    padding: 20px;
-    margin-left: 90px;
-    transition: margin-left 0.3s ease;
-    min-height: calc(100vh - 200px);
+/* Стили для заголовка */
+.zagolovok {
+    text-align: center;
+    color: var(--text-color);
+    margin-top: 30px;
+    font-size: 2.5em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    position: relative;
+    padding-bottom: 15px;
+}
+
+.zagolovok::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary-color), var(--header-gradient));
+    border-radius: 2px;
 }
 
 /* Стили для подвала */
@@ -148,8 +169,8 @@ main {
     border-radius: 0;
     box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.1);
     background: var(--text-container-background);
-    width: calc(100% - 70px);
-    margin-left: 70px;
+    width: 100%;
+    margin-left: 0;
     box-sizing: border-box;
     position: relative;
 }
@@ -313,7 +334,7 @@ table {
     background: white;
 }
 
-/* Обновляем стили для текущей пары */
+/* Обновляем стили для текущей па��ы */
 [data-theme="dark"] .current-lesson {
     background: linear-gradient(45deg, 
         rgba(123, 44, 191, 0.35),
@@ -534,7 +555,7 @@ table {
 
 /* Стили для активного пункта при наведении */
 .sidebar-link.active:hover {
-    background: rgba(255, 255, 255, 0.25); /* Чуть светлее при наведнии */
+    background: rgba(255, 255, 255, 0.25); /* Чуть све��лее при наведнии */
     transform: translateX(5px);
 }
 
@@ -639,7 +660,7 @@ table {
 }
 
 [data-theme="dark"] .theme-checkbox:checked + .theme-label .ball {
-    background-color: var(--primary-light); /* Цвет шарика в активном состоянии */
+    background-color: var(--primary-light); /* Цвет шарика в активном с��стоянии */
 }
 
 [data-theme="dark"] .sidebar-link.active {
@@ -802,7 +823,7 @@ table {
     opacity: 1;
 }
 
-/* Дополнител��ные стили для тёмной темы */
+/* Дополнительные стили для тё��ной темы */
 [data-theme="dark"] .sidebar-link {
     background: rgba(255, 255, 255, 0.08);
 }
@@ -849,7 +870,7 @@ body[data-theme="dark"] {
     scrollbar-width: thin;
 }
 
-/* Сти��изация ползунка для элементов с прокруткой (например, текстовых областей) */
+/* Стилизация ползунка для элементов с прокруткой (например, текстовых областей) */
 body[data-theme="dark"] *::-webkit-scrollbar {
     width: 8px;
 }
