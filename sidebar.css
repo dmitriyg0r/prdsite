@@ -151,3 +151,90 @@
     display: inline-block;
     margin-left: 16px;
 }
+
+.theme-switch-wrapper {
+    padding: 12px 24px;
+    margin-top: auto;
+}
+
+.theme-toggle-container {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 30px;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.theme-toggle-container:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+}
+
+.theme-icon {
+    font-size: 18px;
+    color: #fff;
+    transition: all 0.3s ease;
+}
+
+.theme-checkbox {
+    display: none;
+}
+
+.theme-label {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 4px;
+    width: 50px;
+    height: 26px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.ball {
+    position: absolute;
+    left: 2px;
+    width: 22px;
+    height: 22px;
+    background: #fff;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.theme-checkbox:checked + .theme-label .ball {
+    transform: translateX(24px);
+    background: #3498db;
+}
+
+.theme-checkbox:checked + .theme-label {
+    background: rgba(52, 152, 219, 0.3);
+}
+
+.sidebar.expanded .theme-switch-wrapper {
+    padding: 12px 24px;
+}
+
+/* Иконки для темной/светлой темы */
+.theme-label::before {
+    content: '🌞';
+    position: absolute;
+    left: 8px;
+    font-size: 12px;
+}
+
+.theme-label::after {
+    content: '🌙';
+    position: absolute;
+    right: 8px;
+    font-size: 12px;
+}

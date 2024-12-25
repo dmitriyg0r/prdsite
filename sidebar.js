@@ -25,4 +25,22 @@ document.addEventListener('DOMContentLoaded', function() {
             link.classList.add('active');
         }
     });
+
+    // Добавляем обработчик для переключателя темы
+    const themeToggle = document.querySelector('.theme-toggle-container');
+    const themeCheckbox = document.querySelector('.theme-checkbox');
+    
+    // Проверяем сохраненную тему
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        themeCheckbox.checked = savedTheme === 'dark';
+    }
+
+    themeToggle.addEventListener('click', () => {
+        themeCheckbox.checked = !themeCheckbox.checked;
+        const newTheme = themeCheckbox.checked ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+    });
 }); 
