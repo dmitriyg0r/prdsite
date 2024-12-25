@@ -122,7 +122,7 @@ function initMobileChat() {
             }
         });
 
-        // Добавляем обработчик для всего элемента чата
+        // Добавляем ��бработчик для всего элемента чата
         partner.style.cursor = 'pointer';
         partner.style.touchAction = 'manipulation';
         
@@ -157,7 +157,7 @@ function initMobileChat() {
     }
 }
 
-// Добавляем стили анимации
+// Объединяем все стили в одном месте
 const style = document.createElement('style');
 style.textContent = `
     @keyframes slideInFromRight {
@@ -208,12 +208,7 @@ style.textContent = `
             border-bottom: 1px solid var(--border-light);
         }
     }
-`;
-document.head.appendChild(style);
 
-// Добавляем стили для улучшения отзывчивости на мобильных устройствах
-const style = document.createElement('style');
-style.textContent = `
     .chat-partner {
         cursor: pointer;
         -webkit-tap-highlight-color: rgba(0,0,0,0);
