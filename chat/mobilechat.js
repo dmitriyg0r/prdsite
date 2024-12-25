@@ -38,7 +38,7 @@ function initMobileChat() {
             // Показываем мобильное меню при возврате к списку чатов
             const mobileNav = document.querySelector('.mobile-nav');
             if (mobileNav) {
-                mobileNav.style.display = 'block';
+                mobileNav.style.cssText = 'display: block !important;';
             }
 
             elements.chatArea.style.display = 'none';
@@ -69,7 +69,7 @@ function initMobileChat() {
             if (!response.ok) throw new Error('Ошибка загрузки данных пользователя');
             const data = await response.json();
             
-            // Обновляем currentChatPartner
+            // ��бновляем currentChatPartner
             currentChatPartner = data.user;
 
             // Обновляем заголовок чата
@@ -96,10 +96,10 @@ function initMobileChat() {
             await loadChatHistory();
             startMessageUpdates();
 
-            // Скрываем мобильное меню
+            // Скр��ваем мобильное меню
             const mobileNav = document.querySelector('.mobile-nav');
             if (mobileNav) {
-                mobileNav.style.display = 'none';
+                mobileNav.style.cssText = 'display: none !important;';
             }
 
             // Переключаем отображение
