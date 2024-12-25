@@ -9,20 +9,20 @@
     flex-direction: column;
     left: 0;
     top: 0;
-    padding: 20px 0;
+    padding: 15px 0;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
 }
 
 .sidebar-logo {
     text-align: center;
-    padding: 20px 0;
+    padding: 10px 0;
 }
 
 .sidebar-icon {
-    width: 40px;
-    height: 40px;
+    width: 35px;
+    height: 35px;
     margin: 0 auto;
     transition: all 0.3s ease;
 }
@@ -31,7 +31,7 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    padding-bottom: 60px;
+    padding: 20px 0;
 }
 
 .sidebar-link {
@@ -42,8 +42,8 @@
     color: rgba(255, 255, 255, 0.7);
     transition: all 0.3s ease;
     white-space: nowrap;
-    margin: 4px 12px;
-    border-radius: 16px;
+    margin: 4px 8px;
+    border-radius: 12px;
     position: relative;
     overflow: hidden;
 }
@@ -82,7 +82,7 @@
 }
 
 .sidebar.expanded {
-    width: 250px;
+    width: 240px;
 }
 
 /* Добавляем стили для кнопки */
@@ -107,7 +107,7 @@
 
 /* Заменяем все .sidebar:hover на .sidebar.expanded */
 .sidebar.expanded .sidebar-link {
-    padding: 12px 24px;
+    padding: 12px 20px;
     background: rgba(255, 255, 255, 0.05);
 }
 
@@ -118,6 +118,7 @@
 
 .sidebar.expanded .sidebar-link span {
     display: inline-block;
+    margin-left: 12px;
 }
 
 /* Активная ссылка */
@@ -125,6 +126,7 @@
     background: linear-gradient(90deg, var(--sidebar-hover) 0%, rgba(var(--sidebar-hover-rgb), 0.8) 100%);
     color: #ffffff;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    font-weight: 500;
 }
 
 /* Тёмная тема */
@@ -153,14 +155,14 @@
 }
 
 .theme-switch-wrapper {
-    padding: 12px 24px;
+    padding: 8px 16px;
     margin-top: auto;
 }
 
 .theme-toggle-container {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 30px;
-    padding: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -189,9 +191,9 @@
     align-items: center;
     justify-content: space-between;
     padding: 0 4px;
-    width: 50px;
-    height: 26px;
-    background: rgba(255, 255, 255, 0.2);
+    width: 44px;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.15);
     border-radius: 50px;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -200,8 +202,8 @@
 .ball {
     position: absolute;
     left: 2px;
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
     background: #fff;
     border-radius: 50%;
     transition: all 0.3s ease;
@@ -229,12 +231,12 @@
     content: '🌞';
     position: absolute;
     left: 8px;
-    font-size: 12px;
+    font-size: 11px;
 }
 
 .theme-label::after {
     content: '🌙';
     position: absolute;
     right: 8px;
-    font-size: 12px;
+    font-size: 11px;
 }
