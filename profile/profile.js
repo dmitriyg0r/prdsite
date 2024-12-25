@@ -167,7 +167,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             checkOnlineStatus(profileId);
             setInterval(() => checkOnlineStatus(profileId), 60000);
 
-            // Скрываем элементы управления профилем
+            // Скрываем элементы управл��ния профилем
             document.getElementById('edit-profile-btn').style.display = 'none';
             document.getElementById('logout-btn').style.display = 'none';
             document.querySelector('.avatar-overlay').style.display = 'none';
@@ -378,69 +378,77 @@ document.addEventListener('DOMContentLoaded', async () => {
         const formData = new FormData();
         formData.append('avatar', file);
         formData.append('userId', currentUser.id);
-        // Добавляем предыдущий URL аватара для удаления старого файла
-        formData.append('previousAvatarUrl', currentUser.avatar_url);
 
         try {
             // Загружаем файл аватара
-            console.log('2. Отправка запроса на сервер');
+            console.log('2. Отправка запроса на загрузку файла');
             const uploadResponse = await fetch('https://adminflow.ru/api/upload-avatar', {
                 method: 'POST',
                 body: formData
             });
 
             const uploadData = await uploadResponse.json();
-            console.log('3. Полный ответ от сервера:', JSON.stringify(uploadData, null, 2));
+            console.log('3. Ответ от сервера загрузки:', uploadData);
             
             if (!uploadResponse.ok || !uploadData.success || !uploadData.avatarUrl) {
                 throw new Error(uploadData.error || 'Ошибка при загрузке аватара');
             }
 
-            // Обновляем информацию о пользователе в базе данных
-            console.log('4. Обновление информации пользователя в БД');
+            // Важно! Убедимся, что отправляем корректный URL аватара
+            const newAvatarUrl = uploadData.avatarUrl;
+            console.log('4. Новый URL аватара для обновления в БД:', newAvatarUrl);
+
+            // Обновляем профиль пользователя с новым аватаром
+            const updateProfileData = {
+                userId: currentUser.id,
+                avatar_url: newAvatarUrl,
+                username: currentUser.username,
+                email: currentUser.email
+            };
+            
+            console.log('5. Отправляемые данные для обновления профиля:', updateProfileData);
+
             const updateResponse = await fetch('https://adminflow.ru/api/users/update-profile', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    userId: currentUser.id,
-                    avatar_url: uploadData.avatarUrl,
-                    username: currentUser.username,
-                    email: currentUser.email,
-                    previousAvatarUrl: currentUser.avatar_url // Добавляем предыдущий URL
-                })
+                body: JSON.stringify(updateProfileData)
             });
 
             const updateData = await updateResponse.json();
-            
-            if (!updateResponse.ok || !updateData.success) {
+            console.log('6. Ответ от сервера обновления профиля:', updateData);
+
+            // Проверяем успешность обновления
+            if (!updateResponse.ok) {
+                console.error('Ошибка HTTP при обновлении профиля:', updateResponse.status);
+                throw new Error('Ошибка при обновлении профиля');
+            }
+
+            if (!updateData.success) {
+                console.error('Ошибка обновления профиля:', updateData.error);
                 throw new Error(updateData.error || 'Ошибка при обновлении профиля');
             }
 
-            // Обновляем данные пользователя в localStorage
-            const updatedUser = {
+            // Если всё успешно, обновляем локальные данные
+            currentUser = {
                 ...currentUser,
-                avatar_url: uploadData.avatarUrl
+                avatar_url: newAvatarUrl
             };
             
-            console.log('5. Обновленные данные пользователя:', updatedUser);
-            
-            localStorage.setItem('user', JSON.stringify(updatedUser));
-            currentUser = updatedUser;
+            localStorage.setItem('user', JSON.stringify(currentUser));
 
             // Обновляем аватар на странице
-            const avatarUrl = formatAvatarUrl(uploadData.avatarUrl);
             const avatarElement = document.getElementById('profile-avatar');
             if (avatarElement) {
-                avatarElement.src = avatarUrl;
-                console.log('6. Обновлен src аватара:', avatarUrl);
+                avatarElement.src = formatAvatarUrl(newAvatarUrl);
             }
 
+            console.log('7. Обновление завершено успешно');
             alert('Аватар успешно обновлен');
 
         } catch (err) {
-            console.error('Ошибка обновл��ния аватара:', err);
+            console.error('Ошибка обновления аватара:', err);
             alert(err.message || 'Ошибка при обновлении аватара');
         }
         
