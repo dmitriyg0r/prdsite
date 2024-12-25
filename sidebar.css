@@ -38,7 +38,7 @@
     align-items: center;
     padding: 12px 8px;
     text-decoration: none;
-    color: rgba(255, 255, 255, 0.85);
+    color: #fff;
     transition: all 0.3s ease;
     white-space: nowrap;
     margin: 4px 12px;
@@ -54,11 +54,11 @@
 }
 
 .sidebar-link span {
+    display: none;
     font-size: 15px;
-    opacity: 0;
     margin-left: 16px;
     transition: all 0.3s ease;
-    color: rgba(255, 255, 255, 0.85);
+    color: #fff;
     font-weight: 500;
 }
 
@@ -96,9 +96,7 @@
 }
 
 .sidebar.expanded .sidebar-link span {
-    opacity: 1;
     display: inline-block;
-    visibility: visible;
 }
 
 /* Активная ссылка */
@@ -122,14 +120,12 @@
 
 /* Добавляем стили для текста в переключателе темы */
 .theme-switch-wrapper span {
-    color: rgba(255, 255, 255, 0.85);
+    display: none;
+    color: #fff;
     font-size: 14px;
-    opacity: 0;
-    transition: all 0.3s ease;
 }
 
 .sidebar.expanded .theme-switch-wrapper span {
-    opacity: 1;
     display: inline-block;
     margin-left: 16px;
 }
