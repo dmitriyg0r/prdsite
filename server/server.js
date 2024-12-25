@@ -1360,7 +1360,7 @@ app.get('/api/users/status/:userId', async (req, res) => {
     }
 });
 
-// ��бновление статуса пользователя
+// ��бн��вление статуса пользователя
 app.post('/api/users/update-status', async (req, res) => {
     try {
         const { userId, is_online, last_activity } = req.body;
@@ -2004,7 +2004,7 @@ httpsServer.listen(PORT, () => {
 });
 
 // Удаляем HTTP сервер, так как используем только HTTPS
-// http.createServer(app).listen(PORT);
+// http.createServer(app).listen(POR
 
 // Создаем Map для хранения активных соединений
 const activeConnections = new Map();
@@ -2728,6 +2728,11 @@ const uploadAvatar = multer({
 // Обновляем маршрут загрузки ава��ара
 app.post('/api/upload-avatar', uploadAvatar.single('avatar'), async (req, res) => {
     try {
+        console.log('Получен запрос на загрузку аватара:', {
+            file: req.file,
+            userId: req.body.userId
+        });
+
         if (!req.file) {
             return res.status(400).json({ error: 'Файл не был загружен' });
         }
@@ -2739,16 +2744,34 @@ app.post('/api/upload-avatar', uploadAvatar.single('avatar'), async (req, res) =
 
         // Формируем URL для доступа к аватару
         const avatarUrl = `/uploads/avatars/${req.file.filename}`;
+        console.log('Новый URL аватара:', avatarUrl);
+
+        // Получаем старый аватар перед обновлением
+        const oldAvatarResult = await pool.query(
+            'SELECT avatar_url FROM users WHERE id = $1',
+            [userId]
+        );
+        const oldAvatarUrl = oldAvatarResult.rows[0]?.avatar_url;
+        console.log('Старый URL аватара:', oldAvatarUrl);
 
         // Обновляем URL аватара в базе данных
-        await pool.query(
-            'UPDATE users SET avatar_url = $1 WHERE id = $2 RETURNING *',
+        const updateResult = await pool.query(
+            'UPDATE users SET avatar_url = $1, updated_at = NOW() WHERE id = $2 RETURNING *',
             [avatarUrl, userId]
         );
+        console.log('Результат обновления в БД:', updateResult.rows[0]);
 
         // Получаем обновленные данные пользователя
         const result = await pool.query(`
-            SELECT id, username, email, role, avatar_url, created_at, last_login 
+            SELECT 
+                id, 
+                username, 
+                email, 
+                role, 
+                avatar_url, 
+                created_at, 
+                last_login,
+                updated_at
             FROM users 
             WHERE id = $1
         `, [userId]);
@@ -2757,16 +2780,32 @@ app.post('/api/upload-avatar', uploadAvatar.single('avatar'), async (req, res) =
             throw new Error('Пользователь не найден');
         }
 
-        // Очищаем кэш для этого пользователя
+        // Удаляем старый файл аватара, если он существует
+        if (oldAvatarUrl && oldAvatarUrl !== avatarUrl) {
+            const oldAvatarPath = path.join('/var/www/html', oldAvatarUrl);
+            try {
+                if (fs.existsSync(oldAvatarPath)) {
+                    fs.unlinkSync(oldAvatarPath);
+                    console.log('Старый аватар удален:', oldAvatarPath);
+                }
+            } catch (err) {
+                console.error('Ошибка при удалении старого аватара:', err);
+            }
+        }
+
+        // Очищаем кэш
         if (STATUS_UPDATE_CACHE) {
             STATUS_UPDATE_CACHE.delete(userId);
         }
 
-        res.json({ 
-            success: true, 
+        const responseData = {
+            success: true,
             avatarUrl: avatarUrl,
             user: result.rows[0]
-        });
+        };
+        console.log('Отправляем ответ:', responseData);
+
+        res.json(responseData);
 
     } catch (err) {
         console.error('Error uploading avatar:', err);
@@ -2774,11 +2813,66 @@ app.post('/api/upload-avatar', uploadAvatar.single('avatar'), async (req, res) =
     }
 });
 
-// Обновляем настройки раздачи статических файлов для аватаров
+// Обновляем получение информации о пользователе
+app.get('/api/users/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        console.log('Запрос информации о пользователе:', id);
+
+        const result = await pool.query(`
+            SELECT 
+                id, 
+                username, 
+                email, 
+                role, 
+                avatar_url, 
+                created_at, 
+                last_login,
+                updated_at,
+                is_online,
+                last_activity
+            FROM users 
+            WHERE id = $1
+        `, [id]);
+
+        console.log('Результат запроса пользователя:', result.rows[0]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'Пользователь не найден' 
+            });
+        }
+
+        res.json({
+            success: true,
+            user: result.rows[0]
+        });
+    } catch (err) {
+        console.error('Error getting user:', err);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Ошибка при получении данных пользователя' 
+        });
+    }
+});
+
+// Обновляем настройки раздачи статических файлов
 app.use('/uploads/avatars', (req, res, next) => {
+    console.log('Запрос аватара:', req.url);
+    
     // Отключаем кэширование для аватаров
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
+    
+    // Добавляем обработку ошибок
+    const filePath = path.join('/var/www/html/uploads/avatars', req.url.split('?')[0]);
+    if (!fs.existsSync(filePath)) {
+        console.log('Файл аватара не найден:', filePath);
+        return res.status(404).sendFile(path.join('/var/www/html/uploads/avatars', 'default.png'));
+    }
+    
     next();
 }, express.static('/var/www/html/uploads/avatars'));

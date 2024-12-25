@@ -16,7 +16,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const formatAvatarUrl = (url) => {
         if (!url) return '/uploads/avatars/default.png';
         if (url.startsWith('http')) return url;
-        return `https://adminflow.ru${url}?t=${new Date().getTime()}`;
+        const baseUrl = 'https://adminflow.ru';
+        const timestamp = new Date().getTime();
+        return `${baseUrl}${url}?t=${timestamp}`;
     };
 
     // Функция для обновления данных профиля
@@ -305,19 +307,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const file = e.target.files[0];
         if (!file) return;
 
-        // Проверяем размер файла
-        if (file.size > 5 * 1024 * 1024) { // 5MB
-            alert('Файл слишком большой. Максимальный размер: 5MB');
-            e.target.value = '';
-            return;
-        }
-
-        // Проверяем тип файла
-        if (!file.type.match(/^image\/(jpeg|png|gif|webp)$/)) {
-            alert('Разрешены только изображения (JPEG, PNG, GIF, WEBP)');
-            e.target.value = '';
-            return;
-        }
+        console.log('Выбран файл для загрузки:', file.name);
 
         const formData = new FormData();
         formData.append('avatar', file);
@@ -330,10 +320,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
 
             const data = await response.json();
+            console.log('Получен ответ от сервера:', data);
             
             if (response.ok && data.success) {
-                // Добавляем timestamp к URL аватара для предотвращения кэширования
-                const avatarUrl = data.avatarUrl + '?t=' + new Date().getTime();
+                // Добавляем timestamp к URL аватара
+                const avatarUrl = formatAvatarUrl(data.avatarUrl);
                 
                 // Обновляем аватар на странице
                 document.getElementById('profile-avatar').src = avatarUrl;
@@ -344,8 +335,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     ...data.user
                 };
                 localStorage.setItem('user', JSON.stringify(updatedUser));
-                currentUser = updatedUser; // Обновляем текущего пользователя
+                currentUser = updatedUser;
 
+                console.log('Данные пользователя обновлены:', updatedUser);
                 alert('Аватар успешно обновлен');
             } else {
                 throw new Error(data.error || 'Ошибка при загрузке аватара');
@@ -373,7 +365,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Обновляем селектор для кнопки открытия модального окна
     const friendsHeaderBtn = document.querySelector('.friends-header-btn');
     
-    // Открытие модальн��го окна при клике на заголовок "Дузья"
+    // Открытие модального окна при клике на заголовок "Дузья"
     friendsHeaderBtn.addEventListener('click', (e) => {
         e.preventDefault();
         friendsModal.classList.add('active');
@@ -439,11 +431,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         } catch (err) {
             console.error('Search error:', err);
-            alert('Ошибка при поиске пользователей');
+            alert('Ошибка при поиске пользователе��');
         }
     }
 
-    // Добавляем функц��ю getFriendStatus
+    // Добавляем функцию getFriendStatus
     function getFriendStatus(userId) {
         // Получаем статус из атрибута data-friendship-status
         const userCard = document.querySelector(`.user-card[data-user-id="${userId}"]`);
@@ -532,7 +524,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             btn.addEventListener('click', () => {
                 sendFriendRequest(btn.dataset.userId);
                 btn.classList.add('pending');
-                btn.innerHTML = '<i class="fas fa-clock"></i> Заявка отправлена';
+                btn.innerHTML = '<i class="fas fa-clock"></i> Заявка отп��авлена';
                 btn.disabled = true;
             });
         });
@@ -1231,7 +1223,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }, 1000);
     }
 
-    // Повторная от��равка кода
+    // Повторная отправка кода
     resendCodeBtn.addEventListener('click', async () => {
         resendCodeBtn.disabled = true;
         await sendVerificationCode();
@@ -1267,7 +1259,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const data = await response.json();
 
             if (response.ok) {
-                alert('Пароль успешно изменен');
+                alert('Пароль успешно измен��н');
                 passwordChangeModal.classList.remove('active');
                 document.body.style.overflow = '';
                 resetPasswordChangeForm();
@@ -1365,7 +1357,7 @@ async function createPost() {
         formData.append('content', content);
         
         if (file) {
-            // Проверяем размер ��айла (например, 10MB максимум)
+            // Проверяем размер файла (например, 10MB максимум)
             const maxSize = 10 * 1024 * 1024; // 10MB в байтах
             if (file.size > maxSize) {
                 alert('Файл слишком большой. Максимальный размер: 10MB');
@@ -1943,3 +1935,37 @@ async function submitComment(postId, button) {
         alert('Ошибка при отправке комментария');
     }
 }
+
+// Функция для загрузки данных пользователя
+async function loadUserData() {
+    try {
+        const userId = currentUser.id;
+        console.log('Загрузка данных пользователя:', userId);
+
+        const response = await fetch(`https://adminflow.ru/api/users/${userId}`);
+        const data = await response.json();
+        
+        console.log('Получены данные пользователя:', data);
+
+        if (data.success && data.user) {
+            // Обновляем данные пользователя в localStorage
+            const updatedUser = {
+                ...currentUser,
+                ...data.user
+            };
+            localStorage.setItem('user', JSON.stringify(updatedUser));
+            currentUser = updatedUser;
+
+            // Обновляем аватар на странице
+            const avatarUrl = formatAvatarUrl(data.user.avatar_url);
+            document.getElementById('profile-avatar').src = avatarUrl;
+            
+            console.log('Данные пользователя обновлены:', updatedUser);
+        }
+    } catch (err) {
+        console.error('Ошибка при загрузке данных пользователя:', err);
+    }
+}
+
+// Вызываем функцию при загрузке страницы
+document.addEventListener('DOMContentLoaded', loadUserData);
