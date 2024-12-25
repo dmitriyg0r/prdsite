@@ -1,12 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Проверяем, является ли устройство мобильным
     const isMobile = window.innerWidth <= 768;
-
     if (isMobile) {
         initMobileChat();
     }
 
-    // Обработка изменения размера окна
     window.addEventListener('resize', () => {
         if (window.innerWidth <= 768) {
             initMobileChat();
@@ -15,108 +12,108 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initMobileChat() {
-    const chatList = document.querySelector('.chat-list');
-    const chatArea = document.querySelector('.chat-area');
-    const backButton = document.getElementById('backToChats');
-    const chatPlaceholder = document.getElementById('chat-placeholder');
-    const messagesArea = document.getElementById('messages');
-    const chatHeader = document.getElementById('chat-header');
+    // Проверяем существование всех необходимых элементов
+    const elements = {
+        chatList: document.querySelector('.chat-list'),
+        chatArea: document.querySelector('.chat-area'),
+        backButton: document.getElementById('backToChats'),
+        chatPlaceholder: document.getElementById('chat-placeholder'),
+        messagesArea: document.getElementById('messages'),
+        chatHeader: document.getElementById('chat-header')
+    };
+
+    // Проверяем наличие основных элементов
+    if (!elements.chatList || !elements.chatArea) {
+        console.error('Необходимые элементы чата не найдены');
+        return;
+    }
 
     // Начальное состояние
-    if (chatArea) {
-        chatArea.style.display = 'none';
-    }
-    if (chatList) {
-        chatList.style.display = 'flex';
-    }
+    elements.chatArea.style.display = 'none';
+    elements.chatList.style.display = 'flex';
 
     // Обработчик для кнопки "Назад"
-    if (backButton) {
-        backButton.addEventListener('click', () => {
-            if (chatArea) {
-                chatArea.style.display = 'none';
-                chatArea.style.animation = '';
-            }
-            if (chatList) {
-                chatList.style.display = 'flex';
-                chatList.style.animation = 'slideInFromLeft 0.3s ease-out';
-            }
+    if (elements.backButton) {
+        elements.backButton.addEventListener('click', () => {
+            elements.chatArea.style.display = 'none';
+            elements.chatArea.style.animation = '';
+            elements.chatList.style.display = 'flex';
+            elements.chatList.style.animation = 'slideInFromLeft 0.3s ease-out';
         });
     }
 
     // Обработчик выбора чата
     const chatItems = document.querySelectorAll('.chat-item, .chat-partner, .friend-item');
     chatItems.forEach(item => {
-        ['click', 'touchend'].forEach(eventType => {
-            item.addEventListener(eventType, async (e) => {
-                e.preventDefault();
-                e.stopPropagation();
+        if (!item) return; // Пропускаем, если элемент не найден
 
-                // Получаем userId из data-атрибута или из href
-                const userId = item.dataset.userId || item.getAttribute('href')?.split('=')[1];
+        item.addEventListener('click', async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const userId = item.dataset.userId || item.getAttribute('href')?.split('=')[1];
+            if (!userId) {
+                console.error('UserId not found');
+                return;
+            }
+
+            try {
+                // Загружаем информацию о пользователе
+                const response = await fetch(`https://adminflow.ru/api/users/${userId}?currentUserId=${currentUser.id}`);
+                if (!response.ok) throw new Error('Ошибка загрузки данных пользователя');
+                const data = await response.json();
                 
-                if (!userId) {
-                    console.error('UserId not found');
-                    return;
+                // Обновляем currentChatPartner
+                currentChatPartner = data.user;
+
+                // Обновляем заголовок чата
+                if (elements.chatHeader) {
+                    elements.chatHeader.style.display = 'flex';
+                    const headerElements = {
+                        name: document.getElementById('chat-header-name'),
+                        avatar: document.getElementById('chat-header-avatar'),
+                        status: document.getElementById('chat-header-status')
+                    };
+
+                    if (headerElements.name) {
+                        headerElements.name.textContent = currentChatPartner.username;
+                    }
+                    if (headerElements.avatar) {
+                        headerElements.avatar.src = currentChatPartner.avatar_url || '../uploads/avatars/default.png';
+                        headerElements.avatar.alt = currentChatPartner.username;
+                    }
+                    if (headerElements.status) {
+                        headerElements.status.textContent = currentChatPartner.is_online ? 
+                            'онлайн' : getLastActivityTime(currentChatPartner.last_activity);
+                    }
                 }
 
-                try {
-                    // Загружаем информацию о пользователе
-                    const response = await fetch(`https://adminflow.ru/api/users/${userId}?currentUserId=${currentUser.id}`);
-                    if (!response.ok) throw new Error('Ошибка загрузки данных пользователя');
-                    const data = await response.json();
-                    
-                    // Обновляем currentChatPartner
-                    currentChatPartner = data.user;
+                // Загружаем историю сообщений
+                await loadChatHistory();
 
-                    // Обновляем заголовок чата
-                    if (chatHeader) {
-                        chatHeader.style.display = 'flex';
-                        const headerName = document.getElementById('chat-header-name');
-                        const headerAvatar = document.getElementById('chat-header-avatar');
-                        const headerStatus = document.getElementById('chat-header-status');
-                        
-                        if (headerName) headerName.textContent = currentChatPartner.username;
-                        if (headerAvatar) {
-                            headerAvatar.src = currentChatPartner.avatar_url || '../uploads/avatars/default.png';
-                            headerAvatar.alt = currentChatPartner.username;
-                        }
-                        if (headerStatus) {
-                            headerStatus.textContent = currentChatPartner.is_online ? 'онлайн' : 
-                                getLastActivityTime(currentChatPartner.last_activity);
-                        }
-                    }
+                // Переключаем отображение
+                elements.chatList.style.display = 'none';
+                elements.chatList.style.animation = '';
+                elements.chatArea.style.display = 'flex';
+                elements.chatArea.style.animation = 'slideInFromRight 0.3s ease-out';
 
-                    // Загружаем историю сообщений
-                    await loadChatHistory();
-
-                    // Переключаем отображение
-                    if (chatList) {
-                        chatList.style.display = 'none';
-                        chatList.style.animation = '';
-                    }
-                    if (chatArea) {
-                        chatArea.style.display = 'flex';
-                        chatArea.style.animation = 'slideInFromRight 0.3s ease-out';
-                    }
-                    if (chatPlaceholder) {
-                        chatPlaceholder.style.display = 'none';
-                    }
-                    if (messagesArea) {
-                        messagesArea.style.display = 'flex';
-                    }
-
-                    // Прокручиваем к последнему сообщению
-                    scrollToBottom();
-
-                    // Помечаем сообщения как прочитанные
-                    await markMessagesAsRead(userId);
-
-                } catch (error) {
-                    console.error('Ошибка при открытии чата:', error);
-                    alert('Не удалось загрузить чат');
+                if (elements.chatPlaceholder) {
+                    elements.chatPlaceholder.style.display = 'none';
                 }
-            }, { passive: false });
+                if (elements.messagesArea) {
+                    elements.messagesArea.style.display = 'flex';
+                }
+
+                // Прокручиваем к последнему сообщению
+                scrollToBottom();
+
+                // Помечаем сообщения как прочитанные
+                await markMessagesAsRead(userId);
+
+            } catch (error) {
+                console.error('Ошибка при открытии чата:', error);
+                alert('Не удалось загрузить чат');
+            }
         });
 
         // Добавляем стили для улучшения отзывчивости
