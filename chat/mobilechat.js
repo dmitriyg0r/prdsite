@@ -69,7 +69,7 @@ function initMobileChat() {
             if (!response.ok) throw new Error('Ошибка загрузки данных пользователя');
             const data = await response.json();
             
-            // ��бновляем currentChatPartner
+            // Обновляем currentChatPartner
             currentChatPartner = data.user;
 
             // Обновляем заголовок чата
@@ -96,7 +96,7 @@ function initMobileChat() {
             await loadChatHistory();
             startMessageUpdates();
 
-            // Скр��ваем мобильное меню
+            // Скрываем мобильное меню
             const mobileNav = document.querySelector('.mobile-nav');
             if (mobileNav) {
                 mobileNav.style.cssText = 'display: none !important;';
@@ -140,31 +140,49 @@ style.textContent = `
     @media screen and (max-width: 768px) {
         .chat-container {
             margin-left: 0 !important;
+            height: 100vh !important;
+            overflow: hidden;
         }
 
         .chat-list, .chat-area {
             width: 100% !important;
-            height: calc(100vh - 60px) !important;
+            height: 100vh !important;
+            position: relative;
+        }
+
+        .chat-area {
+            display: flex;
+            flex-direction: column;
         }
 
         .messages-area {
-            height: calc(100vh - 180px) !important;
-            padding-bottom: 60px !important;
+            flex: 1;
+            height: calc(100vh - 120px) !important;
+            padding-bottom: 70px !important;
+            overflow-y: auto;
         }
 
         .input-area {
             position: fixed;
-            bottom: 60px;
+            bottom: 0;
             left: 0;
             right: 0;
             background: var(--surface-color);
             padding: 10px;
             border-top: 1px solid var(--border-light);
-            z-index: 1000;
+            z-index: 1001;
+        }
+
+        .input-controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            padding: 0 5px;
         }
 
         #messageInput {
-            width: calc(100% - 80px) !important;
+            flex: 1;
+            min-width: 0;
         }
 
         .chat-header {
@@ -173,6 +191,10 @@ style.textContent = `
             z-index: 1000;
             background: var(--surface-color);
             border-bottom: 1px solid var(--border-light);
+        }
+
+        #filePreview, #replyPreview {
+            margin-bottom: 8px;
         }
     }
 
