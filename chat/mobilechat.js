@@ -157,9 +157,10 @@ style.textContent = `
 
         .messages-area {
             flex: 1;
-            height: calc(100vh - 120px) !important;
-            padding-bottom: 70px !important;
+            height: calc(100vh - 140px) !important;
+            padding-bottom: 90px !important;
             overflow-y: auto;
+            margin-bottom: 60px;
         }
 
         .input-area {
@@ -171,6 +172,7 @@ style.textContent = `
             padding: 10px;
             border-top: 1px solid var(--border-light);
             z-index: 1001;
+            margin-bottom: 60px;
         }
 
         .input-controls {
