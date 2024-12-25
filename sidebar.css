@@ -1,0 +1,99 @@
+.sidebar {
+    position: fixed;
+    width: 70px;
+    height: 100vh;
+    background: var(--sidebar-background);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    left: 0;
+    top: 0;
+    padding: 20px 0;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    box-shadow: 4px 0 25px rgba(0, 0, 0, 0.15);
+}
+
+.sidebar-logo {
+    text-align: center;
+    padding: 20px 0;
+}
+
+.sidebar-icon {
+    width: 40px;
+    height: 40px;
+    margin: 0 auto;
+    transition: all 0.3s ease;
+}
+
+.sidebar-nav {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 60px;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    padding: 12px 8px;
+    text-decoration: none;
+    color: rgba(255, 255, 255, 0.85);
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    margin: 4px 12px;
+    border-radius: 12px;
+}
+
+.sidebar-link i {
+    min-width: 24px;
+    font-size: 20px;
+    text-align: center;
+    margin: 0 auto;
+    transition: all 0.3s ease;
+}
+
+.sidebar-link span {
+    font-size: 15px;
+    opacity: 0;
+    margin-left: 16px;
+    transition: all 0.3s ease;
+}
+
+/* Анимации при наведении */
+.sidebar:hover {
+    width: 250px;
+}
+
+.sidebar:hover .sidebar-link {
+    padding: 12px 24px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.sidebar:hover .sidebar-link i {
+    margin: 0;
+    margin-right: 16px;
+}
+
+.sidebar:hover .sidebar-link span {
+    opacity: 1;
+}
+
+/* Активная ссылка */
+.sidebar-link.active {
+    background: var(--sidebar-hover);
+    color: #ffffff;
+}
+
+/* Тёмная тема */
+[data-theme="dark"] .sidebar {
+    background: var(--primary-color);
+}
+
+[data-theme="dark"] .sidebar-link {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .sidebar-link:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
