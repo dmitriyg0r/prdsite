@@ -807,25 +807,45 @@ body {
 
     .lenta-layout {
         display: block;
-        padding: 0;
+        padding: 16px;
         margin: 0;
         width: 100%;
         max-width: 100%;
-        overflow-x: hidden;
-        position: relative;
-        top: 0;
-        left: 0;
+        transform: none;
+        box-sizing: border-box;
     }
 
     .feed-container {
         max-width: 100%;
         margin: 0;
-        padding: 0 8px;
+        padding: 0;
         width: 100%;
         box-sizing: border-box;
         position: relative;
         left: 0;
         transform: none;
+    }
+
+    #posts-container {
+        transform: none;
+        width: 100%;
+        padding: 0;
+        margin: 0;
+    }
+
+    .post {
+        margin: 0 0 16px 0;
+        border-radius: 16px;
+        width: 100%;
+        transform: none !important;
+        box-sizing: border-box;
+    }
+
+    /* Удаляем существующие трансформации */
+    .lenta-layout,
+    #posts-container,
+    #posts-container .post {
+        transform: none !important;
     }
 
     body {
