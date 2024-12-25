@@ -851,7 +851,7 @@ app.post('/api/users/update-profile', async (req, res) => {
             email
         });
 
-        // Проверяем существование пользователя
+        // Проверяем суще��твование пользователя
         const userCheck = await pool.query('SELECT * FROM users WHERE id = $1', [userId]);
         console.log('2. Текущие данные пользователя:', userCheck.rows[0]);
 
@@ -862,14 +862,13 @@ app.post('/api/users/update-profile', async (req, res) => {
             });
         }
 
-        // Обновляем данные пользователя
+        // Обновляем данные пользователя (без updated_at)
         const updateQuery = `
             UPDATE users 
             SET 
                 avatar_url = COALESCE($1, avatar_url),
                 username = COALESCE($2, username),
-                email = COALESCE($3, email),
-                updated_at = NOW()
+                email = COALESCE($3, email)
             WHERE id = $4
             RETURNING *;
         `;
@@ -883,11 +882,6 @@ app.post('/api/users/update-profile', async (req, res) => {
         if (result.rows.length === 0) {
             throw new Error('Не удалось обновить данные пользователя');
         }
-
-        // Проверяем обновление
-        const verifyQuery = 'SELECT * FROM users WHERE id = $1';
-        const verifyResult = await pool.query(verifyQuery, [userId]);
-        console.log('5. Проверка обновления:', verifyResult.rows[0]);
 
         res.json({
             success: true,
@@ -2659,7 +2653,7 @@ app.delete('/api/messages/:messageId', async (req, res) => {
 
             res.json({
                 success: true,
-                message: 'Сообщение успешно удалено'
+                message: 'Сообщение успешно уда��ено'
             });
 
         } catch (err) {
