@@ -645,7 +645,7 @@ app.get('/api/messages/last/:userId/:friendId', async (req, res) => {
         res.json({ success: true, message: result.rows[0] });
     } catch (err) {
         console.error('Error getting last message:', err);
-        res.status(500).json({ error: '��шибка при получении последнего сообщения' });
+        res.status(500).json({ error: '����шибка при получении последнего сообщения' });
     }
 });
 
@@ -1608,7 +1608,7 @@ app.post('/api/posts/comment', async (req, res) => {
     }
 });
 
-// Удалени�� комментария
+// Удалени���� комментария
 app.delete('/api/comments/:commentId', async (req, res) => {
     try {
         const { commentId } = req.params;
@@ -2751,84 +2751,79 @@ const uploadAvatar = multer({
 // Обновляем маршрут загрузки аватара
 app.post('/api/upload-avatar', uploadAvatar.single('avatar'), async (req, res) => {
     try {
-        console.log('1. Начало обработки запроса на загрузку аватара');
-        
         const userId = req.body.userId;
-        console.log('2. ID пользователя:', userId);
+        console.log('Upload avatar request for user:', userId);
 
-        if (!userId) {
-            return res.status(400).json({ error: 'ID пользователя не указан' });
+        if (!userId || !req.file) {
+            console.error('Missing required data:', { userId, file: !!req.file });
+            return res.status(400).json({ 
+                success: false, 
+                error: !userId ? 'ID пользователя не указан' : 'Файл не был загружен' 
+            });
         }
 
-        if (!req.file) {
-            return res.status(400).json({ error: 'Файл не был загружен' });
-        }
-
-        // Используем фиксированное имя файла на основе ID пользователя
+        // Формируем имя файла и пути
         const fileExt = path.extname(req.file.originalname);
         const filename = `avatar-${userId}${fileExt}`;
         const avatarUrl = `/uploads/avatars/${filename}`;
         const finalPath = path.join('/var/www/html/uploads/avatars', filename);
 
-        console.log('3. Подготовлены пути:', {
-            filename,
-            avatarUrl,
-            finalPath
-        });
+        try {
+            // Обрабатываем файл
+            if (fs.existsSync(finalPath)) {
+                fs.unlinkSync(finalPath);
+            }
+            fs.renameSync(req.file.path, finalPath);
 
-        // Удаляем старый файл, если он существует
-        if (fs.existsSync(finalPath)) {
-            fs.unlinkSync(finalPath);
-            console.log('4. Старый файл удален');
+            // Обновляем базу данных
+            const result = await pool.query(`
+                WITH updated AS (
+                    UPDATE users 
+                    SET 
+                        avatar_url = $1, 
+                        updated_at = NOW() 
+                    WHERE id = $2 
+                    RETURNING *
+                )
+                SELECT 
+                    id, 
+                    username, 
+                    email, 
+                    role, 
+                    avatar_url, 
+                    created_at, 
+                    last_login, 
+                    updated_at
+                FROM updated;
+            `, [avatarUrl, userId]);
+
+            if (result.rows.length === 0) {
+                throw new Error('Пользователь не найден');
+            }
+
+            const userData = result.rows[0];
+            console.log('User data after update:', userData);
+
+            const response = {
+                success: true,
+                avatarUrl: avatarUrl,
+                user: userData
+            };
+
+            console.log('Sending response:', response);
+            res.json(response);
+
+        } catch (err) {
+            console.error('Error processing avatar:', err);
+            // Удаляем загруженный файл в случае ошибки
+            if (fs.existsSync(req.file.path)) {
+                fs.unlinkSync(req.file.path);
+            }
+            throw err;
         }
-
-        // Перемещаем новый файл
-        fs.renameSync(req.file.path, finalPath);
-        console.log('5. Новый файл перемещен');
-
-        // Обновляем URL аватара в базе данных
-        const updateQuery = `
-            UPDATE users 
-            SET 
-                avatar_url = $1, 
-                updated_at = NOW() 
-            WHERE id = $2 
-            RETURNING id, username, email, role, avatar_url, created_at, last_login, updated_at
-        `;
-
-        const updateResult = await pool.query(updateQuery, [avatarUrl, userId]);
-        console.log('6. Результат обновления:', updateResult.rows[0]);
-
-        if (updateResult.rows.length === 0) {
-            throw new Error('Пользователь не найден');
-        }
-
-        // Получаем обновленные данные пользователя для уверенности
-        const userQuery = `
-            SELECT id, username, email, role, avatar_url, created_at, last_login, updated_at
-            FROM users 
-            WHERE id = $1
-        `;
-        const userResult = await pool.query(userQuery, [userId]);
-        console.log('7. Получены данные пользователя:', userResult.rows[0]);
-
-        const response = {
-            success: true,
-            avatarUrl: avatarUrl,
-            user: userResult.rows[0]
-        };
-        console.log('8. Подготовлен ответ:', response);
-
-        res.json(response);
-        console.log('9. Ответ отправлен');
 
     } catch (err) {
-        console.error('Ошибка загрузки аватара:', {
-            message: err.message,
-            stack: err.stack,
-            code: err.code,
-            detail: err.detail
-        });
+        console.error('Avatar upload error:', err);
         res.status(500).json({ 
             success: false, 
             error: 'Ошибка при загрузке аватара',
