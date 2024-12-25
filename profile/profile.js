@@ -125,7 +125,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 localStorage.setItem('user', JSON.stringify(currentUser));
             }
             
-            // Обновляем данные на странице
+            // Обн��вляем данные на странице
             updateProfileData(data.user);
         } else {
             throw new Error(data.error || 'Ошибка получения данных');
@@ -378,6 +378,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const formData = new FormData();
         formData.append('avatar', file);
         formData.append('userId', currentUser.id);
+        // Добавляем предыдущий URL аватара для удаления старого файла
+        formData.append('previousAvatarUrl', currentUser.avatar_url);
 
         try {
             // Загружаем файл аватара
@@ -405,7 +407,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     userId: currentUser.id,
                     avatar_url: uploadData.avatarUrl,
                     username: currentUser.username,
-                    email: currentUser.email
+                    email: currentUser.email,
+                    previousAvatarUrl: currentUser.avatar_url // Добавляем предыдущий URL
                 })
             });
 
@@ -437,7 +440,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             alert('Аватар успешно обновлен');
 
         } catch (err) {
-            console.error('Ошибка обновления аватара:', err);
+            console.error('Ошибка обновл��ния аватара:', err);
             alert(err.message || 'Ошибка при обновлении аватара');
         }
         
@@ -467,7 +470,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.body.style.overflow = 'hidden';
     });
 
-    // Закрытие модального окна
+    // Закрытие модального ��кна
     modalClose.addEventListener('click', () => {
         friendsModal.classList.remove('active');
         document.body.style.overflow = '';
@@ -1033,7 +1036,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const data = await response.json();
             
             if (data.user) {
-                // Сохраняем данные профиля друга во временное хранилище
+                // Сохраняем данные профиля друга во временн��е хранилище
                 sessionStorage.setItem('viewing_profile', JSON.stringify(data.user));
                 // Перенаправляем на страницу профиля с параметром
                 window.location.href = `/profile/profile.html?id=${userId}`;
@@ -1098,7 +1101,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }, 100); // Небольшая задержка для группировки обновлений
     }
 
-    // Оптимизированная функция отслеживания активности
+    // Оптимизир��ванная функция отслеживания активности
     function startStatusUpdates() {
         let lastActivity = new Date();
         let activityTimeout = null;
@@ -1235,7 +1238,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     `;
     document.head.appendChild(style);
 
-    // Обработчики для мены пароля
+    // Об��аботчики для мены пароля
     const requestPasswordChangeBtn = document.getElementById('request-password-change');
     const passwordChangeModal = document.getElementById('password-change-modal');
     const sendVerificationCodeBtn = document.getElementById('send-verification-code');
@@ -1290,7 +1293,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 codeVerificationStep.style.display = 'block';
                 startResendTimer();
             } else {
-                throw new Error(data.error || 'Ошибка при отправке кода');
+                throw new Error(data.error || 'Ошибка при отправке код��');
             }
         } catch (err) {
             alert(err.message);
@@ -1479,7 +1482,7 @@ async function createPost() {
                 return;
             }
 
-            // Изменяем имя поля на 'image' для соответствия серверу
+            // Изменяем имя поля на 'image' для соо��ветствия серверу
             formData.append('image', file);
         }
 
