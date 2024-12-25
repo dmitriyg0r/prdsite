@@ -806,13 +806,26 @@ body {
     }
 
     .lenta-layout {
-        grid-template-columns: 1fr;
+        display: block;
         padding: 0;
-        transform: none;
         margin: 0;
-        width: 100vw;
-        padding-right: 0;
-        max-width: 100vw;
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+        position: relative;
+        top: 0;
+        left: 0;
+    }
+
+    .feed-container {
+        max-width: 100%;
+        margin: 0;
+        padding: 0 8px;
+        width: 100%;
+        box-sizing: border-box;
+        position: relative;
+        left: 0;
+        transform: none;
     }
 
     body {
@@ -822,21 +835,15 @@ body {
 
 @media screen and (max-width: 768px) {
     .lenta-layout {
-        grid-template-columns: 1fr;
+        display: block;
         padding: 0;
-        transform: none;
         margin: 0;
         width: 100%;
-        padding-right: 0;
         max-width: 100%;
         overflow-x: hidden;
-    }
-
-    #posts-container {
-        transform: none;
-        width: 100%;
-        padding: 0;
-        margin: 0;
+        position: relative;
+        top: 0;
+        left: 0;
     }
 
     .feed-container {
@@ -845,6 +852,16 @@ body {
         padding: 0 8px;
         width: 100%;
         box-sizing: border-box;
+        position: relative;
+        left: 0;
+        transform: none;
+    }
+
+    #posts-container {
+        transform: none;
+        width: 100%;
+        padding: 0;
+        margin: 0;
     }
 
     .post {
