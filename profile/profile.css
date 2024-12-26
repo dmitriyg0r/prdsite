@@ -1498,7 +1498,7 @@ body {
     background: var(--surface-color);
 }
 
-/* Общие стили для всего содержимого одального окна */
+/* Общие стили для всего содержимого одальн��го окна */
 .modal-body {
     background: var(--surface-color);
 }
@@ -2007,11 +2007,11 @@ body {
     padding: var(--spacing-md);
 }
 
-/* Кнопка "Показать больше" также должна занимать всю ячейку */
+/* Кнопка "Показать больше" также должна занимать всю яче��ку */
 .more-friends {
     width: 100%;
     height: 100%;
-    min-height: 80px; /* Соответс��вует высоте элемента с аватаркой и именем */
+    min-height: 80px; /* Соответствует высоте элемента с аватаркой и именем */
 }
 
 .character-count {
@@ -2111,4 +2111,11 @@ textarea:invalid {
     background: var(--primary-color);
     border-radius: 2px;
     transition: width 0.3s ease;
+}
+
+.profile-layout .post-preview {
+    margin-top: var(--spacing-md);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
 }
