@@ -167,7 +167,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             checkOnlineStatus(profileId);
             setInterval(() => checkOnlineStatus(profileId), 60000);
 
-            // Скрываем элементы управл��ния профилем
+            // Скрываем элементы управл����ния профилем
             document.getElementById('edit-profile-btn').style.display = 'none';
             document.getElementById('logout-btn').style.display = 'none';
             document.querySelector('.avatar-overlay').style.display = 'none';
@@ -519,7 +519,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     searchBtn.addEventListener('click', () => {
         const searchQuery = searchInput.value.trim();
         if (searchQuery) {
-            // Здесь будет логика поиска пользователей
+            // Здесь будет логика поиска пользов��телей
             searchUsers(searchQuery);
         }
     });
@@ -1161,7 +1161,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Обновляем обработчик перед уходом со страницы
+    // Обновляем обработчик перед ��ходом со страницы
     window.addEventListener('beforeunload', (event) => {
         if (currentUser && currentUser.id) {
             // Испоьзуем синхронный запрос для гарантированной отправки
@@ -1452,14 +1452,14 @@ async function createPost() {
     const fileInput = document.getElementById('post-image');
     const file = fileInput.files[0];
 
-    // Добавляем проверку длины контента
+    // Проверка длины контента
     if (content.length > 250) {
         alert('Текст публикации не может превышать 250 символов');
         return;
     }
 
     if (!content && !file) {
-        alert('Добавьте текст или файл');
+        alert('Добавьте текст или изображение');
         return;
     }
 
@@ -1840,7 +1840,7 @@ function getFileIcon(extension) {
         'pdf': 'fas fa-file-pdf',
         'doc': 'fas fa-file-word',
         'docx': 'fas fa-file-word',
-        'odt': 'fas fa-file-word', // Иконка для ODT файлов
+        'odt': 'fas fa-file-word', // Иконк�� для ODT файлов
         'xls': 'fas fa-file-excel',
         'xlsx': 'fas fa-file-excel',
         'txt': 'fas fa-file-alt'
@@ -2081,3 +2081,51 @@ async function loadUserData() {
 
 // Вызываем функцию при загрузке страницы
 document.addEventListener('DOMContentLoaded', loadUserData);
+
+// Функция для обновления счетчика символов
+function updateCharacterCount(textarea) {
+    const maxLength = 250;
+    const currentLength = textarea.value.length;
+    const charCountElement = document.getElementById('char-count');
+    
+    if (charCountElement) {
+        charCountElement.textContent = currentLength;
+        
+        // Меняем цвет при приближении к лимиту
+        if (currentLength >= maxLength * 0.9) {
+            charCountElement.style.color = '#ff4444';
+        } else {
+            charCountElement.style.color = '#666';
+        }
+    }
+}
+
+// Обновляем функцию создания поста
+async function createPost() {
+    const content = document.getElementById('post-content').value.trim();
+    const fileInput = document.getElementById('post-image');
+    const file = fileInput.files[0];
+
+    // Проверка длины контента
+    if (content.length > 250) {
+        alert('Текст публикации не может превышать 250 символов');
+        return;
+    }
+
+    if (!content && !file) {
+        alert('Добавьте текст или изображение');
+        return;
+    }
+
+    // ... остальной код функции createPost ...
+}
+
+// Добавляем обработчик события при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    const textarea = document.getElementById('post-content');
+    if (textarea) {
+        textarea.addEventListener('input', function() {
+            updateCharacterCount(this);
+        });
+    }
+});

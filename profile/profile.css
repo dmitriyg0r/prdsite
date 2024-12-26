@@ -945,7 +945,7 @@ body {
     transform: scale(1.1);
 }
 
-/* Медиа-запросы для адапт��вности */
+/* Медиа-запросы для адаптивности */
 @media (max-width: 768px) {
     .image-modal .modal-flex-container {
         flex-direction: column;
@@ -1423,7 +1423,7 @@ body {
     font-size: 16px;
 }
 
-/* Показываем кнопку удаления только при наведении на пост */
+/* Показываем кнопку удаления только при наведении на пос�� */
 .post:not(:hover) .delete-post-btn {
     opacity: 0;
 }
@@ -1478,7 +1478,7 @@ body {
     background: var(--surface-color);
 }
 
-/* Общие стили для всего содержимого модального окна */
+/* Общие стили для всего содержимого ��одального окна */
 .modal-body {
     background: var(--surface-color);
 }
@@ -2004,4 +2004,9 @@ body {
 
 .character-count span {
     font-weight: bold;
+}
+
+/* Стиль для текстового поля при превышении лимита */
+textarea:invalid {
+    border-color: #ff4444;
 }
