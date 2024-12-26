@@ -432,24 +432,42 @@ async function changeUserRole(userId, newRole) {
 let registrationChart = null;
 let messageChart = null;
 let userActivityChart = null;
+let rolesChart = null;
 
 async function loadCharts() {
     try {
         const adminId = getAdminId();
         const response = await fetch(`${API_URL}/api/admin/charts?adminId=${adminId}`, {
-            credentials: 'include'
+            credentials: 'include',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+            }
         });
         const data = await response.json();
         
         if (data.success) {
             // Уничтожаем существующие графики перед созданием новых
-            if (registrationChart) registrationChart.destroy();
-            if (messageChart) messageChart.destroy();
-            if (userActivityChart) userActivityChart.destroy();
+            if (registrationChart) {
+                registrationChart.destroy();
+                registrationChart = null;
+            }
+            if (messageChart) {
+                messageChart.destroy();
+                messageChart = null;
+            }
+            if (userActivityChart) {
+                userActivityChart.destroy();
+                userActivityChart = null;
+            }
+            if (rolesChart) {
+                rolesChart.destroy();
+                rolesChart = null;
+            }
 
             createRegistrationChart(data.data.registrations);
             createMessageChart(data.data.messages);
             createUserActivityChart(data.data.userActivity);
+            createRolesChart(data.data.roles);
         }
     } catch (err) {
         console.error('Ошибка загрузки графиков:', err);
@@ -561,6 +579,43 @@ function createUserActivityChart(data) {
                 title: {
                     display: true,
                     text: 'Распределение пользователей по ролям'
+                }
+            }
+        }
+    });
+}
+
+function createRolesChart(data) {
+    const ctx = document.getElementById('rolesChart');
+    if (!ctx) {
+        console.error('Canvas element rolesChart not found');
+        return;
+    }
+    
+    rolesChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Пользователи', 'Модераторы', 'Админы'],
+            datasets: [{
+                data: [
+                    data.total_users - data.admin_count - data.moderator_count,
+                    data.moderator_count,
+                    data.admin_count
+                ],
+                backgroundColor: [
+                    'rgba(52, 152, 219, 0.8)',
+                    'rgba(231, 76, 60, 0.8)',
+                    'rgba(46, 204, 113, 0.8)'
+                ],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
                 }
             }
         }
