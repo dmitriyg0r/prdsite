@@ -705,7 +705,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             friendsHeaderCount.textContent = friends.length;
         }
 
-        // Обновляем счетчик в окне друзей
+        // Обновля���м счетчик в окне друзей
         const modalFriendCount = document.querySelector('.modal-tabs .friend-count');
         if (modalFriendCount) {
             modalFriendCount.textContent = friends.length;
@@ -748,7 +748,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         ${isCurrentUser ? `
                             <div class="friend-actions">
                                 <button class="remove-friend-btn" data-user-id="${friend.id}">
-                                    <i class="fas fa-user-minus"></i> Удалит�� из друзей
+                                    <i class="fas fa-user-minus"></i> Удалит���� из друзей
                                 </button>
                             </div>
                         ` : ''}
@@ -1459,8 +1459,46 @@ async function createPost() {
     }
 
     if (!content && !file) {
-        alert('Добавьте текст или изображение');
+        alert('Добавьте текст или файл');
         return;
+    }
+
+    // Проверка типа файла
+    if (file) {
+        const allowedTypes = [
+            // Изображения
+            'image/jpeg',
+            'image/png',
+            'image/gif',
+            // PDF
+            'application/pdf',
+            // Word
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            // Excel
+            'application/vnd.ms-excel',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            // PowerPoint
+            'application/vnd.ms-powerpoint',
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+            // Архивы
+            'application/zip',
+            'application/x-zip-compressed',
+            'application/x-rar-compressed',
+            'application/vnd.rar'
+        ];
+
+        if (!allowedTypes.includes(file.type)) {
+            alert('Неподдерживаемый тип файла. Разрешены: изображения, PDF, документы Word/Excel/PowerPoint, архивы ZIP/RAR');
+            return;
+        }
+
+        // Проверка размера файла (10MB)
+        const maxSize = 10 * 1024 * 1024;
+        if (file.size > maxSize) {
+            alert('Файл слишком большой. Максимальный размер: 10MB');
+            return;
+        }
     }
 
     try {
@@ -1469,34 +1507,7 @@ async function createPost() {
         formData.append('content', content);
         
         if (file) {
-            // Проверяем размер файла (например, 10MB максимум)
-            const maxSize = 10 * 1024 * 1024; // 10MB в байтах
-            if (file.size > maxSize) {
-                alert('Файл слишком большой. Максимальный размер: 10MB');
-                return;
-            }
-
-            // Рарешенные типы файлов
-            const allowedTypes = [
-                'image/jpeg',
-                'image/png',
-                'image/gif',
-                'image/webp',
-                'application/pdf',
-                'application/msword',
-                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                'application/vnd.ms-excel',
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                'application/vnd.oasis.opendocument.text',
-                'text/plain'
-            ];
-
-            if (!allowedTypes.includes(file.type)) {
-                alert('Неподдерживаемый тип файла. Разрешены: изображения, PDF, Word, Excel и текстовые файлы');
-                return;
-            }
-
-            // Изменяем имя поля на 'image' для соо��ветствия серверу
+            formData.append('originalFileName', file.name);
             formData.append('image', file);
         }
 
@@ -1505,7 +1516,7 @@ async function createPost() {
             body: formData
         });
 
-        // Проверяем тип контента о��вета
+        // Проверяем тип контента ответа
         const contentType = response.headers.get('content-type');
         let data;
         
@@ -1535,7 +1546,7 @@ async function createPost() {
         }
     } catch (err) {
         console.error('Error creating post:', err);
-        alert('Ошибка при создании публикации: ' + (err.message || 'Неизвестная ошибка'));
+        alert(err.message);
     }
 }
 
@@ -1840,7 +1851,7 @@ function getFileIcon(extension) {
         'pdf': 'fas fa-file-pdf',
         'doc': 'fas fa-file-word',
         'docx': 'fas fa-file-word',
-        'odt': 'fas fa-file-word', // Иконк�� для ODT файлов
+        'odt': 'fas fa-file-word', // Иконк для ODT файлов
         'xls': 'fas fa-file-excel',
         'xlsx': 'fas fa-file-excel',
         'txt': 'fas fa-file-alt'
@@ -2113,7 +2124,7 @@ async function createPost() {
     }
 
     if (!content && !file) {
-        alert('Добавьте текст или изображение');
+        alert('Добавьте текст или файл');
         return;
     }
 
@@ -2123,34 +2134,8 @@ async function createPost() {
         formData.append('content', content);
         
         if (file) {
-            // Проверяем размер файла (например, 10MB максимум)
-            const maxSize = 10 * 1024 * 1024; // 10MB в байтах
-            if (file.size > maxSize) {
-                alert('Файл слишком большой. Максимальный размер: 10MB');
-                return;
-            }
-
-            // Рарешенные типы файлов
-            const allowedTypes = [
-                'image/jpeg',
-                'image/png',
-                'image/gif',
-                'image/webp',
-                'application/pdf',
-                'application/msword',
-                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                'application/vnd.ms-excel',
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                'application/vnd.oasis.opendocument.text',
-                'text/plain'
-            ];
-
-            if (!allowedTypes.includes(file.type)) {
-                alert('Неподдерживаемый тип файла. Разрешены: изображения, PDF, Word, Excel и текстовые файлы');
-                return;
-            }
-
-            // Изменяем имя поля на 'image' для сооветствия серверу
+            // Добавляем оригинальное имя файла в отдельное поле
+            formData.append('originalFileName', file.name);
             formData.append('image', file);
         }
 
