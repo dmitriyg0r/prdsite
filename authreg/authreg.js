@@ -47,6 +47,12 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
             return;
         }
 
+        // Добавляем проверку длины имени пользователя
+        if (username.length > 20) {
+            showErrorMessage('Имя пользователя не должно превышать 20 символов');
+            return;
+        }
+
         // Показываем индикатор загрузки
         const button = e.target.querySelector('button');
         const buttonText = button.querySelector('.button-text');
@@ -111,6 +117,12 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
         const email = document.getElementById('reg-email').value;
         const password = document.getElementById('reg-password').value;
         const passwordConfirm = document.getElementById('reg-password-confirm').value;
+
+        // Добавляем проверку длины имени пользователя
+        if (username.length > 20) {
+            showErrorMessage('Имя пользователя не должно превышать 20 символов');
+            return;
+        }
 
         // Проверка совпадения паролей
         if (password !== passwordConfirm) {
@@ -283,7 +295,7 @@ function isValidJSON(str) {
     }
 }
 
-// Обработчики для восстановления ��ароля
+// Обработчики для восстановления пароля
 document.getElementById('forgot-password-link').addEventListener('click', (e) => {
     e.preventDefault();
     const modal = document.getElementById('password-recovery-modal');
@@ -350,7 +362,7 @@ document.getElementById('send-code-btn').addEventListener('click', async () => {
             document.getElementById('step-verification').style.display = 'block';
             startResendTimer();
         } else {
-            throw new Error('Ошибк�� при отправке кода');
+            throw new Error('Ошибка при отправке кода');
         }
     } catch (err) {
         showErrorMessage(err.message);
