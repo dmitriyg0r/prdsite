@@ -1452,6 +1452,12 @@ async function createPost() {
     const fileInput = document.getElementById('post-image');
     const file = fileInput.files[0];
 
+    // Добавляем проверку длины контента
+    if (content.length > 250) {
+        alert('Текст публикации не может превышать 250 символов');
+        return;
+    }
+
     if (!content && !file) {
         alert('Добавьте текст или файл');
         return;

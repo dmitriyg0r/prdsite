@@ -150,7 +150,15 @@
                 </div>
                 
                 <div id="post-form" class="post-form" style="display: none;">
-                    <textarea id="post-content" placeholder="Что у вас нового?"></textarea>
+                    <textarea 
+                        id="post-content" 
+                        placeholder="Что у вас нового?" 
+                        maxlength="250"
+                        oninput="updateCharacterCount(this)"
+                    ></textarea>
+                    <div class="character-count">
+                        <span id="char-count">0</span>/250
+                    </div>
                     <div class="post-form-actions">
                         <div class="post-attachments">
                             <label for="post-image" class="attachment-btn">
@@ -162,7 +170,7 @@
                         <div id="image-preview" class="post-preview"></div>
                         <button id="publish-post-btn" class="action-btn">
                             <i class="fas fa-paper-plane"></i>
-                            <span>Опубликоват��</span>
+                            <span>Опубликоват</span>
                         </button>
                     </div>
                 </div>
@@ -224,7 +232,7 @@
         </div>
     </div>
 
-    <!-- После существующих модальных ��кон, перед закрывающим тегом body -->
+    <!-- После существующих модальных кон, перед закрывающим тегом body -->
     <div id="edit-profile-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
