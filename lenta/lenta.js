@@ -39,6 +39,13 @@ function displayPosts(posts) {
             </div>
         ` : '';
 
+        // Добавляем кнопку удаления для админов
+        const deleteButton = currentUser.role === 'admin' ? `
+            <button class="post-action delete-action" onclick="deletePost(${post.id})">
+                <i class="fas fa-trash"></i>
+            </button>
+        ` : '';
+
         return `
             <div class="post" data-post-id="${post.id}">
                 <div class="post-header">
@@ -53,6 +60,7 @@ function displayPosts(posts) {
                         </a>
                         <div class="post-date">${new Date(post.created_at).toLocaleString()}</div>
                     </div>
+                    ${deleteButton}
                 </div>
                 <div class="post-content">${post.content}</div>
                 ${mediaContent}
@@ -183,7 +191,7 @@ async function submitComment(postId, button) {
             })
         });
 
-        if (!response.ok) throw new Error('Ошибка при создании комментария');
+        if (!response.ok) throw new Error('Ошибка при создании коммента��ия');
         
         const data = await response.json();
         
@@ -280,4 +288,36 @@ function openImageInFullscreen(imageSrc, postData) {
             document.removeEventListener('keydown', escHandler);
         }
     });
+}
+
+// Добавляем функцию удаления поста
+async function deletePost(postId) {
+    if (!confirm('Вы уверены, что хотите удалить этот пост?')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/posts/delete/${postId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                userId: currentUser.id
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Ошибка при удалении поста');
+        }
+
+        // Удаляем пост из DOM
+        const postElement = document.querySelector(`.post[data-post-id="${postId}"]`);
+        if (postElement) {
+            postElement.remove();
+        }
+    } catch (err) {
+        console.error('Error deleting post:', err);
+        alert('Ошибка при удалении поста');
+    }
 }

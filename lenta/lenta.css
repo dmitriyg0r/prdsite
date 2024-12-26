@@ -907,3 +907,12 @@ body {
         display: none; /* Скрываем сайдбар на мобильных */
     }
 }
+
+.delete-action {
+    color: #dc3545;
+    margin-left: auto;
+}
+
+.delete-action:hover {
+    color: #c82333;
+}
