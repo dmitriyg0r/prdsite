@@ -167,7 +167,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             checkOnlineStatus(profileId);
             setInterval(() => checkOnlineStatus(profileId), 60000);
 
-            // Скрываем элементы управл����ния профилем
+            // Скрываем элементы управл������ния профилем
             document.getElementById('edit-profile-btn').style.display = 'none';
             document.getElementById('logout-btn').style.display = 'none';
             document.querySelector('.avatar-overlay').style.display = 'none';
@@ -519,7 +519,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     searchBtn.addEventListener('click', () => {
         const searchQuery = searchInput.value.trim();
         if (searchQuery) {
-            // Здесь будет логика поиска пользов��телей
+            // Здесь будет логика поиска поль��ов��телей
             searchUsers(searchQuery);
         }
     });
@@ -748,7 +748,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         ${isCurrentUser ? `
                             <div class="friend-actions">
                                 <button class="remove-friend-btn" data-user-id="${friend.id}">
-                                    <i class="fas fa-user-minus"></i> Удалит���� из друзей
+                                    <i class="fas fa-user-minus"></i> Удал��т���� из друзей
                                 </button>
                             </div>
                         ` : ''}
@@ -1465,30 +1465,18 @@ async function createPost() {
 
     // Проверка типа файла
     if (file) {
-        const allowedTypes = [
+        // Получаем расширение файла
+        const fileExtension = file.name.split('.').pop().toLowerCase();
+        const allowedExtensions = [
             // Изображения
-            'image/jpeg',
-            'image/png',
-            'image/gif',
-            // PDF
-            'application/pdf',
-            // Word
-            'application/msword',
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            // Excel
-            'application/vnd.ms-excel',
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            // PowerPoint
-            'application/vnd.ms-powerpoint',
-            'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+            'jpg', 'jpeg', 'png', 'gif',
+            // Документы
+            'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx',
             // Архивы
-            'application/zip',
-            'application/x-zip-compressed',
-            'application/x-rar-compressed',
-            'application/vnd.rar'
+            'zip', 'rar'
         ];
 
-        if (!allowedTypes.includes(file.type)) {
+        if (!allowedExtensions.includes(fileExtension)) {
             alert('Неподдерживаемый тип файла. Разрешены: изображения, PDF, документы Word/Excel/PowerPoint, архивы ZIP/RAR');
             return;
         }
@@ -1507,8 +1495,9 @@ async function createPost() {
         formData.append('content', content);
         
         if (file) {
+            // Добавляем оригинальное имя файла и сам файл
             formData.append('originalFileName', file.name);
-            formData.append('image', file);
+            formData.append('file', file); // Изменено с 'image' на 'file'
         }
 
         const response = await fetch('https://adminflow.ru/api/posts/create', {
@@ -1516,31 +1505,27 @@ async function createPost() {
             body: formData
         });
 
-        // Проверяем тип контента ответа
-        const contentType = response.headers.get('content-type');
-        let data;
-        
-        if (contentType && contentType.includes('application/json')) {
-            data = await response.json();
-        } else {
-            const textResponse = await response.text();
-            throw new Error(textResponse);
+        if (!response.ok) {
+            throw new Error('Ошибка при создании публикации');
         }
 
-        if (!response.ok) {
-            throw new Error(data.error || 'Ошибка при создании публикации');
-        }
-        
+        const data = await response.json();
+
         if (data.success) {
-            // Очищаем фрму
+            // Очищаем форму
             document.getElementById('post-content').value = '';
+            document.getElementById('post-image').value = '';
             document.getElementById('image-preview').innerHTML = '';
             document.getElementById('post-form').style.display = 'none';
-            fileInput.value = '';
-            selectedPostImage = null;
+            
+            // Обновляем счетчик символов
+            const charCountElement = document.getElementById('char-count');
+            if (charCountElement) {
+                charCountElement.textContent = '0';
+            }
 
-            // Перезагружаем посты
-            loadPosts();
+            // Обновляем список постов
+            await loadPosts();
         } else {
             throw new Error(data.error || 'Ошибка при создании публикации');
         }

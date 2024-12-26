@@ -249,18 +249,20 @@ const storage = multer.diskStorage({
         cb(null, uploadPath);
     },
     filename: function (req, file, cb) {
-        // Определяем префикс на основе типа загрузки
-        let prefix = 'post-';
-        if (req.path.includes('avatar')) {
-            prefix = 'avatar-';
-        } else if (req.path.includes('message')) {
-            prefix = 'message-';
-        }
-
-        // Генерируем уникальное имя файла
+        // Сохраняем оригинальное имя файла
+        const originalName = file.originalname;
+        // Генерируем уникальный префикс
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        const ext = path.extname(file.originalname);
-        cb(null, `${prefix}${uniqueSuffix}${ext}`);
+        // Получаем расширение файла из оригинального имени
+        const ext = path.extname(originalName);
+        // Создаем новое имя файла
+        const filename = `${uniqueSuffix}${ext}`;
+        
+        // Сохраняем оригинальное имя файла в объекте file для дальнейшего использования
+        file.originalFileName = originalName;
+        file.storedFileName = filename;
+        
+        cb(null, filename);
     }
 });
 
@@ -271,22 +273,18 @@ const upload = multer({
         fileSize: 10 * 1024 * 1024, // 10MB максимальный размер файла
     },
     fileFilter: function (req, file, cb) {
-        // Разрешенные типы файлов
-        const allowedTypes = [
-            'image/jpeg',
-            'image/png',
-            'image/gif',
-            'image/webp',
-            'application/pdf',
-            'application/msword',
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            'application/vnd.ms-excel',
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'application/vnd.oasis.opendocument.text',
-            'text/plain'
+        // Получаем расширение файла
+        const ext = path.extname(file.originalname).toLowerCase();
+        const allowedExtensions = [
+            '.jpg', '.jpeg', '.png', '.gif',  // Изображения
+            '.pdf',                           // PDF
+            '.doc', '.docx',                 // Word
+            '.xls', '.xlsx',                 // Excel
+            '.ppt', '.pptx',                 // PowerPoint
+            '.zip', '.rar'                   // Архивы
         ];
 
-        if (allowedTypes.includes(file.mimetype)) {
+        if (allowedExtensions.includes(ext)) {
             cb(null, true);
         } else {
             cb(new Error('Неподдерживаемый тип файла'));
@@ -645,7 +643,7 @@ app.get('/api/messages/last/:userId/:friendId', async (req, res) => {
         res.json({ success: true, message: result.rows[0] });
     } catch (err) {
         console.error('Error getting last message:', err);
-        res.status(500).json({ error: '��������шибка при получении последнего сообщения' });
+        res.status(500).json({ error: 'шибка при получении последнего сообщения' });
     }
 });
 
@@ -851,7 +849,7 @@ app.post('/api/users/update-profile', async (req, res) => {
             email
         });
 
-        // Проверяем суще��твование пользователя
+        // Проверяем сущетвование пользователя
         const userCheck = await pool.query('SELECT * FROM users WHERE id = $1', [userId]);
         console.log('2. Текущие данные пользователя:', userCheck.rows[0]);
 
@@ -1335,7 +1333,7 @@ app.get('/api/users/status/:userId', async (req, res) => {
     }
 });
 
-// ���б���������вление статуса пользователя
+// бвление статуса пользователя
 app.post('/api/users/update-status', async (req, res) => {
     try {
         const { userId, is_online, last_activity } = req.body;
@@ -1583,7 +1581,7 @@ app.post('/api/posts/comment', async (req, res) => {
     }
 });
 
-// Удалени���� комментария
+// Удалени комментария
 app.delete('/api/comments/:commentId', async (req, res) => {
     try {
         const { commentId } = req.params;
@@ -1598,7 +1596,7 @@ app.delete('/api/comments/:commentId', async (req, res) => {
         if (comment.rows.length === 0) {
             return res.status(403).json({
                 success: false,
-                error: 'Нет прав н�� уда��ение этого комментария'
+                error: 'Нет прав н удаение этого комментария'
             });
         }
 
@@ -1656,7 +1654,7 @@ app.put('/api/comments/:commentId', async (req, res) => {
     }
 });
 
-// Обраб��тка статуса набора текста
+// Обрабтка статуса набора текста
 app.post('/api/messages/typing', async (req, res) => {
     try {
         const { userId, friendId, isTyping } = req.body;
@@ -1832,7 +1830,7 @@ alternativeTransporter.verify(function(error, success) {
     }
 });
 
-// Функция для генерации к��да подтверждения
+// Функция для генерации кда подтверждения
 function generateVerificationCode() {
     return Math.floor(100000 + Math.random() * 900000).toString();
 }
@@ -2214,7 +2212,7 @@ app.get('/socket.io/test', (req, res) => {
     });
 });
 
-// Добавляем н��вый endpoint для получения информации о пользователе
+// Добавляем нвый endpoint для получения информации о пользователе
 app.get('/api/users/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
@@ -2653,7 +2651,7 @@ app.delete('/api/messages/:messageId', async (req, res) => {
 
             res.json({
                 success: true,
-                message: 'Сообщение успешно уда��ено'
+                message: 'Сообщение успешно удаено'
             });
 
         } catch (err) {
@@ -2670,7 +2668,7 @@ app.delete('/api/messages/:messageId', async (req, res) => {
     }
 });
 
-// Обно��ляем конфигурацию multer для аватаров
+// Обноляем конфигурацию multer для аватаров
 const avatarStorage = multer.diskStorage({
     destination: function (req, file, cb) {
         const uploadPath = '/var/www/html/uploads/avatars';
