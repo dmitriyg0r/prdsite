@@ -201,7 +201,7 @@ app.get('/api/download/:folder/:filename', (req, res) => {
         const mimeType = mimeTypes[ext] || 'application/octet-stream';
         const isImage = mimeType.startsWith('image/');
 
-        // Устанавливаем заголовки в зависимост о�� типа файла
+        // Устанавливаем заголовки в зависимост о���� типа файла
         if (!isImage) {
             res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(filename)}"`);
         }
@@ -1020,12 +1020,60 @@ app.get('/api/admin/users', checkAdmin, async (req, res) => {
 
 app.delete('/api/admin/users/:id', checkAdmin, async (req, res) => {
     try {
-        const { id } = req.params;
-        await pool.query('DELETE FROM users WHERE id = $1', [id]);
-        res.json({ success: true });
+        const userId = req.params.id;
+        const adminId = req.query.adminId;
+
+        // Начинаем транзакцию
+        await pool.query('BEGIN');
+
+        try {
+            // 1. Удаляем все записи о дружбе
+            await pool.query(`
+                DELETE FROM friendships 
+                WHERE user_id = $1 OR friend_id = $1
+            `, [userId]);
+
+            // 2. Удаляем все сообщения пользователя
+            await pool.query(`
+                DELETE FROM messages 
+                WHERE sender_id = $1 OR receiver_id = $1
+            `, [userId]);
+
+            // 3. Теперь можно безопасно удалить пользователя
+            const result = await pool.query(`
+                DELETE FROM users 
+                WHERE id = $1 
+                RETURNING *
+            `, [userId]);
+
+            // Подтверждаем транзакцию
+            await pool.query('COMMIT');
+
+            if (result.rows.length === 0) {
+                return res.status(404).json({
+                    success: false,
+                    error: 'Пользователь не найден'
+                });
+            }
+
+            res.json({
+                success: true,
+                message: 'Пользователь успешно удален'
+            });
+
+        } catch (err) {
+            // В случае ошибки откатываем транзакцию
+            await pool.query('ROLLBACK');
+            throw err;
+        }
+
     } catch (err) {
         console.error('Admin delete user error:', err);
-        res.status(500).json({ error: 'Ошибка при удалении пользователя' });
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при удалении пользователя',
+            details: err.message
+        });
     }
 });
 
@@ -2180,7 +2228,7 @@ io.on('connection', async (socket) => {
                 AND is_read = false
             `, [friendId, userId]);
 
-            // Уведомляем отправителя о прочт��нии сообщений
+            // Уведомляем отправителя о прочтнии сообщений
             const senderSocketId = activeConnections.get(friendId);
             if (senderSocketId) {
                 io.to(senderSocketId).emit('messages_read', { 
