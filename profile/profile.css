@@ -199,7 +199,7 @@ body {
 }
 
 .action-btn {
-    width: 40px;
+    width: 141px;
     height: 40px;
     border-radius: 12px;
     border: none;
@@ -287,7 +287,7 @@ body {
 }
 
 #post-content {
-    width: 100%;
+    width: 1077px;
     min-height: 100px;
     padding: var(--spacing-md);
     border: 1px solid var(--border-light);
