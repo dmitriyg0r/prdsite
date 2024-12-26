@@ -748,7 +748,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         ${isCurrentUser ? `
                             <div class="friend-actions">
                                 <button class="remove-friend-btn" data-user-id="${friend.id}">
-                                    <i class="fas fa-user-minus"></i> Удалить из друзей
+                                    <i class="fas fa-user-minus"></i> Удалит�� из друзей
                                 </button>
                             </div>
                         ` : ''}
@@ -1505,7 +1505,7 @@ async function createPost() {
             body: formData
         });
 
-        // Проверяем тип контента ответа
+        // Проверяем тип контента о��вета
         const contentType = response.headers.get('content-type');
         let data;
         
@@ -2082,7 +2082,7 @@ async function loadUserData() {
 // Вызываем функцию при загрузке страницы
 document.addEventListener('DOMContentLoaded', loadUserData);
 
-// Функция для обновления счетчика символов
+// Добавьте эту функцию для обновления счетчика символов
 function updateCharacterCount(textarea) {
     const maxLength = 250;
     const currentLength = textarea.value.length;
@@ -2100,13 +2100,13 @@ function updateCharacterCount(textarea) {
     }
 }
 
-// Обновляем функцию создания поста
+// Найдите функцию createPost и добавьте в неё проверку длины в начало:
 async function createPost() {
     const content = document.getElementById('post-content').value.trim();
     const fileInput = document.getElementById('post-image');
     const file = fileInput.files[0];
 
-    // Проверка длины контента
+    // Добавляем проверку длины контента
     if (content.length > 250) {
         alert('Текст публикации не может превышать 250 символов');
         return;
@@ -2117,10 +2117,83 @@ async function createPost() {
         return;
     }
 
-    // ... остальной код функции createPost ...
+    try {
+        const formData = new FormData();
+        formData.append('userId', currentUser.id);
+        formData.append('content', content);
+        
+        if (file) {
+            // Проверяем размер файла (например, 10MB максимум)
+            const maxSize = 10 * 1024 * 1024; // 10MB в байтах
+            if (file.size > maxSize) {
+                alert('Файл слишком большой. Максимальный размер: 10MB');
+                return;
+            }
+
+            // Рарешенные типы файлов
+            const allowedTypes = [
+                'image/jpeg',
+                'image/png',
+                'image/gif',
+                'image/webp',
+                'application/pdf',
+                'application/msword',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'application/vnd.ms-excel',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'application/vnd.oasis.opendocument.text',
+                'text/plain'
+            ];
+
+            if (!allowedTypes.includes(file.type)) {
+                alert('Неподдерживаемый тип файла. Разрешены: изображения, PDF, Word, Excel и текстовые файлы');
+                return;
+            }
+
+            // Изменяем имя поля на 'image' для сооветствия серверу
+            formData.append('image', file);
+        }
+
+        const response = await fetch('https://adminflow.ru/api/posts/create', {
+            method: 'POST',
+            body: formData
+        });
+
+        // Проверяем тип контента ответа
+        const contentType = response.headers.get('content-type');
+        let data;
+        
+        if (contentType && contentType.includes('application/json')) {
+            data = await response.json();
+        } else {
+            const textResponse = await response.text();
+            throw new Error(textResponse);
+        }
+
+        if (!response.ok) {
+            throw new Error(data.error || 'Ошибка при создании публикации');
+        }
+        
+        if (data.success) {
+            // Очищаем фрму
+            document.getElementById('post-content').value = '';
+            document.getElementById('image-preview').innerHTML = '';
+            document.getElementById('post-form').style.display = 'none';
+            fileInput.value = '';
+            selectedPostImage = null;
+
+            // Перезагружаем посты
+            loadPosts();
+        } else {
+            throw new Error(data.error || 'Ошибка при создании публикации');
+        }
+    } catch (err) {
+        console.error('Error creating post:', err);
+        alert('Ошибка при создании публикации: ' + (err.message || 'Неизвестная ошибка'));
+    }
 }
 
-// Добавляем обработчик события при загрузке страницы
+// Добавьте этот обработчик в существующий DOMContentLoaded или в конец файла
 document.addEventListener('DOMContentLoaded', function() {
     const textarea = document.getElementById('post-content');
     if (textarea) {
