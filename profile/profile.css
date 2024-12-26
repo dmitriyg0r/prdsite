@@ -2011,7 +2011,7 @@ body {
 .more-friends {
     width: 100%;
     height: 100%;
-    min-height: 80px; /* Соответствует высоте элемента с аватаркой и именем */
+    min-height: 80px; /* Соответс��вует высоте элемента с аватаркой и именем */
 }
 
 .character-count {
@@ -2029,4 +2029,86 @@ body {
 /* Стиль для текстового поля при превышении лимита */
 textarea:invalid {
     border-color: #ff4444;
+}
+
+/* Стили для предпросмотра файлов */
+.post-preview {
+    margin-top: var(--spacing-md);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+}
+
+.file-preview {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: var(--background-color);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    max-width: 300px;
+}
+
+.file-preview img {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: var(--radius-sm);
+    object-fit: cover;
+}
+
+.file-preview .remove-file {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.file-preview .remove-file:hover {
+    background: rgba(239, 68, 68, 0.9);
+    transform: scale(1.1);
+}
+
+.file-preview .file-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.file-preview .file-name {
+    font-size: 14px;
+    color: var(--text-primary);
+    word-break: break-all;
+}
+
+.file-preview .file-size {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+/* Стили для индикатора загрузки */
+.upload-progress {
+    width: 100%;
+    height: 4px;
+    background: var(--border-light);
+    border-radius: 2px;
+    margin-top: 5px;
+}
+
+.upload-progress-bar {
+    height: 100%;
+    background: var(--primary-color);
+    border-radius: 2px;
+    transition: width 0.3s ease;
 }
