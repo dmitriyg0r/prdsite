@@ -331,15 +331,26 @@ async function deleteUser(id) {
             const adminId = getAdminId();
             const response = await fetch(`${API_URL}/api/admin/users/${id}?adminId=${adminId}`, {
                 method: 'DELETE',
-                credentials: 'include'
+                credentials: 'include',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+                }
             });
+            
+            if (response.status === 401) {
+                localStorage.removeItem('adminId');
+                localStorage.removeItem('adminToken');
+                location.reload();
+                return;
+            }
+
             const data = await response.json();
             
             if (data.success) {
                 loadUsers(currentPage, document.getElementById('searchUsers').value);
                 loadStats();
             } else {
-                alert('Ошибка при удалении пользователя');
+                alert(data.error || 'Ошибка при удалении пользователя');
             }
         } catch (err) {
             console.error('Ошибка удаления пользователя:', err);
