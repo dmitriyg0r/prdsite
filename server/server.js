@@ -1270,22 +1270,60 @@ app.delete('/api/posts/delete/:postId', async (req, res) => {
         const { postId } = req.params;
         const { userId } = req.body;
 
-        // Проверяем, является ли пользователь автором поста
-        const post = await pool.query(
-            'SELECT * FROM posts WHERE id = $1 AND user_id = $2 AND type = $3',
-            [postId, userId, 'post']
+        console.log('Delete post request:', { postId, userId }); // Для отладки
+
+        // Проверяем роль пользователя
+        const userResult = await pool.query(
+            'SELECT role FROM users WHERE id = $1',
+            [userId]
         );
 
-        if (post.rows.length === 0) {
+        if (userResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Пользователь не найден' });
+        }
+
+        const isAdmin = userResult.rows[0].role === 'admin';
+        console.log('User role check:', { isAdmin }); // Для отладки
+
+        // Проверяем существование поста и права на удаление
+        const postResult = await pool.query(
+            'SELECT user_id FROM posts WHERE id = $1',
+            [postId]
+        );
+
+        if (postResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Пост не найден' });
+        }
+
+        const post = postResult.rows[0];
+        
+        // Проверяем права на удаление
+        if (!isAdmin && post.user_id !== userId) {
             return res.status(403).json({ error: 'У вас нет прав на удаление этого поста' });
         }
 
-        // Удаляем все связанные записи (лайки, комментарии)
-        await pool.query('DELETE FROM posts WHERE parent_id = $1', [postId]);
-        // Удаляем сам пост
-        await pool.query('DELETE FROM posts WHERE id = $1', [postId]);
+        // Начинаем транзакцию
+        await pool.query('BEGIN');
 
-        res.json({ success: true });
+        try {
+            // Удаляем связанные комментарии
+            await pool.query('DELETE FROM comments WHERE post_id = $1', [postId]);
+            
+            // Удаляем связанные лайки
+            await pool.query('DELETE FROM likes WHERE post_id = $1', [postId]);
+            
+            // Удаляем сам пост
+            await pool.query('DELETE FROM posts WHERE id = $1', [postId]);
+
+            // Завершаем транзакцию
+            await pool.query('COMMIT');
+
+            res.json({ success: true });
+        } catch (err) {
+            await pool.query('ROLLBACK');
+            throw err;
+        }
+
     } catch (err) {
         console.error('Error deleting post:', err);
         res.status(500).json({ error: 'Ошибка при удалении поста' });

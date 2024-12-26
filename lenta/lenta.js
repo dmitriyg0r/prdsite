@@ -191,7 +191,7 @@ async function submitComment(postId, button) {
             })
         });
 
-        if (!response.ok) throw new Error('Ошибка при создании коммента��ия');
+        if (!response.ok) throw new Error('Ошибка при создании комментария');
         
         const data = await response.json();
         
@@ -297,7 +297,7 @@ async function deletePost(postId) {
     }
 
     try {
-        const response = await fetch(`/api/posts/delete/${postId}`, {
+        const response = await fetch(`https://adminflow.ru/api/posts/delete/${postId}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json'
@@ -308,7 +308,8 @@ async function deletePost(postId) {
         });
 
         if (!response.ok) {
-            throw new Error('Ошибка при удалении поста');
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Ошибка при удалении поста');
         }
 
         // Удаляем пост из DOM
@@ -318,6 +319,6 @@ async function deletePost(postId) {
         }
     } catch (err) {
         console.error('Error deleting post:', err);
-        alert('Ошибка при удалении поста');
+        alert(err.message || 'Ошибка при удалении поста');
     }
 }
