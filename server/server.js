@@ -201,7 +201,7 @@ app.get('/api/download/:folder/:filename', (req, res) => {
         const mimeType = mimeTypes[ext] || 'application/octet-stream';
         const isImage = mimeType.startsWith('image/');
 
-        // Устанавливаем заголовки в зависимост от типа файла
+        // Устанавливаем заголовки в зависимост о�� типа файла
         if (!isImage) {
             res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(filename)}"`);
         }
@@ -1270,7 +1270,7 @@ app.delete('/api/posts/delete/:postId', async (req, res) => {
         const { postId } = req.params;
         const { userId } = req.body;
 
-        console.log('Delete post request:', { postId, userId }); // Для отладки
+        console.log('Delete post request:', { postId, userId });
 
         // Проверяем роль пользователя
         const userResult = await pool.query(
@@ -1283,9 +1283,9 @@ app.delete('/api/posts/delete/:postId', async (req, res) => {
         }
 
         const isAdmin = userResult.rows[0].role === 'admin';
-        console.log('User role check:', { isAdmin }); // Для отладки
+        console.log('User role check:', { isAdmin });
 
-        // Проверяем существование поста и права на удаление
+        // Проверяем существование поста
         const postResult = await pool.query(
             'SELECT user_id FROM posts WHERE id = $1',
             [postId]
@@ -1302,27 +1302,10 @@ app.delete('/api/posts/delete/:postId', async (req, res) => {
             return res.status(403).json({ error: 'У вас нет прав на удаление этого поста' });
         }
 
-        // Начинаем транзакцию
-        await pool.query('BEGIN');
+        // Удаляем пост
+        await pool.query('DELETE FROM posts WHERE id = $1', [postId]);
 
-        try {
-            // Удаляем связанные комментарии
-            await pool.query('DELETE FROM comments WHERE post_id = $1', [postId]);
-            
-            // Удаляем связанные лайки
-            await pool.query('DELETE FROM likes WHERE post_id = $1', [postId]);
-            
-            // Удаляем сам пост
-            await pool.query('DELETE FROM posts WHERE id = $1', [postId]);
-
-            // Завершаем транзакцию
-            await pool.query('COMMIT');
-
-            res.json({ success: true });
-        } catch (err) {
-            await pool.query('ROLLBACK');
-            throw err;
-        }
+        res.json({ success: true });
 
     } catch (err) {
         console.error('Error deleting post:', err);
@@ -2197,7 +2180,7 @@ io.on('connection', async (socket) => {
                 AND is_read = false
             `, [friendId, userId]);
 
-            // Уведомляем отправителя о прочтении сообщений
+            // Уведомляем отправителя о прочт��нии сообщений
             const senderSocketId = activeConnections.get(friendId);
             if (senderSocketId) {
                 io.to(senderSocketId).emit('messages_read', { 
