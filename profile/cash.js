@@ -6,24 +6,33 @@ clearCacheBtn?.addEventListener('click', async () => {
         clearCacheBtn.classList.add('loading');
         clearCacheBtn.disabled = true;
 
-        // Clear browser cache
+        // Очистка кэша сервис-воркера
+        if ('serviceWorker' in navigator) {
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            await Promise.all(registrations.map(reg => reg.unregister()));
+        }
+
+        // Очистка кэша браузера
         if ('caches' in window) {
             const keys = await caches.keys();
             await Promise.all(keys.map(key => caches.delete(key)));
         }
 
-        // Clear local and session storage
+        // Очистка локального хранилища
         localStorage.clear();
         sessionStorage.clear();
 
-        // Hard reload the page with cache bypass
-        window.location.reload(true);
+        // Очистка куки
+        document.cookie.split(';').forEach(cookie => {
+            document.cookie = cookie
+                .replace(/^ +/, '')
+                .replace(/=.*/, `=;expires=${new Date(0).toUTCString()};path=/`);
+        });
 
-        // If the above doesn't work in some browsers, force reload through URL
-        setTimeout(() => {
-            window.location.href = window.location.href + '?t=' + Date.now();
-        }, 100);
-        
+        // Принудительная перезагрузка с очисткой кэша
+        window.location.href = window.location.origin + 
+            window.location.pathname + 
+            '?cache-bust=' + Date.now();
     } catch (error) {
         console.error('Ошибка при очистке кэша:', error);
         alert('Произошла ошибка при очистке кэша');
