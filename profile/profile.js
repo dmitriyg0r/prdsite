@@ -467,18 +467,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     const modalClose = document.querySelector('.modal-close');
     const tabButtons = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
-
-    // Обновляем селектор для кнопки открытия модального окна
     const friendsHeaderBtn = document.querySelector('.friends-header-btn');
-    
-    // Открытие модального окна при клике на заголовок "Дузья"
+
+    // Открытие модального окна при клике на заголовок "Друзья"
     friendsHeaderBtn.addEventListener('click', (e) => {
         e.preventDefault();
         friendsModal.classList.add('active');
         document.body.style.overflow = 'hidden';
     });
 
-    // Закрытие модального ��кна
+    // Закрытие модального окна
     modalClose.addEventListener('click', () => {
         friendsModal.classList.remove('active');
         document.body.style.overflow = '';
@@ -1376,6 +1374,21 @@ document.addEventListener('DOMContentLoaded', async () => {
             alert(err.message);
         }
     });
+
+    // Добавляем функцию в глобальную область видимости
+    window.openFriendsModal = function() {
+        const friendsModal = document.getElementById('friends-modal');
+        const friendsTab = document.querySelector('[data-tab="friends-tab"]');
+        
+        // Открываем модальное окно
+        friendsModal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        
+        // Активируем вкладку с друзьями
+        if (friendsTab) {
+            friendsTab.click();
+        }
+    };
 });
 
 function initializePostHandlers() {
@@ -1814,137 +1827,6 @@ window.closeImageModal = function(modal) {
         modal.remove();
     }, 300);
 };
-
-// Добавляем функцию в глобальную область видимости
-window.openFriendsModal = function() {
-    const friendsModal = document.getElementById('friends-modal');
-    const friendsTab = document.querySelector('[data-tab="friends-tab"]');
-    
-    // Открываем модальное окно
-    friendsModal.classList.add('active');
-    document.body.style.overflow = 'hidden';
-    
-    // Активируем вкладку с друзьями
-    if (friendsTab) {
-        friendsTab.click();
-    }
-};
-
-// Функция для определения иконки файла
-function getFileIcon(extension) {
-    const iconMap = {
-        'pdf': 'fas fa-file-pdf',
-        'doc': 'fas fa-file-word',
-        'docx': 'fas fa-file-word',
-        'odt': 'fas fa-file-word', // Иконк для ODT файлов
-        'xls': 'fas fa-file-excel',
-        'xlsx': 'fas fa-file-excel',
-        'txt': 'fas fa-file-alt'
-    };
-    
-    return iconMap[extension] || 'fas fa-file';
-}
-
-// Функция для скачивания файла
-async function downloadFile(fileUrl) {
-    try {
-        // Получаем имя файла из URL
-        const filename = fileUrl.split('/').pop();
-        const folder = fileUrl.split('/')[2]; // posts, messages, etc.
-
-        // Делаем запрос к API для скачивания
-        const response = await fetch(`/api/download/${folder}/${filename}`);
-        
-        if (!response.ok) throw new Error('Download failed');
-
-        // Получаем blob из ответа
-        const blob = await response.blob();
-        
-        // Создаем ссылку для скачивания
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = filename;
-        
-        // Добавляем ссылку  DOM и эмуируем клик
-        document.body.appendChild(link);
-        link.click();
-        
-        // Очищаем
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(link);
-    } catch (err) {
-        console.error('Error downloading file:', err);
-        alert('Ошибка при скачивании файла');
-    }
-}
-
-// Обновляем отображение файла в посте
-function getFilePreview(file) {
-    const extension = file.split('.').pop().toLowerCase();
-    const filename = file.split('/').pop();
-    
-    // Если это изображение
-    if(['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension)) {
-        return `<img src="${file}" alt="Post image" class="post-image">`;
-    } else {
-        // Для документов показываем кнопку скачивания
-        const fileIcon = getFileIcon(extension);
-        return `
-            <div class="file-preview">
-                <i class="${fileIcon}"></i>
-                <span>${filename}</span>
-                <button class="download-button" onclick="downloadFile('${file}')">
-                    <i class="fas fa-download"></i> Скачать
-                </button>
-            </div>
-        `;
-    }
-}
-
-// Обновляем CSS для кнопки скачивания
-const style = document.createElement('style');
-style.textContent = `
-    .file-preview {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 12px;
-        background: var(--surface-color);
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        margin: 10px 0;
-    }
-
-    .download-button {
-        padding: 8px 16px;
-        background: var(--primary-color);
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-left: auto;
-    }
-
-    .download-button:hover {
-        background: var(--primary-color-dark);
-    }
-
-    .file-preview i {
-        font-size: 24px;
-        color: var(--text-secondary);
-    }
-
-    .file-preview span {
-        color: var(--text-primary);
-        font-size: 14px;
-        word-break: break-all;
-    }
-`;
-document.head.appendChild(style);
 
 async function toggleComments(postId) {
     const commentsSection = document.getElementById(`comments-${postId}`);
