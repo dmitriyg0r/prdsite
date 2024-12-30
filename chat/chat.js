@@ -961,7 +961,7 @@ function setupContextMenu() {
     const messagesArea = document.getElementById('messages');
     
     if (!contextMenu || !messagesArea) {
-        console.error('Элементы контекстно��о меню не найдены');
+        console.error('Элементы контекстного меню не найдены');
         return;
     }
 
@@ -1136,7 +1136,7 @@ document.addEventListener('visibilitychange', () => {
     }
 });
 
-// Функция проверки прокрутк�� до конца
+// Функция проверки прокрутки до конца
 function isScrolledToBottom(element) {
     if (!element) return false;
     return Math.abs(element.scrollHeight - element.scrollTop - element.clientHeight) < 1;
@@ -1146,16 +1146,22 @@ function isScrolledToBottom(element) {
 function startMessageUpdates() {
     if (messageUpdateInterval) {
         clearInterval(messageUpdateInterval);
+        messageUpdateInterval = null;
     }
     
-    // Первая загрука
-    if(currentChatPartner) loadMessages(currentChatPartner.id);
+    // Первая загрузка только если чат активен
+    if (currentChatPartner && document.visibilityState === 'visible') {
+        loadMessages(currentChatPartner.id);
+    }
     
-    // Устанавливаем интервал обновления
+    // Устанавливаем интервал с проверкой видимости
     messageUpdateInterval = setInterval(() => {
-        if (currentChatPartner && document.visibilityState === 'visible') {
-            loadMessages(currentChatPartner.id);
+        if (!currentChatPartner || document.visibilityState !== 'visible') {
+            clearInterval(messageUpdateInterval);
+            messageUpdateInterval = null;
+            return;
         }
+        loadMessages(currentChatPartner.id);
     }, 3000);
 }
 
@@ -1359,10 +1365,25 @@ async function selectChat(chat) {
             messagesContainer.innerHTML = '';
         }
 
-        // Останавливаем прдыдущие обновления
+        // Очищаем предыдущие обновления и ресурсы
         if (messageUpdateInterval) {
             clearInterval(messageUpdateInterval);
+            messageUpdateInterval = null;
         }
+
+        // Очищаем все аудио элементы
+        const audioElements = document.querySelectorAll('audio');
+        audioElements.forEach(audio => {
+            audio.pause();
+            audio.src = '';
+            audio.remove();
+        });
+
+        // Освобождаем память от URL объектов
+        const audioBlobs = document.querySelectorAll('audio[src^="blob:"]');
+        audioBlobs.forEach(audio => {
+            URL.revokeObjectURL(audio.src);
+        });
 
         currentChatPartner = chat;
         
@@ -1400,9 +1421,11 @@ async function selectChat(chat) {
             window.scrollManager.checkScroll();
         }
         
-        // Запускаем обновление сообщений с небольшой задержкой
+        // Запускаем обновление сообщений с защитой от утечек
         setTimeout(() => {
-            startMessageUpdates();
+            if (document.visibilityState === 'visible') {
+                startMessageUpdates();
+            }
         }, 500);
         
         // Помечаем сообщения как прочитанные
@@ -1691,4 +1714,36 @@ socket.on('typing_status', ({ userId, isTyping }) => {
             }
         }
     }
+});
+
+// Добавляем обработчик видимости страницы
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && currentChatPartner) {
+        startMessageUpdates();
+    } else {
+        if (messageUpdateInterval) {
+            clearInterval(messageUpdateInterval);
+            messageUpdateInterval = null;
+        }
+    }
+});
+
+// Добавляем очистку при уходе со страницы
+window.addEventListener('beforeunload', () => {
+    if (messageUpdateInterval) {
+        clearInterval(messageUpdateInterval);
+    }
+    
+    // Очищаем все аудио ресурсы
+    const audioElements = document.querySelectorAll('audio');
+    audioElements.forEach(audio => {
+        audio.pause();
+        audio.src = '';
+    });
+    
+    // Освобождаем память от URL объектов
+    const audioBlobs = document.querySelectorAll('audio[src^="blob:"]');
+    audioBlobs.forEach(audio => {
+        URL.revokeObjectURL(audio.src);
+    });
 });
