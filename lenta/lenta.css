@@ -109,8 +109,8 @@ body {
 }
 
 .create-post-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-xl);
+    transform: none;
+    box-shadow: var(--shadow-lg);
 }
 
 .post-form {
