@@ -93,14 +93,19 @@ body {
 }
 
 .create-post-card {
+    position: relative;
+    left: 118px;
+    top: 8px;
+    width: 1265px;
+    height: 210px;
+    transform: translate(-265px, 0px);
+    transition: none;
     background: var(--surface-color);
     border-radius: 24px;
     padding: 24px;
     box-shadow: var(--shadow-lg);
     border: 1px solid var(--border-light);
     margin-bottom: 24px;
-    width: 100%;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .create-post-card:hover {
@@ -115,7 +120,8 @@ body {
 }
 
 #post-content {
-    width: 100%;
+    width: 1233px;
+    height: 91px;
     min-height: 120px;
     padding: 16px;
     border: 2px solid var(--border-light);
