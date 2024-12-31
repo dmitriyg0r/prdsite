@@ -916,3 +916,98 @@ body {
 .delete-action:hover {
     color: #c82333;
 }
+
+/* Фильтры */
+.feed-filters {
+    background: var(--surface-color);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid var(--border-light);
+}
+
+.filter-buttons {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.filter-btn {
+    padding: 8px 16px;
+    border-radius: var(--radius-md);
+    border: none;
+    background: var(--background-color);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.filter-btn.active {
+    background: var(--primary-color);
+    color: white;
+}
+
+.sort-dropdown select {
+    padding: 8px 16px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-light);
+    background: var(--background-color);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+/* Рекомендации пользователей */
+.recommended-user {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+    transition: all 0.3s ease;
+}
+
+.recommended-user:hover {
+    background: var(--background-color);
+}
+
+.recommended-user-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    object-fit: cover;
+}
+
+.recommended-user-info {
+    flex: 1;
+}
+
+.recommended-user-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.recommended-user-meta {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.follow-btn {
+    padding: 6px 12px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--primary-color);
+    background: transparent;
+    color: var(--primary-color);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.follow-btn:hover {
+    background: var(--primary-color);
+    color: white;
+}

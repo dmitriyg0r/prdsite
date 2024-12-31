@@ -322,3 +322,30 @@ async function deletePost(postId) {
         alert(err.message || 'Ошибка при удалении поста');
     }
 }
+
+// Загрузка рекомендованных пользователей
+async function loadRecommendedUsers() {
+    try {
+        const response = await fetch(`https://adminflow.ru/api/users/recommended?userId=${currentUser.id}`);
+        if (!response.ok) throw new Error('Ошибка при загрузке рекомендаций');
+        
+        const data = await response.json();
+        displayRecommendedUsers(data.users);
+    } catch (err) {
+        console.error('Error loading recommended users:', err);
+    }
+}
+
+// Фильтрация постов
+document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelector('.filter-btn.active').classList.remove('active');
+        btn.classList.add('active');
+        loadFeedPosts(btn.dataset.filter);
+    });
+});
+
+// Сортировка постов
+document.getElementById('sort-posts').addEventListener('change', (e) => {
+    loadFeedPosts(undefined, e.target.value);
+});
