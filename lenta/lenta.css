@@ -94,11 +94,10 @@ body {
 
 .create-post-card {
     position: relative;
-    left: 118px;
+    left: -144px;
     top: 8px;
     width: 1265px;
     height: 210px;
-    transform: translate(-265px, 0px);
     transition: none;
     background: var(--surface-color);
     border-radius: 24px;
