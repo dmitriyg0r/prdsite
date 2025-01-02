@@ -119,10 +119,8 @@ body {
 }
 
 #post-content {
-    width: 1233px;
     height: 91px;
     min-height: 120px;
-    padding: 16px;
     border: 2px solid var(--border-light);
     border-radius: 16px;
     background: var(--background-color);
