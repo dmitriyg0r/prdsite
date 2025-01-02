@@ -713,6 +713,9 @@ body {
 }
 
 #posts-container {
+    position: relative;
+    left: 28px;
+    top: -83px;
     transform: none;
     width: 100%;
     margin: 0;
