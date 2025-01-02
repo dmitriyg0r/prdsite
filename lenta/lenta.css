@@ -755,10 +755,6 @@ body {
     transform:translatex(-3px) translatey(-3px) !important;
    }
    
-   /* Posts container */
-   #posts-container{
-    transform:translatex(126px) translatey(-3px);
-   }
 /* Мобильное меню */
 .mobile-nav {
     display: none;
