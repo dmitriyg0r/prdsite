@@ -120,7 +120,6 @@ body {
 
 #post-content {
     height: 91px;
-    min-height: 120px;
     border: 2px solid var(--border-light);
     border-radius: 16px;
     background: var(--background-color);
@@ -138,6 +137,9 @@ body {
 }
 
 .post-form-actions {
+    position: relative;
+    left: 0px;
+    top: -14px;
     display: flex;
     justify-content: space-between;
     align-items: center;
