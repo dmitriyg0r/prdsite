@@ -943,6 +943,9 @@ body {
 
 /* Фильтры */
 .feed-filters {
+    position: relative;
+    left: 146px;
+    top: -88px;
     background: var(--surface-color);
     border-radius: var(--radius-lg);
     padding: var(--spacing-md);
@@ -950,7 +953,6 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border: 1px solid var(--border-light);
 }
 
 .filter-buttons {
