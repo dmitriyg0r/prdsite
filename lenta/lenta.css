@@ -713,11 +713,12 @@ body {
 }
 
 #posts-container {
+    width: 1317px;
+    height: 3759.97px;
+    transform: translate(-170px, -15px);
     position: relative;
     left: 28px;
     top: -83px;
-    transform: none;
-    width: 100%;
     margin: 0;
 }
 
