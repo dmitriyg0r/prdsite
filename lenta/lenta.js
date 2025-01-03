@@ -31,13 +31,16 @@ function displayPosts(posts) {
     
     container.innerHTML = posts.length ? posts.map(post => {
         const mediaContent = post.image_url ? `
-            <div class="post-image-container">
-                <img src="${post.image_url}" 
-                     alt="Post image" 
-                     class="post-image" 
-                     onclick="openImageInFullscreen('${post.image_url}', ${JSON.stringify(post).replace(/"/g, '&quot;')})">
+            <div class="post-media-content">
+                <div class="post-image-container">
+                    <img src="${post.image_url}" 
+                         alt="Post image" 
+                         class="post-image" 
+                         onclick="openImageInFullscreen('${post.image_url}', ${JSON.stringify(post).replace(/"/g, '&quot;')})">
+                </div>
+                <div class="post-content">${post.content}</div>
             </div>
-        ` : '';
+        ` : `<div class="post-content">${post.content}</div>`;
 
         // Добавляем кнопку удаления для админов
         const deleteButton = currentUser.role === 'admin' ? `
@@ -62,7 +65,6 @@ function displayPosts(posts) {
                     </div>
                     ${deleteButton}
                 </div>
-                <div class="post-content">${post.content}</div>
                 ${mediaContent}
                 <div class="post-actions">
                     <button class="post-action like-action ${post.is_liked ? 'liked' : ''}" 
