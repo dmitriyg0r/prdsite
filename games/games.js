@@ -151,3 +151,36 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('Ошибка инициализации:', error);
     }
 });
+
+// Мобильные фильтры
+const mobileFiltersToggle = document.querySelector('.mobile-filters-toggle');
+const gamesSidebar = document.querySelector('.games-sidebar');
+
+if (mobileFiltersToggle && gamesSidebar) {
+    // Добавляем кнопку закрытия
+    const closeButton = document.createElement('button');
+    closeButton.className = 'mobile-filters-close';
+    closeButton.innerHTML = '<i class="fas fa-times"></i>';
+    gamesSidebar.appendChild(closeButton);
+
+    // Обработчики событий
+    mobileFiltersToggle.addEventListener('click', () => {
+        gamesSidebar.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    });
+
+    closeButton.addEventListener('click', () => {
+        gamesSidebar.classList.remove('active');
+        document.body.style.overflow = '';
+    });
+
+    // Закрытие при клике вне фильтров
+    document.addEventListener('click', (e) => {
+        if (gamesSidebar.classList.contains('active') && 
+            !gamesSidebar.contains(e.target) && 
+            !mobileFiltersToggle.contains(e.target)) {
+            gamesSidebar.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    });
+}

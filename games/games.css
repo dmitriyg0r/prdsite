@@ -349,9 +349,13 @@
     .games-layout {
         grid-template-columns: 250px 1fr;
         gap: 24px;
+        padding: 24px 16px;
     }
+    
     .games-grid {
         grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+        padding: 0;
     }
 }
 
@@ -362,29 +366,150 @@
     
     .games-sidebar {
         position: static;
+        margin-bottom: 24px;
     }
 
     .filter-card {
-        margin-bottom: var(--spacing-lg);
+        margin-bottom: 0;
+    }
+    
+    .games-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+    
+    .view-options {
+        width: 100%;
+        justify-content: flex-end;
     }
 }
 
 @media (max-width: 768px) {
     .games-layout {
-        padding: 20px 16px;
+        padding: 16px;
+        margin-bottom: 70px; /* Отступ для мобильной навигации */
     }
     
     .games-grid {
         grid-template-columns: 1fr;
     }
-
-    .game-title {
-        font-size: 14px;
+    
+    .game-card {
+        margin-bottom: 16px;
     }
 
+    .game-title {
+        font-size: 16px;
+        padding: 12px;
+    }
+    
+    .game-meta {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    .game-category {
+        font-size: 12px;
+        padding: 3px 8px;
+    }
+    
+    .game-stats {
+        font-size: 12px;
+    }
+    
     .play-btn {
-        padding: 10px 24px;
+        padding: 8px 20px;
         font-size: 14px;
+    }
+    
+    /* Улучшения для фильтров на мобильных */
+    .filter-card {
+        border-radius: 16px;
+        padding: 16px;
+    }
+    
+    .filter-header {
+        margin-bottom: 16px;
+    }
+    
+    .filter-header h3 {
+        font-size: 16px;
+    }
+    
+    .search-input {
+        padding: 10px 32px 10px 12px;
+        font-size: 14px;
+    }
+    
+    .category-item {
+        padding: 8px;
+    }
+    
+    .sort-select {
+        padding: 10px 12px;
+        font-size: 14px;
+    }
+    
+    /* Скрываем некоторые элементы на мобильных */
+    .category-item .count {
+        display: none;
+    }
+    
+    /* Мобильный вид фильтров */
+    .games-sidebar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        background: var(--background-color);
+        padding: 16px;
+        box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+        transform: translateY(100%);
+        transition: transform 0.3s ease;
+    }
+    
+    .games-sidebar.active {
+        transform: translateY(0);
+    }
+    
+    /* Кнопка открытия фильтров на мобильных */
+    .mobile-filters-toggle {
+        position: fixed;
+        bottom: 80px; /* Выше мобильной навигации */
+        right: 16px;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: var(--primary-color);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        z-index: 1001;
+        cursor: pointer;
+    }
+}
+
+/* Добавляем стили для мобильной кнопки закрытия фильтров */
+.mobile-filters-close {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .mobile-filters-close {
+        display: block;
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        background: none;
+        border: none;
+        color: var(--text-primary);
+        font-size: 20px;
+        cursor: pointer;
     }
 }
 
