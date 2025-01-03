@@ -257,7 +257,12 @@ body {
 }
 
 .post-content {
-    flex: 1;
+    width: 933px;
+    position: relative;
+    left: 314px;
+    top: -302px;
+    height: 288.188px;
+    transition: none;
     margin: 0;
     font-size: 1rem;
     line-height: 1.7;
