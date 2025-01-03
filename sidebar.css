@@ -252,22 +252,90 @@
     width: 46px;
 }
 
+/* Мобильное меню */
+.mobile-nav {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    background: var(--surface-color);
+    border-top: 1px solid var(--border-light);
+    z-index: 1000;
+    padding: 0;
+}
+
+.mobile-nav ul {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.mobile-nav ul li {
+    flex: 1;
+}
+
+.mobile-nav ul li a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    padding: 8px 0;
+    transition: all 0.3s ease;
+}
+
+.mobile-nav ul li a i {
+    font-size: 1.4rem;
+    margin-bottom: 4px;
+}
+
+.mobile-nav ul li a.active {
+    color: var(--primary-color);
+}
+
+.mobile-nav ul li a:hover {
+    color: var(--primary-color);
+}
+
 /* Медиа-запрос для мобильных устройств */
 @media screen and (max-width: 768px) {
     .sidebar {
-        display: none;
+        display: none; /* Скрываем боковое меню */
     }
     
     .sidebar-toggle {
-        display: none;
+        display: none; /* Скрываем кнопку переключения */
     }
     
-    /* Добавляем отступ слева для основного контента */
+    .mobile-nav {
+        display: block; /* Показываем мобильное меню */
+    }
+    
+    /* Добавляем отступ для основного контента */
     main, 
     .chat-container,
     .lenta-layout,
     .games-layout {
         margin-left: 0 !important;
         width: 100% !important;
+        padding-bottom: 60px !important; /* Отступ для мобильного меню */
+    }
+}
+
+/* Медиа-запрос для десктопов */
+@media screen and (min-width: 769px) {
+    .mobile-nav {
+        display: none; /* Скрываем мобильное меню */
+    }
+    
+    .sidebar {
+        display: flex; /* Показываем боковое меню */
     }
 }
