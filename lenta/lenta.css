@@ -97,8 +97,8 @@ body {
     left: -144px;
     top: 8px;
     width: 1265px;
-    height: 210px;
-    transition: none;
+    min-height: 210px;
+    transition: all 0.3s ease;
     background: var(--surface-color);
     border-radius: 24px;
     padding: 24px;
@@ -349,23 +349,25 @@ body {
     margin-top: 12px;
     border-radius: 16px;
     overflow: hidden;
-    max-width: 300px;
+    max-width: 100%;
+    width: 100%;
 }
 
 .image-preview-container img {
     width: 100%;
-    height: auto;
+    max-height: 400px;
+    object-fit: contain;
     border-radius: 16px;
 }
 
 .remove-image-btn {
     position: absolute;
-    top: 8px;
-    right: 8px;
-    width: 32px;
-    height: 32px;
+    top: 12px;
+    right: 12px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(0, 0, 0, 0.7);
     color: white;
     border: none;
     cursor: pointer;
@@ -373,10 +375,11 @@ body {
     align-items: center;
     justify-content: center;
     transition: all 0.3s ease;
+    z-index: 2;
 }
 
 .remove-image-btn:hover {
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.9);
     transform: scale(1.1);
 }
 
