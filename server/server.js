@@ -2539,7 +2539,7 @@ app.get('/api/users-list', async (req, res) => {
         const result = await pool.query(`
             SELECT id, username, avatar_url
             FROM users
-            ORDER BY created_at DESC
+            ORDER BY RANDOM()
             LIMIT 20
         `);
         

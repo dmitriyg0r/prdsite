@@ -7,8 +7,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
     
-    // Загрузка постов
-    await loadFeedPosts();
+    // Загрузка постов и пользователей
+    await Promise.all([
+        loadFeedPosts(),
+        loadRandomUsers()
+    ]);
 });
 
 async function loadFeedPosts() {
@@ -351,3 +354,45 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
 document.getElementById('sort-posts').addEventListener('change', (e) => {
     loadFeedPosts(undefined, e.target.value);
 });
+
+// Функция загрузки случайных пользователей
+async function loadRandomUsers() {
+    try {
+        const response = await fetch('https://adminflow.ru/api/users-list');
+        if (!response.ok) {
+            throw new Error('Ошибка при загрузке пользователей');
+        }
+        
+        const data = await response.json();
+        if (data.success) {
+            displayRandomUsers(data.users);
+        }
+    } catch (err) {
+        console.error('Error loading random users:', err);
+    }
+}
+
+// Функция отображения случайных пользователей
+function displayRandomUsers(users) {
+    const container = document.getElementById('recommended-users');
+    if (!container) return;
+
+    // Перемешиваем массив пользователей
+    const shuffledUsers = users
+        .filter(user => user.id !== currentUser.id) // Исключаем текущего пользователя
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 10); // Берем только 10 пользователей
+
+    container.innerHTML = `
+        <div class="users-list">
+            ${shuffledUsers.map(user => `
+                <a href="/profile/profile.html?id=${user.id}" class="user-item">
+                    <img src="${user.avatar_url || '/uploads/avatars/default.png'}" 
+                         alt="${user.username}" 
+                         class="user-avatar">
+                    <span class="user-name">${user.username}</span>
+                </a>
+            `).join('')}
+        </div>
+    `;
+}
