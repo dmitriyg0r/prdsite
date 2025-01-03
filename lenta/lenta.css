@@ -81,12 +81,11 @@ body {
     gap: 24px;
     position: relative;
     transform: none;
-    padding-right: 20px;
 }
 
 .feed-container {
-    max-width: 680px;
-    margin: 0;
+    max-width: 100%;
+    margin: 0 auto;
     width: 100%;
     position: relative;
     transform: none;
@@ -94,17 +93,15 @@ body {
 
 .create-post-card {
     position: relative;
-    left: -144px;
-    top: 8px;
-    width: 1265px;
-    height: 210px;
-    transition: none;
+    width: 100%;
+    height: auto;
     background: var(--surface-color);
     border-radius: 24px;
     padding: 24px;
     box-shadow: var(--shadow-lg);
     border: 1px solid var(--border-light);
     margin-bottom: 24px;
+    transform: none;
 }
 
 .create-post-card:hover {
@@ -732,13 +729,11 @@ body {
 }
 
 #posts-container {
-    width: 1317px;
-    height: 3759.97px;
-    transform: translate(-170px, -15px);
+    width: 100%;
+    height: auto;
     position: relative;
-    left: 28px;
-    top: -83px;
     margin: 0;
+    transform: none;
 }
 
 .users-sidebar {
