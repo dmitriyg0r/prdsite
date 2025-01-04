@@ -7,8 +7,8 @@
     <link rel="icon" type="image/x-icon" href="../flow.ico">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&family=Montserrat:wght@300&display=swap">
     <link rel="stylesheet" href="../style.css">
-    <link rel="stylesheet" href="about.css">
     <link rel="stylesheet" href="../sidebar.css">
+    <link rel="stylesheet" href="minecraft.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="../mobile.css">
 </head>
@@ -34,11 +34,11 @@
                 <i class="fas fa-gamepad"></i>
                 <span>Игры</span>
             </a>
-            <a href="../about/about.html" class="sidebar-link active">
+            <a href="../about/about.html" class="sidebar-link">
                 <i class="fas fa-info-circle"></i>
                 <span>О нас</span>
             </a>
-            <a href="../minecraft/minecraft.html" class="sidebar-link active"></a>
+            <a href="../minecraft/minecraft.html" class="sidebar-link active">
                 <i class="fab fa-laravel"></i>
                 <span>Minecraft</span>
             </a>
@@ -58,50 +58,39 @@
 
     <!-- Основной контент -->
     <main>
-        <section id="about-us">
-            <h1 class="company-name">Команда Dreamteam</h1>
-            <div class="content-wrapper">
-                <div class="text-content">
-                    <div class="developers-phrase">
-                        <p>Мы — маленькая команда разработчиков</p>
-                    </div>
-                    <div class="additional-phrase">
-                        <a href="../sogl.html">Пользовательское соглашение</a>
-                    </div>
-                    <div class="help-phrase">
-                        <p>Если у вас есть вопросы или предложения, не стесняйтесь связаться с нами через форму обратной связи или по электронной почте.</p>
+        <div class="minecraft-container">
+            <h1>Подключение к серверу Minecraft</h1>
+            <div class="server-status">
+                <h2>Статус сервера: <span id="server-status">Проверка...</span></h2>
+                <p>Игроков онлайн: <span id="players-online">0</span>/<span id="players-max">0</span></p>
+            </div>
+            <div class="server-info">
+                <div class="server-address">
+                    <h3>IP адрес сервера:</h3>
+                    <div class="copy-container">
+                        <input type="text" id="server-ip" value="188.127.241.209:25971" readonly>
+                        <button id="copy-button" class="copy-btn">
+                            <i class="fas fa-copy"></i>
+                        </button>
                     </div>
                 </div>
+                <div class="connection-steps">
+                    <h3>Как подключиться:</h3>
+                    <ol>
+                        <li>Запустите Minecraft Java Edition</li>
+                        <li>Нажмите "Сетевая игра"</li>
+                        <li>Нажмите "Добавить сервер"</li>
+                        <li>Вставьте IP адрес сервера</li>
+                        <li>Нажмите "Готово" и подключитесь!</li>
+                    </ol>
+                </div>
             </div>
-            <div class="contact-button-container">
-                <a href="mailto:adminflow@adminflow.ru" class="contact-button">
-                    <i class="fas fa-envelope"></i>
-                    Написать нам
-                </a>
-            </div>
-        </section>
+        </div>
     </main>
 
     <!-- Скрипты -->
     <script src="../main.js"></script>
     <script src="../sidebar.js"></script>
-    
-    <!-- Мобильное меню -->
-    <nav class="mobile-nav">
-        <ul>
-            <li>
-                <a href="../downloads/downloads.html">
-                    <i class="fas fa-download"></i>
-                    <span>Загрузки</span>
-                </a>
-            </li>
-            <li>
-                <a href="../Profile/profile.html">
-                    <i class="fas fa-user"></i>
-                    <span>Профиль</span>
-                </a>
-            </li>
-        </ul>
-    </nav>
+    <script src="minecraft.js"></script>
 </body>
 </html>

@@ -1,0 +1,85 @@
+.minecraft-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: var(--background-secondary);
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.minecraft-container h1 {
+    text-align: center;
+    color: var(--text-primary);
+    margin-bottom: 2rem;
+}
+
+.server-status {
+    background-color: var(--background-primary);
+    padding: 1rem;
+    border-radius: 5px;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.server-info {
+    display: grid;
+    gap: 2rem;
+    grid-template-columns: 1fr;
+}
+
+.server-address {
+    background-color: var(--background-primary);
+    padding: 1rem;
+    border-radius: 5px;
+}
+
+.copy-container {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+#server-ip {
+    flex: 1;
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    background-color: var(--background-secondary);
+    color: var(--text-primary);
+}
+
+.copy-btn {
+    padding: 0.5rem 1rem;
+    background-color: var(--accent-color);
+    border: none;
+    border-radius: 5px;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.copy-btn:hover {
+    background-color: var(--accent-color-hover);
+}
+
+.connection-steps {
+    background-color: var(--background-primary);
+    padding: 1rem;
+    border-radius: 5px;
+}
+
+.connection-steps ol {
+    margin-top: 1rem;
+    padding-left: 1.5rem;
+}
+
+.connection-steps li {
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+@media (min-width: 768px) {
+    .server-info {
+        grid-template-columns: 1fr 1fr;
+    }
+}
