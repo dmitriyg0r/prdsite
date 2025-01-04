@@ -7,15 +7,20 @@ document.addEventListener('DOMContentLoaded', function() {
     
     async function checkServerStatus() {
         try {
-            // Обновляем путь к PHP-эндпоинту
-            const response = await fetch(`/api/minecraft/status/?ip=${serverIP}&port=${serverPort}`);
+            const response = await fetch(`https://api.mcsrvstat.us/2/${serverIP}:${serverPort}`);
             
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
             
             const data = await response.json();
-            updateServerStatus(data);
+            updateServerStatus({
+                online: data.online || false,
+                players: {
+                    online: data.players?.online || 0,
+                    max: data.players?.max || 0
+                }
+            });
         } catch (error) {
             console.warn('Ошибка при проверке статуса сервера:', error);
             updateServerStatus({ online: false });
