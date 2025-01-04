@@ -83,3 +83,12 @@
         grid-template-columns: 1fr 1fr;
     }
 }
+
+.loading-spinner {
+    margin-right: 0.5rem;
+    display: inline-block;
+}
+
+#server-status.loaded .loading-spinner {
+    display: none;
+}

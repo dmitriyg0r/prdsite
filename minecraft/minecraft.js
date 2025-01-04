@@ -8,24 +8,54 @@ document.addEventListener('DOMContentLoaded', function() {
     // Функция для проверки статуса сервера
     async function checkServerStatus() {
         try {
-            const response = await fetch(`https://api.mcsrvstat.us/2/${serverIP}:${serverPort}`);
+            // Пробуем сначала через прокси-сервис для обхода CORS
+            const proxyUrl = `https://cors-anywhere.herokuapp.com/https://api.mcsrvstat.us/2/${serverIP}:${serverPort}`;
+            const response = await fetch(proxyUrl, {
+                headers: {
+                    'Origin': window.location.origin
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            
             const data = await response.json();
             
-            if (data.online) {
-                statusElement.textContent = 'Онлайн';
-                statusElement.style.color = '#4CAF50';
-                playersOnlineElement.textContent = data.players?.online || 0;
-                playersMaxElement.textContent = data.players?.max || 0;
-            } else {
-                statusElement.textContent = 'Оффлайн';
-                statusElement.style.color = '#f44336';
-                playersOnlineElement.textContent = '0';
-                playersMaxElement.textContent = '0';
-            }
+            updateServerStatus(data);
         } catch (error) {
-            statusElement.textContent = 'Ошибка проверки';
+            console.warn('Ошибка при проверке через API:', error);
+            // Fallback: устанавливаем базовую проверку через WebSocket
+            try {
+                const ws = new WebSocket(`ws://${serverIP}:${serverPort}`);
+                
+                ws.onopen = () => {
+                    updateServerStatus({ online: true, players: { online: '?', max: '?' }});
+                    ws.close();
+                };
+                
+                ws.onerror = () => {
+                    updateServerStatus({ online: false });
+                };
+            } catch (wsError) {
+                console.error('Ошибка при WebSocket проверке:', wsError);
+                updateServerStatus({ online: false });
+            }
+        }
+    }
+
+    // Выносим обновление статуса в отдельную функцию
+    function updateServerStatus(data) {
+        if (data.online) {
+            statusElement.textContent = 'Онлайн';
+            statusElement.style.color = '#4CAF50';
+            playersOnlineElement.textContent = data.players?.online || '?';
+            playersMaxElement.textContent = data.players?.max || '?';
+        } else {
+            statusElement.textContent = 'Оффлайн';
             statusElement.style.color = '#f44336';
-            console.error('Ошибка при проверке статуса сервера:', error);
+            playersOnlineElement.textContent = '0';
+            playersMaxElement.textContent = '0';
         }
     }
 
