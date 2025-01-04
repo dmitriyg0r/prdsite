@@ -7,8 +7,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     async function checkServerStatus() {
         try {
-            // Используем собственный бэкенд-прокси для проверки статуса
-            const response = await fetch(`/api/minecraft/status?ip=${serverIP}&port=${serverPort}`);
+            // Обновляем путь к PHP-эндпоинту
+            const response = await fetch(`/api/minecraft/status/?ip=${serverIP}&port=${serverPort}`);
             
             if (!response.ok) {
                 throw new Error('Network response was not ok');
