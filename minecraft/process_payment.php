@@ -4,32 +4,42 @@ require_once 'config.php';
 header('Content-Type: application/json');
 
 try {
-    $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+    // Подключение к PostgreSQL
+    $conn = pg_connect("host=".DB_HOST." port=3306 dbname=".DB_NAME." user=".DB_USER." password=".DB_PASS);
     
-    if ($conn->connect_error) {
-        throw new Exception("Ошибка подключения к БД: " . $conn->connect_error);
+    if (!$conn) {
+        throw new Exception("Ошибка подключения к БД: " . pg_last_error());
     }
 
     // Получаем данные из POST запроса
     $data = json_decode(file_get_contents('php://input'), true);
-    $minecraft_login = $conn->real_escape_string($data['minecraft_login']);
+    
+    // Подготовка данных с использованием параметризованного запроса
+    $minecraft_login = $data['minecraft_login'];
     $user_ip = $_SERVER['REMOTE_ADDR'];
-    $payment_status = $conn->real_escape_string($data['payment_status']);
+    $payment_status = $data['payment_status'];
 
-    // Добавляем запись в БД
-    $sql = "INSERT INTO minecraft_users (minecraft_login, ip_address, payment_status, created_at) 
-            VALUES ('$minecraft_login', '$user_ip', '$payment_status', NOW())";
+    // Добавляем запись в БД используя подготовленный запрос
+    $query = "INSERT INTO minecraft_users (minecraft_login, ip_address, payment_status, created_at) 
+              VALUES ($1, $2, $3, NOW())";
+              
+    $result = pg_query_params($conn, $query, array(
+        $minecraft_login,
+        $user_ip,
+        $payment_status
+    ));
 
-    if ($conn->query($sql) === TRUE) {
+    if ($result) {
         echo json_encode(['success' => true]);
     } else {
-        throw new Exception("Ошибка записи в БД: " . $conn->error);
+        throw new Exception("Ошибка записи в БД: " . pg_last_error());
     }
 
-    $conn->close();
+    pg_close($conn);
 
 } catch (Exception $e) {
     http_response_code(500);
+    error_log($e->getMessage()); // Логируем ошибку на сервере
     echo json_encode(['success' => false, 'error' => $e->getMessage()]);
 }
 ?> 
