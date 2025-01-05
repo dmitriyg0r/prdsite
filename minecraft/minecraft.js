@@ -63,3 +63,34 @@ document.addEventListener('DOMContentLoaded', function() {
     // Обновляем статус каждые 60 секунд
     setInterval(checkServerStatus, 60000);
 });
+
+document.getElementById('payment-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const minecraftLogin = document.getElementById('minecraft-login').value;
+    
+    try {
+        // Здесь должна быть интеграция с вашей платёжной системой
+        // После успешной оплаты:
+        const response = await fetch('process_payment.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                minecraft_login: minecraftLogin,
+                payment_status: 'completed'
+            })
+        });
+
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('Оплата прошла успешно! Доступ к серверу открыт.');
+        } else {
+            throw new Error(result.error || 'Произошла ошибка при обработке платежа');
+        }
+    } catch (error) {
+        alert('Ошибка: ' + error.message);
+    }
+});
