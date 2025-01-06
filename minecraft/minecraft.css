@@ -140,7 +140,7 @@
 
 .container-wrapper {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
     gap: 2rem;
     max-width: 1600px;
     margin: 2rem auto;
@@ -148,12 +148,15 @@
 }
 
 .preview-container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 2rem;
-    background-color: var(--background-secondary);
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    order: 1;
+    max-width: 100%;
+    margin: 0;
+}
+
+.minecraft-container {
+    order: 2;
+    max-width: 100%;
+    margin: 0;
 }
 
 .preview-gallery {
@@ -250,4 +253,17 @@
 
 .copy-btn:hover i {
     transform: scale(1.2);
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 1200px) {
+    .container-wrapper {
+        grid-template-columns: 1fr;
+    }
+    
+    .preview-container,
+    .minecraft-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
 }
