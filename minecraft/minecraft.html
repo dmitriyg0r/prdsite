@@ -58,42 +58,76 @@
 
     <!-- Основной контент -->
     <main>
-        <div class="minecraft-container">
-            <h1>Подключение к серверу Minecraft</h1>
-            <div class="server-status">
-                <h2>Статус сервера: <span id="server-status">
-                    <span class="loading-spinner"><i class="fas fa-spinner fa-spin"></i></span>
-                    Проверка...
-                </span></h2>
-                <p>Игроков онлайн: <span id="players-online">0</span>/<span id="players-max">0</span></p>
-            </div>
-            <div class="server-info">
-                <div class="server-address">
-                    <h3>IP адрес сервера:</h3>
-                    <div class="copy-container">
-                        <input type="text" id="server-ip" value="188.127.241.209:25971" readonly>
-                        <button id="copy-button" class="copy-btn">
-                            <i class="fas fa-copy"></i>
-                        </button>
+        <div class="container-wrapper">
+            <div class="minecraft-container">
+                <h1>Подключение к серверу Minecraft</h1>
+                <div class="server-status">
+                    <h2>Статус сервера: <span id="server-status">
+                        <span class="loading-spinner"><i class="fas fa-spinner fa-spin"></i></span>
+                        Проверка...
+                    </span></h2>
+                    <p>Игроков онлайн: <span id="players-online">0</span>/<span id="players-max">0</span></p>
+                </div>
+                <div class="server-info">
+                    <div class="server-address">
+                        <h3>IP адрес сервера:</h3>
+                        <div class="copy-container">
+                            <input type="text" id="server-ip" value="188.127.241.209:25971" readonly>
+                            <button id="copy-button" class="copy-btn">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="connection-steps">
+                        <h3>Как подключиться:</h3>
+                        <ol>
+                            <li>Запустите Minecraft Java Edition</li>
+                            <li>Нажмите "Сетевая игра"</li>
+                            <li>Нажмите "Добавить сервер"</li>
+                            <li>Вставьте IP адрес сервера</li>
+                            <li>Нажмите "Готово" и подключитесь!</li>
+                        </ol>
                     </div>
                 </div>
-                <div class="connection-steps">
-                    <h3>Как подключиться:</h3>
-                    <ol>
-                        <li>Запустите Minecraft Java Edition</li>
-                        <li>Нажмите "Сетевая игра"</li>
-                        <li>Нажмите "Добавить сервер"</li>
-                        <li>Вставьте IP адрес сервера</li>
-                        <li>Нажмите "Готово" и подключитесь!</li>
-                    </ol>
+                <div class="payment-section">
+                    <h3>Получить доступ к серверу</h3>
+                    <form id="payment-form" class="payment-form">
+                        <input type="text" id="minecraft-login" placeholder="Ваш логин Minecraft" required>
+                        <button type="submit" class="payment-btn">Оплатить доступ</button>
+                    </form>
                 </div>
             </div>
-            <div class="payment-section">
-                <h3>Получить доступ к серверу</h3>
-                <form id="payment-form" class="payment-form">
-                    <input type="text" id="minecraft-login" placeholder="Ваш логин Minecraft" required>
-                    <button type="submit" class="payment-btn">Оплатить доступ</button>
-                </form>
+            
+            <div class="preview-container">
+                <h2>Наш сервер Minecraft</h2>
+                <div class="preview-gallery">
+                    <img src="images/preview1.jpg" alt="Превью сервера 1" class="preview-image">
+                    <img src="images/preview2.jpg" alt="Превью сервера 2" class="preview-image">
+                    <img src="images/preview3.jpg" alt="Превью сервера 3" class="preview-image">
+                </div>
+                
+                <div class="pricing-section">
+                    <h3>Тарифы доступа</h3>
+                    <div class="pricing-cards">
+                        <div class="pricing-card">
+                            <h4>Месяц</h4>
+                            <p class="price">50₽</p>
+                            <ul>
+                                <li>Полный доступ к серверу</li>
+                                <li>Базовый набор предметов</li>
+                            </ul>
+                        </div>
+                        <div class="pricing-card">
+                            <h4>3 месяца</h4>
+                            <p class="price">699₽</p>
+                            <ul>
+                                <li>Полный доступ к серверу</li>
+                                <li>Расширенный набор предметов</li>
+                                <li>VIP статус</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </main>
