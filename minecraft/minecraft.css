@@ -150,7 +150,6 @@
 
 /* Также добавим стили для поля ввода логина */
 #minecraft-login {
-    width: 100%;
     padding: 1rem;
     font-size: 1rem;
     border: 2px solid #e0e0e0;
