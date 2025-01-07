@@ -6,24 +6,28 @@ document.addEventListener('DOMContentLoaded', function() {
     
     async function checkServerStatus() {
         try {
+            // Показываем индикатор загрузки
+            statusElement.innerHTML = `
+                <span class="loading-spinner"><i class="fas fa-spinner fa-spin"></i></span>
+                Проверка...
+            `;
+
             const response = await fetch(`https://api.mcsrvstat.us/2/${serverIP}`);
-            
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            
             const data = await response.json();
-            
-            statusElement.innerHTML = data.online ? 
-                'Онлайн' : 
-                'Оффлайн';
-            
-            statusElement.style.color = data.online ? '#4CAF50' : '#f44336';
-            playersOnlineElement.textContent = data.players?.online || '0';
-            playersMaxElement.textContent = data.players?.max || '0';
-            
+
+            if (data.online) {
+                statusElement.innerHTML = 'Онлайн';
+                statusElement.style.color = '#4CAF50';
+                playersOnlineElement.textContent = data.players?.online || '0';
+                playersMaxElement.textContent = data.players?.max || '0';
+            } else {
+                statusElement.innerHTML = 'Оффлайн';
+                statusElement.style.color = '#f44336';
+                playersOnlineElement.textContent = '0';
+                playersMaxElement.textContent = '0';
+            }
         } catch (error) {
-            console.warn('Ошибка при проверке статуса сервера:', error);
+            console.error('Ошибка при проверке статуса сервера:', error);
             statusElement.innerHTML = 'Оффлайн';
             statusElement.style.color = '#f44336';
             playersOnlineElement.textContent = '0';
@@ -49,8 +53,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Проверяем статус сервера при загрузке страницы
     checkServerStatus();
     
-    // Обновляем статус каждые 60 секунд
-    setInterval(checkServerStatus, 60000);
+    // Обновляем статус каждые 30 секунд
+    setInterval(checkServerStatus, 30000);
 });
 
 function showLoadingIndicator() {
