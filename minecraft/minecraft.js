@@ -82,13 +82,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Инициализация при загрузке страницы
-    document.addEventListener('DOMContentLoaded', () => {
-        setupCopyButtons();
-        checkServerStatus();
-        // Обновляем статус каждые 30 секунд
-        setInterval(checkServerStatus, 30000);
-    });
+    // Инициализация
+    console.log('🚀 Инициализация скрипта...');
+    setupCopyButtons();
+    checkServerStatus();
+    // Обновляем статус каждые 30 секунд
+    setInterval(checkServerStatus, 30000);
 });
 
 function showLoadingIndicator() {
