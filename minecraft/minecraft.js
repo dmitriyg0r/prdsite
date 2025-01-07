@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             console.log('🔄 Начинаем проверку статуса сервера...');
             
-            const apiUrl = `https://api.mcstatus.io/v2/status/java/${serverIP}:${serverPort}`;
+            const apiUrl = `https://api.minetools.eu/ping/${serverIP}/${serverPort}`;
             console.log(`📡 Запрос к API: ${apiUrl}`);
 
             statusElement.innerHTML = `
