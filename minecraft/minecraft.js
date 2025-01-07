@@ -4,6 +4,34 @@ document.addEventListener('DOMContentLoaded', function() {
     const playersOnlineElement = document.getElementById('players-online');
     const playersMaxElement = document.getElementById('players-max');
     
+    // Функция копирования IP адреса
+    function setupCopyButtons() {
+        const copyButton1 = document.getElementById('copy-button-1');
+        const copyButton2 = document.getElementById('copy-button-2');
+        
+        if (copyButton1) {
+            copyButton1.addEventListener('click', () => {
+                const ip = document.getElementById('server-ip-1').value;
+                navigator.clipboard.writeText(ip);
+                copyButton1.innerHTML = '<i class="fas fa-check"></i>';
+                setTimeout(() => {
+                    copyButton1.innerHTML = '<i class="fas fa-copy"></i>';
+                }, 2000);
+            });
+        }
+
+        if (copyButton2) {
+            copyButton2.addEventListener('click', () => {
+                const ip = document.getElementById('server-ip-2').value;
+                navigator.clipboard.writeText(ip);
+                copyButton2.innerHTML = '<i class="fas fa-check"></i>';
+                setTimeout(() => {
+                    copyButton2.innerHTML = '<i class="fas fa-copy"></i>';
+                }, 2000);
+            });
+        }
+    }
+
     async function checkServerStatus() {
         try {
             // Показываем индикатор загрузки
@@ -35,26 +63,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Копирование IP адреса
-    const copyButton = document.getElementById('copy-button');
-    const serverIpInput = document.getElementById('server-ip');
-
-    copyButton.addEventListener('click', function() {
-        serverIpInput.select();
-        document.execCommand('copy');
-        
-        // Визуальная обратная связь
-        copyButton.innerHTML = '<i class="fas fa-check"></i>';
-        setTimeout(() => {
-            copyButton.innerHTML = '<i class="fas fa-copy"></i>';
-        }, 2000);
+    // Инициализация при загрузке страницы
+    document.addEventListener('DOMContentLoaded', () => {
+        setupCopyButtons();
+        checkServerStatus();
+        // Обновляем статус каждые 30 секунд
+        setInterval(checkServerStatus, 30000);
     });
-
-    // Проверяем статус сервера при загрузке страницы
-    checkServerStatus();
-    
-    // Обновляем статус каждые 30 секунд
-    setInterval(checkServerStatus, 30000);
 });
 
 function showLoadingIndicator() {
