@@ -1,41 +1,30 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const serverIP = '188.127.241.209';
-    const serverPort = '25971';
+    const serverIP = 'spacepoint.aboba.host';
     const statusElement = document.getElementById('server-status');
     const playersOnlineElement = document.getElementById('players-online');
     const playersMaxElement = document.getElementById('players-max');
     
     async function checkServerStatus() {
         try {
-            const response = await fetch(`https://api.mcsrvstat.us/2/${serverIP}:${serverPort}`);
+            const response = await fetch(`https://api.mcsrvstat.us/2/${serverIP}`);
             
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
             
             const data = await response.json();
-            updateServerStatus({
-                online: data.online || false,
-                players: {
-                    online: data.players?.online || 0,
-                    max: data.players?.max || 0
-                }
-            });
+            
+            statusElement.innerHTML = data.online ? 
+                'Онлайн' : 
+                'Оффлайн';
+            
+            statusElement.style.color = data.online ? '#4CAF50' : '#f44336';
+            playersOnlineElement.textContent = data.players?.online || '0';
+            playersMaxElement.textContent = data.players?.max || '0';
+            
         } catch (error) {
             console.warn('Ошибка при проверке статуса сервера:', error);
-            updateServerStatus({ online: false });
-        }
-    }
-
-    function updateServerStatus(data) {
-        statusElement.classList.add('loaded');
-        if (data.online) {
-            statusElement.textContent = 'Онлайн';
-            statusElement.style.color = '#4CAF50';
-            playersOnlineElement.textContent = data.players?.online || '?';
-            playersMaxElement.textContent = data.players?.max || '?';
-        } else {
-            statusElement.textContent = 'Оффлайн';
+            statusElement.innerHTML = 'Оффлайн';
             statusElement.style.color = '#f44336';
             playersOnlineElement.textContent = '0';
             playersMaxElement.textContent = '0';
