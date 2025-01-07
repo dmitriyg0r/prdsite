@@ -299,3 +299,18 @@
         margin: 0 auto;
     }
 }
+
+.copy-container input[type="text"] {
+    flex: 1;
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    background-color: var(--background-primary);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .copy-container input[type="text"] {
+    background-color: var(--background-secondary);
+    border-color: var(--accent-color);
+    color: var(--text-primary);
+}
