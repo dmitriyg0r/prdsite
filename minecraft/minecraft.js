@@ -42,11 +42,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 Проверка...
             `;
 
-            // Используем наш собственный прокси
             const response = await fetch('check_status.php');
             const data = await response.json();
             
             console.log('📋 Данные сервера:', data);
+            
+            // Выводим отладочную информацию
+            if (data.debug) {
+                console.log('🔍 Отладочная информация:');
+                data.debug.forEach(msg => console.log(`  ${msg}`));
+            }
 
             if (data.online) {
                 console.log('✅ Сервер онлайн');
@@ -56,6 +61,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 playersMaxElement.textContent = data.players?.max || '0';
             } else {
                 console.log('❌ Сервер оффлайн');
+                if (data.error) {
+                    console.error('Причина:', data.error);
+                }
                 statusElement.innerHTML = 'Оффлайн';
                 statusElement.style.color = '#f44336';
                 playersOnlineElement.textContent = '0';
