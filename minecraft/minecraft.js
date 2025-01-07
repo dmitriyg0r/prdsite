@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     const serverIP = 'spacepoint.aboba.host';
+    const serverPort = 25735;
     const statusElement = document.getElementById('server-status');
     const playersOnlineElement = document.getElementById('players-online');
     const playersMaxElement = document.getElementById('players-max');
@@ -35,15 +36,27 @@ document.addEventListener('DOMContentLoaded', function() {
     async function checkServerStatus() {
         try {
             console.log('🔄 Начинаем проверку статуса сервера...');
-            console.log(`📡 Запрос к API: https://api.mcsrvstat.us/2/${serverIP}`);
+            
+            const apiUrl = `https://api.mcstatus.io/v2/status/java/${serverIP}:${serverPort}`;
+            console.log(`📡 Запрос к API: ${apiUrl}`);
 
             statusElement.innerHTML = `
                 <span class="loading-spinner"><i class="fas fa-spinner fa-spin"></i></span>
                 Проверка...
             `;
 
-            const response = await fetch(`https://api.mcsrvstat.us/2/${serverIP}`);
+            const response = await fetch(apiUrl, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+            
             console.log('📥 Получен ответ от API:', response.status, response.statusText);
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
 
             const data = await response.json();
             console.log('📋 Данные сервера:', data);
