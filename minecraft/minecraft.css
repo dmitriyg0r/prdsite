@@ -16,12 +16,36 @@
 }
 
 .server-status {
+    position: relative;
+    overflow: hidden;
     background: linear-gradient(135deg, var(--background-primary), var(--background-secondary));
     padding: 1.5rem;
     border-radius: 15px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
     margin-bottom: 2rem;
     text-align: center;
+}
+
+.server-status::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        45deg,
+        transparent,
+        rgba(255, 255, 255, 0.1),
+        transparent
+    );
+    transform: rotate(45deg);
+    animation: shine 3s infinite;
+}
+
+@keyframes shine {
+    0% { transform: translateX(-100%) rotate(45deg); }
+    100% { transform: translateX(100%) rotate(45deg); }
 }
 
 .server-info {
@@ -111,20 +135,23 @@
 }
 
 .payment-form input {
-    padding: 1rem;
-    font-size: 1rem;
+    position: relative;
+    background: var(--background-primary);
     border: 2px solid var(--border-color);
-    border-radius: 8px;
-    transition: border-color 0.3s, box-shadow 0.3s;
+    padding: 1.2rem;
+    font-size: 1rem;
+    border-radius: 12px;
+    transition: all 0.3s ease;
 }
 
 .payment-form input:focus {
     border-color: var(--accent-color);
-    box-shadow: 0 0 0 3px rgba(var(--accent-color-rgb), 0.2);
-    outline: none;
+    box-shadow: 0 0 0 4px rgba(var(--accent-color-rgb), 0.1);
 }
 
 .payment-btn {
+    position: relative;
+    overflow: hidden;
     width: 100%;
     padding: 1rem 2rem;
     font-size: 1.1rem;
@@ -148,6 +175,27 @@
 .payment-btn:active {
     transform: translateY(1px);
     box-shadow: 0 2px 10px rgba(46, 204, 113, 0.2);
+}
+
+.payment-btn::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        45deg,
+        transparent,
+        rgba(255, 255, 255, 0.1),
+        transparent
+    );
+    transform: translateX(-100%);
+}
+
+.payment-btn:hover::after {
+    transform: translateX(100%);
+    transition: transform 0.6s ease;
 }
 
 /* Также добавим стили для поля ввода логина */
@@ -189,17 +237,19 @@
 
 .preview-gallery {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
     margin: 2rem 0;
 }
 
 .preview-image {
-    width: 100%;
-    height: 450px;
-    object-fit: cover;
-    border-radius: 20px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.preview-image:hover {
+    transform: scale(1.05);
 }
 
 .pricing-section {
@@ -214,9 +264,31 @@
 }
 
 .pricing-card {
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 2px solid transparent;
     padding: 2.5rem;
     border-radius: 20px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.pricing-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+    border-color: var(--accent-color);
+}
+
+.pricing-card.featured::before {
+    content: "Популярный";
+    position: absolute;
+    top: 1rem;
+    right: -2rem;
+    background: var(--accent-color);
+    color: white;
+    padding: 0.5rem 3rem;
+    transform: rotate(45deg);
+    font-size: 0.8rem;
 }
 
 .pricing-card h4 {
@@ -323,4 +395,26 @@
     background-color: var(--background-secondary);
     border-color: var(--accent-color);
     color: var(--text-primary);
+}
+
+/* Добавляем модальное окно для просмотра изображений */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 1000;
+}
+
+.modal-content {
+    max-width: 90%;
+    max-height: 90vh;
+    margin: auto;
+    display: block;
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
 }

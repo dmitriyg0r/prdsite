@@ -64,8 +64,21 @@ document.addEventListener('DOMContentLoaded', function() {
     setInterval(checkServerStatus, 60000);
 });
 
+function showLoadingIndicator() {
+    const button = document.querySelector('.payment-btn');
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Обработка...';
+    button.disabled = true;
+}
+
+function hideLoadingIndicator() {
+    const button = document.querySelector('.payment-btn');
+    button.innerHTML = 'Оплатить доступ';
+    button.disabled = false;
+}
+
 document.getElementById('payment-form').addEventListener('submit', async function(e) {
     e.preventDefault();
+    showLoadingIndicator();
     
     const minecraftLogin = document.getElementById('minecraft-login').value;
     
@@ -92,5 +105,7 @@ document.getElementById('payment-form').addEventListener('submit', async functio
         }
     } catch (error) {
         alert('Ошибка: ' + error.message);
+    } finally {
+        hideLoadingIndicator();
     }
 });
