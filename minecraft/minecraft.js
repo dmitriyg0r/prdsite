@@ -37,41 +37,25 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             console.log('🔄 Начинаем проверку статуса сервера...');
             
-            const apiUrl = `https://api.minetools.eu/ping/${serverIP}/${serverPort}`;
-            console.log(`📡 Запрос к API: ${apiUrl}`);
-
             statusElement.innerHTML = `
                 <span class="loading-spinner"><i class="fas fa-spinner fa-spin"></i></span>
                 Проверка...
             `;
 
-            const response = await fetch(apiUrl, {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json'
-                }
-            });
-            
-            console.log('📥 Получен ответ от API:', response.status, response.statusText);
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
+            // Используем наш собственный прокси
+            const response = await fetch('check_status.php');
             const data = await response.json();
+            
             console.log('📋 Данные сервера:', data);
 
             if (data.online) {
                 console.log('✅ Сервер онлайн');
-                console.log(`👥 Игроков: ${data.players?.online || 0}/${data.players?.max || 0}`);
-                
                 statusElement.innerHTML = 'Онлайн';
                 statusElement.style.color = '#4CAF50';
                 playersOnlineElement.textContent = data.players?.online || '0';
                 playersMaxElement.textContent = data.players?.max || '0';
             } else {
                 console.log('❌ Сервер оффлайн');
-                
                 statusElement.innerHTML = 'Оффлайн';
                 statusElement.style.color = '#f44336';
                 playersOnlineElement.textContent = '0';
@@ -79,19 +63,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         } catch (error) {
             console.error('🚫 Ошибка при проверке статуса сервера:', error);
-            console.error('Детали ошибки:', {
-                name: error.name,
-                message: error.message,
-                stack: error.stack
-            });
-
             statusElement.innerHTML = 'Оффлайн';
             statusElement.style.color = '#f44336';
             playersOnlineElement.textContent = '0';
             playersMaxElement.textContent = '0';
-        } finally {
-            console.log('🏁 Проверка статуса завершена');
-            console.log('-------------------');
         }
     }
 
