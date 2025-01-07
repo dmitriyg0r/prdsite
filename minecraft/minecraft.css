@@ -288,11 +288,11 @@
 .pricing-card.featured::before {
     content: "Популярный";
     position: absolute;
-    top: 1rem;
+    top: 1.2rem;
     right: -2rem;
     background: var(--accent-color);
     color: white;
-    padding: 0.5rem 3rem;
+    padding: 0.5rem 2rem;
     transform: rotate(45deg);
     font-size: 0.8rem;
 }
