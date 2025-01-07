@@ -242,6 +242,21 @@
     color: var(--accent-color);
 }
 
+.pricing-card.featured {
+    background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-color-hover) 100%);
+    transform: scale(1.05);
+}
+
+.pricing-card.featured h4,
+.pricing-card.featured .price,
+.pricing-card.featured li {
+    color: white;
+}
+
+.pricing-card.featured li:before {
+    color: white;
+}
+
 @media (min-width: 1024px) {
     .container-wrapper {
         flex-direction: row;
