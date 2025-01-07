@@ -5,15 +5,21 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 function checkMinecraftServer() {
-    $ip = '188.127.241.209';  // Жестко закодированный IP
-    $port = 25735;            // Жестко закодированный порт
+    $ip = '188.127.241.209';
+    $port = 25735;
     
     $debug = [];
     $debug[] = "Попытка подключения к $ip:$port";
     
     try {
-        // Увеличиваем таймаут до 10 секунд
-        $socket = @fsockopen($ip, $port, $errno, $errstr, 10);
+        // Увеличиваем таймаут и добавляем дополнительные параметры
+        $socket = @stream_socket_client(
+            "tcp://$ip:$port", 
+            $errno, 
+            $errstr, 
+            5,  // уменьшаем таймаут до 5 секунд
+            STREAM_CLIENT_CONNECT
+        );
         
         if (!$socket) {
             $debug[] = "Ошибка подключения: $errno - $errstr";
@@ -27,13 +33,13 @@ function checkMinecraftServer() {
         $debug[] = "Соединение установлено";
         
         // Устанавливаем таймаут для чтения/записи
-        stream_set_timeout($socket, 5);
+        stream_set_timeout($socket, 3);
         
-        // Простой ping-пакет
-        $ping = "\x01";
-        fwrite($socket, $ping);
+        // Отправляем пакет рукопожатия Minecraft
+        $handshake = "\x00\x00\x00\x00\x00";
+        fwrite($socket, $handshake);
         
-        $debug[] = "Ping отправлен";
+        $debug[] = "Handshake отправлен";
         
         // Читаем ответ
         $response = fread($socket, 1024);
