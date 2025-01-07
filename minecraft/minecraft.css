@@ -152,15 +152,23 @@
 #minecraft-login {
     padding: 1rem;
     font-size: 1rem;
-    border: 2px solid #e0e0e0;
+    border: 2px solid var(--border-color);
     border-radius: 12px;
     transition: border-color 0.3s ease;
     margin-bottom: 1rem;
+    background-color: var(--background-primary);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] #minecraft-login {
+    background-color: var(--background-secondary);
+    border-color: var(--accent-color);
+    color: var(--text-primary);
 }
 
 #minecraft-login:focus {
     outline: none;
-    border-color: #2ecc71;
+    border-color: var(--accent-color);
     box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.1);
 }
 
