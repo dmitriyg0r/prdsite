@@ -548,200 +548,95 @@ body {
 /* Стили для поиска друзей */
 .search-container {
     padding: var(--spacing-md);
-    position: sticky;
-    top: 0;
     background: var(--surface-color);
-    z-index: 10;
-    border-bottom: 1px solid var(--border-light);
-}
-
-.search-form {
-    display: flex;
-    gap: 8px;
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-md);
 }
 
 .search-input-wrapper {
     position: relative;
-    flex: 1;
 }
 
 .search-input {
     width: 100%;
-    padding: 12px 40px 12px 16px;
+    padding: 12px;
     border: 1px solid var(--border-light);
     border-radius: var(--radius-md);
-    background: var(--surface-color);
-    color: var(--text-primary);
-    font-size: 14px;
-    transition: all 0.3s ease;
-}
-
-.search-input:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-}
-
-.search-btn {
-    padding: 12px 24px;
-    background: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: var(--radius-md);
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.search-btn:hover {
-    background: var(--primary-dark);
-    transform: translateY(-1px);
-}
-
-.search-btn i {
-    font-size: 16px;
-}
-
-/* Результаты поиска */
-.search-results {
-    padding: var(--spacing-md);
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.user-card {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 16px;
-    background: var(--surface-color);
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border-light);
-    transition: all 0.3s ease;
-}
-
-.user-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-}
-
-.user-avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-.user-info {
-    flex: 1;
-    min-width: 0;
-}
-
-.user-name {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 4px;
-}
-
-.user-meta {
-    font-size: 13px;
-    color: var(--text-secondary);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.user-status {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-
-.status-indicator {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-}
-
-.status-indicator.online {
-    background: var(--success-color);
-}
-
-.status-indicator.offline {
-    background: var(--text-tertiary);
-}
-
-.add-friend-btn {
-    padding: 8px 16px;
-    background: var(--surface-color);
-    border: 1px solid var(--primary-color);
-    color: var(--primary-color);
-    border-radius: var(--radius-md);
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.add-friend-btn:hover {
-    background: var(--primary-color);
-    color: white;
-}
-
-.add-friend-btn.pending {
     background: var(--background-color);
-    border-color: var(--text-tertiary);
-    color: var(--text-tertiary);
-    cursor: not-allowed;
+    color: var(--text-primary);
+    font-size: 14px;
 }
 
-.add-friend-btn.friends {
-    background: var(--success-color);
-    border-color: var(--success-color);
+.search-results {
+    margin-top: var(--spacing-md);
+}
+
+.search-result-item {
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-sm);
+    border-radius: var(--radius-md);
+    transition: background-color 0.3s ease;
+}
+
+.search-result-item:hover {
+    background: var(--background-color);
+}
+
+.search-result-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: var(--spacing-md);
+}
+
+.search-result-info {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.search-result-name {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.friend-action-btn {
+    padding: 6px 12px;
+    border-radius: var(--radius-md);
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.3s ease;
+}
+
+.friend-action-btn.add-friend {
+    background: var(--primary-color);
     color: white;
 }
 
-/* Состояние загрузки */
-.search-loading {
-    text-align: center;
-    padding: var(--spacing-xl);
+.friend-action-btn.pending {
+    background: var(--background-color);
     color: var(--text-secondary);
+    cursor: default;
 }
 
-.search-loading i {
-    font-size: 24px;
-    animation: spin 1s linear infinite;
+.friend-action-btn.friends {
+    background: var(--success-color);
+    color: white;
+    cursor: default;
 }
 
-@keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
-/* Пустое состояние */
 .empty-search {
     text-align: center;
-    padding: var(--spacing-xl);
+    padding: var(--spacing-lg);
     color: var(--text-secondary);
 }
 
 .empty-search i {
-    font-size: 48px;
-    margin-bottom: var(--spacing-md);
-    opacity: 0.5;
-}
-
-.empty-search p {
-    font-size: 16px;
-    margin: 0;
+    font-size: 24px;
+    margin-bottom: var(--spacing-sm);
 }
 
 /* Адаптивность */
@@ -2264,36 +2159,93 @@ textarea:invalid {
 /* Стили для поиска друзей */
 .search-container {
     padding: var(--spacing-md);
-    position: sticky;
-    top: 0;
     background: var(--surface-color);
-    z-index: 10;
-    border-bottom: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-md);
 }
 
-/* Добавляем индикатор загрузки */
 .search-input-wrapper {
     position: relative;
 }
 
-.search-loading-indicator {
-    position: absolute;
-    right: 12px;
-    top: 50%;
-    transform: translateY(-50%);
+.search-input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    background: var(--background-color);
+    color: var(--text-primary);
+    font-size: 14px;
+}
+
+.search-results {
+    margin-top: var(--spacing-md);
+}
+
+.search-result-item {
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-sm);
+    border-radius: var(--radius-md);
+    transition: background-color 0.3s ease;
+}
+
+.search-result-item:hover {
+    background: var(--background-color);
+}
+
+.search-result-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: var(--spacing-md);
+}
+
+.search-result-info {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.search-result-name {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.friend-action-btn {
+    padding: 6px 12px;
+    border-radius: var(--radius-md);
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.3s ease;
+}
+
+.friend-action-btn.add-friend {
+    background: var(--primary-color);
+    color: white;
+}
+
+.friend-action-btn.pending {
+    background: var(--background-color);
     color: var(--text-secondary);
-    display: none;
+    cursor: default;
 }
 
-.search-loading-indicator.active {
-    display: block;
+.friend-action-btn.friends {
+    background: var(--success-color);
+    color: white;
+    cursor: default;
 }
 
-.search-input-wrapper i {
-    animation: spin 1s linear infinite;
+.empty-search {
+    text-align: center;
+    padding: var(--spacing-lg);
+    color: var(--text-secondary);
 }
 
-@keyframes spin {
-    from { transform: translateY(-50%) rotate(0deg); }
-    to { transform: translateY(-50%) rotate(360deg); }
+.empty-search i {
+    font-size: 24px;
+    margin-bottom: var(--spacing-sm);
 }

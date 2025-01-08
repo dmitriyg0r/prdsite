@@ -510,19 +510,145 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // Поиск друзей
-    const searchInput = document.querySelector('.search-input');
-    const searchBtn = document.querySelector('.search-btn');
-    const searchResults = document.querySelector('.search-results');
+    const searchInput = document.querySelector('#friend-search-input'); // Обновляем селектор
+    if (!searchInput) {
+        console.error('Search input not found');
+        return;
+    }
 
-    searchBtn.addEventListener('click', () => {
-        const searchQuery = searchInput.value.trim();
-        if (searchQuery) {
-            // Здесь будет логика поиска поль��ов��телей
-            searchUsers(searchQuery);
+    // Создаем контейнер для результатов, если его нет
+    let searchResults = document.querySelector('.search-results');
+    if (!searchResults) {
+        searchResults = document.createElement('div');
+        searchResults.className = 'search-results';
+        searchInput.parentElement.after(searchResults);
+    }
+
+    // Добавляем индикатор загрузки
+    const loadingIndicator = document.createElement('div');
+    loadingIndicator.className = 'search-loading-indicator';
+    loadingIndicator.innerHTML = '<i class="fas fa-spinner"></i>';
+    searchInput.parentNode.appendChild(loadingIndicator);
+
+    const debouncedSearch = debounce(async (query) => {
+        if (query.length < 2) {
+            searchResults.innerHTML = '';
+            return;
+        }
+
+        loadingIndicator.classList.add('active');
+        
+        try {
+            const response = await fetch(`https://adminflow.ru/api/search-users?q=${encodeURIComponent(query)}&userId=${currentUser.id}`);
+            const data = await response.json();
+            
+            if (response.ok) {
+                displaySearchResults(data.users);
+            }
+        } catch (err) {
+            console.error('Search error:', err);
+            searchResults.innerHTML = '<div class="search-error">Произошла ошибка при поиске</div>';
+        } finally {
+            loadingIndicator.classList.remove('active');
+        }
+    }, 300);
+
+    searchInput.addEventListener('input', (e) => {
+        console.log('Search input:', e.target.value); // Добавляем для отладки
+        debouncedSearch(e.target.value);
+    });
+
+    function displaySearchResults(users) {
+        const searchResults = document.querySelector('.search-results');
+        if (!searchResults) {
+            console.error('Search results container not found');
+            return;
+        }
+        
+        if (!users || users.length === 0) {
+            searchResults.innerHTML = `
+                <div class="empty-search">
+                    <i class="fas fa-search"></i>
+                    <p>Пользователи не найдены</p>
+                </div>
+            `;
+            return;
+        }
+
+        searchResults.innerHTML = users.map(user => `
+            <div class="search-result-item" data-user-id="${user.id}">
+                <img src="${user.avatar_url || '/uploads/avatars/default.png'}" alt="${user.username}" class="search-result-avatar">
+                <div class="search-result-info">
+                    <span class="search-result-name">${user.username}</span>
+                    ${getFriendshipButton(user.friendship_status, user.id)}
+                </div>
+            </div>
+        `).join('');
+
+        // Добавляем обработчики для кнопок
+        searchResults.querySelectorAll('.friend-action-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const userId = e.target.closest('.search-result-item').dataset.userId;
+                handleFriendAction(btn.dataset.action, userId);
+            });
+        });
+    }
+
+    function getFriendshipButton(status, userId) {
+        switch (status) {
+            case 'none':
+                return `<button class="friend-action-btn add-friend" data-action="add" data-user-id="${userId}">
+                            <i class="fas fa-user-plus"></i> Добавить в друзья
+                        </button>`;
+            case 'pending':
+                return `<button class="friend-action-btn pending" disabled>
+                            <i class="fas fa-clock"></i> Заявка отправлена
+                        </button>`;
+            case 'accepted':
+                return `<button class="friend-action-btn friends" disabled>
+                            <i class="fas fa-user-check"></i> В друзьях
+                        </button>`;
+            default:
+                return '';
+        }
+    }
+
+    async function handleFriendAction(action, userId) {
+        try {
+            if (action === 'add') {
+                const response = await fetch('https://adminflow.ru/api/friend-request', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        userId: currentUser.id,
+                        friendId: userId
+                    })
+                });
+
+                if (response.ok) {
+                    // Обновляем отображение кнопки
+                    const button = document.querySelector(`.friend-action-btn[data-user-id="${userId}"]`);
+                    if (button) {
+                        button.outerHTML = getFriendshipButton('pending', userId);
+                    }
+                }
+            }
+        } catch (err) {
+            console.error('Friend action error:', err);
+            alert('Произошла ошибка при выполнении действия');
+        }
+    }
+
+    // Добавляем вызов initializeSearch при загрузке страницы
+    document.addEventListener('DOMContentLoaded', () => {
+        if (currentUser) {
+            initializeSearch();
         }
     });
 
-    // Функция поиска пользователей (заглушка)
+    // Обновляем функцию поиска
     async function searchUsers(query) {
         try {
             const response = await fetch(`https://adminflow.ru/api/search-users?q=${query}&userId=${currentUser.id}`);
@@ -530,8 +656,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             if (response.ok) {
                 displaySearchResults(data.users);
-            } else {
-                alert(data.error || 'Ошибка при поиске пользователей');
             }
         } catch (err) {
             console.error('Search error:', err);
@@ -703,7 +827,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             friendsHeaderCount.textContent = friends.length;
         }
 
-        // Обновля���м счетчик в окне друзей
+        // Обновлям счетчик в окне друзей
         const modalFriendCount = document.querySelector('.modal-tabs .friend-count');
         if (modalFriendCount) {
             modalFriendCount.textContent = friends.length;
@@ -746,7 +870,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         ${isCurrentUser ? `
                             <div class="friend-actions">
                                 <button class="remove-friend-btn" data-user-id="${friend.id}">
-                                    <i class="fas fa-user-minus"></i> Удал��т���� из друзей
+                                    <i class="fas fa-user-minus"></i> Удалт из друзей
                                 </button>
                             </div>
                         ` : ''}
@@ -1042,7 +1166,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const data = await response.json();
             
             if (data.user) {
-                // Сохраняем данные профиля друга во временн��е хранилище
+                // Сохраняем данные профиля друга во временне хранилище
                 sessionStorage.setItem('viewing_profile', JSON.stringify(data.user));
                 // Перенаправляем на страницу профиля с параметром
                 window.location.href = `/profile/profile.html?id=${userId}`;
@@ -1107,7 +1231,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }, 100); // Небольшая задержка для группировки обновлений
     }
 
-    // Оптимизир��ванная функция отслеживания активности
+    // Оптимизирванная функция отслеживания активности
     function startStatusUpdates() {
         let lastActivity = new Date();
         let activityTimeout = null;
@@ -1159,7 +1283,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Обновляем обработчик перед ��ходом со страницы
+    // Обновляем обработчик перед ходом со страницы
     window.addEventListener('beforeunload', (event) => {
         if (currentUser && currentUser.id) {
             // Испоьзуем синхронный запрос для гарантированной отправки
@@ -1244,7 +1368,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     `;
     document.head.appendChild(style);
 
-    // Об��аботчики для мены пароля
+    // Обаботчики для мены пароля
     const requestPasswordChangeBtn = document.getElementById('request-password-change');
     const passwordChangeModal = document.getElementById('password-change-modal');
     const sendVerificationCodeBtn = document.getElementById('send-verification-code');
@@ -1299,7 +1423,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 codeVerificationStep.style.display = 'block';
                 startResendTimer();
             } else {
-                throw new Error(data.error || 'Ошибка при отправке код��');
+                throw new Error(data.error || 'Ошибка при отправке код');
             }
         } catch (err) {
             alert(err.message);
@@ -1405,7 +1529,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Обновляем обработчики поиска
     function initializeSearch() {
-        const searchInput = document.querySelector('.search-input');
+        const searchInput = document.querySelector('#friend-search-input'); // Обновляем селектор
+        if (!searchInput) {
+            console.error('Search input not found');
+            return;
+        }
+
+        // Создаем контейнер для результатов, если его нет
+        let searchResults = document.querySelector('.search-results');
+        if (!searchResults) {
+            searchResults = document.createElement('div');
+            searchResults.className = 'search-results';
+            searchInput.parentElement.after(searchResults);
+        }
+
+        // Добавляем индикатор загрузки
         const loadingIndicator = document.createElement('div');
         loadingIndicator.className = 'search-loading-indicator';
         loadingIndicator.innerHTML = '<i class="fas fa-spinner"></i>';
@@ -1413,14 +1551,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const debouncedSearch = debounce(async (query) => {
             if (query.length < 2) {
-                document.querySelector('.search-results').innerHTML = '';
+                searchResults.innerHTML = '';
                 return;
             }
 
             loadingIndicator.classList.add('active');
             
             try {
-                const response = await fetch(`https://adminflow.ru/api/search-users?q=${query}&userId=${currentUser.id}`);
+                const response = await fetch(`https://adminflow.ru/api/search-users?q=${encodeURIComponent(query)}&userId=${currentUser.id}`);
                 const data = await response.json();
                 
                 if (response.ok) {
@@ -1428,21 +1566,26 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             } catch (err) {
                 console.error('Search error:', err);
+                searchResults.innerHTML = '<div class="search-error">Произошла ошибка при поиске</div>';
             } finally {
                 loadingIndicator.classList.remove('active');
             }
-        }, 300); // Задержка 300мс
+        }, 300);
 
         searchInput.addEventListener('input', (e) => {
+            console.log('Search input:', e.target.value); // Добавляем для отладки
             debouncedSearch(e.target.value);
         });
     }
 
-    // Обновляем displaySearchResults для обработки пустых результатов
     function displaySearchResults(users) {
         const searchResults = document.querySelector('.search-results');
+        if (!searchResults) {
+            console.error('Search results container not found');
+            return;
+        }
         
-        if (!users.length) {
+        if (!users || users.length === 0) {
             searchResults.innerHTML = `
                 <div class="empty-search">
                     <i class="fas fa-search"></i>
@@ -1452,80 +1595,206 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        searchResults.innerHTML = users.map(user => {
-            const isOnline = user.last_activity && 
-                (new Date() - new Date(user.last_activity)) < 5 * 60 * 1000;
-
-            // Используем статус дружбы из ответа сервера
-            const friendStatus = user.friendship_status || 'none';
-            
-            let buttonClass = '';
-            let buttonText = '';
-            let buttonIcon = '';
-            
-            switch (friendStatus) {
-                case 'accepted':
-                    buttonClass = 'friends';
-                    buttonText = 'В друзьях';
-                    buttonIcon = 'fas fa-check';
-                    break;
-                case 'pending':
-                    buttonClass = 'pending';
-                    buttonText = 'Заявка отправлена';
-                    buttonIcon = 'fas fa-clock';
-                    break;
-                default:
-                    buttonClass = '';
-                    buttonText = 'Добавить в друзья';
-                    buttonIcon = 'fas fa-user-plus';
-            }
-
-            return `
-                <div class="user-card" data-user-id="${user.id}" data-friendship-status="${friendStatus}">
-                    <img src="${user.avatar_url || '/uploads/avatars/default.png'}" 
-                         alt="${user.username}" 
-                         class="user-avatar">
-                    <div class="user-info">
-                        <div class="user-name">${user.username}</div>
-                        <div class="user-meta">
-                            <div class="user-status">
-                                <span class="status-indicator ${isOnline ? 'online' : 'offline'}"></span>
-                                ${isOnline ? 'В сети' : 'Не в сети'}
-                            </div>
-                            ${user.mutual_friends ? `
-                                <span class="mutual-friends">
-                                    <i class="fas fa-user-friends"></i>
-                                    ${user.mutual_friends} общих друзей
-                                </span>
-                            ` : ''}
-                        </div>
-                    </div>
-                    <button class="add-friend-btn ${buttonClass}" 
-                            ${friendStatus === 'pending' || friendStatus === 'accepted' ? 'disabled' : ''}
-                            data-user-id="${user.id}">
-                        <i class="${buttonIcon}"></i>
-                        ${buttonText}
-                    </button>
+        searchResults.innerHTML = users.map(user => `
+            <div class="search-result-item" data-user-id="${user.id}">
+                <img src="${user.avatar_url || '/uploads/avatars/default.png'}" alt="${user.username}" class="search-result-avatar">
+                <div class="search-result-info">
+                    <span class="search-result-name">${user.username}</span>
+                    ${getFriendshipButton(user.friendship_status, user.id)}
                 </div>
-            `;
-        }).join('');
+            </div>
+        `).join('');
 
         // Добавляем обработчики для кнопок
-        document.querySelectorAll('.add-friend-btn:not(.pending):not(.friends)').forEach(btn => {
-            btn.addEventListener('click', () => {
-                sendFriendRequest(btn.dataset.userId);
-                btn.classList.add('pending');
-                btn.innerHTML = '<i class="fas fa-clock"></i> Заявка отправлена';
-                btn.disabled = true;
+        searchResults.querySelectorAll('.friend-action-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const userId = e.target.closest('.search-result-item').dataset.userId;
+                handleFriendAction(btn.dataset.action, userId);
             });
         });
     }
 
+    function getFriendshipButton(status, userId) {
+        switch (status) {
+            case 'none':
+                return `<button class="friend-action-btn add-friend" data-action="add" data-user-id="${userId}">
+                            <i class="fas fa-user-plus"></i> Добавить в друзья
+                        </button>`;
+            case 'pending':
+                return `<button class="friend-action-btn pending" disabled>
+                            <i class="fas fa-clock"></i> Заявка отправлена
+                        </button>`;
+            case 'accepted':
+                return `<button class="friend-action-btn friends" disabled>
+                            <i class="fas fa-user-check"></i> В друзьях
+                        </button>`;
+            default:
+                return '';
+        }
+    }
+
+    async function handleFriendAction(action, userId) {
+        try {
+            if (action === 'add') {
+                const response = await fetch('https://adminflow.ru/api/friend-request', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        userId: currentUser.id,
+                        friendId: userId
+                    })
+                });
+
+                if (response.ok) {
+                    // Обновляем отображение кнопки
+                    const button = document.querySelector(`.friend-action-btn[data-user-id="${userId}"]`);
+                    if (button) {
+                        button.outerHTML = getFriendshipButton('pending', userId);
+                    }
+                }
+            }
+        } catch (err) {
+            console.error('Friend action error:', err);
+            alert('Произошла ошибка при выполнении действия');
+        }
+    }
+
     // Добавляем вызов initializeSearch при загрузке страницы
     document.addEventListener('DOMContentLoaded', () => {
-        // ... existing code ...
-        initializeSearch();
-        // ... existing code ...
+        if (currentUser) {
+            initializeSearch();
+        }
+    });
+
+    // Функция для загрузки данных пользователя
+    async function loadUserData() {
+        try {
+            const userId = currentUser.id;
+            console.log('Загрузка данных пользователя:', userId);
+
+            const response = await fetch(`https://adminflow.ru/api/users/${userId}`);
+            const data = await response.json();
+            
+            console.log('Получены данные пользователя:', data);
+
+            if (data.success && data.user) {
+                // Обновляем данные пользователя в localStorage
+                const updatedUser = {
+                    ...currentUser,
+                    ...data.user
+                };
+                localStorage.setItem('user', JSON.stringify(updatedUser));
+                currentUser = updatedUser;
+
+                // Обновляем аватар на странице
+                const avatarUrl = formatAvatarUrl(data.user.avatar_url);
+                document.getElementById('profile-avatar').src = avatarUrl;
+                
+                console.log('Данные пользователя обновлены:', updatedUser);
+            }
+        } catch (err) {
+            console.error('Ошибка при загрузке данных пользователя:', err);
+        }
+    }
+
+    // Вызываем функцию при загрузке страницы
+    document.addEventListener('DOMContentLoaded', loadUserData);
+
+    // Добавьте эту функцию для обновления счетчика символов
+    function updateCharacterCount(textarea) {
+        const maxLength = 250;
+        const currentLength = textarea.value.length;
+        const charCountElement = document.getElementById('char-count');
+        
+        if (charCountElement) {
+            charCountElement.textContent = currentLength;
+            
+            // Меняем цвет при приближении к лимиту
+            if (currentLength >= maxLength * 0.9) {
+                charCountElement.style.color = '#ff4444';
+            } else {
+                charCountElement.style.color = '#666';
+            }
+        }
+    }
+
+    // Найдите функцию createPost и добавьте в неё проверку длины в начало:
+    async function createPost() {
+        const content = document.getElementById('post-content').value.trim();
+        const fileInput = document.getElementById('post-image');
+        const file = fileInput.files[0];
+
+        // Добавляем проверку длины контента
+        if (content.length > 250) {
+            alert('Текст публикации не может превышать 250 символов');
+            return;
+        }
+
+        if (!content && !file) {
+            alert('Добавьте текст или файл');
+            return;
+        }
+
+        try {
+            const formData = new FormData();
+            formData.append('userId', currentUser.id);
+            formData.append('content', content);
+            
+            if (file) {
+                // Добавляем оригинальное имя файла в отдельное поле
+                formData.append('originalFileName', file.name);
+                formData.append('image', file);
+            }
+
+            const response = await fetch('https://adminflow.ru/api/posts/create', {
+                method: 'POST',
+                body: formData
+            });
+
+            // Проверяем тип контента ответа
+            const contentType = response.headers.get('content-type');
+            let data;
+            
+            if (contentType && contentType.includes('application/json')) {
+                data = await response.json();
+            } else {
+                const textResponse = await response.text();
+                throw new Error(textResponse);
+            }
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Ошибка при создании публикации');
+            }
+            
+            if (data.success) {
+                // Очищаем фрму
+                document.getElementById('post-content').value = '';
+                document.getElementById('image-preview').innerHTML = '';
+                document.getElementById('post-form').style.display = 'none';
+                fileInput.value = '';
+                selectedPostImage = null;
+
+                // Перезагружаем посты
+                loadPosts();
+            } else {
+                throw new Error(data.error || 'Ошибка при создании публикации');
+            }
+        } catch (err) {
+            console.error('Error creating post:', err);
+            alert('Ошибка при создании публикации: ' + (err.message || 'Неизвестная ошибка'));
+        }
+    }
+
+    // Добавьте этот обработчик в существующий DOMContentLoaded или в конец файла
+    document.addEventListener('DOMContentLoaded', function() {
+        const textarea = document.getElementById('post-content');
+        if (textarea) {
+            textarea.addEventListener('input', function() {
+                updateCharacterCount(this);
+            });
+        }
     });
 });
 
@@ -2063,132 +2332,3 @@ async function submitComment(postId, button) {
         alert('Ошибка при отправке комментария');
     }
 }
-
-// Функция для загрузки данных пользователя
-async function loadUserData() {
-    try {
-        const userId = currentUser.id;
-        console.log('Загрузка данных пользователя:', userId);
-
-        const response = await fetch(`https://adminflow.ru/api/users/${userId}`);
-        const data = await response.json();
-        
-        console.log('Получены данные пользователя:', data);
-
-        if (data.success && data.user) {
-            // Обновляем данные пользователя в localStorage
-            const updatedUser = {
-                ...currentUser,
-                ...data.user
-            };
-            localStorage.setItem('user', JSON.stringify(updatedUser));
-            currentUser = updatedUser;
-
-            // Обновляем аватар на странице
-            const avatarUrl = formatAvatarUrl(data.user.avatar_url);
-            document.getElementById('profile-avatar').src = avatarUrl;
-            
-            console.log('Данные пользователя обновлены:', updatedUser);
-        }
-    } catch (err) {
-        console.error('Ошибка при загрузке данных пользователя:', err);
-    }
-}
-
-// Вызываем функцию при загрузке страницы
-document.addEventListener('DOMContentLoaded', loadUserData);
-
-// Добавьте эту функцию для обновления счетчика символов
-function updateCharacterCount(textarea) {
-    const maxLength = 250;
-    const currentLength = textarea.value.length;
-    const charCountElement = document.getElementById('char-count');
-    
-    if (charCountElement) {
-        charCountElement.textContent = currentLength;
-        
-        // Меняем цвет при приближении к лимиту
-        if (currentLength >= maxLength * 0.9) {
-            charCountElement.style.color = '#ff4444';
-        } else {
-            charCountElement.style.color = '#666';
-        }
-    }
-}
-
-// Найдите функцию createPost и добавьте в неё проверку длины в начало:
-async function createPost() {
-    const content = document.getElementById('post-content').value.trim();
-    const fileInput = document.getElementById('post-image');
-    const file = fileInput.files[0];
-
-    // Добавляем проверку длины контента
-    if (content.length > 250) {
-        alert('Текст публикации не может превышать 250 символов');
-        return;
-    }
-
-    if (!content && !file) {
-        alert('Добавьте текст или файл');
-        return;
-    }
-
-    try {
-        const formData = new FormData();
-        formData.append('userId', currentUser.id);
-        formData.append('content', content);
-        
-        if (file) {
-            // Добавляем оригинальное имя файла в отдельное поле
-            formData.append('originalFileName', file.name);
-            formData.append('image', file);
-        }
-
-        const response = await fetch('https://adminflow.ru/api/posts/create', {
-            method: 'POST',
-            body: formData
-        });
-
-        // Проверяем тип контента ответа
-        const contentType = response.headers.get('content-type');
-        let data;
-        
-        if (contentType && contentType.includes('application/json')) {
-            data = await response.json();
-        } else {
-            const textResponse = await response.text();
-            throw new Error(textResponse);
-        }
-
-        if (!response.ok) {
-            throw new Error(data.error || 'Ошибка при создании публикации');
-        }
-        
-        if (data.success) {
-            // Очищаем фрму
-            document.getElementById('post-content').value = '';
-            document.getElementById('image-preview').innerHTML = '';
-            document.getElementById('post-form').style.display = 'none';
-            fileInput.value = '';
-            selectedPostImage = null;
-
-            // Перезагружаем посты
-            loadPosts();
-        } else {
-            throw new Error(data.error || 'Ошибка при создании публикации');
-        }
-    } catch (err) {
-        console.error('Error creating post:', err);
-        alert('Ошибка при создании публикации: ' + (err.message || 'Неизвестная ошибка'));
-    }
-}
-
-// Добавьте этот обработчик в существующий DOMContentLoaded или в конец файла
-document.addEventListener('DOMContentLoaded', function() {
-    const textarea = document.getElementById('post-content');
-    if (textarea) {
-        textarea.addEventListener('input', function() {
-            updateCharacterCount(this);
-        });
-    }
-});
