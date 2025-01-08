@@ -1,20 +1,25 @@
 class UpdateNotification {
     constructor() {
-        this.currentVersion = '1.0.0'; // Начальная версия
-        this.checkInterval = 5 * 60 * 1000; // Проверять каждые 5 минут
-        this.isUpdating = false; // Добавляем флаг
+        this.checkInterval = 5 * 60 * 1000;
+        this.isUpdating = false;
         this.init();
     }
 
-    init() {
+    async init() {
         // Создаем элемент уведомления
         this.createNotificationElement();
         
-        // Проверяем обновления при загрузке
-        this.checkForUpdates();
-        
-        // Запускаем периодическую проверку
-        setInterval(() => this.checkForUpdates(), this.checkInterval);
+        try {
+            // Получаем начальную версию при загрузке
+            const response = await fetch(`/version.json?t=${Date.now()}`);
+            const data = await response.json();
+            this.currentVersion = data.version;
+            
+            // Запускаем периодическую проверку
+            setInterval(() => this.checkForUpdates(), this.checkInterval);
+        } catch (error) {
+            console.error('Ошибка при инициализации:', error);
+        }
     }
 
     createNotificationElement() {
@@ -47,6 +52,7 @@ class UpdateNotification {
             
             if (data.version !== this.currentVersion) {
                 this.showNotification();
+                this.currentVersion = data.version; // Обновляем текущую версию
             }
         } catch (error) {
             console.error('Ошибка при проверке обновлений:', error);
