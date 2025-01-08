@@ -28,7 +28,10 @@ class UpdateNotification {
         // Добавляем обработчик на кнопку
         const updateButton = notification.querySelector('.update-button');
         updateButton.addEventListener('click', () => {
-            window.location.reload(true);
+            this.notificationElement.classList.remove('show'); // Скрываем уведомление
+            setTimeout(() => {
+                window.location.reload(true);
+            }, 300); // Даем время на анимацию скрытия
         });
 
         this.notificationElement = notification;
