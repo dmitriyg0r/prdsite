@@ -2,6 +2,7 @@ class UpdateNotification {
     constructor() {
         this.currentVersion = '1.0.0'; // Начальная версия
         this.checkInterval = 5 * 60 * 1000; // Проверять каждые 5 минут
+        this.isUpdating = false; // Добавляем флаг
         this.init();
     }
 
@@ -28,6 +29,7 @@ class UpdateNotification {
         // Добавляем обработчик на кнопку
         const updateButton = notification.querySelector('.update-button');
         updateButton.addEventListener('click', () => {
+            this.isUpdating = true; // Устанавливаем флаг
             this.notificationElement.classList.remove('show'); // Скрываем уведомление
             setTimeout(() => {
                 window.location.reload(true);
@@ -52,7 +54,9 @@ class UpdateNotification {
     }
 
     showNotification() {
-        this.notificationElement.classList.add('show');
+        if (!this.isUpdating) { // Проверяем флаг перед показом уведомления
+            this.notificationElement.classList.add('show');
+        }
     }
 }
 
