@@ -2249,3 +2249,107 @@ textarea:invalid {
     font-size: 24px;
     margin-bottom: var(--spacing-sm);
 }
+
+/* Стили для поиска друзей в модальном окне */
+.modal-content .search-container {
+    padding: var(--spacing-sm);
+    margin: -16px -16px 16px -16px; /* Негативные отступы для выравнивания с краями модального окна */
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    border-bottom: 1px solid var(--border-light);
+    background: var(--background-color);
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.modal-content .search-input {
+    background: var(--surface-color);
+    border: 1px solid var(--border-light);
+    padding: 10px 16px;
+    font-size: 14px;
+    width: 100%;
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    transition: all 0.3s ease;
+}
+
+.modal-content .search-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+    outline: none;
+}
+
+.modal-content .search-input::placeholder {
+    color: var(--text-tertiary);
+}
+
+.modal-content .search-results {
+    max-height: 300px;
+    overflow-y: auto;
+    margin-top: 0;
+    padding: 8px;
+}
+
+.modal-content .search-result-item {
+    padding: 8px;
+    margin-bottom: 4px;
+    border-radius: var(--radius-md);
+    transition: all 0.2s ease;
+}
+
+.modal-content .search-result-item:hover {
+    background: var(--background-color);
+    transform: translateY(-1px);
+}
+
+.modal-content .search-result-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.modal-content .friend-action-btn {
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.modal-content .friend-action-btn i {
+    font-size: 12px;
+}
+
+.modal-content .empty-search {
+    padding: var(--spacing-md);
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.modal-content .empty-search i {
+    font-size: 20px;
+    margin-bottom: var(--spacing-sm);
+    opacity: 0.7;
+}
+
+/* Стилизация скроллбара для результатов поиска */
+.modal-content .search-results::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-content .search-results::-webkit-scrollbar-track {
+    background: var(--background-color);
+    border-radius: 3px;
+}
+
+.modal-content .search-results::-webkit-scrollbar-thumb {
+    background: var(--border-medium);
+    border-radius: 3px;
+}
+
+.modal-content .search-results::-webkit-scrollbar-thumb:hover {
+    background: var(--text-tertiary);
+}
