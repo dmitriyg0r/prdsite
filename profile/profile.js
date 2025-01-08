@@ -1389,6 +1389,144 @@ document.addEventListener('DOMContentLoaded', async () => {
             friendsTab.click();
         }
     };
+
+    // Добавляем debounce функцию
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
+    // Обновляем обработчики поиска
+    function initializeSearch() {
+        const searchInput = document.querySelector('.search-input');
+        const loadingIndicator = document.createElement('div');
+        loadingIndicator.className = 'search-loading-indicator';
+        loadingIndicator.innerHTML = '<i class="fas fa-spinner"></i>';
+        searchInput.parentNode.appendChild(loadingIndicator);
+
+        const debouncedSearch = debounce(async (query) => {
+            if (query.length < 2) {
+                document.querySelector('.search-results').innerHTML = '';
+                return;
+            }
+
+            loadingIndicator.classList.add('active');
+            
+            try {
+                const response = await fetch(`https://adminflow.ru/api/search-users?q=${query}&userId=${currentUser.id}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displaySearchResults(data.users);
+                }
+            } catch (err) {
+                console.error('Search error:', err);
+            } finally {
+                loadingIndicator.classList.remove('active');
+            }
+        }, 300); // Задержка 300мс
+
+        searchInput.addEventListener('input', (e) => {
+            debouncedSearch(e.target.value);
+        });
+    }
+
+    // Обновляем displaySearchResults для обработки пустых результатов
+    function displaySearchResults(users) {
+        const searchResults = document.querySelector('.search-results');
+        
+        if (!users.length) {
+            searchResults.innerHTML = `
+                <div class="empty-search">
+                    <i class="fas fa-search"></i>
+                    <p>Пользователи не найдены</p>
+                </div>
+            `;
+            return;
+        }
+
+        searchResults.innerHTML = users.map(user => {
+            const isOnline = user.last_activity && 
+                (new Date() - new Date(user.last_activity)) < 5 * 60 * 1000;
+
+            // Используем статус дружбы из ответа сервера
+            const friendStatus = user.friendship_status || 'none';
+            
+            let buttonClass = '';
+            let buttonText = '';
+            let buttonIcon = '';
+            
+            switch (friendStatus) {
+                case 'accepted':
+                    buttonClass = 'friends';
+                    buttonText = 'В друзьях';
+                    buttonIcon = 'fas fa-check';
+                    break;
+                case 'pending':
+                    buttonClass = 'pending';
+                    buttonText = 'Заявка отправлена';
+                    buttonIcon = 'fas fa-clock';
+                    break;
+                default:
+                    buttonClass = '';
+                    buttonText = 'Добавить в друзья';
+                    buttonIcon = 'fas fa-user-plus';
+            }
+
+            return `
+                <div class="user-card" data-user-id="${user.id}" data-friendship-status="${friendStatus}">
+                    <img src="${user.avatar_url || '/uploads/avatars/default.png'}" 
+                         alt="${user.username}" 
+                         class="user-avatar">
+                    <div class="user-info">
+                        <div class="user-name">${user.username}</div>
+                        <div class="user-meta">
+                            <div class="user-status">
+                                <span class="status-indicator ${isOnline ? 'online' : 'offline'}"></span>
+                                ${isOnline ? 'В сети' : 'Не в сети'}
+                            </div>
+                            ${user.mutual_friends ? `
+                                <span class="mutual-friends">
+                                    <i class="fas fa-user-friends"></i>
+                                    ${user.mutual_friends} общих друзей
+                                </span>
+                            ` : ''}
+                        </div>
+                    </div>
+                    <button class="add-friend-btn ${buttonClass}" 
+                            ${friendStatus === 'pending' || friendStatus === 'accepted' ? 'disabled' : ''}
+                            data-user-id="${user.id}">
+                        <i class="${buttonIcon}"></i>
+                        ${buttonText}
+                    </button>
+                </div>
+            `;
+        }).join('');
+
+        // Добавляем обработчики для кнопок
+        document.querySelectorAll('.add-friend-btn:not(.pending):not(.friends)').forEach(btn => {
+            btn.addEventListener('click', () => {
+                sendFriendRequest(btn.dataset.userId);
+                btn.classList.add('pending');
+                btn.innerHTML = '<i class="fas fa-clock"></i> Заявка отправлена';
+                btn.disabled = true;
+            });
+        });
+    }
+
+    // Добавляем вызов initializeSearch при загрузке страницы
+    document.addEventListener('DOMContentLoaded', () => {
+        // ... existing code ...
+        initializeSearch();
+        // ... existing code ...
+    });
 });
 
 function initializePostHandlers() {

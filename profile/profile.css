@@ -550,7 +550,7 @@ body {
     padding: var(--spacing-md);
     position: sticky;
     top: 0;
-    background: var(--background-color);
+    background: var(--surface-color);
     z-index: 10;
     border-bottom: 1px solid var(--border-light);
 }
@@ -2259,4 +2259,41 @@ textarea:invalid {
 
 .post-file.archive-file .file-icon {
     color: #FFC107;
+}
+
+/* Стили для поиска друзей */
+.search-container {
+    padding: var(--spacing-md);
+    position: sticky;
+    top: 0;
+    background: var(--surface-color);
+    z-index: 10;
+    border-bottom: 1px solid var(--border-light);
+}
+
+/* Добавляем индикатор загрузки */
+.search-input-wrapper {
+    position: relative;
+}
+
+.search-loading-indicator {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    display: none;
+}
+
+.search-loading-indicator.active {
+    display: block;
+}
+
+.search-input-wrapper i {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: translateY(-50%) rotate(0deg); }
+    to { transform: translateY(-50%) rotate(360deg); }
 }
