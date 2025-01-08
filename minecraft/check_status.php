@@ -5,8 +5,9 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 function checkMinecraftServer() {
-    $ip = '188.127.241.209';
-    $port = 25735;
+    // Получаем IP и порт из GET параметров
+    $ip = $_GET['ip'] ?? '188.127.241.209';  // Используем значение из параметра или значение по умолчанию
+    $port = intval($_GET['port'] ?? 25971);   // Преобразуем в число
     
     $debug = [];
     $debug[] = "Попытка подключения к $ip:$port";
