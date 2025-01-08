@@ -84,6 +84,13 @@ document.addEventListener('DOMContentLoaded', function() {
     checkServerStatus();
     // Обновляем статус каждые 30 секунд
     setInterval(checkServerStatus, 30000);
+
+    document.querySelectorAll('.accordion-header').forEach(button => {
+        button.addEventListener('click', () => {
+            const accordionItem = button.parentElement;
+            accordionItem.classList.toggle('active');
+        });
+    });
 });
 
 function showLoadingIndicator() {
