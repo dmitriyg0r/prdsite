@@ -42,7 +42,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 Проверка...
             `;
 
-            const response = await fetch('check_status.php');
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+            const response = await fetch(`check_status.php?ip=${serverIP}&port=${serverPort}`, {
+                signal: controller.signal,
+                headers: {
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache'
+                }
+            });
+            
+            clearTimeout(timeoutId);
+            
             const data = await response.json();
             
             console.log('📋 Данные сервера:', data);
@@ -71,7 +83,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         } catch (error) {
             console.error('🚫 Ошибка при проверке статуса сервера:', error);
-            statusElement.innerHTML = 'Оффлайн';
+            
+            // Более информативное сообщение об ошибке
+            if (error.name === 'AbortError') {
+                statusElement.innerHTML = 'Таймаут подключения';
+            } else {
+                statusElement.innerHTML = 'Сервер недоступен';
+            }
+            
             statusElement.style.color = '#f44336';
             playersOnlineElement.textContent = '0';
             playersMaxElement.textContent = '0';
@@ -82,8 +101,8 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Инициализация скрипта...');
     setupCopyButtons();
     checkServerStatus();
-    // Обновляем статус каждые 30 секунд
-    setInterval(checkServerStatus, 30000);
+    // Обновляем статус каждые 60 секунд
+    setInterval(checkServerStatus, 60000);
 
     document.querySelectorAll('.accordion-header').forEach(button => {
         button.addEventListener('click', () => {
