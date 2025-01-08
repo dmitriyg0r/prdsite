@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const serverIP = 'spacepoint.aboba.host';
+    const serverIP = '188.127.241.209';
     const serverPort = 25971;
     const statusElement = document.getElementById('server-status');
     const playersOnlineElement = document.getElementById('players-online');
