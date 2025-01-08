@@ -18,7 +18,7 @@ function checkMinecraftServer() {
             "tcp://$ip:$port", 
             $errno, 
             $errstr, 
-            5,  // уменьшаем таймаут до 5 секунд
+            5,
             STREAM_CLIENT_CONNECT
         );
         
@@ -36,9 +36,19 @@ function checkMinecraftServer() {
         // Устанавливаем таймаут для чтения/записи
         stream_set_timeout($socket, 3);
         
-        // Отправляем пакет рукопожатия Minecraft
-        $handshake = "\x00\x00\x00\x00\x00";
-        fwrite($socket, $handshake);
+        // Формируем правильный handshake пакет
+        $packet = "\x06\x00"; // Packet ID для Server List Ping
+        $packet .= "\x00\x00"; // Protocol version (пустой)
+        $packet .= pack('c', strlen($ip)) . $ip; // Длина IP + IP
+        $packet .= pack('n', $port); // Порт
+        $packet .= "\x01"; // Next state (1 для status)
+        
+        // Отправляем размер пакета
+        $data = pack('c', strlen($packet)) . $packet;
+        fwrite($socket, $data);
+        
+        // Отправляем запрос статуса
+        fwrite($socket, "\x01\x00");
         
         $debug[] = "Handshake отправлен";
         
