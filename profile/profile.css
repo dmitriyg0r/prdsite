@@ -692,6 +692,7 @@ body {
 
 /* Специальные стили для модального окна */
 .modal-content .search-container {
+    height: 473px;
     margin: -16px -16px 0 -16px;
     border-radius: var(--radius-md) var(--radius-md) 0 0;
     border: none;
@@ -700,6 +701,10 @@ body {
 }
 
 .modal-content .search-results {
+    height: 409px;
+    position: relative;
+    left: -1px;
+    top: 28px;
     max-height: 400px;
     overflow-y: auto;
     padding: var(--spacing-md);
