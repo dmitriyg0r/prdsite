@@ -60,6 +60,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Функция для отправки нового отзыва
     const submitReview = async (text) => {
+        const userId = getCurrentUserId();
+        
+        if (!userId) {
+            alert('Необходимо авторизоваться для отправки отзыва');
+            return;
+        }
+
         try {
             const response = await fetch('/api/reviews', {
                 method: 'POST',
@@ -68,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 },
                 body: JSON.stringify({
                     text,
-                    userId: getCurrentUserId() // Функция должна быть определена в вашем основном JS
+                    userId
                 })
             });
             
@@ -84,9 +91,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // Очищаем поле ввода
                 reviewInput.value = '';
+            } else {
+                alert(data.error || 'Ошибка при отправке отзыва');
             }
         } catch (error) {
             console.error('Ошибка при отправке отзыва:', error);
+            alert('Ошибка при отправке отзыва');
         }
     };
 
@@ -113,9 +123,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Функция для получения ID текущего пользователя
     const getCurrentUserId = () => {
-        // Здесь должна быть логика получения ID текущего пользователя
-        // Например, из localStorage или из глобального состояния приложения
-        return localStorage.getItem('userId');
+        // Получаем данные пользователя из localStorage
+        const userData = localStorage.getItem('userData');
+        if (!userData) {
+            console.error('Пользователь не авторизован');
+            return null;
+        }
+        
+        try {
+            const user = JSON.parse(userData);
+            return user.id;
+        } catch (error) {
+            console.error('Ошибка при получении ID пользователя:', error);
+            return null;
+        }
     };
 
     // Добавляем обработчик для автоматического расширения поля ввода
