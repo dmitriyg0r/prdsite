@@ -2973,12 +2973,22 @@ app.get('/api/reviews', async (req, res) => {
 app.post('/api/reviews', async (req, res) => {
     try {
         const { text, userId } = req.body;
+        
+        // Добавляем подробное логирование
+        console.log('Получен запрос на добавление отзыва:', {
+            body: req.body,
+            text: text,
+            userId: userId,
+            headers: req.headers
+        });
 
         // Проверяем наличие текста и ID пользователя
         if (!text || !userId) {
+            console.log('Отсутствуют обязательные поля:', { text, userId });
             return res.status(400).json({
                 success: false,
-                error: 'Необходимо указать текст отзыва и ID пользователя'
+                error: 'Необходимо указать текст отзыва и ID пользователя',
+                receivedData: { text, userId }
             });
         }
 
@@ -2990,9 +3000,11 @@ app.post('/api/reviews', async (req, res) => {
         `, [userId]);
 
         if (userResult.rows.length === 0) {
+            console.log('Пользователь не найден:', userId);
             return res.status(404).json({
                 success: false,
-                error: 'Пользователь не найден'
+                error: 'Пользователь не найден',
+                userId: userId
             });
         }
 
@@ -3010,16 +3022,23 @@ app.post('/api/reviews', async (req, res) => {
             avatar: userResult.rows[0].avatar_url
         };
 
+        console.log('Отзыв успешно добавлен:', review);
+
         res.json({
             success: true,
             review
         });
 
     } catch (err) {
-        console.error('Error adding review:', err);
+        console.error('Детальная ошибка при добавлении отзыва:', {
+            error: err,
+            stack: err.stack,
+            body: req.body
+        });
         res.status(500).json({
             success: false,
-            error: 'Ошибка при добавлении отзыва'
+            error: 'Ошибка при добавлении отзыва',
+            details: err.message
         });
     }
 });
