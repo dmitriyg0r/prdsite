@@ -104,14 +104,20 @@ app.post('/api/login', async (req, res) => {
 
         // Отправляем данные пользователя, исключая хеш пароля
         const { password_hash: _, ...userWithoutPassword } = user;
-        res.json({ user: userWithoutPassword });
+        
+        // Добавляем логирование
+        console.log('Успешная авторизация пользователя:', {
+            id: user.id,
+            username: user.username
+        });
+
+        res.json({ 
+            success: true,
+            user: userWithoutPassword 
+        });
 
     } catch (err) {
-        console.error('Детальная ошибка входа:', {
-            message: err.message,
-            stack: err.stack,
-            headers: req.headers
-        });
+        console.error('Ошибка авторизации:', err);
         res.status(500).json({ error: 'Ошибка сервера: ' + err.message });
     }
 });

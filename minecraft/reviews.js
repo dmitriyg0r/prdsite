@@ -61,6 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Функция для отправки нового отзыва
     const submitReview = async (text) => {
         const userId = getCurrentUserId();
+        console.log('ID пользователя перед отправкой отзыва:', userId); // Отладочный вывод
         
         if (!userId) {
             alert('Необходимо авторизоваться для отправки отзыва');
@@ -125,13 +126,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const getCurrentUserId = () => {
         // Получаем данные пользователя из localStorage
         const userData = localStorage.getItem('userData');
+        console.log('Данные пользователя из localStorage:', userData); // Отладочный вывод
+        
         if (!userData) {
-            console.error('Пользователь не авторизован');
+            console.error('Пользователь не авторизован (userData отсутствует)');
             return null;
         }
         
         try {
             const user = JSON.parse(userData);
+            console.log('Распарсенные данные пользователя:', user); // Отладочный вывод
+            
+            if (!user.id) {
+                console.error('ID пользователя отсутствует в данных');
+                return null;
+            }
+            
             return user.id;
         } catch (error) {
             console.error('Ошибка при получении ID пользователя:', error);
