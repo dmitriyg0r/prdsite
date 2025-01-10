@@ -60,15 +60,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Функция для отправки нового отзыва
     const submitReview = async (text) => {
+        console.log('Начало отправки отзыва');
         const userId = getCurrentUserId();
-        console.log('ID пользователя перед отправкой отзыва:', userId); // Отладочный вывод
         
         if (!userId) {
+            console.error('ID пользователя не найден');
             alert('Необходимо авторизоваться для отправки отзыва');
             return;
         }
 
         try {
+            console.log('Отправка отзыва с ID:', userId);
             const response = await fetch('/api/reviews', {
                 method: 'POST',
                 headers: {
@@ -81,16 +83,12 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             
             const data = await response.json();
+            console.log('Ответ сервера:', data);
             
             if (data.success) {
-                // Добавляем новый отзыв в контейнер
                 const reviewElement = createReviewElement(data.review);
                 reviewsContainer.appendChild(reviewElement);
-                
-                // Прокручиваем к новому сообщению
                 reviewsContainer.scrollTop = reviewsContainer.scrollHeight;
-                
-                // Очищаем поле ввода
                 reviewInput.value = '';
             } else {
                 alert(data.error || 'Ошибка при отправке отзыва');
@@ -124,29 +122,44 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Функция для получения ID текущего пользователя
     const getCurrentUserId = () => {
-        // Получаем данные пользователя из localStorage
-        const userData = localStorage.getItem('userData');
-        console.log('Данные пользователя из localStorage:', userData); // Отладочный вывод
+        // Проверяем все возможные места хранения данных пользователя
+        console.log('Проверка всех данных авторизации:');
         
-        if (!userData) {
-            console.error('Пользователь не авторизован (userData отсутствует)');
-            return null;
-        }
+        // Проверяем localStorage
+        const allLocalStorage = { ...localStorage };
+        console.log('localStorage:', allLocalStorage);
         
-        try {
-            const user = JSON.parse(userData);
-            console.log('Распарсенные данные пользователя:', user); // Отладочный вывод
-            
-            if (!user.id) {
-                console.error('ID пользователя отсутствует в данных');
-                return null;
+        // Проверяем sessionStorage
+        const allSessionStorage = { ...sessionStorage };
+        console.log('sessionStorage:', allSessionStorage);
+        
+        // Проверяем cookies
+        console.log('cookies:', document.cookie);
+
+        // Проверяем конкретные ключи, которые могут использоваться
+        const possibleKeys = ['userData', 'user', 'authData', 'currentUser', 'userInfo'];
+        
+        for (const key of possibleKeys) {
+            const data = localStorage.getItem(key);
+            if (data) {
+                console.log(`Найдены данные в localStorage по ключу ${key}:`, data);
+                try {
+                    const parsed = JSON.parse(data);
+                    if (parsed && parsed.id) {
+                        console.log('Найден ID пользователя:', parsed.id);
+                        return parsed.id;
+                    }
+                } catch (e) {
+                    console.log(`Ошибка парсинга данных из ${key}:`, e);
+                }
             }
-            
-            return user.id;
-        } catch (error) {
-            console.error('Ошибка при получении ID пользователя:', error);
-            return null;
         }
+
+        // Если ID не найден в localStorage, проверяем другие источники
+        // Добавьте здесь проверку тех механизмов авторизации, которые вы используете
+        
+        console.error('ID пользователя не найден в доступных источниках');
+        return null;
     };
 
     // Добавляем обработчик для автоматического расширения поля ввода
