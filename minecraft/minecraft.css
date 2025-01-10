@@ -490,7 +490,12 @@
 }
 
 .reviews-section {
-    width: 800px;
+    position: relative;
+    left: 370px;
+    top: -35px;
+    width: 809px;
+    height: 565.016px;
+    transform: translate(-20px, 4.99997px);
     margin-top: 2rem;
     margin-bottom: 2rem;
     background-color: var(--background-primary);
