@@ -2939,3 +2939,122 @@ app.use('/uploads/avatars', (req, res, next) => {
     
     next();
 }, express.static('/var/www/html/uploads/avatars'));
+
+// Получение списка отзывов
+app.get('/api/reviews', async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT 
+                r.id,
+                r.text,
+                r.created_at as timestamp,
+                u.username,
+                u.avatar_url as avatar
+            FROM reviews r
+            JOIN users u ON r.user_id = u.id
+            ORDER BY r.created_at ASC
+            LIMIT 100
+        `);
+
+        res.json({
+            success: true,
+            reviews: result.rows
+        });
+    } catch (err) {
+        console.error('Error loading reviews:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при загрузке отзывов'
+        });
+    }
+});
+
+// Добавление нового отзыва
+app.post('/api/reviews', async (req, res) => {
+    try {
+        const { text, userId } = req.body;
+
+        // Проверяем наличие текста и ID пользователя
+        if (!text || !userId) {
+            return res.status(400).json({
+                success: false,
+                error: 'Необходимо указать текст отзыва и ID пользователя'
+            });
+        }
+
+        // Получаем информацию о пользователе
+        const userResult = await pool.query(`
+            SELECT username, avatar_url 
+            FROM users 
+            WHERE id = $1
+        `, [userId]);
+
+        if (userResult.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'Пользователь не найден'
+            });
+        }
+
+        // Добавляем отзыв в базу данных
+        const result = await pool.query(`
+            INSERT INTO reviews (user_id, text, created_at)
+            VALUES ($1, $2, NOW())
+            RETURNING id, text, created_at as timestamp
+        `, [userId, text]);
+
+        // Формируем ответ с полной информацией об отзыве
+        const review = {
+            ...result.rows[0],
+            username: userResult.rows[0].username,
+            avatar: userResult.rows[0].avatar_url
+        };
+
+        res.json({
+            success: true,
+            review
+        });
+
+    } catch (err) {
+        console.error('Error adding review:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при добавлении отзыва'
+        });
+    }
+});
+
+// Удаление отзыва (опционально, для модераторов)
+app.delete('/api/reviews/:reviewId', async (req, res) => {
+    try {
+        const { reviewId } = req.params;
+        const { userId } = req.body; // ID пользователя, который пытается удалить отзыв
+
+        // Проверяем права пользователя (например, является ли он модератором)
+        const userResult = await pool.query(`
+            SELECT role FROM users WHERE id = $1
+        `, [userId]);
+
+        if (userResult.rows[0]?.role !== 'admin' && userResult.rows[0]?.role !== 'moderator') {
+            return res.status(403).json({
+                success: false,
+                error: 'Недостаточно прав для удаления отзыва'
+            });
+        }
+
+        // Удаляем отзыв
+        await pool.query('DELETE FROM reviews WHERE id = $1', [reviewId]);
+
+        res.json({
+            success: true,
+            message: 'Отзыв успешно удален'
+        });
+
+    } catch (err) {
+        console.error('Error deleting review:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при удалении отзыва'
+        });
+    }
+});
