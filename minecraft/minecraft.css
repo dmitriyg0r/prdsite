@@ -490,14 +490,9 @@
 }
 
 .reviews-section {
-    position: relative;
-    left: 370px;
-    top: -35px;
-    width: 809px;
-    height: 565.016px;
-    transform: translate(-20px, 4.99997px);
-    margin-top: 2rem;
-    margin-bottom: 2rem;
+    width: 100%;
+    max-width: 800px;
+    margin: 2rem auto;
     background-color: var(--background-primary);
     border-radius: 10px;
     padding: 1.5rem;
@@ -636,16 +631,12 @@
 }
 
 .plugins-section {
-    position: relative;
-    left: 370px;
-    top: -35px;
-    width: 1664px;
-    transform: translate(-250px, 4.99997px);
+    width: 100%;
+    max-width: 1200px;
+    margin: 2rem auto;
     background-color: var(--background-primary);
     padding: 2rem;
     border-radius: 10px;
-    margin-top: 2rem;
-    margin-bottom: 2rem;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
