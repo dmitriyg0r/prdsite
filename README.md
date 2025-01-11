@@ -4,7 +4,7 @@ ssh root@45.91.238.3
 ## Пароль
 sGLTccA_Na#9zC
 # редактирование конфигурации
-sudo nano /etc/nginx/sites-available/adminflow.ru
+sudo nano /etc/nginx/sites-available/space-point.ru
 # Для nginx
 sudo nginx -t
 sudo systemctl restart nginx
