@@ -636,10 +636,17 @@
 }
 
 .plugins-section {
+    position: relative;
+    left: 370px;
+    top: -35px;
+    width: 809px;
+    transform: translate(-20px, 4.99997px);
     background-color: var(--background-primary);
     padding: 2rem;
     border-radius: 10px;
     margin-top: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .plugins-grid {
@@ -687,6 +694,16 @@
     }
     
     .plugin-item {
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 840px) {
+    .plugins-section {
+        width: 100%;
+        left: 0;
+        transform: none;
+        margin: 2rem 1rem;
         padding: 1rem;
     }
 }
