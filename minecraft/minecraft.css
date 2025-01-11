@@ -491,17 +491,15 @@
 
 .reviews-section {
     position: relative;
-    left: 370px;
-    top: -35px;
     width: 809px;
-    height: 565.016px;
-    transform: translate(-20px, 4.99997px);
-    margin-top: 2rem;
-    margin-bottom: 2rem;
+    margin: 2rem auto;
     background-color: var(--background-primary);
     border-radius: 10px;
     padding: 1.5rem;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    left: auto;
+    top: auto;
+    transform: none;
 }
 
 .reviews-container {
@@ -629,7 +627,7 @@
 /* Медиа-запрос для адаптивности */
 @media (max-width: 840px) {
     .reviews-section {
-        width: 100%;
+        width: calc(100% - 2rem);
         margin: 2rem 1rem;
         padding: 1rem;
     }
