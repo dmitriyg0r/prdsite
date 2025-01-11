@@ -1,5 +1,7 @@
 # Подключение к серверу
+## ssh
 ssh root@45.91.238.3
+## Пароль
 sGLTccA_Na#9zC
 # редактирование конфигурации
 sudo nano /etc/nginx/sites-available/adminflow.ru
