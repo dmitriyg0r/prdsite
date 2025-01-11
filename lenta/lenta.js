@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function loadFeedPosts() {
     try {
-        const response = await fetch(`https://adminflow.ru/api/feed?userId=${currentUser.id}`);
+        const response = await fetch(`https://space-point.ru/api/feed?userId=${currentUser.id}`);
         if (!response.ok) {
             throw new Error('Ошибка при загрузке ленты');
         }
@@ -101,7 +101,7 @@ function displayPosts(posts) {
 
 async function toggleLike(postId) {
     try {
-        const response = await fetch('https://adminflow.ru/api/posts/like', {
+        const response = await fetch('https://space-point.ru/api/posts/like', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -146,7 +146,7 @@ async function toggleComments(postId) {
 
 async function loadComments(postId) {
     try {
-        const response = await fetch(`https://adminflow.ru/api/posts/${postId}/comments`);
+        const response = await fetch(`https://space-point.ru/api/posts/${postId}/comments`);
         if (!response.ok) throw new Error('Ошибка при загрузке комментариев');
         
         const data = await response.json();
@@ -184,7 +184,7 @@ async function submitComment(postId, button) {
     if (!content) return;
     
     try {
-        const response = await fetch('https://adminflow.ru/api/posts/comment', {
+        const response = await fetch('https://space-point.ru/api/posts/comment', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -302,7 +302,7 @@ async function deletePost(postId) {
     }
 
     try {
-        const response = await fetch(`https://adminflow.ru/api/posts/delete/${postId}`, {
+        const response = await fetch(`https://space-point.ru/api/posts/delete/${postId}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json'
@@ -331,7 +331,7 @@ async function deletePost(postId) {
 // Загрузка рекомендованных пользователей
 async function loadRecommendedUsers() {
     try {
-        const response = await fetch(`https://adminflow.ru/api/users/recommended?userId=${currentUser.id}`);
+        const response = await fetch(`https://space-point.ru/api/users/recommended?userId=${currentUser.id}`);
         if (!response.ok) throw new Error('Ошибка при загрузке рекомендаций');
         
         const data = await response.json();
@@ -358,7 +358,7 @@ document.getElementById('sort-posts').addEventListener('change', (e) => {
 // Функция загрузки случайных пользователей
 async function loadRandomUsers() {
     try {
-        const response = await fetch('https://adminflow.ru/api/users-list');
+        const response = await fetch('https://space-point.ru/api/users-list');
         if (!response.ok) {
             throw new Error('Ошибка при загрузке пользователей');
         }

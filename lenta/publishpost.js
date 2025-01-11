@@ -20,7 +20,7 @@ document.getElementById('publish-post-btn').addEventListener('click', async () =
             }
         }
 
-        const response = await fetch('https://adminflow.ru/api/posts/create', {
+        const response = await fetch('https://space-point.ru/api/posts/create', {
             method: 'POST',
             body: formData
         });

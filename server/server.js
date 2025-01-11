@@ -19,7 +19,7 @@ const STATUS_UPDATE_INTERVAL = 5000; // 5 секунд между обновле
 
 // Обновляем настройки CORS и SSL
 const corsOptions = {
-    origin: ['http://adminflow.ru', 'https://adminflow.ru'],
+    origin: ['http://space-point.ru', 'https://space-point.ru'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
@@ -29,9 +29,9 @@ app.use(cors(corsOptions));
 
 // Обновляем конфигурацию SSL
 const sslOptions = {
-    key: fs.readFileSync('/etc/letsencrypt/live/adminflow.ru/privkey.pem'),
-    cert: fs.readFileSync('/etc/letsencrypt/live/adminflow.ru/fullchain.pem'),
-    ca: fs.readFileSync('/etc/letsencrypt/live/adminflow.ru/chain.pem')
+    key: fs.readFileSync('/etc/letsencrypt/live/space-point.ru/privkey.pem'),
+    cert: fs.readFileSync('/etc/letsencrypt/live/space-point.ru/fullchain.pem'),
+    ca: fs.readFileSync('/etc/letsencrypt/live/space-point.ru/chain.pem')
 };
 
 
@@ -1857,7 +1857,7 @@ let transporter = nodemailer.createTransport({
     port: 2525,
     secure: false,
     auth: {
-        user: 'adminflow@adminflow.ru',
+        user: 'adminflow@space-point.ru',
         pass: 'Gg3985502'
     },
     tls: {
@@ -1886,7 +1886,7 @@ const alternativeTransporter = nodemailer.createTransport({
     secure: false,          // Для порта 587
     requireTLS: true,       // Требуем TLS
     auth: {
-        user: 'adminflow@adminflow.ru',
+        user: 'adminflow@space-point.ru',
         pass: 'Gg3985502'
     },
     tls: {
@@ -1957,7 +1957,7 @@ app.post('/api/send-verification-code', async (req, res) => {
 
         // Отправляем email
         await transporter.sendMail({
-            from: '"AdminFlow" <adminflow@adminflow.ru>',
+            from: '"AdminFlow" <adminflow@space-point.ru>',
             to: email,
             subject: 'Код подтверждения AdminFlow',
             html: `
@@ -2061,10 +2061,10 @@ const activeConnections = new Map();
 const io = new Server(httpsServer, {
     cors: {
         origin: [
-            'https://adminflow.ru',
-            'https://www.adminflow.ru',
-            'http://adminflow.ru',
-            'http://www.adminflow.ru'
+            'https://space-point.ru',
+            'https://www.space-point.ru',
+            'http://space-point.ru',
+            'http://www.space-point.ru'
         ],
         methods: ['GET', 'POST'],
         credentials: true

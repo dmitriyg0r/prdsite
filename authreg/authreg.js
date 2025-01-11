@@ -28,7 +28,7 @@ const API_URL = (() => {
     
     // Если мы в корпоративной сети, используем прямой IP или доменное имя сервера
     if (isCorpNetwork) {
-        return 'https://adminflow.ru'; // или IP-адрес сервера
+        return 'https://space-point.ru'; // или IP-адрес сервера
     }
     
     return protocol + '//' + hostname;
