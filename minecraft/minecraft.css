@@ -642,9 +642,10 @@
     
     .additional-sections {
         position: static;
-        width: 100%;
-        left: auto;
-        top: auto;
+        width: 543px;
+        left: 876px;
+        top: -1124px;
+        transform: translate(-2px, 0px);
     }
 }
 
