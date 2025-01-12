@@ -45,8 +45,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-            // Используем прямой запрос к API хостинга
-            const response = await fetch('https://mgr.hosting-minecraft.pro/api/server/7aa02cfa/status', {
+            // Используем локальный прокси
+            const response = await fetch('proxy.php', {
                 signal: controller.signal,
                 headers: {
                     'Cache-Control': 'no-cache',
