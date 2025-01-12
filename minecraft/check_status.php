@@ -59,13 +59,19 @@ function checkMinecraftServer() {
         fclose($socket);
         
         if ($response !== false) {
+            // Парсим JSON ответ от сервера
+            $data = json_decode(substr($response, 3), true);
+            
+            // Получаем информацию об игроках
+            $players = [
+                'online' => $data['players']['online'] ?? 0,
+                'max' => $data['players']['max'] ?? 30  // Значение по умолчанию 30
+            ];
+            
             return [
                 'online' => true,
                 'debug' => $debug,
-                'players' => [
-                    'online' => 0,
-                    'max' => 0
-                ]
+                'players' => $players
             ];
         } else {
             $debug[] = "Нет ответа от сервера";
