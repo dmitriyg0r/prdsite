@@ -499,9 +499,11 @@
 
 .reviews-section {
     position: relative;
-    left: 502px;
-    top: -84px;
-    width: 100%;
+    left: 6px;
+    top: 4px;
+    width: 498px;
+    transform: translate(-4px, 0px);
+    transition: none;
     max-width: 494px;
     margin: 2rem 0;
     background-color: var(--background-primary);
