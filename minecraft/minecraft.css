@@ -431,7 +431,10 @@
 }
 
 .rules-section {
-    width: 100%;
+    position: relative;
+    left: 733px;
+    top: -1376px;
+    width: 494px;
     max-width: 800px;
     margin: 2rem auto;
     background-color: var(--background-primary);
