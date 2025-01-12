@@ -717,6 +717,7 @@
 
 /* Добавляем новые стили для контейнера с описанием */
 .server-description {
+    width: 761px;
     background: var(--background-primary);
     border-radius: 20px;
     padding: 2rem;
