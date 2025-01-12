@@ -499,6 +499,9 @@
 }
 
 .reviews-section {
+    position: relative;
+    left: 502px;
+    top: -84px;
     width: 100%;
     max-width: 494px;
     margin: 2rem 0;
