@@ -497,7 +497,7 @@
 .reviews-section {
     width: 100%;
     max-width: 800px;
-    margin: 2rem auto;
+    margin: 0 auto;
     background-color: var(--background-primary);
     border-radius: 10px;
     padding: 1.5rem;
