@@ -88,11 +88,15 @@ function checkMinecraftServer() {
 
 try {
     $result = checkMinecraftServer();
+    header('Content-Type: application/json');
     echo json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+    exit;
 } catch (Exception $e) {
+    header('Content-Type: application/json');
     echo json_encode([
         'online' => false,
         'error' => $e->getMessage(),
         'debug' => ['Критическая ошибка при выполнении скрипта']
     ]);
+    exit;
 }
