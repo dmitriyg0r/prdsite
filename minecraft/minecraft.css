@@ -708,3 +708,118 @@
     gap: 2rem;
     margin-top: 2rem;
 }
+
+/* Добавляем новые стили для контейнера с описанием */
+.server-description {
+    background: var(--background-primary);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 0.8s ease;
+}
+
+.server-description h2 {
+    text-align: center;
+    color: var(--accent-color);
+    margin-bottom: 1.5rem;
+    font-size: 1.8rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.description-content {
+    color: var(--text-primary);
+}
+
+.intro-text {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+    text-align: justify;
+    padding: 0 1rem;
+}
+
+.features-section {
+    background: var(--background-secondary);
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin: 2rem 0;
+}
+
+.features-section h3 {
+    text-align: center;
+    color: var(--accent-color);
+    margin-bottom: 1.5rem;
+}
+
+.features-list {
+    list-style: none;
+    padding: 0;
+}
+
+.features-list li {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: var(--background-primary);
+    border-radius: 10px;
+    transition: transform 0.3s ease;
+}
+
+.features-list li:hover {
+    transform: translateX(10px);
+}
+
+.feature-icon {
+    font-size: 1.5rem;
+    margin-right: 1rem;
+    flex-shrink: 0;
+}
+
+.join-section {
+    text-align: center;
+    margin-top: 2rem;
+    padding: 2rem;
+    background: var(--background-secondary);
+    border-radius: 15px;
+}
+
+.join-section h3 {
+    color: var(--accent-color);
+    margin-bottom: 1rem;
+}
+
+.join-section p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 768px) {
+    .server-description {
+        padding: 1.5rem;
+    }
+
+    .intro-text {
+        padding: 0;
+    }
+
+    .features-list li {
+        flex-direction: column;
+    }
+
+    .feature-icon {
+        margin-bottom: 0.5rem;
+    }
+}
