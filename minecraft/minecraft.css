@@ -500,8 +500,8 @@
 
 .reviews-section {
     width: 100%;
-    max-width: 800px;
-    margin: 0 auto;
+    max-width: 494px;
+    margin: 2rem 0;
     background-color: var(--background-primary);
     border-radius: 10px;
     padding: 1.5rem;
@@ -634,19 +634,24 @@
 @media (max-width: 840px) {
     .reviews-section {
         width: 100%;
-        margin: 2rem 1rem;
+        margin: 2rem 0;
         padding: 1rem;
+    }
+    
+    .additional-sections {
+        position: static;
+        width: 100%;
+        left: auto;
+        top: auto;
     }
 }
 
 /* Добавляем новый контейнер для дополнительных секций */
 .additional-sections {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2rem;
-    margin-top: 2rem;
+    position: relative;
+    left: 733px;
+    top: -1346px;
+    width: 494px;
 }
 
 /* Добавляем новые стили для контейнера с описанием */
