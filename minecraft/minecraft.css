@@ -238,8 +238,7 @@
 
 .preview-gallery {
     width: 100%;
-    padding: 20px;
-    box-sizing: border-box;
+    margin-bottom: 2rem;
 }
 
 .preview-image {
@@ -714,6 +713,7 @@
     background: var(--background-primary);
     border-radius: 20px;
     padding: 2rem;
+    margin-top: 2rem;
     margin-bottom: 2rem;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
     animation: fadeIn 0.8s ease;
