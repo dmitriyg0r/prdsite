@@ -55,6 +55,10 @@ document.addEventListener('DOMContentLoaded', function() {
             
             clearTimeout(timeoutId);
             
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
             const data = await response.json();
             
             console.log('📋 Данные сервера:', data);
@@ -84,12 +88,9 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (error) {
             console.error('🚫 Ошибка при проверке статуса сервера:', error);
             
-            // Более информативное сообщение об ошибке
-            if (error.name === 'AbortError') {
-                statusElement.innerHTML = 'Таймаут подключения';
-            } else {
-                statusElement.innerHTML = 'Сервер недоступен';
-            }
+            statusElement.innerHTML = error.name === 'AbortError' 
+                ? 'Таймаут подключения' 
+                : 'Ошибка проверки';
             
             statusElement.style.color = '#f44336';
             playersOnlineElement.textContent = '0';
