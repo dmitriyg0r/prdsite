@@ -131,6 +131,54 @@
                     </div>
                 </div>
 
+                <div class="minecraft-container">
+                    <h1>Подключение к серверу Minecraft</h1>
+                    <div class="server-status animated-card">
+                        <h2>Статус сервера: <span id="server-status">
+                            <span class="loading-spinner"><i class="fas fa-spinner fa-spin"></i></span>
+                            Проверка...
+                        </span></h2>
+                        <p>Игроков онлайн: <span id="players-online">0</span>/<span id="players-max">0</span></p>
+                    </div>
+                    <div class="server-info">
+                        <div class="server-address">
+                            <h3>IP адрес сервера:</h3>
+                            <h4>Java Edition</h4>
+                            <div class="copy-container">
+                                <input type="text" id="server-ip-1" value="spacepoint.aboba.host" readonly>
+                                <button id="copy-button-1" class="copy-btn">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                            <h4>Bedrock Edition</h4>
+                            <div class="copy-container">
+                                <input type="text" id="server-ip-2" value="188.127.241.209:25735" readonly>
+                                <button id="copy-button-2" class="copy-btn">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="connection-steps">
+                            <h3>Как подключиться:</h3>
+                            <ol>
+                                <li>Запустите Minecraft 1.21.4</li>
+                                <li>Нажмите "Сетевая игра"</li>
+                                <li>Нажмите "Добавить сервер"</li>
+                                <li>Вставьте IP адрес сервера</li>
+                                <li>Нажмите "Готово" и подключитесь!</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <div class="payment-section">
+                        <h3>Получить доступ к серверу</h3>
+                        <form id="payment-form" class="payment-form">
+                            <input type="text" id="minecraft-login" placeholder="Ваш логин Minecraft" required>
+                            <button type="submit" class="payment-btn">Оплатить доступ</button>
+                        </form>
+                    </div>
+                </div>
+
                 <div class="rules-section">
                     <h3>Правила сервера</h3>
                     <div class="accordion">
@@ -171,131 +219,83 @@
                 </div>
             </div>
 
-            <div class="minecraft-container">
-                <h1>Подключение к серверу Minecraft</h1>
-                <div class="server-status animated-card">
-                    <h2>Статус сервера: <span id="server-status">
-                        <span class="loading-spinner"><i class="fas fa-spinner fa-spin"></i></span>
-                        Проверка...
-                    </span></h2>
-                    <p>Игроков онлайн: <span id="players-online">0</span>/<span id="players-max">0</span></p>
-                </div>
-                <div class="server-info">
-                    <div class="server-address">
-                        <h3>IP адрес сервера:</h3>
-                        <h4>Java Edition</h4>
-                        <div class="copy-container">
-                            <input type="text" id="server-ip-1" value="spacepoint.aboba.host" readonly>
-                            <button id="copy-button-1" class="copy-btn">
-                                <i class="fas fa-copy"></i>
-                            </button>
+            <div class="additional-sections">
+                <section class="plugins-section">
+                    <h3>Установленные плагины</h3>
+                    <div class="plugins-grid">
+                        <div class="plugin-item">
+                            <i class="fas fa-plug"></i>
+                            <h4>Geyser and Floodgate</h4>
+                            <p>Порт на бэдрок</p>
                         </div>
-                        <h4>Bedrock Edition</h4>
-                        <div class="copy-container">
-                            <input type="text" id="server-ip-2" value="188.127.241.209:25735" readonly>
-                            <button id="copy-button-2" class="copy-btn">
-                                <i class="fas fa-copy"></i>
-                            </button>
+                        <div class="plugin-item">
+                            <i class="fas fa-comments"></i>
+                            <h4>ChatEx</h4>
+                            <p>Красивый чат, убирает < player ></p>
+                        </div>
+                        <div class="plugin-item">
+                            <i class="fas fa-code-branch"></i>
+                            <h4>VivaVersion</h4>
+                            <p>Возможность запускать на более новых версиях 1.21.4 и выше...</p>
+                        </div>
+                        <div class="plugin-item">
+                            <i class="fas fa-user-circle"></i>
+                            <h4>SkinRestorer</h4>
+                            <p>Добавление скинов и их изменения /skin set nick</p>
+                        </div>
+                        <div class="plugin-item">
+                            <i class="fas fa-sync"></i>
+                            <h4>ServerRestart</h4>
+                            <p>Авто рестарт сервера в 04:20 каждый день + уведомление рестарта сервера</p>
+                        </div>
+                        <div class="plugin-item">
+                            <i class="fas fa-table"></i>
+                            <h4>PowerBoard</h4>
+                            <p>TAB + отображение префиксов игроков</p>
+                        </div>
+                        <div class="plugin-item">
+                            <i class="fas fa-microphone"></i>
+                            <h4>PlasmoVois</h4>
+                            <p>Голосовой чат + нужен мод для работы на сервере, без мода возможно играть</p>
+                        </div>
+                        <div class="plugin-item">
+                            <i class="fas fa-user-shield"></i>
+                            <h4>LackPerms</h4>
+                            <p>Привелегии и настройка их</p>
+                        </div>
+                        <div class="plugin-item">
+                            <i class="fas fa-palette"></i>
+                            <h4>ChatColor2</h4>
+                            <p>Установить цвет текста игроку</p>
+                        </div>
+                        <div class="plugin-item">
+                            <i class="fas fa-lock"></i>
+                            <h4>AuthME</h4>
+                            <p>Логин и пароль</p>
+                        </div>
+                        <div class="plugin-item">
+                            <i class="fas fa-shield-alt"></i>
+                            <h4>CorrProtect</h4>
+                            <p>Для просмотра кто изменял блок</p>
                         </div>
                     </div>
-                    <div class="connection-steps">
-                        <h3>Как подключиться:</h3>
-                        <ol>
-                            <li>Запустите Minecraft 1.21.4</li>
-                            <li>Нажмите "Сетевая игра"</li>
-                            <li>Нажмите "Добавить сервер"</li>
-                            <li>Вставьте IP адрес сервера</li>
-                            <li>Нажмите "Готово" и подключитесь!</li>
-                        </ol>
+                </section>
+                
+                <section class="reviews-section">
+                    <h3>Отзывы игроков</h3>
+                    <div class="reviews-container">
+                        <div class="reviews-messages" id="reviews-messages">
+                            <!-- Сообщения будут добавляться динамически -->
+                        </div>
+                        <form id="review-form" class="review-form">
+                            <input type="text" id="review-input" placeholder="Напишите ваш отзыв..." required>
+                            <button type="submit" class="review-submit-btn">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </form>
                     </div>
-                </div>
-
-                <div class="payment-section">
-                    <h3>Получить доступ к серверу</h3>
-                    <form id="payment-form" class="payment-form">
-                        <input type="text" id="minecraft-login" placeholder="Ваш логин Minecraft" required>
-                        <button type="submit" class="payment-btn">Оплатить доступ</button>
-                    </form>
-                </div>
+                </section>
             </div>
-        </div>
-
-        <div class="additional-sections">
-            <section class="plugins-section">
-                <h3>Установленные плагины</h3>
-                <div class="plugins-grid">
-                    <div class="plugin-item">
-                        <i class="fas fa-plug"></i>
-                        <h4>Geyser and Floodgate</h4>
-                        <p>Порт на бэдрок</p>
-                    </div>
-                    <div class="plugin-item">
-                        <i class="fas fa-comments"></i>
-                        <h4>ChatEx</h4>
-                        <p>Красивый чат, убирает < player ></p>
-                    </div>
-                    <div class="plugin-item">
-                        <i class="fas fa-code-branch"></i>
-                        <h4>VivaVersion</h4>
-                        <p>Возможность запускать на более новых версиях 1.21.4 и выше...</p>
-                    </div>
-                    <div class="plugin-item">
-                        <i class="fas fa-user-circle"></i>
-                        <h4>SkinRestorer</h4>
-                        <p>Добавление скинов и их изменения /skin set nick</p>
-                    </div>
-                    <div class="plugin-item">
-                        <i class="fas fa-sync"></i>
-                        <h4>ServerRestart</h4>
-                        <p>Авто рестарт сервера в 04:20 каждый день + уведомление рестарта сервера</p>
-                    </div>
-                    <div class="plugin-item">
-                        <i class="fas fa-table"></i>
-                        <h4>PowerBoard</h4>
-                        <p>TAB + отображение префиксов игроков</p>
-                    </div>
-                    <div class="plugin-item">
-                        <i class="fas fa-microphone"></i>
-                        <h4>PlasmoVois</h4>
-                        <p>Голосовой чат + нужен мод для работы на сервере, без мода возможно играть</p>
-                    </div>
-                    <div class="plugin-item">
-                        <i class="fas fa-user-shield"></i>
-                        <h4>LackPerms</h4>
-                        <p>Привелегии и настройка их</p>
-                    </div>
-                    <div class="plugin-item">
-                        <i class="fas fa-palette"></i>
-                        <h4>ChatColor2</h4>
-                        <p>Установить цвет текста игроку</p>
-                    </div>
-                    <div class="plugin-item">
-                        <i class="fas fa-lock"></i>
-                        <h4>AuthME</h4>
-                        <p>Логин и пароль</p>
-                    </div>
-                    <div class="plugin-item">
-                        <i class="fas fa-shield-alt"></i>
-                        <h4>CorrProtect</h4>
-                        <p>Для просмотра кто изменял блок</p>
-                    </div>
-                </div>
-            </section>
-            
-            <section class="reviews-section">
-                <h3>Отзывы игроков</h3>
-                <div class="reviews-container">
-                    <div class="reviews-messages" id="reviews-messages">
-                        <!-- Сообщения будут добавляться динамически -->
-                    </div>
-                    <form id="review-form" class="review-form">
-                        <input type="text" id="review-input" placeholder="Напишите ваш отзыв..." required>
-                        <button type="submit" class="review-submit-btn">
-                            <i class="fas fa-paper-plane"></i>
-                        </button>
-                    </form>
-                </div>
-            </section>
         </div>
     </main>
 

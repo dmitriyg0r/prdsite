@@ -430,11 +430,13 @@
 }
 
 .rules-section {
-    width: 800px;
-    margin-top: 2rem;
+    width: 100%;
+    max-width: 800px;
+    margin: 2rem auto;
     background-color: var(--background-primary);
     padding: 1.5rem;
     border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 .accordion {
