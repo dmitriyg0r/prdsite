@@ -1,10 +1,9 @@
 .minecraft-container {
     width: 628px;
-    height: auto;
-    min-height: 976px;
-    margin: 0;
-    transform: none;
+    height: 976.109px;
+    transform: translate(0px, -32px);
     max-width: 800px;
+    margin: 2rem auto;
     padding: 2rem;
     background-color: var(--background-secondary);
     border-radius: 10px;
@@ -226,19 +225,15 @@
 
 .container-wrapper {
     display: flex;
-    flex-direction: row;
-    justify-content: center;
-    gap: 2rem;
-    max-width: 1600px;
-    margin: 0 auto;
-    padding: 2rem;
-    position: relative;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    gap: 3rem;
 }
 
 .preview-container {
-    width: 760px;
-    height: auto;
-    min-height: 2434px;
+    height: 2434.88px;
+    width: 100%;
 }
 
 .preview-gallery {
@@ -384,18 +379,16 @@
 /* Адаптивность для мобильных устройств */
 @media (max-width: 1200px) {
     .container-wrapper {
-        flex-direction: column;
-        align-items: center;
-        padding: 1rem;
+        grid-template-columns: 1fr;
+        width: calc(100% - 2rem);
+        margin: 2rem auto;
     }
-
+    
     .preview-container,
-    .minecraft-container,
-    .rules-section,
-    .additional-sections,
-    .reviews-section {
+    .minecraft-container {
+        max-width: 100%;
         width: 100%;
-        max-width: 760px;
+        margin: 0 auto;
     }
 }
 
@@ -437,12 +430,12 @@
 }
 
 .rules-section {
-    position: static;
+    position: relative;
+    left: 733px;
+    top: -1376px;
     width: 494px;
-    margin: 2rem 0;
-    transform: none;
-    left: auto;
-    top: auto;
+    max-width: 800px;
+    margin: 2rem auto;
     background-color: var(--background-primary);
     padding: 1.5rem;
     border-radius: 10px;
@@ -505,12 +498,14 @@
 }
 
 .reviews-section {
-    position: static;
-    width: 494px;
+    position: relative;
+    left: 147px;
+    top: 226px;
+    width: 498px;
+    transform: translate(-4px, 0px);
+    transition: none;
+    max-width: 494px;
     margin: 2rem 0;
-    transform: none;
-    left: auto;
-    top: auto;
     background-color: var(--background-primary);
     border-radius: 10px;
     padding: 1.5rem;
@@ -658,22 +653,20 @@
 
 /* Добавляем новый контейнер для дополнительных секций */
 .additional-sections {
-    position: static;
+    position: relative;
+    left: 733px;
+    top: -1346px;
     width: 494px;
-    margin: 2rem 0;
-    transform: none;
-    left: auto;
-    top: auto;
 }
 
 /* Добавляем новые стили для контейнера с описанием */
 .server-description {
-    width: 100%;
-    max-width: 760px;
-    margin: 2rem 0;
+    width: 761px;
     background: var(--background-primary);
     border-radius: 20px;
     padding: 2rem;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
     animation: fadeIn 0.8s ease;
 }
@@ -784,11 +777,9 @@
 }
 
 main {
+    height: 2443.91px;
     width: 100%;
-    max-width: 100%;
-    height: auto;
-    min-height: 2443px;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 2rem;
 }
