@@ -45,8 +45,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-            // Используем локальный прокси
-            const response = await fetch('proxy.php', {
+            // Используем локальный JSON файл
+            const response = await fetch('server-status.json', {
                 signal: controller.signal,
                 headers: {
                     'Cache-Control': 'no-cache',

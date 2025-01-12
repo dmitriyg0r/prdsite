@@ -1,0 +1,7 @@
+{
+    "online": true,
+    "players": {
+        "online": 3,
+        "max": 30
+    }
+} 
