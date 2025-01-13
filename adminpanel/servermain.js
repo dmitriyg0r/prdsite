@@ -30,7 +30,7 @@ app.use((req, res, next) => {
 const apiRouter = express.Router();
 
 // Определяем маршруты API
-apiRouter.get('/whitelist', async (req, res) => {
+apiRouter.get('/WhiteList', async (req, res) => {
     try {
         console.log('Выполняется запрос к базе данных White_List...');
         const [rows] = await db.query('SELECT * FROM White_List');
@@ -43,7 +43,7 @@ apiRouter.get('/whitelist', async (req, res) => {
     }
 });
 
-apiRouter.post('/whitelist', async (req, res) => {
+apiRouter.post('/WhiteList', async (req, res) => {
     try {
         const { UUID, user } = req.body;
         await db.query('INSERT INTO White_List (UUID, user) VALUES (?, ?)', [UUID, user]);
@@ -53,7 +53,7 @@ apiRouter.post('/whitelist', async (req, res) => {
     }
 });
 
-apiRouter.delete('/whitelist/:uuid', async (req, res) => {
+apiRouter.delete('/WhiteList/:uuid', async (req, res) => {
     try {
         const { uuid } = req.params;
         await db.query('DELETE FROM White_List WHERE UUID = ?', [uuid]);
@@ -78,8 +78,8 @@ app.get('/test', (req, res) => {
 });
 
 // Маршрут для получения данных из White_List
-app.get('/api/whitelist', async (req, res) => {
-    console.log('Получен запрос к /api/whitelist');
+app.get('/api/WhiteList', async (req, res) => {
+    console.log('Получен запрос к /api/WhiteList');
     try {
         // Прямой запрос к таблице White_List
         const [rows] = await db.query('SELECT UUID, user FROM White_List');
