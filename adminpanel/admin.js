@@ -1050,3 +1050,107 @@ function hideLoader() {
     }
 }
 
+// Функция обновления таблицы пользователей
+function updateUsersTable(users) {
+    const tbody = document.getElementById('usersTableBody');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+
+    users.forEach(user => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>
+                <input type="checkbox" class="select-user" data-id="${user.id}">
+            </td>
+            <td>
+                <div class="user-info">
+                    <img src="${user.avatar || 'default-avatar.png'}" alt="${user.name}" class="user-avatar">
+                    <div>
+                        <div class="user-name">${user.name}</div>
+                        <div class="user-email">${user.email}</div>
+                    </div>
+                </div>
+            </td>
+            <td>
+                <span class="role-badge ${user.role}">${user.role}</span>
+            </td>
+            <td>
+                <span class="status-badge ${user.status}">${user.status}</span>
+            </td>
+            <td>${new Date(user.registrationDate).toLocaleDateString()}</td>
+            <td>
+                <div class="table-actions">
+                    <button class="action-btn" onclick="editUser(${user.id})">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="action-btn" onclick="deleteUser(${user.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    // Обновляем пагинацию
+    updatePagination(totalUsers, currentPage);
+}
+
+// Вспомогательная функция для обновления пагинации
+function updatePagination(total, current) {
+    const pagination = document.querySelector('.pagination');
+    if (!pagination) return;
+
+    const pages = Math.ceil(total / USERS_PER_PAGE);
+    let paginationHTML = '';
+
+    // Кнопка "Назад"
+    paginationHTML += `
+        <button class="pagination-btn" 
+                ${current === 1 ? 'disabled' : ''} 
+                onclick="loadUsers(${current - 1})">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+    `;
+
+    // Номера страниц
+    for (let i = 1; i <= pages; i++) {
+        paginationHTML += `
+            <button class="pagination-btn ${i === current ? 'active' : ''}" 
+                    onclick="loadUsers(${i})">
+                ${i}
+            </button>
+        `;
+    }
+
+    // Кнопка "Вперед"
+    paginationHTML += `
+        <button class="pagination-btn" 
+                ${current === pages ? 'disabled' : ''} 
+                onclick="loadUsers(${current + 1})">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+    `;
+
+    pagination.innerHTML = paginationHTML;
+}
+
+// Константа для количества пользователей на странице
+const USERS_PER_PAGE = 10;
+let currentPage = 1;
+let totalUsers = 0;
+
+// Функции для работы с пользователями
+function editUser(userId) {
+    // Реализация редактирования пользователя
+    console.log('Редактирование пользователя:', userId);
+}
+
+function deleteUser(userId) {
+    // Реализация удаления пользователя
+    if (confirm('Вы уверены, что хотите удалить этого пользователя?')) {
+        console.log('Удаление пользователя:', userId);
+    }
+}
+
