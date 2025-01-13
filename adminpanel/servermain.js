@@ -36,7 +36,7 @@ app.get('/api/WhiteList', async (req, res) => {
         res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
         res.header('Access-Control-Allow-Credentials', 'true');
 
-        const [rows] = await db.query('SELECT * FROM white_list');
+        const [rows] = await db.query('SELECT * FROM White_List');
         
         if (!rows) {
             throw new Error('Данные не получены');
@@ -66,7 +66,7 @@ app.delete('/api/WhiteList/:uuid', async (req, res) => {
             throw new Error('UUID не указан');
         }
 
-        const [result] = await db.query('DELETE FROM white_list WHERE UUID = ?', [uuid]);
+        const [result] = await db.query('DELETE FROM White_List WHERE UUID = ?', [uuid]);
         
         if (result.affectedRows === 0) {
             return res.status(404).json({
