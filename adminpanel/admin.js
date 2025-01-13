@@ -675,11 +675,10 @@ window.addEventListener('unhandledrejection', function(event) {
 });
 
 async function loadWhitelist() {
-    const url = `${API_URL}/api/WhiteList`;
-    console.log('Загрузка данных с:', url);
-    
+    console.log('Начало загрузки данных...');
     try {
-        const response = await fetch(url);
+        // Обратите внимание на измененный URL - добавлен префикс /admin
+        const response = await fetch(`${API_URL}/admin/api/WhiteList`);
         console.log('Статус ответа:', response.status);
         console.log('Тип контента:', response.headers.get('content-type'));
         
@@ -687,11 +686,8 @@ async function loadWhitelist() {
             throw new Error(`HTTP ошибка! статус: ${response.status}`);
         }
         
-        const text = await response.text();
-        console.log('Полученный текст:', text);
-        
-        const data = JSON.parse(text);
-        console.log('Распарсенные данные:', data);
+        const data = await response.json();
+        console.log('Полученные данные:', data);
 
         const tbody = document.getElementById('whitelistTableBody');
         tbody.innerHTML = '';
@@ -758,7 +754,7 @@ async function addToWhitelist() {
 
 async function removeFromWhitelist(uuid) {
     try {
-        const response = await fetch(`${API_URL}/api/WhiteList/${uuid}`, {
+        const response = await fetch(`${API_URL}/admin/api/WhiteList/${uuid}`, {
             method: 'DELETE'
         });
         if (response.ok) {

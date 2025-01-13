@@ -26,8 +26,11 @@ app.get('/test', (req, res) => {
     res.json({ message: 'Сервер работает' });
 });
 
-// Маршрут для White_List
-app.get('/api/WhiteList', async (req, res) => {
+// Создаем отдельный роутер для админ-панели
+const adminRouter = express.Router();
+
+// Маршрут для White_List теперь будет на /admin/api/WhiteList
+adminRouter.get('/api/WhiteList', async (req, res) => {
     console.log('=== Запрос к White_List ===');
     try {
         const [rows] = await db.query('SELECT * FROM White_List');
@@ -44,6 +47,9 @@ app.get('/api/WhiteList', async (req, res) => {
         });
     }
 });
+
+// Подключаем админ-роутер
+app.use('/admin', adminRouter);
 
 // Добавим тестовый маршрут
 app.get('/api/test', (req, res) => {
