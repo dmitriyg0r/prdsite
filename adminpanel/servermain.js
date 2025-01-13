@@ -22,7 +22,7 @@ app.get('/test', (req, res) => {
 
 app.get('/api/whitelist', async (req, res) => {
     try {
-        const [rows] = await db.query('SELECT * FROM white_list');
+        const [rows] = await db.query('SELECT * FROM White_List');
         res.json({ success: true, data: rows });
     } catch (error) {
         console.error('Ошибка:', error);
@@ -33,7 +33,7 @@ app.get('/api/whitelist', async (req, res) => {
 app.post('/api/whitelist', async (req, res) => {
     try {
         const { UUID, user } = req.body;
-        await db.query('INSERT INTO white_list (UUID, user) VALUES (?, ?)', [UUID, user]);
+        await db.query('INSERT INTO White_List (UUID, user) VALUES (?, ?)', [UUID, user]);
         res.json({ success: true, message: 'Запись добавлена' });
     } catch (error) {
         console.error('Ошибка:', error);
@@ -44,7 +44,7 @@ app.post('/api/whitelist', async (req, res) => {
 app.delete('/api/whitelist/:uuid', async (req, res) => {
     try {
         const { uuid } = req.params;
-        await db.query('DELETE FROM white_list WHERE UUID = ?', [uuid]);
+        await db.query('DELETE FROM White_List WHERE UUID = ?', [uuid]);
         res.json({ success: true, message: 'Запись удалена' });
     } catch (error) {
         console.error('Ошибка:', error);
