@@ -11,9 +11,6 @@ const pool = mysql.createPool({
     queueLimit: 0
 });
 
-// Убедимся, что у нас есть подключение к БД
-const db = require('../database/db.js');
-
 /**
  * Получение данных из White List с пагинацией
  * @param {number} page - Номер страницы
