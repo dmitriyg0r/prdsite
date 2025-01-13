@@ -37,6 +37,13 @@ app.get('/api/whitelist', async (req, res) => {
 app.post('/api/whitelist', async (req, res) => {
     try {
         const { UUID, user } = req.body;
+        if (!UUID || !user) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'UUID и имя пользователя обязательны' 
+            });
+        }
+        
         await db.query('INSERT INTO White_List (UUID, user) VALUES (?, ?)', [UUID, user]);
         res.json({ success: true, message: 'Запись добавлена' });
     } catch (error) {
