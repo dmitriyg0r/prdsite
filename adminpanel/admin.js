@@ -677,23 +677,25 @@ window.addEventListener('unhandledrejection', function(event) {
 async function loadWhitelist() {
     console.log('Начало загрузки данных...');
     try {
-        // Обратите внимание на измененный URL - добавлен префикс /admin
-        const response = await fetch(`${API_URL}/admin/api/WhiteList`);
+        const response = await fetch(`${API_URL}/api/WhiteList`, {
+            credentials: 'include',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        });
+        
         console.log('Статус ответа:', response.status);
         console.log('Тип контента:', response.headers.get('content-type'));
         
-        if (!response.ok) {
-            throw new Error(`HTTP ошибка! статус: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        console.log('Полученные данные:', data);
+        const result = await response.json();
+        console.log('Полученные данные:', result);
 
         const tbody = document.getElementById('whitelistTableBody');
         tbody.innerHTML = '';
         
-        if (data.data) {
-            data.data.forEach(item => {
+        if (result.success && result.data) {
+            result.data.forEach(item => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${item.UUID || 'Не указан'}</td>
@@ -706,6 +708,8 @@ async function loadWhitelist() {
                 `;
                 tbody.appendChild(row);
             });
+        } else {
+            throw new Error(result.error || 'Ошибка загрузки данных');
         }
     } catch (error) {
         console.error('Ошибка загрузки WhiteList:', error);
@@ -720,70 +724,35 @@ async function loadWhitelist() {
     }
 }
 
-async function addToWhitelist() {
-    const UUID = document.getElementById('uuidInput').value;
-    const user = document.getElementById('userInput').value;
-    
-    if (!UUID || !user) {
-        alert('Заполните все поля');
+async function removeFromWhitelist(uuid) {
+    if (!confirm('Вы уверены, что хотите удалить эту запись?')) {
         return;
     }
-    
-    try {
-        const response = await fetch(`${API_URL}/api/WhiteList`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ UUID, user })
-        });
-        
-        const data = await response.json();
-        if (data.success) {
-            document.getElementById('uuidInput').value = '';
-            document.getElementById('userInput').value = '';
-            loadWhitelist();
-        } else {
-            alert(data.error || 'Ошибка при добавлении записи');
-        }
-    } catch (error) {
-        console.error('Ошибка добавления в white list:', error);
-        alert('Ошибка при добавлении записи');
-    }
-}
 
-async function removeFromWhitelist(uuid) {
     try {
-        const response = await fetch(`${API_URL}/admin/api/WhiteList/${uuid}`, {
-            method: 'DELETE'
+        const response = await fetch(`${API_URL}/api/WhiteList/${uuid}`, {
+            method: 'DELETE',
+            credentials: 'include',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
         });
-        if (response.ok) {
-            loadWhitelist();
+
+        const result = await response.json();
+        
+        if (result.success) {
+            loadWhitelist(); // Перезагружаем список
         } else {
-            throw new Error('Ошибка при удалении записи');
+            throw new Error(result.error || 'Ошибка при удалении');
         }
     } catch (error) {
         console.error('Ошибка при удалении:', error);
-        alert('Не удалось удалить запись');
+        alert('Не удалось удалить запись: ' + error.message);
     }
 }
 
-// Добавляем функцию для обработки ошибок
-function handleError(err) {
-    console.error(err);
-    if (err.message.includes('401')) {
-        localStorage.removeItem('adminId');
-        localStorage.removeItem('adminToken');
-        location.reload();
-    } else {
-        alert(err.message || 'Произошла ошибка');
-    }
-}
-
-// Также добавим проверку значения API_URL
-console.log('API_URL:', API_URL);
-
-// Вызываем функцию при загрузке страницы
+// Загружаем данные при загрузке страницы
 document.addEventListener('DOMContentLoaded', loadWhitelist);
 
 // Добавим функцию проверки API

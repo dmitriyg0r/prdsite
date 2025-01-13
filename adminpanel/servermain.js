@@ -3,16 +3,16 @@ const cors = require('cors');
 const db = require('./maindb.js');
 const app = express();
 
-// Добавим подробное логирование
+// Логирование запросов
 app.use((req, res, next) => {
     console.log('=== Новый запрос ===');
     console.log('URL:', req.url);
     console.log('Метод:', req.method);
-    console.log('Headers:', JSON.stringify(req.headers, null, 2));
+    console.log('Headers:', req.headers);
     next();
 });
 
-// Настройка CORS
+// CORS и JSON
 app.use(cors({
     origin: ['https://space-point.ru', 'http://localhost:3000'],
     methods: ['GET', 'POST', 'DELETE'],
@@ -21,16 +21,8 @@ app.use(cors({
 
 app.use(express.json());
 
-// Тестовый маршрут
-app.get('/test', (req, res) => {
-    res.json({ message: 'Сервер работает' });
-});
-
-// Создаем отдельный роутер для админ-панели
-const adminRouter = express.Router();
-
-// Маршрут для White_List теперь будет на /admin/api/WhiteList
-adminRouter.get('/api/WhiteList', async (req, res) => {
+// Маршрут для White_List
+app.get('/api/WhiteList', async (req, res) => {
     console.log('=== Запрос к White_List ===');
     try {
         const [rows] = await db.query('SELECT * FROM White_List');
@@ -48,32 +40,40 @@ adminRouter.get('/api/WhiteList', async (req, res) => {
     }
 });
 
-// Подключаем админ-роутер
-app.use('/admin', adminRouter);
+// Маршрут для удаления записей
+app.delete('/api/WhiteList/:uuid', async (req, res) => {
+    console.log('=== Запрос на удаление из White_List ===');
+    try {
+        const { uuid } = req.params;
+        await db.query('DELETE FROM White_List WHERE UUID = ?', [uuid]);
+        res.json({
+            success: true,
+            message: 'Запись удалена'
+        });
+    } catch (error) {
+        console.error('Ошибка при удалении:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
 
-// Добавим тестовый маршрут
+// Тестовый маршрут
 app.get('/api/test', (req, res) => {
     res.json({
+        success: true,
         message: 'API работает',
-        time: new Date().toISOString(),
-        headers: req.headers
+        time: new Date().toISOString()
     });
 });
 
-// Обработка 404
-app.use((req, res) => {
-    console.log('404 для URL:', req.url);
-    res.status(404).json({
-        success: false,
-        error: `Путь ${req.url} не найден`
-    });
-});
-
-// Запуск сервера
-const PORT = process.env.PORT || 3000;
+// Запускаем сервер на порту 5003
+const PORT = 5003;
 app.listen(PORT, () => {
     console.log(`Сервер запущен на порту ${PORT}`);
     console.log('Доступные маршруты:');
-    console.log('- GET /test');
+    console.log('- GET /api/test');
     console.log('- GET /api/WhiteList');
+    console.log('- DELETE /api/WhiteList/:uuid');
 });
