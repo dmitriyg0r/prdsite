@@ -19,23 +19,21 @@ app.use(express.json());
 // Переместить статические маршруты после API-маршрутов
 // Сначала определяем все API-маршруты
 app.get('/api/WhiteList', async (req, res) => {
+    console.log('Получен запрос к /api/WhiteList');
+    console.log('Query параметры:', req.query);
+    
     try {
-        // Проверка авторизации
-        const adminId = req.query.adminId;
-        if (!adminId) {
-            return res.status(401).json({ 
-                success: false, 
-                error: 'Требуется авторизация' 
-            });
-        }
 
+        console.log('Выполняем запрос к базе данных...');
         const [rows] = await db.query('SELECT * FROM White_List');
+        console.log('Получены данные:', rows);
+        
         res.json({ 
             success: true, 
             data: rows 
         });
     } catch (error) {
-        console.error('Ошибка:', error);
+        console.error('Ошибка при обработке запроса:', error);
         res.status(500).json({ 
             success: false, 
             error: error.message 
@@ -101,6 +99,19 @@ app.use((req, res, next) => {
     next();
 });
 
+// Добавьте middleware для детального логирования всех запросов
+app.use((req, res, next) => {
+    console.log({
+        method: req.method,
+        url: req.url,
+        path: req.path,
+        headers: req.headers,
+        query: req.query,
+        body: req.body
+    });
+    next();
+});
+
 // Путь к SSL сертификатам
 const options = {
     cert: fs.readFileSync(path.join('/etc/letsencrypt/live/space-point.ru', 'fullchain.pem')),
@@ -137,4 +148,21 @@ app.get('/api/routes', (req, res) => {
         }
     });
     res.json(routes);
+});
+
+// Убедимся, что маршруты API обрабатываются до статических файлов
+const apiRoutes = express.Router();
+apiRoutes.get('/WhiteList', /* ... существующий обработчик ... */);
+apiRoutes.post('/WhiteList', /* ... существующий обработчик ... */);
+apiRoutes.delete('/WhiteList/:uuid', /* ... существующий обработчик ... */);
+
+app.use('/api', apiRoutes);
+
+// Обработчик 404 ошибок
+app.use((req, res) => {
+    console.log('404 для URL:', req.url);
+    res.status(404).json({
+        success: false,
+        error: `Путь ${req.url} не найден`
+    });
 });
