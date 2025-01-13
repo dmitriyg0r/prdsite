@@ -676,15 +676,25 @@ window.addEventListener('unhandledrejection', function(event) {
 
 async function loadWhitelist() {
     try {
-        const response = await fetch(`${API_URL}/api/WhiteList?adminId=${localStorage.getItem('adminId')}`, {
+        const url = `${API_URL}/api/WhiteList?adminId=${localStorage.getItem('adminId')}`;
+        console.log('Отправка запроса к URL:', url);
+        
+        const headers = {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+        };
+        console.log('Заголовки запроса:', headers);
+        
+        const response = await fetch(url, {
             credentials: 'include',
-            headers: {
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-            }
+            headers: headers
         });
         
+        console.log('Статус ответа:', response.status);
+        console.log('Заголовки ответа:', Object.fromEntries(response.headers));
+        
         const data = await handleResponse(response);
+        console.log('Полученные данные:', data);
         
         if (data.success) {
             const tbody = document.getElementById('whitelistTableBody');
@@ -705,7 +715,10 @@ async function loadWhitelist() {
             });
         }
     } catch (error) {
-        console.error('Ошибка загрузки white list:', error);
+        console.error('Подробная ошибка загрузки white list:', {
+            message: error.message,
+            stack: error.stack
+        });
         handleError(error);
     }
 }
@@ -774,3 +787,6 @@ function handleError(err) {
         alert(err.message || 'Произошла ошибка');
     }
 }
+
+// Также добавим проверку значения API_URL
+console.log('API_URL:', API_URL);
