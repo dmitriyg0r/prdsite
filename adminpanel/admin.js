@@ -659,7 +659,7 @@ window.addEventListener('unhandledrejection', function(event) {
     }
 });
 
-// Загрузка данных White_List
+// Функция для загрузки данных White List
 async function loadWhiteListData() {
     try {
         const response = await fetch(`${API_URL}/api/White_List`, {
@@ -678,28 +678,29 @@ async function loadWhiteListData() {
             data.data.forEach(item => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${item.UUID || 'Не указан'}</td>
-                    <td>${item.user || 'Не указан'}</td>
+                    <td>${item.uuid}</td>
+                    <td>${item.username}</td>
                     <td>
-                        <button onclick="removeFromWhitelist('${item.UUID}')" class="action-btn">Удалить</button>
+                        <button onclick="removeFromWhitelist('${item.uuid}')" class="action-btn delete">
+                            Удалить
+                        </button>
                     </td>
                 `;
                 tbody.appendChild(row);
             });
         }
     } catch (err) {
-        console.error('Ошибка при загрузке White_List:', err);
-        alert('Ошибка при загрузке White_List');
+        console.error('Ошибка при загрузке White List:', err);
     }
 }
 
-// Добавление в White_List
+// Функция для добавления в White List
 async function addToWhitelist() {
     const uuid = document.getElementById('uuidInput').value.trim();
     const username = document.getElementById('userInput').value.trim();
     
     if (!uuid || !username) {
-        alert('Пожалуйста, заполните все поля');
+        alert('Пожалуйста, заполните оба поля');
         return;
     }
     
@@ -722,14 +723,14 @@ async function addToWhitelist() {
             loadWhiteListData();
         }
     } catch (err) {
-        console.error('Ошибка при добавлении в White_List:', err);
-        alert('Ошибка при добавлении в White_List');
+        console.error('Ошибка при добавлении в White List:', err);
+        alert('Ошибка при добавлении в White List');
     }
 }
 
-// Удаление из White_List
+// Функция для удаления из White List
 async function removeFromWhitelist(uuid) {
-    if (!confirm('Вы уверены, что хотите удалить этого игрока из White_List?')) {
+    if (!confirm('Вы уверены, что хотите удалить этого игрока из White List?')) {
         return;
     }
     
@@ -748,7 +749,8 @@ async function removeFromWhitelist(uuid) {
             loadWhiteListData();
         }
     } catch (err) {
-        console.error('Ошибка при удалении из White_List:', err);
-        alert('Ошибка при удалении из White_List');
+        console.error('Ошибка при удалении из White List:', err);
+        alert('Ошибка при удалении из White List');
     }
 }
+
