@@ -1,4 +1,4 @@
-const API_URL = 'https://space-point:3000';
+const API_URL = 'http://45.91.238.3:3000';
 
 let currentPage = 1;
 let totalPages = 1;
@@ -689,6 +689,8 @@ async function loadWhitelist() {
                 `;
                 tbody.appendChild(row);
             });
+        } else {
+            console.error('Ошибка загрузки white list:', data.error);
         }
     } catch (error) {
         console.error('Ошибка загрузки white list:', error);

@@ -4,7 +4,10 @@ const db = require('../adminpanel/maindb.js'); // Путь к вашему фа�
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'DELETE', 'UPDATE', 'PUT', 'PATCH']
+}));
 app.use(express.json());
 
 // Роуты для работы с white_list
