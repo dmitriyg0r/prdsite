@@ -656,9 +656,14 @@ async function loadWhitelist() {
             credentials: 'include',
             headers: {
                 'Accept': 'application/json',
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
             }
         });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         
         const result = await response.json();
 
@@ -666,6 +671,17 @@ async function loadWhitelist() {
         tbody.innerHTML = '';
         
         if (result.success && result.data) {
+            if (result.data.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="3" style="text-align: center;">
+                            Список пуст
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
             result.data.forEach(item => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -683,6 +699,7 @@ async function loadWhitelist() {
             throw new Error(result.error || 'Ошибка загрузки данных');
         }
     } catch (error) {
+        console.error('Ошибка загрузки White List:', error);
         const tbody = document.getElementById('whitelistTableBody');
         tbody.innerHTML = `
             <tr>

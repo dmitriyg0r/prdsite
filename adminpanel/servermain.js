@@ -30,7 +30,12 @@ app.get('/api/WhiteList', async (req, res) => {
             throw new Error('Нет подключения к базе данных');
         }
 
-        // Используем правильное имя таблицы (учитывая регистр)
+        // Добавляем CORS заголовки
+        res.header('Access-Control-Allow-Origin', ['https://space-point.ru', 'http://localhost:3000']);
+        res.header('Access-Control-Allow-Methods', 'GET, POST, DELETE');
+        res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+        res.header('Access-Control-Allow-Credentials', 'true');
+
         const [rows] = await db.query('SELECT * FROM white_list');
         
         if (!rows) {
