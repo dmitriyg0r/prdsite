@@ -3226,11 +3226,17 @@ app.get('/api/charts', checkAdmin, async (req, res) => {
 app.get('/api/White_List', async (req, res) => {
     try {
         const { page = 1, limit = 10 } = req.query;
-        if (typeof getWhiteListData !== 'function') {
-            throw new Error('getWhiteListData is not properly imported');
-        }
         const result = await getWhiteListData(parseInt(page), parseInt(limit));
-        res.json(result);
+        
+        if (result.success) {
+            res.json(result);
+        } else {
+            res.status(500).json({
+                success: false,
+                error: 'Ошибка при получении данных таблицы',
+                details: result.error
+            });
+        }
     } catch (err) {
         console.error('Error fetching White_List:', err);
         res.status(500).json({
