@@ -95,6 +95,12 @@ app.use((err, req, res, next) => {
     });
 });
 
+// Добавьте middleware для логирования всех запросов
+app.use((req, res, next) => {
+    console.log(`${req.method} ${req.url}`);
+    next();
+});
+
 // Путь к SSL сертификатам
 const options = {
     cert: fs.readFileSync(path.join('/etc/letsencrypt/live/space-point.ru', 'fullchain.pem')),
@@ -110,4 +116,25 @@ https.createServer(options, app).listen(3000, '0.0.0.0', () => {
 // Обработка необработанных ошибок
 process.on('unhandledRejection', (error) => {
     console.error('Необработанная ошибка:', error);
+});
+
+// Добавьте в начало после определения app
+app._router.stack.forEach(function(r){
+    if (r.route && r.route.path){
+        console.log(r.route.path)
+    }
+});
+
+// Или добавьте специальный эндпоинт для просмотра маршрутов
+app.get('/api/routes', (req, res) => {
+    const routes = [];
+    app._router.stack.forEach(function(middleware){
+        if(middleware.route){ // routes registered directly on the app
+            routes.push({
+                path: middleware.route.path,
+                method: Object.keys(middleware.route.methods)[0]
+            });
+        }
+    });
+    res.json(routes);
 });
