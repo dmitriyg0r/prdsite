@@ -670,20 +670,18 @@ async function loadWhiteListData() {
         });
         
         const data = await handleResponse(response);
-        console.log('Полученные данные White List:', data);
         
         if (data.success) {
             const tbody = document.getElementById('whitelistTableBody');
             tbody.innerHTML = '';
             
             data.data.forEach(item => {
-                console.log('Элемент White List:', item);
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${item.uuid}</td>
-                    <td>${item.username || item.name}</td>
+                    <td>${item.UUID}</td>
+                    <td>${item.user}</td>
                     <td>
-                        <button onclick="removeFromWhitelist('${item.uuid}')" class="action-btn delete">
+                        <button onclick="removeFromWhitelist('${item.UUID}')" class="action-btn delete">
                             Удалить
                         </button>
                     </td>
@@ -714,7 +712,7 @@ async function addToWhitelist() {
                 'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
             },
             credentials: 'include',
-            body: JSON.stringify({ uuid, username })
+            body: JSON.stringify({ UUID: uuid, user: username })
         });
         
         const data = await handleResponse(response);
