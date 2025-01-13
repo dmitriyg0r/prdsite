@@ -678,10 +678,10 @@ async function loadWhiteListData() {
             data.data.forEach(item => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${item.uuid}</td>
-                    <td>${item.username}</td>
+                    <td>${item.UUID || 'Не указан'}</td>
+                    <td>${item.user || 'Не указан'}</td>
                     <td>
-                        <button onclick="removeFromWhitelist('${item.uuid}')" class="action-btn">Удалить</button>
+                        <button onclick="removeFromWhitelist('${item.UUID}')" class="action-btn">Удалить</button>
                     </td>
                 `;
                 tbody.appendChild(row);
