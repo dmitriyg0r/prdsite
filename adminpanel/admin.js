@@ -670,16 +670,18 @@ async function loadWhiteListData() {
         });
         
         const data = await handleResponse(response);
+        console.log('Полученные данные White List:', data);
         
         if (data.success) {
             const tbody = document.getElementById('whitelistTableBody');
             tbody.innerHTML = '';
             
             data.data.forEach(item => {
+                console.log('Элемент White List:', item);
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${item.uuid}</td>
-                    <td>${item.username}</td>
+                    <td>${item.username || item.name}</td>
                     <td>
                         <button onclick="removeFromWhitelist('${item.uuid}')" class="action-btn delete">
                             Удалить
