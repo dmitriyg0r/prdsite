@@ -75,8 +75,8 @@ async function removeFromWhiteList(uuid) {
 }
 
 module.exports = {
-    pool,
     getWhiteListData,
     addToWhiteList,
-    removeFromWhiteList
+    removeFromWhiteList,
+    pool
 };

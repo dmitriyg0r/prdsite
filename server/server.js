@@ -3222,11 +3222,13 @@ app.get('/api/charts', checkAdmin, async (req, res) => {
     }
 });
 
-
 // Единый эндпоинт для получения данных White_List
 app.get('/api/White_List', async (req, res) => {
     try {
         const { page = 1, limit = 10 } = req.query;
+        if (typeof getWhiteListData !== 'function') {
+            throw new Error('getWhiteListData is not properly imported');
+        }
         const result = await getWhiteListData(parseInt(page), parseInt(limit));
         res.json(result);
     } catch (err) {
