@@ -91,6 +91,8 @@ app.post('/api/login', async (req, res) => {
             });
         }
 
+        const user = result.rows[0]; // Добавляем эту строку
+
         // Проверяем роль пользователя
         if (user.role !== 'admin') {
             return res.status(403).json({ 
@@ -3230,14 +3232,14 @@ app.get('/api/White_List', async (req, res) => {
 
         console.log('Fetching White_List data...');
 
-        // Получаем данные с использованием существующего пула MySQL
-        const [rows] = await pool.execute(
+        // Используем query вместо execute
+        const [rows] = await pool.query(
             'SELECT * FROM White_List ORDER BY user LIMIT ? OFFSET ?',
             [parseInt(limit), offset]
         );
 
         // Получаем общее количество записей
-        const [countResult] = await pool.execute(
+        const [countResult] = await pool.query(
             'SELECT COUNT(*) as total FROM White_List'
         );
 
@@ -3280,7 +3282,7 @@ app.post('/api/White_List', checkAdmin, async (req, res) => {
             });
         }
 
-        const [result] = await pool.execute(
+        const [result] = await pool.query(
             'INSERT INTO White_List (UUID, user) VALUES (?, ?)',
             [UUID, user]
         );
@@ -3304,7 +3306,7 @@ app.delete('/api/White_List/:uuid', checkAdmin, async (req, res) => {
     try {
         const { uuid } = req.params;
 
-        const [result] = await pool.execute(
+        const [result] = await pool.query(
             'DELETE FROM White_List WHERE UUID = ?',
             [uuid]
         );
