@@ -948,45 +948,59 @@ app.post('/api/messages/send-with-file', messageUpload.single('file'), async (re
 // Обновляем middleware checkAdmin
 const checkAdmin = async (req, res, next) => {
     try {
-        // Проверяем adminId в query параметрах или в теле зпроса
-        const adminId = req.query.adminId || req.body.adminId;
+        // Получаем adminId из разных возможных источников
+        const adminId = req.query.adminId || 
+                       req.body.adminId || 
+                       req.headers['x-admin-id'];
         
-        console.log('Checking admin rights for:', adminId); // Добавляем лог
+        console.log('Проверка прав администратора:', {
+            adminId,
+            headers: req.headers,
+            query: req.query,
+            body: req.body
+        });
 
         if (!adminId) {
+            console.log('AdminId отсутствует');
             return res.status(401).json({ 
                 success: false,
                 error: 'Требуется авторизация' 
             });
         }
 
-        const userResult = await pool.query(
-            'SELECT role FROM users WHERE id = $1',
-            [adminId]
-        );
+        const userResult = await pool.query(`
+            SELECT id, role, username 
+            FROM users 
+            WHERE id = $1 AND role = 'admin'
+        `, [adminId]);
 
-        console.log('User role:', userResult.rows[0]?.role); // Добавляем лог
+        console.log('Результат запроса пользователя:', userResult.rows[0]);
 
-        if (userResult.rows.length === 0 || userResult.rows[0].role !== 'admin') {
+        if (userResult.rows.length === 0) {
+            console.log('Пользователь не является администратором');
             return res.status(403).json({ 
                 success: false,
                 error: 'Доступ запрещен' 
             });
         }
 
+        // Добавляем информацию о пользователе в request
+        req.admin = userResult.rows[0];
         next();
     } catch (err) {
-        console.error('Auth error:', err);
+        console.error('Ошибка проверки прав:', err);
         res.status(500).json({ 
             success: false,
-            error: 'Ошибка сервера' 
+            error: 'Ошибка сервера при проверке прав' 
         });
     }
 };
 
-// Обновленные админ роуты с middleware
+// Обновляем роуты админ-панели
 app.get('/api/admin/stats', checkAdmin, async (req, res) => {
     try {
+        console.log('Запрос статистики от админа:', req.admin);
+
         const stats = await pool.query(`
             SELECT 
                 (SELECT COUNT(*) FROM users) as total_users,
@@ -1002,15 +1016,24 @@ app.get('/api/admin/stats', checkAdmin, async (req, res) => {
                 (SELECT COUNT(*) FROM users WHERE last_activity > NOW() - INTERVAL '24 HOURS') as active_users_24h
         `);
         
-        res.json({ success: true, stats: stats.rows[0] });
+        res.json({ 
+            success: true, 
+            stats: stats.rows[0] 
+        });
     } catch (err) {
-        console.error('Admin stats error:', err);
-        res.status(500).json({ error: 'Ошибка при получении статистики' });
+        console.error('Ошибка получения статистики:', err);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Ошибка при получении статистики',
+            details: err.message
+        });
     }
 });
 
 app.get('/api/admin/users', checkAdmin, async (req, res) => {
     try {
+        console.log('Запрос списка пользователей от админа:', req.admin);
+        
         const { page = 1, limit = 10, search = '' } = req.query;
         const offset = (page - 1) * limit;
 
@@ -1037,8 +1060,80 @@ app.get('/api/admin/users', checkAdmin, async (req, res) => {
             pages: Math.ceil(total.rows[0].count / limit)
         });
     } catch (err) {
-        console.error('Admin users error:', err);
-        res.status(500).json({ error: 'Ошибка при получении списка пользователей' });
+        console.error('Ошибка получения списка пользователей:', err);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Ошибка при получении списка пользователей',
+            details: err.message
+        });
+    }
+});
+
+app.get('/api/admin/charts', checkAdmin, async (req, res) => {
+    try {
+        console.log('Запрос данных для графиков от админа:', req.admin);
+
+        const [registrations, messages, roles] = await Promise.all([
+            pool.query(`
+                SELECT DATE(created_at) as date, COUNT(*) as count
+                FROM users
+                WHERE created_at > NOW() - INTERVAL '7 days'
+                GROUP BY DATE(created_at)
+                ORDER BY date
+            `),
+            pool.query(`
+                SELECT DATE(created_at) as date, COUNT(*) as count
+                FROM messages
+                WHERE created_at > NOW() - INTERVAL '7 days'
+                GROUP BY DATE(created_at)
+                ORDER BY date
+            `),
+            pool.query(`
+                SELECT role, COUNT(*) as count
+                FROM users
+                GROUP BY role
+            `)
+        ]);
+
+        res.json({
+            success: true,
+            charts: {
+                registrations: registrations.rows,
+                messages: messages.rows,
+                roles: roles.rows
+            }
+        });
+    } catch (err) {
+        console.error('Ошибка получения данных для графиков:', err);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Ошибка при получении данных для графиков',
+            details: err.message
+        });
+    }
+});
+
+// Добавляем роут для white list
+app.get('/api/admin/whitelist', checkAdmin, async (req, res) => {
+    try {
+        console.log('Запрос white list от админа:', req.admin);
+
+        const result = await pool.query(`
+            SELECT * FROM whitelist
+            ORDER BY created_at DESC
+        `);
+
+        res.json({
+            success: true,
+            whitelist: result.rows
+        });
+    } catch (err) {
+        console.error('Ошибка получения white list:', err);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Ошибка при получении white list',
+            details: err.message
+        });
     }
 });
 
@@ -1128,56 +1223,6 @@ app.post('/api/admin/role', checkAdmin, async (req, res) => {
             success: false,
             error: 'Ошибка при изменении роли' 
         });
-    }
-});
-
-app.get('/api/admin/charts', checkAdmin, async (req, res) => {
-    try {
-        console.log('Fetching charts data...');
-        
-        const registrationData = await pool.query(`
-            SELECT 
-                DATE(created_at) as date,
-                COUNT(*) as count
-            FROM users
-            WHERE created_at > NOW() - INTERVAL '7 days'
-            GROUP BY DATE(created_at)
-            ORDER BY date
-        `);
-        console.log('Registration data:', registrationData.rows);
-
-        const messageData = await pool.query(`
-            SELECT 
-                DATE(created_at) as date,
-                COUNT(*) as count
-            FROM messages
-            WHERE created_at > NOW() - INTERVAL '7 days'
-            GROUP BY DATE(created_at)
-            ORDER BY date
-        `);
-
-        const userActivityData = await pool.query(`
-            SELECT 
-                role,
-                COUNT(*) as count
-            FROM users
-            GROUP BY role
-        `);
-
-        const responseData = {
-            success: true,
-            data: {
-                registrations: registrationData.rows,
-                messages: messageData.rows,
-                userActivity: userActivityData.rows
-            }
-        };
-        
-        console.log('Sending charts data:', responseData);
-        res.json(responseData);
-    } catch (err) {
-        console.error('Charts data error:', err);
-        res.status(500).json({ error: 'Ошибка при получении данных для графиков' });
     }
 });
 
