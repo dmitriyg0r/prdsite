@@ -1,9 +1,11 @@
 const express = require('express');
 const cors = require('cors');
+const https = require('https');
+const fs = require('fs');
 const db = require('./maindb.js');
 const app = express();
 
-// Базовые middleware
+// Настройка CORS
 app.use(cors({
     origin: '*',
     methods: ['GET', 'POST', 'DELETE', 'PUT', 'PATCH'],
@@ -12,19 +14,17 @@ app.use(cors({
 
 app.use(express.json());
 
-// Тестовый роут для проверки работы сервера
+// Роуты
 app.get('/test', (req, res) => {
     res.json({ message: 'Сервер работает' });
 });
 
-// Роуты для white list
 app.get('/api/whitelist', async (req, res) => {
     try {
         const [rows] = await db.query('SELECT * FROM white_list');
-        console.log('Данные white list:', rows); // Для отладки
         res.json({ success: true, data: rows });
     } catch (error) {
-        console.error('Ошибка при получении данных white list:', error);
+        console.error('Ошибка:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
@@ -32,11 +32,10 @@ app.get('/api/whitelist', async (req, res) => {
 app.post('/api/whitelist', async (req, res) => {
     try {
         const { UUID, user } = req.body;
-        console.log('Попытка добавить запись:', { UUID, user }); // Для отладки
         await db.query('INSERT INTO white_list (UUID, user) VALUES (?, ?)', [UUID, user]);
         res.json({ success: true, message: 'Запись добавлена' });
     } catch (error) {
-        console.error('Ошибка при добавлении записи:', error);
+        console.error('Ошибка:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
@@ -44,18 +43,23 @@ app.post('/api/whitelist', async (req, res) => {
 app.delete('/api/whitelist/:uuid', async (req, res) => {
     try {
         const { uuid } = req.params;
-        console.log('Попытка удалить запись:', uuid); // Для отладки
         await db.query('DELETE FROM white_list WHERE UUID = ?', [uuid]);
         res.json({ success: true, message: 'Запись удалена' });
     } catch (error) {
-        console.error('Ошибка при удалении записи:', error);
+        console.error('Ошибка:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
 
-const PORT = 3000;
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Сервер запущен на порту ${PORT}`);
+// Путь к SSL сертификатам
+const options = {
+    cert: fs.readFileSync('/etc/letsencrypt/live/space-point.ru/fullchain.pem'),
+    key: fs.readFileSync('/etc/letsencrypt/live/space-point.ru/privkey.pem')
+};
+
+// Создаем HTTPS сервер
+https.createServer(options, app).listen(3000, '0.0.0.0', () => {
+    console.log('HTTPS Сервер запущен на порту 3000');
 });
 
 // Обработка необработанных ошибок

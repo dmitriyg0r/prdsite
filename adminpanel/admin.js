@@ -1,4 +1,4 @@
-const API_URL = 'http://45.91.238.3:3000';
+const API_URL = 'https://45.91.238.3:3000';
 
 let currentPage = 1;
 let totalPages = 1;
