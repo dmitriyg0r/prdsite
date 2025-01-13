@@ -117,6 +117,49 @@ app.use((req, res, next) => {
     next();
 });
 
+// Добавьте сразу после создания app
+app.use((req, res, next) => {
+    console.log('Входящий запрос:', {
+        method: req.method,
+        url: req.url,
+        path: req.path,
+        baseUrl: req.baseUrl
+    });
+    next();
+});
+
+// Добавьте логирование для API маршрутов
+apiRouter.use((req, res, next) => {
+    console.log('API маршрут:', {
+        method: req.method,
+        originalUrl: req.originalUrl,
+        path: req.path,
+        baseUrl: req.baseUrl
+    });
+    next();
+});
+
+// Логируем все зарегистрированные маршруты при запуске
+console.log('Зарегистрированные API маршруты:');
+apiRouter.stack.forEach(r => {
+    if (r.route && r.route.path) {
+        console.log(`${Object.keys(r.route.methods)} ${r.route.path}`);
+    }
+});
+
+// Подключаем API маршруты ПЕРЕД статическими маршрутами
+app.use('/api', apiRouter);
+
+// После подключения всех маршрутов выведем все зарегистрированные пути
+console.log('Все зарегистрированные маршруты:');
+app._router.stack.forEach(r => {
+    if (r.route && r.route.path) {
+        console.log(`${Object.keys(r.route.methods)} ${r.route.path}`);
+    } else if (r.name === 'router') {
+        console.log('Router middleware:', r.regexp);
+    }
+});
+
 // Путь к SSL сертификатам
 const options = {
     cert: fs.readFileSync(path.join('/etc/letsencrypt/live/space-point.ru', 'fullchain.pem')),
@@ -154,9 +197,6 @@ app.get('/api/routes', (req, res) => {
     });
     res.json(routes);
 });
-
-// Важно: подключите apiRouter ДО статических маршрутов
-app.use('/api', apiRouter);
 
 // Обработчик 404 ошибок
 app.use((req, res) => {

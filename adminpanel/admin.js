@@ -675,6 +675,7 @@ window.addEventListener('unhandledrejection', function(event) {
 });
 
 async function loadWhitelist() {
+    console.log('Отправка запроса к:', `${API_URL}/api/whitelist`);
     try {
         const response = await fetch(`${API_URL}/api/whitelist`, {
             credentials: 'include',
@@ -683,6 +684,7 @@ async function loadWhitelist() {
                 'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
             }
         });
+        console.log('Получен ответ:', response.status, response.statusText);
         
         const data = await handleResponse(response);
         console.log('Полученные данные:', data);
