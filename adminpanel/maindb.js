@@ -2,15 +2,13 @@ const mysql = require('mysql2/promise');
 
 const pool = mysql.createPool({
     host: 'localhost',
-    user: 'root',
+    user: 'adminmaincraft',
     password: 'sGLTccA_Na#9zC',
     database: 'maincraft',
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0,
-    authPlugins: {
-        mysql_native_password: () => () => Buffer.from('sGLTccA_Na#9zC')
-    }
+    authPlugin: 'mysql_native_password'
 });
 
 // Проверка подключения
@@ -21,6 +19,7 @@ pool.getConnection()
     })
     .catch(err => {
         console.error('Ошибка подключения к базе данных:', err);
+        process.exit(1);
     });
 
 module.exports = pool;
