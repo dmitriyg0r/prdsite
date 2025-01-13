@@ -10,6 +10,9 @@ const nodemailer = require('nodemailer');
 const http = require('http');
 const { Server } = require('socket.io');
 
+// Изменим импорт на более явный
+const maindb = require('../adminpanel/maindb.js');
+
 const app = express();
 const PORT = 5003;
 const STATUS_UPDATE_CACHE = new Map();
@@ -3226,7 +3229,7 @@ app.get('/api/charts', checkAdmin, async (req, res) => {
 app.get('/api/White_List', async (req, res) => {
     try {
         const { page = 1, limit = 10 } = req.query;
-        const result = await getWhiteListData(parseInt(page), parseInt(limit));
+        const result = await maindb.getWhiteListData(parseInt(page), parseInt(limit));
         
         if (result.success) {
             res.json(result);
