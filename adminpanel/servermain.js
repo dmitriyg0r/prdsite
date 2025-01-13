@@ -25,17 +25,28 @@ app.use(express.json());
 app.get('/api/WhiteList', async (req, res) => {
     console.log('=== Запрос к White_List ===');
     try {
-        const [rows] = await db.query('SELECT * FROM White_List');
-        console.log('Данные из БД:', rows);
+        // Проверяем подключение к БД
+        if (!db) {
+            throw new Error('Нет подключения к базе данных');
+        }
+
+        // Используем правильное имя таблицы (учитывая регистр)
+        const [rows] = await db.query('SELECT * FROM white_list');
+        
+        if (!rows) {
+            throw new Error('Данные не получены');
+        }
+
+        console.log('Получены данные:', rows);
         res.json({
             success: true,
             data: rows
         });
     } catch (error) {
-        console.error('Ошибка БД:', error);
+        console.error('Ошибка при получении данных White List:', error);
         res.status(500).json({
             success: false,
-            error: error.message
+            error: 'Ошибка при получении данных: ' + error.message
         });
     }
 });
@@ -45,16 +56,29 @@ app.delete('/api/WhiteList/:uuid', async (req, res) => {
     console.log('=== Запрос на удаление из White_List ===');
     try {
         const { uuid } = req.params;
-        await db.query('DELETE FROM White_List WHERE UUID = ?', [uuid]);
+        
+        if (!uuid) {
+            throw new Error('UUID не указан');
+        }
+
+        const [result] = await db.query('DELETE FROM white_list WHERE UUID = ?', [uuid]);
+        
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'Запись не найдена'
+            });
+        }
+
         res.json({
             success: true,
-            message: 'Запись удалена'
+            message: 'Запись успешно удалена'
         });
     } catch (error) {
         console.error('Ошибка при удалении:', error);
         res.status(500).json({
             success: false,
-            error: error.message
+            error: 'Ошибка при удалении: ' + error.message
         });
     }
 });
