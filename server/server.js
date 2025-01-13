@@ -3286,37 +3286,55 @@ app.get('/api/database/table/White_List', async (req, res) => {
 
         console.log('Fetching White_List data...'); // Добавляем лог
 
-        // Получаем данные таблицы
+        // Получаем данные таблицы (изменяем запрос)
         const rows = await pool.query(`
             SELECT * 
-            FROM maincraft."White_List"  
+            FROM "White_List"  -- Убираем схему maincraft из запроса
+            ORDER BY "user"    -- Добавляем сортировку
             LIMIT $1 OFFSET $2
         `, [parseInt(limit), offset]);
 
         console.log('Fetched rows:', rows.rows); // Логируем результат
 
-        // Получаем общее количество записей
+        // Получаем общее количество записей (изменяем запрос)
         const count = await pool.query(`
             SELECT COUNT(*) as total 
-            FROM maincraft."White_List"
+            FROM "White_List"
         `);
 
         console.log('Total count:', count.rows[0].total); // Логируем количество
 
+        // Добавляем больше информации в ответ для отладки
         res.json({
             success: true,
             data: {
                 rows: rows.rows,
-                total: count.rows[0].total,
-                pages: Math.ceil(count.rows[0].total / parseInt(limit))
+                total: parseInt(count.rows[0].total),
+                pages: Math.ceil(parseInt(count.rows[0].total) / parseInt(limit)),
+                currentPage: parseInt(page),
+                limit: parseInt(limit)
+            },
+            debug: {
+                query: {
+                    text: rows.command,
+                    rowCount: rows.rowCount
+                }
             }
         });
     } catch (err) {
-        console.error('Ошибка получения данных таблицы:', err);
+        // Улучшаем логирование ошибок
+        console.error('Database error:', {
+            message: err.message,
+            stack: err.stack,
+            code: err.code,
+            detail: err.detail
+        });
+
         res.status(500).json({
             success: false,
             error: 'Ошибка при получении данных таблицы',
-            details: err.message
+            details: err.message,
+            code: err.code
         });
     }
 });
