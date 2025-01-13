@@ -3256,25 +3256,3 @@ app.get('/api/charts', checkAdmin, async (req, res) => {
         });
     }
 });
-
-// Добавляем эндпоинт для получения whitelist
-app.get('/api/whitelist', checkAdmin, async (req, res) => {
-    try {
-        const result = await pool.query(`
-            SELECT * FROM whitelist
-            ORDER BY created_at DESC
-        `);
-
-        res.json({
-            success: true,
-            whitelist: result.rows
-        });
-    } catch (err) {
-        console.error('Ошибка получения white list:', err);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Ошибка при получении white list',
-            details: err.message
-        });
-    }
-});
