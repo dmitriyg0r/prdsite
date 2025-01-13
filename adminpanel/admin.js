@@ -250,6 +250,7 @@ async function loadUsers(page = 1, search = '', filters = {}) {
     try {
         const queryParams = new URLSearchParams({
             page,
+            limit: 50, // Увеличиваем лимит на странице
             search,
             ...filters,
             adminId: localStorage.getItem('adminId')
@@ -267,7 +268,9 @@ async function loadUsers(page = 1, search = '', filters = {}) {
         
         if (data.success) {
             updateUsersTable(data.users);
-            updatePagination(data.pages);
+            updatePagination(data.totalPages || Math.ceil(data.total / 50));
+            // Показываем секцию с пользователями
+            document.querySelector('.users-table-section').style.display = 'block';
         }
     } catch (err) {
         handleError(err);
@@ -276,9 +279,17 @@ async function loadUsers(page = 1, search = '', filters = {}) {
     }
 }
 
-function updatePagination() {
+function updatePagination(totalPages) {
     const pagination = document.getElementById('pagination');
     pagination.innerHTML = '';
+
+    // Кнопка "Первая страница"
+    if (currentPage > 1) {
+        const firstButton = document.createElement('button');
+        firstButton.textContent = '<<';
+        firstButton.onclick = () => loadUsers(1, document.getElementById('searchUsers').value);
+        pagination.appendChild(firstButton);
+    }
 
     // Кнопка "Назад"
     const prevButton = document.createElement('button');
@@ -292,10 +303,17 @@ function updatePagination() {
     };
     pagination.appendChild(prevButton);
 
-    // Номер текущей страницы
-    const pageInfo = document.createElement('span');
-    pageInfo.textContent = `${currentPage} из ${totalPages}`;
-    pagination.appendChild(pageInfo);
+    // Номера страниц
+    for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) {
+        const pageButton = document.createElement('button');
+        pageButton.textContent = i;
+        pageButton.className = i === currentPage ? 'active' : '';
+        pageButton.onclick = () => {
+            currentPage = i;
+            loadUsers(i, document.getElementById('searchUsers').value);
+        };
+        pagination.appendChild(pageButton);
+    }
 
     // Кнопка "Вперед"
     const nextButton = document.createElement('button');
@@ -308,6 +326,14 @@ function updatePagination() {
         }
     };
     pagination.appendChild(nextButton);
+
+    // Кнопка "Последняя страница"
+    if (currentPage < totalPages) {
+        const lastButton = document.createElement('button');
+        lastButton.textContent = '>>';
+        lastButton.onclick = () => loadUsers(totalPages, document.getElementById('searchUsers').value);
+        pagination.appendChild(lastButton);
+    }
 }
 
 async function deleteUser(id) {
@@ -600,43 +626,35 @@ function createRolesChart(data) {
 document.addEventListener('DOMContentLoaded', () => {
     if (!checkAuth()) return;
 
-    // Инициализация табов
+    // Показываем дашборд по умолчанию
+    document.querySelector('.stats-grid').style.display = 'grid';
+    
+    // Инициализируем обработчики табов
     const tabs = document.querySelectorAll('.admin-nav li');
-    const contentSections = {
-        dashboard: document.querySelector('.stats-grid'),
-        users: document.querySelector('.users-table-section'),
-        whitelist: document.querySelector('.whitelist-section'),
-        settings: document.querySelector('.settings-section')
-    };
-
-    // Обработчик переключения табов
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
-            // Убираем активный класс у всех табов
-            tabs.forEach(t => t.classList.remove('active'));
-            // Добавляем активный класс текущему табу
-            tab.classList.add('active');
-
+            const targetTab = tab.dataset.tab;
+            
             // Скрываем все секции
-            Object.values(contentSections).forEach(section => {
-                if (section) section.style.display = 'none';
-            });
-
+            document.querySelectorAll('.stats-grid, .users-table-section, .whitelist-section, .settings-section')
+                .forEach(section => section.style.display = 'none');
+            
             // Показываем нужную секцию
-            const targetSection = contentSections[tab.dataset.tab];
-            if (targetSection) targetSection.style.display = 'block';
-
-            // Обновляем данные при переключении табов
-            switch(tab.dataset.tab) {
+            switch(targetTab) {
                 case 'dashboard':
+                    document.querySelector('.stats-grid').style.display = 'grid';
                     loadStats();
-                    loadCharts();
                     break;
                 case 'users':
-                    loadUsers(1, document.getElementById('searchUsers').value);
+                    document.querySelector('.users-table-section').style.display = 'block';
+                    loadUsers(1);
                     break;
                 case 'whitelist':
+                    document.querySelector('.whitelist-section').style.display = 'block';
                     loadWhiteListData();
+                    break;
+                case 'settings':
+                    document.querySelector('.settings-section').style.display = 'block';
                     break;
             }
         });
@@ -662,40 +680,6 @@ document.addEventListener('DOMContentLoaded', () => {
     searchInput.addEventListener('input', handleFiltersChange);
     roleFilter.addEventListener('change', handleFiltersChange);
     statusFilter.addEventListener('change', handleFiltersChange);
-
-    // Модифицируем функцию loadUsers для поддержки фильтров
-    async function loadUsers(page = 1, search = '', filters = {}) {
-        if (!checkAuth()) return;
-
-        showLoader();
-        try {
-            const queryParams = new URLSearchParams({
-                page,
-                search,
-                ...filters,
-                adminId: localStorage.getItem('adminId')
-            });
-
-            const response = await fetch(`${API_URL}/api/users?${queryParams}`, {
-                credentials: 'include',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
-                    'X-Admin-ID': localStorage.getItem('adminId')
-                }
-            });
-
-            const data = await handleResponse(response);
-            
-            if (data.success) {
-                updateUsersTable(data.users);
-                updatePagination(data.pages);
-            }
-        } catch (err) {
-            handleError(err);
-        } finally {
-            hideLoader();
-        }
-    }
 
     // Добавляем индикатор загрузки
     function showLoader() {
@@ -894,6 +878,31 @@ function handleError(error) {
         localStorage.removeItem('adminId');
         localStorage.removeItem('adminToken');
         location.reload();
+    }
+}
+
+// Добавляем функцию для бана пользователя
+async function banUser(userId) {
+    try {
+        const response = await fetch(`${API_URL}/api/users/${userId}/ban`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                adminId: localStorage.getItem('adminId')
+            })
+        });
+
+        const data = await handleResponse(response);
+        
+        if (data.success) {
+            showNotification('Статус пользователя обновлен', 'success');
+            loadUsers(currentPage, document.getElementById('searchUsers').value);
+        }
+    } catch (err) {
+        handleError(err);
     }
 }
 

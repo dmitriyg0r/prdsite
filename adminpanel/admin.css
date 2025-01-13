@@ -212,3 +212,63 @@ input:focus, select:focus {
         border-color: rgba(255,255,255,0.1);
     }
 }
+
+/* Добавляем сетку для статистики */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin: 1.5rem 0;
+}
+
+/* Стили для секций контента */
+.users-table-section,
+.whitelist-section,
+.settings-section {
+    display: none; /* По умолчанию скрыты */
+    padding: 1.5rem;
+    background: var(--card-background);
+    border-radius: var(--border-radius);
+    margin-top: 1.5rem;
+}
+
+/* Пагинация */
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin: 1.5rem 0;
+}
+
+.pagination button {
+    padding: 0.5rem 1rem;
+    border: none;
+    background: var(--primary-color);
+    color: white;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+}
+
+.pagination button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Улучшаем таблицу пользователей */
+.users-table-container {
+    overflow-x: auto;
+    margin-top: 1.5rem;
+}
+
+.users-table {
+    min-width: 800px; /* Минимальная ширина для скролла */
+}
+
+/* Стили для строк таблицы */
+.users-table tr:nth-child(even) {
+    background: rgba(0,0,0,0.02);
+}
+
+.users-table tr.banned {
+    background: rgba(231, 76, 60, 0.05);
+}
