@@ -20,10 +20,8 @@ app.use(express.json());
 // Сначала определяем все API-маршруты
 app.get('/api/WhiteList', async (req, res) => {
     console.log('Получен запрос к /api/WhiteList');
-    console.log('Query параметры:', req.query);
     
     try {
-
         console.log('Выполняем запрос к базе данных...');
         const [rows] = await db.query('SELECT * FROM White_List');
         console.log('Получены данные:', rows);
