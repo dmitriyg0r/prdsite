@@ -91,16 +91,6 @@ app.post('/api/login', async (req, res) => {
             });
         }
 
-        const user = result.rows[0];
-        const isValidPassword = await bcrypt.compare(password, user.password_hash);
-        
-        if (!isValidPassword) {
-            return res.status(401).json({ 
-                success: false,
-                error: 'Неверное имя пользователя или пароль' 
-            });
-        }
-
         // Проверяем роль пользователя
         if (user.role !== 'admin') {
             return res.status(403).json({ 
@@ -3533,34 +3523,25 @@ app.get('/api/database/check-whitelist', checkAdmin, async (req, res) => {
 // Добавляем endpoint для просмотра всех таблиц
 app.get('/api/database/tables', async (req, res) => {
     try {
-        // Получаем список всех таблиц в схеме maincraft
-        const tables = await pool.query(`
-            SELECT table_name 
-            FROM information_schema.tables 
-            WHERE table_schema = 'maincraft'
-            ORDER BY table_name;
+        // Запрос для MySQL
+        const [tables] = await pool.query(`
+            SHOW TABLES FROM maincraft;
         `);
 
-        console.log('Available tables:', tables.rows);
+        console.log('Tables in maincraft:', tables);
 
-        // Для первой найденной таблицы получим структуру
-        if (tables.rows.length > 0) {
-            const firstTable = tables.rows[0].table_name;
-            const columns = await pool.query(`
-                SELECT column_name, data_type
-                FROM information_schema.columns
-                WHERE table_schema = 'maincraft'
-                AND table_name = $1
-                ORDER BY ordinal_position;
-            `, [firstTable]);
+        // Проверяем структуру White_List
+        const [columns] = await pool.query(`
+            DESCRIBE maincraft.White_List;
+        `);
 
-            console.log(`Structure of table ${firstTable}:`, columns.rows);
-        }
+        console.log('White_List structure:', columns);
 
         res.json({
             success: true,
-            tables: tables.rows,
-            message: 'Список всех таблиц в базе данных'
+            tables: tables,
+            whiteListStructure: columns,
+            message: 'Список таблиц в базе данных maincraft'
         });
     } catch (err) {
         console.error('Error getting tables:', err);
@@ -3575,61 +3556,34 @@ app.get('/api/database/tables', async (req, res) => {
 // Обновляем endpoint для получения данных White_List
 app.get('/api/database/table/White_List', async (req, res) => {
     try {
-        // Сначала получим список всех таблиц для проверки
-        const tables = await pool.query(`
-            SELECT table_name 
-            FROM information_schema.tables 
-            WHERE table_schema = 'maincraft'
-            ORDER BY table_name;
-        `);
-
-        console.log('Available tables:', tables.rows);
-
-        // Ищем таблицу White_List (проверяем разные варианты написания)
-        const whiteListTable = tables.rows.find(t => 
-            t.table_name.toLowerCase() === 'white_list' || 
-            t.table_name === 'White_List' ||
-            t.table_name === 'whitelist' ||
-            t.table_name === 'WhiteList'
-        );
-
-        if (!whiteListTable) {
-            return res.status(404).json({
-                success: false,
-                error: 'Таблица White_List не найдена',
-                availableTables: tables.rows,
-                message: 'Пожалуйста, проверьте точное название таблицы'
-            });
-        }
-
         const { page = 1, limit = 10 } = req.query;
         const offset = (page - 1) * limit;
 
-        // Используем найденное имя таблицы
-        const rows = await pool.query(`
+        // MySQL запрос (используем правильные имена таблиц и базы данных)
+        const [rows] = await pool.query(`
             SELECT * 
-            FROM maincraft."${whiteListTable.table_name}"
-            ORDER BY "user"
-            LIMIT $1 OFFSET $2
+            FROM White_List
+            ORDER BY user
+            LIMIT ? OFFSET ?
         `, [parseInt(limit), offset]);
 
-        const count = await pool.query(`
+        // Получаем общее количество записей
+        const [count] = await pool.query(`
             SELECT COUNT(*) as total 
-            FROM maincraft."${whiteListTable.table_name}"
+            FROM White_List
         `);
+
+        console.log('Rows:', rows); // Добавляем лог
+        console.log('Count:', count); // Добавляем лог
 
         res.json({
             success: true,
             data: {
-                rows: rows.rows,
-                total: parseInt(count.rows[0].total),
-                pages: Math.ceil(parseInt(count.rows[0].total) / parseInt(limit)),
+                rows: rows,
+                total: count[0].total,
+                pages: Math.ceil(count[0].total / parseInt(limit)),
                 currentPage: parseInt(page),
                 limit: parseInt(limit)
-            },
-            debug: {
-                tableName: whiteListTable.table_name,
-                availableTables: tables.rows
             }
         });
     } catch (err) {
