@@ -677,16 +677,20 @@ window.addEventListener('unhandledrejection', function(event) {
 async function loadWhitelist() {
     try {
         const response = await fetch(`${API_URL}/api/whitelist`);
-        const data = await response.json();
+        const result = await response.json();
         
+        if (!result.success) {
+            throw new Error(result.error || 'Ошибка получения данных');
+        }
+
         const tbody = document.getElementById('whitelistTableBody');
         tbody.innerHTML = '';
         
-        data.forEach(item => {
+        result.data.forEach(item => {
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td>${item.UUID}</td>
-                <td>${item.user}</td>
+                <td>${item.UUID || 'Не указан'}</td>
+                <td>${item.user || 'Не указан'}</td>
                 <td>
                     <button onclick="removeFromWhitelist('${item.UUID}')" class="action-btn delete">
                         Удалить
@@ -696,7 +700,16 @@ async function loadWhitelist() {
             tbody.appendChild(row);
         });
     } catch (error) {
-        console.error('Ошибка загрузки данных:', error);
+        console.error('Ошибка загрузки whitelist:', error);
+        // Показываем ошибку пользователю
+        const tbody = document.getElementById('whitelistTableBody');
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="3" style="color: red; text-align: center;">
+                    Ошибка загрузки данных. Пожалуйста, обновите страницу.
+                </td>
+            </tr>
+        `;
     }
 }
 

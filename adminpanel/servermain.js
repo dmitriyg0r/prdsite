@@ -77,6 +77,45 @@ app.get('/test', (req, res) => {
     res.json({ message: 'Сервер работает' });
 });
 
+// Маршрут для получения данных из White_List
+app.get('/api/whitelist', async (req, res) => {
+    console.log('Получен запрос к /api/whitelist');
+    try {
+        // Прямой запрос к таблице White_List
+        const [rows] = await db.query('SELECT UUID, user FROM White_List');
+        console.log('Данные получены из БД:', rows);
+        
+        // Отправляем данные клиенту
+        res.json({
+            success: true,
+            data: rows
+        });
+    } catch (error) {
+        console.error('Ошибка при запросе к БД:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при получении данных из White_List'
+        });
+    }
+});
+
+// Добавляем маршрут для проверки соединения
+app.get('/api/check', async (req, res) => {
+    try {
+        const [result] = await db.query('SELECT 1');
+        res.json({
+            success: true,
+            message: 'Соединение с БД работает',
+            dbResult: result
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка подключения к БД'
+        });
+    }
+});
+
 // Обработчик 404
 app.use((req, res) => {
     console.log('404 для URL:', req.url);
