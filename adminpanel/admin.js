@@ -19,12 +19,28 @@ function checkAuth() {
     return true;
 }
 
+// Общая функция для проверки ответа
+async function handleResponse(response) {
+    if (response.status === 401) {
+        localStorage.removeItem('adminId');
+        localStorage.removeItem('adminToken');
+        location.reload();
+        throw new Error('Unauthorized');
+    }
+    
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    return await response.json();
+}
+
 async function loadStats() {
     if (!checkAuth()) return;
     
     try {
         const adminId = localStorage.getItem('adminId');
-        const response = await fetch(`${API_URL}/api/stats?adminId=${adminId}`, {
+        const response = await fetch(`${API_URL}/api/admin/stats`, {
             credentials: 'include',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
@@ -229,7 +245,7 @@ async function loadUsers(page = 1, search = '') {
 
     try {
         const adminId = localStorage.getItem('adminId');
-        const response = await fetch(`${API_URL}/api/users?adminId=${adminId}&page=${page}&search=${search}`, {
+        const response = await fetch(`${API_URL}/api/admin/users?page=${page}&search=${search}`, {
             credentials: 'include',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
@@ -443,7 +459,7 @@ let rolesChart = null;
 async function loadCharts() {
     try {
         const adminId = getAdminId();
-        const response = await fetch(`${API_URL}/api/charts?adminId=${adminId}`, {
+        const response = await fetch(`${API_URL}/api/admin/charts`, {
             credentials: 'include',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
@@ -675,7 +691,12 @@ window.addEventListener('unhandledrejection', function(event) {
 
 async function loadWhitelist() {
     try {
-        const response = await fetch(`${API_URL}/api/whitelist`);
+        const response = await fetch(`${API_URL}/api/admin/whitelist`, {
+            credentials: 'include',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+            }
+        });
         const data = await response.json();
         
         if (data.success) {
