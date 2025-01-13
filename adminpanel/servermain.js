@@ -41,13 +41,25 @@ app.get('/api/White_List', async (req, res) => {
 
 // Добавление записи в White_List
 app.post('/api/White_List', async (req, res) => {
-    const { uuid, username } = req.body;
+    const { uuid, user } = req.body;
+    
+    if (!uuid || !user) {
+        return res.status(400).json({ 
+            success: false, 
+            error: 'UUID и user обязательны' 
+        });
+    }
+
     try {
-        await pool.query('INSERT INTO White_List (uuid, username) VALUES (?, ?)', [uuid, username]);
+        await pool.query('INSERT INTO White_List (uuid, user) VALUES (?, ?)', [uuid, user]);
         res.json({ success: true });
     } catch (error) {
         console.error('Ошибка при добавлении в White_List:', error);
-        res.status(500).json({ success: false, error: 'Ошибка сервера' });
+        res.status(500).json({ 
+            success: false, 
+            error: 'Ошибка сервера',
+            details: error.message 
+        });
     }
 });
 

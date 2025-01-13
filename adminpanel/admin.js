@@ -724,12 +724,8 @@ async function loadWhiteListData() {
 // Функция для добавления в White List
 async function addToWhitelist() {
     const uuid = document.getElementById('uuidInput').value.trim();
-    const username = document.getElementById('userInput').value.trim();
+    const user = document.getElementById('userInput').value.trim();
     
-    if (!uuid || !username) {
-        alert('Пожалуйста, заполните оба поля');
-        return;
-    }
     
     try {
         const response = await fetch(`${API_URL}/api/White_List`, {
@@ -739,7 +735,10 @@ async function addToWhitelist() {
                 'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
             },
             credentials: 'include',
-            body: JSON.stringify({ UUID: uuid, user: username })
+            body: JSON.stringify({ 
+                uuid: uuid,
+                user: user
+            })
         });
         
         const data = await handleResponse(response);
