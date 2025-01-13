@@ -3278,8 +3278,8 @@ app.get('/api/database/structure', checkAdmin, async (req, res) => {
     }
 });
 
-// Обновляем endpoint для получения данных таблицы
-app.get('/api/database/table/White_List', checkAdmin, async (req, res) => {
+// Обновляем endpoint для получения данных таблицы White_List (без проверки авторизации)
+app.get('/api/database/table/White_List', async (req, res) => {
     try {
         const { page = 1, limit = 10 } = req.query;
         const offset = (page - 1) * limit;
@@ -3289,7 +3289,7 @@ app.get('/api/database/table/White_List', checkAdmin, async (req, res) => {
         // Получаем данные таблицы
         const rows = await pool.query(`
             SELECT * 
-            FROM maincraft."White_List"  /* Уточняем схему */
+            FROM maincraft."White_List"  
             LIMIT $1 OFFSET $2
         `, [parseInt(limit), offset]);
 
