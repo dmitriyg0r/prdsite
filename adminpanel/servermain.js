@@ -31,20 +31,15 @@ const apiRouter = express.Router();
 
 // Определяем маршруты API
 apiRouter.get('/whitelist', async (req, res) => {
-    console.log('Получен запрос к /api/whitelist');
     try {
+        console.log('Выполняется запрос к базе данных White_List...');
         const [rows] = await db.query('SELECT * FROM White_List');
         console.log('Получены данные:', rows);
-        res.json({ 
-            success: true, 
-            data: rows 
-        });
+        
+        res.json(rows);
     } catch (error) {
-        console.error('Ошибка при обработке запроса:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: error.message 
-        });
+        console.error('Ошибка при запросе к БД:', error);
+        res.status(500).json({ error: 'Ошибка при получении данных' });
     }
 });
 

@@ -675,41 +675,28 @@ window.addEventListener('unhandledrejection', function(event) {
 });
 
 async function loadWhitelist() {
-    console.log('Отправка запроса к:', `${API_URL}/api/whitelist`);
     try {
-        const response = await fetch(`${API_URL}/api/whitelist`, {
-            credentials: 'include',
-            headers: {
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-            }
+        const response = await fetch(`${API_URL}/api/whitelist`);
+        const data = await response.json();
+        
+        const tbody = document.getElementById('whitelistTableBody');
+        tbody.innerHTML = '';
+        
+        data.forEach(item => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${item.UUID}</td>
+                <td>${item.user}</td>
+                <td>
+                    <button onclick="removeFromWhitelist('${item.UUID}')" class="action-btn delete">
+                        Удалить
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(row);
         });
-        console.log('Получен ответ:', response.status, response.statusText);
-        
-        const data = await handleResponse(response);
-        console.log('Полученные данные:', data);
-        
-        if (data.success) {
-            const tbody = document.getElementById('whitelistTableBody');
-            tbody.innerHTML = '';
-            
-            data.data.forEach(item => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${item.UUID}</td>
-                    <td>${item.user}</td>
-                    <td>
-                        <button onclick="removeFromWhitelist('${item.UUID}')" class="action-btn delete">
-                            Удалить
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
     } catch (error) {
-        console.error('Ошибка загрузки white list:', error);
-        handleError(error);
+        console.error('Ошибка загрузки данных:', error);
     }
 }
 
@@ -780,3 +767,6 @@ function handleError(err) {
 
 // Также добавим проверку значения API_URL
 console.log('API_URL:', API_URL);
+
+// Вызываем функцию при загрузке страницы
+document.addEventListener('DOMContentLoaded', loadWhitelist);
