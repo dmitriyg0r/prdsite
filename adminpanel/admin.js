@@ -40,8 +40,7 @@ async function loadStats() {
     if (!checkAuth()) return;
     
     try {
-        const adminId = localStorage.getItem('adminId');
-        const response = await fetch(`${API_URL}/api/stats`, {
+        const response = await fetch(`${API_URL}/api/stats?adminId=${localStorage.getItem('adminId')}`, {
             credentials: 'include',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
@@ -245,7 +244,7 @@ async function loadUsers(page = 1, search = '') {
     if (!checkAuth()) return;
 
     try {
-        const response = await fetch(`${API_URL}/api/users?page=${page}&search=${search}`, {
+        const response = await fetch(`${API_URL}/api/users?page=${page}&search=${search}&adminId=${localStorage.getItem('adminId')}`, {
             credentials: 'include',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
@@ -448,8 +447,7 @@ let rolesChart = null;
 
 async function loadCharts() {
     try {
-        const adminId = getAdminId();
-        const response = await fetch(`${API_URL}/api/charts`, {
+        const response = await fetch(`${API_URL}/api/charts?adminId=${localStorage.getItem('adminId')}`, {
             credentials: 'include',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
@@ -681,7 +679,7 @@ window.addEventListener('unhandledrejection', function(event) {
 
 async function loadWhitelist() {
     try {
-        const response = await fetch(`${API_URL}/api/whitelist`, {
+        const response = await fetch(`${API_URL}/api/whitelist?adminId=${localStorage.getItem('adminId')}`, {
             credentials: 'include',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
