@@ -19,7 +19,7 @@ const STATUS_UPDATE_INTERVAL = 5000; // 5 секунд между обновле
 
 // Обновляем настройки CORS
 const corsOptions = {
-    origin: ['https://space-point.ru', 'http://space-point.ru', 'http://localhost:3000'],
+    origin: ['https://space-point.ru', 'http://space-point.ru'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
