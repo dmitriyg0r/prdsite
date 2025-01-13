@@ -862,10 +862,83 @@ async function removeFromWhitelist(uuid) {
     }
 }
 
-// Обработка ошибок
+// Добавляем функцию для безопасного вывода HTML
+function escapeHtml(unsafe) {
+    if (!unsafe) return '';
+    return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+// Добавляем функцию форматирования даты
+function formatDate(dateString) {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('ru-RU', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    }).format(date);
+}
+
+// Добавляем систему уведомлений
+const notifications = {
+    container: null,
+    
+    init() {
+        if (!this.container) {
+            this.container = document.createElement('div');
+            this.container.className = 'notifications-container';
+            document.body.appendChild(this.container);
+        }
+    },
+    
+    show(message, type = 'info', duration = 3000) {
+        this.init();
+        
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.innerHTML = `
+            <i class="fas fa-${type === 'success' ? 'check-circle' : 
+                              type === 'error' ? 'exclamation-circle' : 
+                              'info-circle'}"></i>
+            <span>${message}</span>
+        `;
+        
+        this.container.appendChild(notification);
+        
+        // Анимация появления
+        setTimeout(() => notification.classList.add('show'), 10);
+        
+        // Автоматическое скрытие
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 300);
+        }, duration);
+    },
+    
+    success(message) {
+        this.show(message, 'success');
+    },
+    
+    error(message) {
+        this.show(message, 'error');
+    },
+    
+    info(message) {
+        this.show(message, 'info');
+    }
+};
+
+// Добавляем функцию обработки ошибок
 function handleError(error) {
     console.error('Error:', error);
-    showNotification(error.message || 'Произошла ошибка', 'error');
+    notifications.error(error.message || 'Произошла ошибка');
     
     if (error.message.includes('401')) {
         localStorage.removeItem('adminId');
@@ -874,195 +947,61 @@ function handleError(error) {
     }
 }
 
-// Добавляем функцию для бана пользователя
-async function banUser(userId) {
-    try {
-        const response = await fetch(`${API_URL}/api/users/${userId}/ban`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                adminId: localStorage.getItem('adminId')
-            })
-        });
-
-        const data = await handleResponse(response);
-        
-        if (data.success) {
-            showNotification('Статус пользователя обновлен', 'success');
-            loadUsers(currentPage, document.getElementById('searchUsers').value);
-        }
-    } catch (err) {
-        handleError(err);
-    }
-}
-
-// Добавим функцию для обновления таблицы пользователей
-function updateUsersTable(users) {
-    const tbody = document.getElementById('usersTableBody');
-    if (!tbody) return;
-
-    tbody.innerHTML = '';
-    
-    users.forEach(user => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>
-                <input type="checkbox" class="user-select" value="${user.id}">
-            </td>
-            <td>
-                <div class="user-info">
-                    <span class="username">${escapeHtml(user.username)}</span>
-                    <span class="email">${escapeHtml(user.email || '')}</span>
-                </div>
-            </td>
-            <td>
-                <select onchange="changeUserRole(${user.id}, this.value)" class="role-select">
-                    <option value="user" ${user.role === 'user' ? 'selected' : ''}>Пользователь</option>
-                    <option value="moderator" ${user.role === 'moderator' ? 'selected' : ''}>Модератор</option>
-                    <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Админ</option>
-                </select>
-            </td>
-            <td>
-                <span class="status-badge ${user.is_banned ? 'banned' : 'active'}">
-                    ${user.is_banned ? 'Заблокирован' : 'Активен'}
-                </span>
-            </td>
-            <td>${formatDate(user.created_at)}</td>
-            <td>
-                <div class="action-buttons">
-                    <button onclick="banUser(${user.id})" class="action-btn ${user.is_banned ? 'unban' : 'ban'}">
-                        <i class="fas fa-${user.is_banned ? 'unlock' : 'ban'}"></i>
-                    </button>
-                    <button onclick="deleteUser(${user.id})" class="action-btn delete">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            </td>
-        `;
-        tbody.appendChild(row);
-    });
-}
-
-// Улучшим функцию загрузки пользователей
-async function loadUsers(page = 1, search = '', filters = {}) {
-    if (!checkAuth()) return;
-
-    try {
-        showLoader();
-        
-        const queryParams = new URLSearchParams({
-            page,
-            limit: 50,
-            search,
-            ...filters,
-            adminId: localStorage.getItem('adminId')
-        });
-
-        const response = await fetch(`${API_URL}/api/users?${queryParams}`, {
-            credentials: 'include',
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
-                'X-Admin-ID': localStorage.getItem('adminId')
-            }
-        });
-
-        const data = await handleResponse(response);
-        
-        if (data.success) {
-            updateUsersTable(data.users);
-            updatePagination(data.totalPages || Math.ceil(data.total / 50));
-            
-            const usersSection = document.querySelector('.users-table-section');
-            if (usersSection) {
-                usersSection.style.display = 'block';
-            }
-        }
-    } catch (err) {
-        handleError(err);
-    } finally {
-        hideLoader();
-    }
-}
-
-// Добавим функции для работы с лоадером
-function showLoader() {
-    const loader = document.querySelector('.loader');
-    if (loader) loader.style.display = 'flex';
-}
-
-function hideLoader() {
-    const loader = document.querySelector('.loader');
-    if (loader) loader.style.display = 'none';
-}
-
-// Обновим обработчики событий для кнопок в навигации
-document.addEventListener('DOMContentLoaded', () => {
-    const navItems = document.querySelectorAll('.nav-item');
-    navItems.forEach(item => {
-        item.addEventListener('click', (e) => {
-            e.preventDefault();
-            
-            // Удаляем активный класс у всех элементов
-            navItems.forEach(nav => nav.classList.remove('active'));
-            // Добавляем активный класс текущему элементу
-            item.classList.add('active');
-            
-            const targetTab = item.getAttribute('data-tab');
-            
-            // Скрываем все секции
-            document.querySelectorAll('section[id$="Section"]').forEach(section => {
-                section.style.display = 'none';
-            });
-            
-            // Показываем нужную секцию
-            switch(targetTab) {
-                case 'dashboard':
-                    document.getElementById('dashboardSection').style.display = 'block';
-                    loadStats();
-                    break;
-                case 'users':
-                    document.getElementById('usersSection').style.display = 'block';
-                    loadUsers(1);
-                    break;
-                case 'whitelist':
-                    document.getElementById('whitelistSection').style.display = 'block';
-                    loadWhiteListData();
-                    break;
-                case 'settings':
-                    document.getElementById('settingsSection').style.display = 'block';
-                    break;
-            }
-        });
-    });
-
-    // Инициализация поиска
-    const searchInput = document.getElementById('searchUsers');
-    if (searchInput) {
-        searchInput.addEventListener('input', debounce(() => {
-            loadUsers(1, searchInput.value);
-        }, 300));
+// Добавим стили для уведомлений в head
+const style = document.createElement('style');
+style.textContent = `
+    .notifications-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
     }
 
-    // Если пользователь авторизован, загружаем начальные данные
-    if (checkAuth()) {
-        loadStats();
-        loadUsers(1);
+    .notification {
+        background: white;
+        border-radius: 8px;
+        padding: 12px 24px;
+        margin-bottom: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        transform: translateX(120%);
+        transition: transform 0.3s ease;
+        max-width: 400px;
     }
-});
 
-// Вспомогательная функция debounce
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
+    .notification.show {
+        transform: translateX(0);
+    }
+
+    .notification.success {
+        border-left: 4px solid #22c55e;
+    }
+
+    .notification.error {
+        border-left: 4px solid #ef4444;
+    }
+
+    .notification.info {
+        border-left: 4px solid #3b82f6;
+    }
+
+    .notification i {
+        font-size: 1.25rem;
+    }
+
+    .notification.success i {
+        color: #22c55e;
+    }
+
+    .notification.error i {
+        color: #ef4444;
+    }
+
+    .notification.info i {
+        color: #3b82f6;
+    }
+`;
+document.head.appendChild(style);
 
