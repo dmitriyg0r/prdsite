@@ -655,6 +655,8 @@ async function loadWhiteListData(page = 1) {
     if (!checkAuth()) return;
 
     try {
+        console.log('Fetching White_List data from client...'); // Добавляем лог
+
         const response = await fetch(`${API_URL}/api/database/table/White_List?page=${page}`, {
             credentials: 'include',
             headers: {
@@ -663,12 +665,34 @@ async function loadWhiteListData(page = 1) {
         });
 
         const data = await handleResponse(response);
+        console.log('Received data:', data); // Логируем полученные данные
         
         if (data.success) {
             const container = document.getElementById('databaseStructure');
+            
+            if (!data.data.rows || data.data.rows.length === 0) {
+                container.innerHTML = `
+                    <div class="database-table">
+                        <h3>White List</h3>
+                        <p>Нет данных в таблице</p>
+                        <div class="whitelist-controls">
+                            <h4>Добавить новую запись</h4>
+                            <div class="input-group">
+                                <input type="text" id="uuidInput" placeholder="UUID">
+                                <input type="text" id="userInput" placeholder="Username">
+                                <button onclick="addWhiteListEntry()" class="action-btn add">
+                                    Добавить
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
             container.innerHTML = `
                 <div class="database-table">
-                    <h3>White List</h3>
+                    <h3>White List (${data.data.total} записей)</h3>
                     <table class="data-table">
                         <thead>
                             <tr>

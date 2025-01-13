@@ -3284,18 +3284,24 @@ app.get('/api/database/table/White_List', checkAdmin, async (req, res) => {
         const { page = 1, limit = 10 } = req.query;
         const offset = (page - 1) * limit;
 
+        console.log('Fetching White_List data...'); // Добавляем лог
+
         // Получаем данные таблицы
         const rows = await pool.query(`
             SELECT * 
-            FROM "White_List" 
+            FROM maincraft."White_List"  /* Уточняем схему */
             LIMIT $1 OFFSET $2
         `, [parseInt(limit), offset]);
+
+        console.log('Fetched rows:', rows.rows); // Логируем результат
 
         // Получаем общее количество записей
         const count = await pool.query(`
             SELECT COUNT(*) as total 
-            FROM "White_List"
+            FROM maincraft."White_List"
         `);
+
+        console.log('Total count:', count.rows[0].total); // Логируем количество
 
         res.json({
             success: true,
@@ -3374,6 +3380,38 @@ app.delete('/api/database/table/White_List/:uuid', checkAdmin, async (req, res) 
         res.status(500).json({
             success: false,
             error: 'Ошибка при удалении записи',
+            details: err.message
+        });
+    }
+});
+
+// Добавим endpoint для проверки структуры таблицы
+app.get('/api/database/check-whitelist', checkAdmin, async (req, res) => {
+    try {
+        // Проверяем структуру таблицы
+        const tableInfo = await pool.query(`
+            SELECT column_name, data_type 
+            FROM information_schema.columns 
+            WHERE table_schema = 'maincraft' 
+            AND table_name = 'White_List'
+        `);
+
+        // Проверяем наличие данных
+        const sampleData = await pool.query(`
+            SELECT * FROM maincraft."White_List" LIMIT 1
+        `);
+
+        res.json({
+            success: true,
+            structure: tableInfo.rows,
+            hasSampleData: sampleData.rows.length > 0,
+            sampleData: sampleData.rows
+        });
+    } catch (err) {
+        console.error('Ошибка проверки таблицы:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при проверке таблицы',
             details: err.message
         });
     }
