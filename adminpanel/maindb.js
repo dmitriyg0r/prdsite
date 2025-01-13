@@ -7,7 +7,10 @@ const pool = mysql.createPool({
     database: 'maincraft',
     waitForConnections: true,
     connectionLimit: 10,
-    queueLimit: 0
+    queueLimit: 0,
+    authPlugins: {
+        mysql_native_password: () => () => Buffer.from('sGLTccA_Na#9zC')
+    }
 });
 
 // Проверка подключения

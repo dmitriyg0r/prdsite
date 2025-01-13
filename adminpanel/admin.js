@@ -669,8 +669,11 @@ window.addEventListener('unhandledrejection', function(event) {
 
 async function loadWhitelist() {
     try {
+        console.log('Загрузка white list...'); // Для отладки
         const response = await fetch(`${API_URL}/api/whitelist`);
+        console.log('Ответ получен:', response); // Для отладки
         const data = await response.json();
+        console.log('Данные:', data); // Для отладки
         
         if (data.success) {
             const tbody = document.getElementById('whitelistTableBody');
@@ -689,8 +692,6 @@ async function loadWhitelist() {
                 `;
                 tbody.appendChild(row);
             });
-        } else {
-            console.error('Ошибка загрузки white list:', data.error);
         }
     } catch (error) {
         console.error('Ошибка загрузки white list:', error);
@@ -707,7 +708,7 @@ async function addToWhitelist() {
     }
     
     try {
-        const response = await fetch(`${API_URL}/api/whitelist`, {
+        const response = await fetch('http://localhost:3000/api/whitelist', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -732,7 +733,7 @@ async function addToWhitelist() {
 async function removeFromWhitelist(uuid) {
     if (confirm('Вы уверены, что хотите удалить этого игрока из white list?')) {
         try {
-            const response = await fetch(`${API_URL}/api/whitelist/${uuid}`, {
+            const response = await fetch(`http://localhost:3000/api/whitelist/${uuid}`, {
                 method: 'DELETE'
             });
             
