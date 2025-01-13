@@ -726,6 +726,10 @@ async function addToWhitelist() {
     const uuid = document.getElementById('uuidInput').value.trim();
     const user = document.getElementById('userInput').value.trim();
     
+    if (!user) {
+        alert('Пожалуйста, введите имя пользователя');
+        return;
+    }
     
     try {
         const response = await fetch(`${API_URL}/api/White_List`, {
@@ -736,7 +740,7 @@ async function addToWhitelist() {
             },
             credentials: 'include',
             body: JSON.stringify({ 
-                uuid: uuid,
+                uuid: uuid || undefined, // Отправляем UUID только если он указан
                 user: user
             })
         });

@@ -43,9 +43,18 @@ app.get('/api/White_List', async (req, res) => {
 app.post('/api/White_List', async (req, res) => {
     const { uuid, user } = req.body;
     
+    if (!user) {
+        return res.status(400).json({ 
+            success: false, 
+            error: 'Имя пользователя обязательно' 
+        });
+    }
 
     try {
-        await pool.query('INSERT INTO White_List (uuid, user) VALUES (?, ?)', [uuid, user]);
+        // Если UUID не предоставлен, генерируем его
+        const actualUuid = uuid || crypto.randomUUID();
+        
+        await pool.query('INSERT INTO White_List (uuid, user) VALUES (?, ?)', [actualUuid, user]);
         res.json({ success: true });
     } catch (error) {
         console.error('Ошибка при добавлении в White_List:', error);
