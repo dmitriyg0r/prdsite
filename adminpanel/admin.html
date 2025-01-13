@@ -6,7 +6,9 @@
     <title>Админ панель - SpacePoint</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="admin.css">
-
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
 <body>
     <div class="login-form" id="loginForm">
@@ -17,10 +19,30 @@
     </div>
 
     <div class="admin-panel" style="display: none;">
+        <nav class="admin-nav">
+            <ul>
+                <li data-tab="dashboard" class="active">Дашборд</li>
+                <li data-tab="users">Пользователи</li>
+                <li data-tab="whitelist">White List</li>
+                <li data-tab="settings">Настройки</li>
+            </ul>
+        </nav>
+
         <div class="admin-header">
-            <h1>Админ панель SpacePoint</h1>
-            <button onclick="logout()" class="logout-btn">Выйти</button>
+            <div class="header-left">
+                <h1>Админ панель SpacePoint</h1>
+                <span class="server-status online">Сервер активен</span>
+            </div>
+            <div class="header-right">
+                <div class="admin-profile">
+                    <span class="admin-name">Админ</span>
+                    <button onclick="logout()" class="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i> Выйти
+                    </button>
+                </div>
+            </div>
         </div>
+
         <div class="stats-grid">
             <div class="stat-card users">
                 <h3>Пользователи</h3>
@@ -120,6 +142,19 @@
 
         <div class="search-bar">
             <input type="text" id="searchUsers" placeholder="Поиск пользователей...">
+            <div class="search-filters">
+                <select id="roleFilter">
+                    <option value="">Все роли</option>
+                    <option value="user">Пользователи</option>
+                    <option value="moderator">Модераторы</option>
+                    <option value="admin">Админы</option>
+                </select>
+                <select id="statusFilter">
+                    <option value="">Все статусы</option>
+                    <option value="active">Активные</option>
+                    <option value="banned">Заблокированные</option>
+                </select>
+            </div>
         </div>
 
         <table class="users-table">
