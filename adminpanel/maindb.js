@@ -11,37 +11,39 @@ const pool = mysql.createPool({
     queueLimit: 0
 });
 
-// Функция для получения данных White_List с пагинацией
+/**
+ * Получение данных из White List с пагинацией
+ * @param {number} page - Номер страницы
+ * @param {number} limit - Количество записей на странице
+ * @returns {Promise<{success: boolean, data?: {rows: Array, total: number}, error?: string}>}
+ */
 async function getWhiteListData(page = 1, limit = 10) {
     try {
         const offset = (page - 1) * limit;
         
-        // Используем правильный синтаксис MySQL для подсчета
-        const [countResult] = await pool.query('SELECT COUNT(*) as total FROM White_List');
-        const total = countResult[0].total;
-        
-        // MySQL чувствителен к регистру в именах таблиц
-        const [rows] = await pool.query(
-            'SELECT uuid, user FROM White_List ORDER BY user LIMIT ? OFFSET ?',
-            [limit, offset]
+        // Получаем общее количество записей
+        const [totalCount] = await pool.query(
+            'SELECT COUNT(*) as count FROM White_List'
         );
         
+        // Получаем записи для текущей страницы
+        const [rows] = await pool.query(
+            'SELECT UUID, user FROM White_List LIMIT ? OFFSET ?',
+            [limit, offset]
+        );
+
         return {
             success: true,
             data: {
                 rows,
-                total,
-                pages: Math.ceil(total / limit),
-                currentPage: page,
-                limit
+                total: totalCount[0].count
             }
         };
     } catch (err) {
-        console.error('MySQL error:', err);
+        console.error('Error in getWhiteListData:', err);
         return {
             success: false,
-            error: 'Ошибка при получении данных таблицы',
-            details: err
+            error: err.message
         };
     }
 }
