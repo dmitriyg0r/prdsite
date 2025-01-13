@@ -369,9 +369,7 @@ async function login() {
             throw new Error('Пожалуйста, заполните все поля');
         }
 
-        console.log('Attempting login...'); 
-
-        const response = await fetch(`${API_URL}/login`, {
+        const response = await fetch(`${API_URL}/api/admin/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -384,14 +382,12 @@ async function login() {
             })
         });
 
-        console.log('Response status:', response.status);
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Ошибка авторизации');
+        }
 
         const data = await response.json();
-        console.log('Response data:', data);
-
-        if (!response.ok) {
-            throw new Error(data.error || 'Ошибка авторизации');
-        }
 
         if (data.success && data.user && data.user.role === 'admin') {
             localStorage.setItem('adminId', data.user.id);
