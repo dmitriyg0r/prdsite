@@ -704,6 +704,8 @@ async function loadWhiteListData() {
             
             data.data.forEach(item => {
                 const row = document.createElement('tr');
+                // Добавляем data-uuid для идентификации строки
+                row.setAttribute('data-uuid', item.UUID);
                 row.innerHTML = `
                     <td>${item.UUID}</td>
                     <td>${item.user}</td>
@@ -771,7 +773,14 @@ async function removeFromWhitelist(uuid) {
         const data = await handleResponse(response);
         
         if (data.success) {
-            loadWhiteListData();
+            // Находим и удаляем строку из таблицы напрямую
+            const row = document.querySelector(`tr[data-uuid="${uuid}"]`);
+            if (row) {
+                row.remove();
+            } else {
+                // Если строка не найдена, перезагружаем всю таблицу
+                loadWhiteListData();
+            }
         }
     } catch (err) {
         console.error('Ошибка при удалении из White List:', err);
