@@ -3230,42 +3230,25 @@ app.get('/api/White_List', async (req, res) => {
 
         console.log('Fetching White_List data...');
 
-        // Проверяем существование таблицы
-        const tableCheck = await pool.query(`
-            SELECT EXISTS (
-                SELECT FROM information_schema.tables 
-                WHERE table_schema = 'maincraft'
-                AND table_name = 'white_list'
-            );
-        `);
-
-        if (!tableCheck.rows[0].exists) {
-            return res.status(404).json({
-                success: false,
-                error: 'Таблица White_List не найдена'
-            });
-        }
-
-        // Получаем данные с правильным именем таблицы и схемы
-        const rows = await pool.query(`
-            SELECT * 
-            FROM maincraft.white_list
-            ORDER BY "user"
-            LIMIT $1 OFFSET $2
-        `, [parseInt(limit), offset]);
+        // Получаем данные с использованием существующего пула MySQL
+        const [rows] = await pool.execute(
+            'SELECT * FROM White_List ORDER BY user LIMIT ? OFFSET ?',
+            [parseInt(limit), offset]
+        );
 
         // Получаем общее количество записей
-        const count = await pool.query(`
-            SELECT COUNT(*) as total 
-            FROM maincraft.white_list
-        `);
+        const [countResult] = await pool.execute(
+            'SELECT COUNT(*) as total FROM White_List'
+        );
+
+        const total = countResult[0].total;
 
         res.json({
             success: true,
             data: {
-                rows: rows.rows,
-                total: parseInt(count.rows[0].total),
-                pages: Math.ceil(parseInt(count.rows[0].total) / parseInt(limit)),
+                rows,
+                total,
+                pages: Math.ceil(total / parseInt(limit)),
                 currentPage: parseInt(page),
                 limit: parseInt(limit)
             }
@@ -3275,8 +3258,7 @@ app.get('/api/White_List', async (req, res) => {
         console.error('Database error:', {
             message: err.message,
             stack: err.stack,
-            code: err.code,
-            detail: err.detail
+            code: err.code
         });
         res.status(500).json({
             success: false,
@@ -3298,15 +3280,14 @@ app.post('/api/White_List', checkAdmin, async (req, res) => {
             });
         }
 
-        const result = await pool.query(`
-            INSERT INTO maincraft.white_list ("UUID", "user")
-            VALUES ($1, $2)
-            RETURNING *
-        `, [UUID, user]);
+        const [result] = await pool.execute(
+            'INSERT INTO White_List (UUID, user) VALUES (?, ?)',
+            [UUID, user]
+        );
 
         res.json({
             success: true,
-            data: result.rows[0]
+            data: { UUID, user, id: result.insertId }
         });
     } catch (err) {
         console.error('Ошибка добавления записи:', err);
@@ -3323,13 +3304,12 @@ app.delete('/api/White_List/:uuid', checkAdmin, async (req, res) => {
     try {
         const { uuid } = req.params;
 
-        const result = await pool.query(`
-            DELETE FROM maincraft.white_list
-            WHERE "UUID" = $1
-            RETURNING *
-        `, [uuid]);
+        const [result] = await pool.execute(
+            'DELETE FROM White_List WHERE UUID = ?',
+            [uuid]
+        );
 
-        if (result.rows.length === 0) {
+        if (result.affectedRows === 0) {
             return res.status(404).json({
                 success: false,
                 error: 'Запись не найдена'
@@ -3338,7 +3318,7 @@ app.delete('/api/White_List/:uuid', checkAdmin, async (req, res) => {
 
         res.json({
             success: true,
-            data: result.rows[0]
+            message: 'Запись успешно удалена'
         });
     } catch (err) {
         console.error('Ошибка удаления записи:', err);
