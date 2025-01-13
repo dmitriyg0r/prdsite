@@ -27,7 +27,7 @@ app.use(cors({
 app.use(express.json());
 
 // Получение данных из White_List
-app.get('/api/whitelist', async (req, res) => {
+app.get('/api/White_List', async (req, res) => {
     try {
         const [rows] = await pool.query('SELECT * FROM White_List');
         res.json({ success: true, data: rows });
@@ -38,7 +38,7 @@ app.get('/api/whitelist', async (req, res) => {
 });
 
 // Добавление записи в White_List
-app.post('/api/whitelist', async (req, res) => {
+app.post('/api/White_List', async (req, res) => {
     const { uuid, username } = req.body;
     try {
         await pool.query('INSERT INTO White_List (uuid, username) VALUES (?, ?)', [uuid, username]);
@@ -50,7 +50,7 @@ app.post('/api/whitelist', async (req, res) => {
 });
 
 // Удаление записи из White_List
-app.delete('/api/whitelist/:uuid', async (req, res) => {
+app.delete('/api/White_List/:uuid', async (req, res) => {
     const { uuid } = req.params;
     try {
         await pool.query('DELETE FROM White_List WHERE uuid = ?', [uuid]);

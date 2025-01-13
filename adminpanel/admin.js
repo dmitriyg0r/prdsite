@@ -662,7 +662,7 @@ window.addEventListener('unhandledrejection', function(event) {
 // Загрузка данных White_List
 async function loadWhiteListData() {
     try {
-        const response = await fetch(`${API_URL}/api/whitelist`, {
+        const response = await fetch(`${API_URL}/api/White_List`, {
             credentials: 'include',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
@@ -704,7 +704,7 @@ async function addToWhitelist() {
     }
     
     try {
-        const response = await fetch(`${API_URL}/api/whitelist`, {
+        const response = await fetch(`${API_URL}/api/White_List`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -734,7 +734,7 @@ async function removeFromWhitelist(uuid) {
     }
     
     try {
-        const response = await fetch(`${API_URL}/api/whitelist/${uuid}`, {
+        const response = await fetch(`${API_URL}/api/White_List/${uuid}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
