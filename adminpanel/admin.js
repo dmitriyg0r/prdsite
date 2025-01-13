@@ -1,4 +1,4 @@
-const API_URL = 'https://space-point.ru';
+const API_URL = 'https://space-point:3000';
 
 let currentPage = 1;
 let totalPages = 1;
@@ -669,7 +669,7 @@ window.addEventListener('unhandledrejection', function(event) {
 
 async function loadWhitelist() {
     try {
-        const response = await fetch('http://localhost:3000/api/whitelist');
+        const response = await fetch(`${API_URL}/api/whitelist`);
         const data = await response.json();
         
         if (data.success) {
@@ -689,8 +689,6 @@ async function loadWhitelist() {
                 `;
                 tbody.appendChild(row);
             });
-        } else {
-            console.error('Ошибка загрузки white list:', data.error);
         }
     } catch (error) {
         console.error('Ошибка загрузки white list:', error);
@@ -707,7 +705,7 @@ async function addToWhitelist() {
     }
     
     try {
-        const response = await fetch('http://localhost:3000/api/whitelist', {
+        const response = await fetch(`${API_URL}/api/whitelist`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -732,7 +730,7 @@ async function addToWhitelist() {
 async function removeFromWhitelist(uuid) {
     if (confirm('Вы уверены, что хотите удалить этого игрока из white list?')) {
         try {
-            const response = await fetch(`http://localhost:3000/api/whitelist/${uuid}`, {
+            const response = await fetch(`${API_URL}/api/whitelist/${uuid}`, {
                 method: 'DELETE'
             });
             
