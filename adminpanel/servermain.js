@@ -26,11 +26,26 @@ app.get('/test', (req, res) => {
 
 app.get('/api/WhiteList', async (req, res) => {
     try {
+        // Проверка авторизации
+        const adminId = req.query.adminId;
+        if (!adminId) {
+            return res.status(401).json({ 
+                success: false, 
+                error: 'Требуется авторизация' 
+            });
+        }
+
         const [rows] = await db.query('SELECT * FROM White_List');
-        res.json({ success: true, data: rows });
+        res.json({ 
+            success: true, 
+            data: rows 
+        });
     } catch (error) {
         console.error('Ошибка:', error);
-        res.status(500).json({ success: false, error: error.message });
+        res.status(500).json({ 
+            success: false, 
+            error: error.message 
+        });
     }
 });
 

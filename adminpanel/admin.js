@@ -679,13 +679,14 @@ window.addEventListener('unhandledrejection', function(event) {
 
 async function loadWhitelist() {
     try {
-        const response = await fetch(`${API_URL}/api/whitelist?adminId=${localStorage.getItem('adminId')}`, {
+        const response = await fetch(`${API_URL}/api/WhiteList?adminId=${localStorage.getItem('adminId')}`, {
             credentials: 'include',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
             }
         });
-        const data = await response.json();
+        
+        const data = await handleResponse(response);
         
         if (data.success) {
             const tbody = document.getElementById('whitelistTableBody');
@@ -704,11 +705,10 @@ async function loadWhitelist() {
                 `;
                 tbody.appendChild(row);
             });
-        } else {
-            console.error('Ошибка загрузки white list:', data.error);
         }
     } catch (error) {
         console.error('Ошибка загрузки white list:', error);
+        handleError(error);
     }
 }
 
