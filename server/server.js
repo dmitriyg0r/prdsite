@@ -3232,10 +3232,10 @@ app.get('/api/White_List', async (req, res) => {
 
         console.log('Fetching White_List data with params:', { page, limit, offset });
 
-        // Получаем данные
+        // Используем MySQL синтаксис для LIMIT и OFFSET
         const [rows] = await pool.query(
-            'SELECT * FROM White_List LIMIT ? OFFSET ?',
-            [parseInt(limit), parseInt(offset)]
+            'SELECT * FROM White_List LIMIT ?, ?',
+            [parseInt(offset), parseInt(limit)]
         );
         console.log('Rows fetched:', rows.length);
 
