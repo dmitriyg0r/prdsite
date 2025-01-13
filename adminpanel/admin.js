@@ -449,7 +449,7 @@ let rolesChart = null;
 async function loadCharts() {
     try {
         const adminId = getAdminId();
-        const response = await fetch(`${API_URL}/api/admin/charts`, {
+        const response = await fetch(`${API_URL}/api/charts`, {
             credentials: 'include',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
@@ -681,7 +681,7 @@ window.addEventListener('unhandledrejection', function(event) {
 
 async function loadWhitelist() {
     try {
-        const response = await fetch(`${API_URL}/api/admin/whitelist`, {
+        const response = await fetch(`${API_URL}/api/whitelist`, {
             credentials: 'include',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
