@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const response = await fetch(`https://adminflow.ru/api/friends?userId=${userId}`);
+            const response = await fetch(`https://space-point.ru/api/friends?userId=${userId}`);
             if (!response.ok) {
                 throw new Error(`Failed to load friends: ${response.status}`);
             }
@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function loadFriendRequests() {
         try {
-            const response = await fetch(`https://adminflow.ru/api/friend-requests?userId=${currentUser.id}`);
+            const response = await fetch(`https://space-point.ru/api/friend-requests?userId=${currentUser.id}`);
             const data = await response.json();
             
             if (response.ok) {
@@ -220,7 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function respondToFriendRequest(friendId, status) {
         try {
-            const response = await fetch('https://adminflow.ru/api/friend-request/respond', {
+            const response = await fetch('https://space-point.ru/api/friend-request/respond', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -249,7 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const response = await fetch('https://adminflow.ru/api/friend/remove', {
+            const response = await fetch('https://space-point.ru/api/friend/remove', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -1,98 +1,59 @@
 <?php
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+header('Cache-Control: no-cache, must-revalidate');
 
 function checkMinecraftServer() {
-    // Получаем IP и порт из GET параметров
-    $ip = $_GET['ip'] ?? '188.127.241.209';  // Используем значение из параметра или значение по умолчанию
-    $port = intval($_GET['port'] ?? 25971);   // Преобразуем в число
-    
+    $serverIP = $_GET['ip'] ?? '188.127.241.209';
+    $serverPort = $_GET['port'] ?? 25971;
     $debug = [];
-    $debug[] = "Попытка подключения к $ip:$port";
     
     try {
-        // Увеличиваем таймаут и добавляем дополнительные параметры
-        $socket = @stream_socket_client(
-            "tcp://$ip:$port", 
-            $errno, 
-            $errstr, 
-            5,
-            STREAM_CLIENT_CONNECT
-        );
+        $socket = @fsockopen($serverIP, $serverPort, $errno, $errstr, 2);
         
-        if (!$socket) {
-            $debug[] = "Ошибка подключения: $errno - $errstr";
-            return [
-                'online' => false,
-                'error' => "$errno: $errstr",
-                'debug' => $debug
-            ];
+        if ($socket) {
+            $debug[] = "Соединение установлено";
+            
+            // Отправляем запрос серверу
+            $data = "\x06\x00\x00\x00\x00\x00";
+            fwrite($socket, $data);
+            
+            // Читаем ответ
+            $response = fread($socket, 4096);
+            fclose($socket);
+            
+            if ($response !== false) {
+                // Парсим JSON ответ от сервера
+                $serverData = json_decode(substr($response, 3), true);
+                
+                // Получаем информацию об игроках
+                $players = [
+                    'online' => $serverData['players']['online'] ?? 0,
+                    'max' => $serverData['players']['max'] ?? 30
+                ];
+                
+                echo json_encode([
+                    'online' => true,
+                    'debug' => $debug,
+                    'players' => $players
+                ]);
+                exit;
+            }
         }
         
-        $debug[] = "Соединение установлено";
-        
-        // Устанавливаем таймаут для чтения/записи
-        stream_set_timeout($socket, 3);
-        
-        // Формируем правильный handshake пакет
-        $packet = "\x06\x00"; // Packet ID для Server List Ping
-        $packet .= "\x00\x00"; // Protocol version (пустой)
-        $packet .= pack('c', strlen($ip)) . $ip; // Длина IP + IP
-        $packet .= pack('n', $port); // Порт
-        $packet .= "\x01"; // Next state (1 для status)
-        
-        // Отправляем размер пакета
-        $data = pack('c', strlen($packet)) . $packet;
-        fwrite($socket, $data);
-        
-        // Отправляем запрос статуса
-        fwrite($socket, "\x01\x00");
-        
-        $debug[] = "Handshake отправлен";
-        
-        // Читаем ответ
-        $response = fread($socket, 1024);
-        $debug[] = "Получен ответ длиной: " . strlen($response);
-        
-        fclose($socket);
-        
-        if ($response !== false) {
-            return [
-                'online' => true,
-                'debug' => $debug,
-                'players' => [
-                    'online' => 0,
-                    'max' => 0
-                ]
-            ];
-        } else {
-            $debug[] = "Нет ответа от сервера";
-            return [
-                'online' => false,
-                'error' => 'Нет ответа от сервера',
-                'debug' => $debug
-            ];
-        }
+        echo json_encode([
+            'online' => false,
+            'debug' => $debug,
+            'error' => 'Не удалось получить ответ от сервера'
+        ]);
         
     } catch (Exception $e) {
-        $debug[] = "Исключение: " . $e->getMessage();
-        return [
+        echo json_encode([
             'online' => false,
-            'error' => $e->getMessage(),
-            'debug' => $debug
-        ];
+            'debug' => $debug,
+            'error' => $e->getMessage()
+        ]);
     }
 }
 
-try {
-    $result = checkMinecraftServer();
-    echo json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-} catch (Exception $e) {
-    echo json_encode([
-        'online' => false,
-        'error' => $e->getMessage(),
-        'debug' => ['Критическая ошибка при выполнении скрипта']
-    ]);
-}
+checkMinecraftServer();
+?>

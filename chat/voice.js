@@ -177,7 +177,7 @@ class VoiceRecorder {
             scrollToBottom();
     
             // Отправляем запрос
-            const response = await fetch('https://adminflow.ru/api/messages/voice', {
+            const response = await fetch('https://space-point.ru/api/messages/voice', {
                 method: 'POST',
                 body: formData
             });
@@ -272,7 +272,7 @@ class VoiceRecorder {
 
                 playButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
                 
-                const response = await fetch(`https://adminflow.ru/api/messages/voice/${message.id}`);
+                const response = await fetch(`https://space-point.ru/api/messages/voice/${message.id}`);
                 if (!response.ok) throw new Error('Ошибка загрузки аудио');
                 
                 const blob = await response.blob();

@@ -74,7 +74,7 @@ function initMobileChat() {
             elements.chatArea.appendChild(loadingIndicator);
 
             try {
-                const response = await fetch(`https://adminflow.ru/api/users/${userId}?currentUserId=${currentUser.id}`);
+                const response = await fetch(`https://space-point.ru/api/users/${userId}?currentUserId=${currentUser.id}`);
                 if (!response.ok) throw new Error('Ошибка загрузки данных пользователя');
                 const data = await response.json();
 

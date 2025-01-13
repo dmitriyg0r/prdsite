@@ -6,7 +6,7 @@ let editProfileBtn = null;
 const formatAvatarUrl = (url) => {
     if (!url) return '/uploads/avatars/default.png';
     if (url.startsWith('http')) return url;
-    const baseUrl = 'https://adminflow.ru';
+    const baseUrl = 'https://space-point.ru';
     const timestamp = new Date().getTime();
     // Убираем существующий timestamp из URL, если он есть
     const cleanUrl = url.split('?')[0];
@@ -39,7 +39,7 @@ const updateProfileData = async (userData) => {
     if (!isAvatarAvailable) {
         // Если аватар недоступен, обновляем URL в базе данных
         try {
-            const response = await fetch('https://adminflow.ru/api/users/update-profile', {
+            const response = await fetch('https://space-point.ru/api/users/update-profile', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -107,7 +107,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         // Загружаем актуальные данные пользователя
         const userId = profileId || currentUser.id;
-        const response = await fetch(`https://adminflow.ru/api/users/${userId}`);
+        const response = await fetch(`https://space-point.ru/api/users/${userId}`);
         
         if (!response.ok) {
             throw new Error('Ошибка получения данных пользователя');
@@ -146,7 +146,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Если есть id в URL, загружаем профиль друга
     if (profileId) {
         try {
-            const response = await fetch(`https://adminflow.ru/api/users/${profileId}`);
+            const response = await fetch(`https://space-point.ru/api/users/${profileId}`);
             if (!response.ok) {
                 throw new Error('Пользователь не найден');
             }
@@ -248,7 +248,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const email = document.getElementById('edit-email').value.trim();
 
             try {
-                const response = await fetch('https://adminflow.ru/api/users/update-profile', {
+                const response = await fetch('https://space-point.ru/api/users/update-profile', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -310,7 +310,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (email && isValidEmail(email)) {
             emailCheckTimeout = setTimeout(async () => {
                 try {
-                    const response = await fetch(`https://adminflow.ru/api/users/check-email?email=${encodeURIComponent(email)}&userId=${currentUser.id}`);
+                    const response = await fetch(`https://space-point.ru/api/users/check-email?email=${encodeURIComponent(email)}&userId=${currentUser.id}`);
                     const data = await response.json();
 
                     if (response.ok) {
@@ -382,7 +382,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             // Загружаем файл аватара
             console.log('2. Отправка запроса на загрузку файла');
-            const uploadResponse = await fetch('https://adminflow.ru/api/upload-avatar', {
+            const uploadResponse = await fetch('https://space-point.ru/api/upload-avatar', {
                 method: 'POST',
                 body: formData
             });
@@ -408,7 +408,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             console.log('5. Отправляемые данные для обновления профиля:', updateProfileData);
 
-            const updateResponse = await fetch('https://adminflow.ru/api/users/update-profile', {
+            const updateResponse = await fetch('https://space-point.ru/api/users/update-profile', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -539,7 +539,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         loadingIndicator.classList.add('active');
         
         try {
-            const response = await fetch(`https://adminflow.ru/api/search-users?q=${encodeURIComponent(query)}&userId=${currentUser.id}`);
+            const response = await fetch(`https://space-point.ru/api/search-users?q=${encodeURIComponent(query)}&userId=${currentUser.id}`);
             const data = await response.json();
             
             if (response.ok) {
@@ -616,7 +616,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function handleFriendAction(action, userId) {
         try {
             if (action === 'add') {
-                const response = await fetch('https://adminflow.ru/api/friend-request', {
+                const response = await fetch('https://space-point.ru/api/friend-request', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -651,7 +651,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Обновляем функцию поиска
     async function searchUsers(query) {
         try {
-            const response = await fetch(`https://adminflow.ru/api/search-users?q=${query}&userId=${currentUser.id}`);
+            const response = await fetch(`https://space-point.ru/api/search-users?q=${query}&userId=${currentUser.id}`);
             const data = await response.json();
             
             if (response.ok) {
@@ -784,7 +784,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         try {
-            const response = await fetch(`https://adminflow.ru/api/friends?userId=${userId}`);
+            const response = await fetch(`https://space-point.ru/api/friends?userId=${userId}`);
             if (!response.ok) {
                 throw new Error(`Failed to load friends: ${response.status}`);
             }
@@ -803,7 +803,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function loadFriendRequests() {
         try {
-            const response = await fetch(`https://adminflow.ru/api/friend-requests?userId=${currentUser.id}`);
+            const response = await fetch(`https://space-point.ru/api/friend-requests?userId=${currentUser.id}`);
             const data = await response.json();
             
             if (response.ok) {
@@ -953,7 +953,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function respondToFriendRequest(friendId, status) {
         try {
-            const response = await fetch('https://adminflow.ru/api/friend-request/respond', {
+            const response = await fetch('https://space-point.ru/api/friend-request/respond', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -979,7 +979,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Обновляем функцию поиска
     async function searchUsers(query) {
         try {
-            const response = await fetch(`https://adminflow.ru/api/search-users?q=${query}&userId=${currentUser.id}`);
+            const response = await fetch(`https://space-point.ru/api/search-users?q=${query}&userId=${currentUser.id}`);
             const data = await response.json();
             
             if (response.ok) {
@@ -1078,7 +1078,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function sendFriendRequest(friendId) {
         try {
-            const response = await fetch('https://adminflow.ru/api/friend-request', {
+            const response = await fetch('https://space-point.ru/api/friend-request', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1129,7 +1129,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         try {
-            const response = await fetch('https://adminflow.ru/api/friend/remove', {
+            const response = await fetch('https://space-point.ru/api/friend/remove', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1155,7 +1155,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function openFriendProfile(userId) {
         try {
-            const response = await fetch(`https://adminflow.ru/api/users/${userId}`, {
+            const response = await fetch(`https://space-point.ru/api/users/${userId}`, {
                 credentials: 'include'
             });
             
@@ -1208,7 +1208,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Откладываем выполнение запроса
         statusUpdateTimeout = setTimeout(async () => {
             try {
-                const response = await fetch('https://adminflow.ru/api/users/update-status', {
+                const response = await fetch('https://space-point.ru/api/users/update-status', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -1287,7 +1287,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.addEventListener('beforeunload', (event) => {
         if (currentUser && currentUser.id) {
             // Испоьзуем синхронный запрос для гарантированной отправки
-            navigator.sendBeacon('https://adminflow.ru/api/users/update-status', JSON.stringify({
+            navigator.sendBeacon('https://space-point.ru/api/users/update-status', JSON.stringify({
                 userId: currentUser.id,
                 is_online: false
             }));
@@ -1302,7 +1302,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         try {
-            const response = await fetch(`https://adminflow.ru/api/users/status/${userId}`);
+            const response = await fetch(`https://space-point.ru/api/users/status/${userId}`);
             if (!response.ok) {
                 throw new Error('Failed to fetch status');
             }
@@ -1405,7 +1405,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             sendVerificationCodeBtn.disabled = true;
             sendVerificationCodeBtn.textContent = 'Отправка...';
 
-            const response = await fetch('https://adminflow.ru/api/send-verification-code', {
+            const response = await fetch('https://space-point.ru/api/send-verification-code', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1472,7 +1472,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         try {
-            const response = await fetch('https://adminflow.ru/api/change-password', {
+            const response = await fetch('https://space-point.ru/api/change-password', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1558,7 +1558,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             loadingIndicator.classList.add('active');
             
             try {
-                const response = await fetch(`https://adminflow.ru/api/search-users?q=${encodeURIComponent(query)}&userId=${currentUser.id}`);
+                const response = await fetch(`https://space-point.ru/api/search-users?q=${encodeURIComponent(query)}&userId=${currentUser.id}`);
                 const data = await response.json();
                 
                 if (response.ok) {
@@ -1636,7 +1636,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function handleFriendAction(action, userId) {
         try {
             if (action === 'add') {
-                const response = await fetch('https://adminflow.ru/api/friend-request', {
+                const response = await fetch('https://space-point.ru/api/friend-request', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1674,7 +1674,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const userId = currentUser.id;
             console.log('Загрузка данных пользователя:', userId);
 
-            const response = await fetch(`https://adminflow.ru/api/users/${userId}`);
+            const response = await fetch(`https://space-point.ru/api/users/${userId}`);
             const data = await response.json();
             
             console.log('Получены данные пользователя:', data);
@@ -1748,7 +1748,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 formData.append('image', file);
             }
 
-            const response = await fetch('https://adminflow.ru/api/posts/create', {
+            const response = await fetch('https://space-point.ru/api/posts/create', {
                 method: 'POST',
                 body: formData
             });
@@ -1920,7 +1920,7 @@ async function createPost() {
             formData.append('file', file); // Изменено с 'image' на 'file'
         }
 
-        const response = await fetch('https://adminflow.ru/api/posts/create', {
+        const response = await fetch('https://space-point.ru/api/posts/create', {
             method: 'POST',
             body: formData
         });
@@ -1960,7 +1960,7 @@ async function loadPosts() {
         const userId = new URLSearchParams(window.location.search).get('id') || currentUser.id;
         console.log('Loading posts for userId:', userId); // Отладочная информация
         
-        const response = await fetch(`https://adminflow.ru/api/posts/${userId}?currentUserId=${currentUser.id}`);
+        const response = await fetch(`https://space-point.ru/api/posts/${userId}?currentUserId=${currentUser.id}`);
         const data = await response.json();
         
         console.log('Posts response:', data); // Отладочная информация
@@ -2067,7 +2067,7 @@ function displayPosts(posts) {
 
 async function toggleLike(postId) {
     try {
-        const response = await fetch('https://adminflow.ru/api/posts/like', {
+        const response = await fetch('https://space-point.ru/api/posts/like', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -2120,7 +2120,7 @@ async function deletePost(postId) {
     }
 
     try {
-        const response = await fetch(`https://adminflow.ru/api/posts/delete/${postId}`, {
+        const response = await fetch(`https://space-point.ru/api/posts/delete/${postId}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
@@ -2249,7 +2249,7 @@ async function toggleComments(postId) {
 
 async function loadComments(postId) {
     try {
-        const response = await fetch(`https://adminflow.ru/api/posts/${postId}/comments`);
+        const response = await fetch(`https://space-point.ru/api/posts/${postId}/comments`);
         if (!response.ok) throw new Error('Ошибка при загрузке комментариев');
         
         const data = await response.json();
@@ -2287,7 +2287,7 @@ async function submitComment(postId, button) {
     if (!content) return;
     
     try {
-        const response = await fetch('https://adminflow.ru/api/posts/comment', {
+        const response = await fetch('https://space-point.ru/api/posts/comment', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

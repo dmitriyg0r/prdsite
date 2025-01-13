@@ -45,7 +45,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-            const response = await fetch(`check_status.php?ip=${serverIP}&port=${serverPort}`, {
+            // Используем локальный JSON файл
+            const response = await fetch('server-status.json', {
                 signal: controller.signal,
                 headers: {
                     'Cache-Control': 'no-cache',
@@ -55,15 +56,13 @@ document.addEventListener('DOMContentLoaded', function() {
             
             clearTimeout(timeoutId);
             
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
             const data = await response.json();
             
             console.log('📋 Данные сервера:', data);
-            
-            // Выводим отладочную информацию
-            if (data.debug) {
-                console.log('🔍 Отладочная информация:');
-                data.debug.forEach(msg => console.log(`  ${msg}`));
-            }
 
             if (data.online) {
                 console.log('✅ Сервер онлайн');
@@ -73,9 +72,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 playersMaxElement.textContent = data.players?.max || '0';
             } else {
                 console.log('❌ Сервер оффлайн');
-                if (data.error) {
-                    console.error('Причина:', data.error);
-                }
                 statusElement.innerHTML = 'Оффлайн';
                 statusElement.style.color = '#f44336';
                 playersOnlineElement.textContent = '0';
@@ -84,12 +80,9 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (error) {
             console.error('🚫 Ошибка при проверке статуса сервера:', error);
             
-            // Более информативное сообщение об ошибке
-            if (error.name === 'AbortError') {
-                statusElement.innerHTML = 'Таймаут подключения';
-            } else {
-                statusElement.innerHTML = 'Сервер недоступен';
-            }
+            statusElement.innerHTML = error.name === 'AbortError' 
+                ? 'Таймаут подключения' 
+                : 'Ошибка проверки';
             
             statusElement.style.color = '#f44336';
             playersOnlineElement.textContent = '0';

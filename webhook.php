@@ -1,5 +1,5 @@
 <?php
-// Ð›Ð¾Ð³Ð¸Ñ€Ð¾Ð²Ð°Ð½Ð¸Ðµ
+// Ëîãèðîâàíèå
 $logFile = '/var/log/webhook.log';
 
 function logMessage($message) {
@@ -13,14 +13,14 @@ logMessage("Request Headers: " . json_encode(getallheaders()));
 
 logMessage("Webhook received");
 
-// ÐŸÑ€Ð¾Ð²ÐµÑ€ÐºÐ° Ð¼ÐµÑ‚Ð¾Ð´Ð° Ð·Ð°Ð¿Ñ€Ð¾ÑÐ°
+// Ïðîâåðêà ìåòîäà çàïðîñà
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     logMessage("Invalid request method: " . $_SERVER['REQUEST_METHOD']);
     http_response_code(405);
     exit('Method Not Allowed');
 }
 
-// ÐŸÑ€Ð¾Ð²ÐµÑ€ÐºÐ° Ð½Ð°Ð»Ð¸Ñ‡Ð¸Ñ Ð²Ñ…Ð¾Ð´Ð½Ñ‹Ñ… Ð´Ð°Ð½Ð½Ñ‹Ñ…
+// Ïðîâåðêà íàëè÷èÿ âõîäíûõ äàííûõ
 $payload = file_get_contents("php://input");
 if (empty($payload)) {
     logMessage("Empty payload received");
@@ -28,22 +28,24 @@ if (empty($payload)) {
     exit('Bad Request');
 }
 
-// ÐžÐ±Ð½Ð¾Ð²Ð»ÐµÐ½Ð½Ð°Ñ Ð¿Ñ€Ð¾Ð²ÐµÑ€ÐºÐ° ÑÐµÐºÑ€ÐµÑ‚Ð½Ð¾Ð³Ð¾ Ñ‚Ð¾ÐºÐµÐ½Ð°
+// Ïðîâåðêà ñåêðåòíîãî òîêåíà
 $secretToken = 'Gg3985502';
 $signature = $_SERVER['HTTP_X_HUB_SIGNATURE'] ?? '';
 $expectedSignature = 'sha1=' . hash_hmac('sha1', $payload, $secretToken);
 
 if ($signature !== $expectedSignature) {
     logMessage("Invalid secret token");
+    logMessage("Received signature: " . $signature);
+    logMessage("Expected signature: " . $expectedSignature);
     http_response_code(403);
     exit('Forbidden');
 }
 
-// Ð’Ñ‹Ð·Ð¾Ð² ÑÐºÑ€Ð¸Ð¿Ñ‚Ð° deploy.php
+// Âûçîâ ñêðèïòà deploy.php
 $deployScript = '/var/www/deploy.php';
 logMessage("Calling deploy script: " . $deployScript);
 
-// Ð˜ÑÐ¿Ð¾Ð»ÑŒÐ·ÑƒÐµÐ¼ Ð¿Ð¾Ð»Ð½Ñ‹Ð¹ Ð¿ÑƒÑ‚ÑŒ Ðº Ð¸Ð½Ñ‚ÐµÑ€Ð¿Ñ€ÐµÑ‚Ð°Ñ‚Ð¾Ñ€Ñƒ PHP
+// Èñïîëüçóåì ïîëíûé ïóòü ê èíòåðïðåòàòîðó PHP
 exec("/usr/bin/php " . $deployScript . " >> " . $logFile . " 2>&1");
 
 logMessage("Webhook processing completed");
