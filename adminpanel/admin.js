@@ -20,11 +20,17 @@ function getAdminId() {
 // Добавим функцию проверки авторизации
 function checkAuth() {
     const adminId = localStorage.getItem('adminId');
+    const loginForm = document.getElementById('loginForm');
+    const adminPanel = document.querySelector('.admin-container');
+
     if (!adminId) {
-        document.getElementById('loginForm').style.display = 'block';
-        document.querySelector('.admin-panel').style.display = 'none';
+        if (loginForm) loginForm.style.display = 'block';
+        if (adminPanel) adminPanel.style.display = 'none';
         return false;
     }
+
+    if (loginForm) loginForm.style.display = 'none';
+    if (adminPanel) adminPanel.style.display = 'block';
     return true;
 }
 
@@ -398,8 +404,8 @@ async function deleteUser(id) {
 // Модифицируем функцию login
 async function login() {
     try {
-        const username = document.getElementById('adminUsername').value;
-        const password = document.getElementById('adminPassword').value;
+        const username = document.getElementById('adminUsername')?.value;
+        const password = document.getElementById('adminPassword')?.value;
 
         if (!username || !password) {
             throw new Error('Пожалуйста, заполните все поля');
@@ -428,15 +434,31 @@ async function login() {
         if (data.success && data.user && data.user.role === 'admin') {
             localStorage.setItem('adminId', data.user.id);
             localStorage.setItem('adminToken', data.token);
-            document.getElementById('loginForm').style.display = 'none';
-            document.querySelector('.admin-panel').style.display = 'block';
+            
+            // Получаем элементы и проверяем их существование
+            const loginForm = document.getElementById('loginForm');
+            const adminPanel = document.querySelector('.admin-container');
+            
+            if (loginForm) {
+                loginForm.style.display = 'none';
+            } else {
+                console.error('Элемент loginForm не найден');
+            }
+            
+            if (adminPanel) {
+                adminPanel.style.display = 'block';
+            } else {
+                console.error('Элемент admin-container не найден');
+            }
+            
             loadStats();
             loadUsers();
         } else {
             throw new Error('Недостаточно прав для доступа к админ-панели');
         }
     } catch (err) {
-        alert(err.message || 'Ошибка при попытке входа. Пожалуйста, попробуйте позже.');
+        // Используем новую систему уведомлений
+        notifications.error(err.message || 'Ошибка при попытке входа. Пожалуйста, попробуйте позже.');
     }
 }
 
