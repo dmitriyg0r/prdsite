@@ -631,7 +631,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 300);
     });
 
-    loadWhitelist();
+    loadWhiteListData();
 });
 
 // Добавим функцию выхода
@@ -650,93 +650,144 @@ window.addEventListener('unhandledrejection', function(event) {
     }
 });
 
-async function loadWhitelist() {
-    const tbody = document.getElementById('whitelistTableBody');
-    tbody.innerHTML = '<tr><td colspan="3" style="text-align: center;">Загрузка...</td></tr>';
+// Функция загрузки данных White_List
+async function loadWhiteListData(page = 1) {
+    if (!checkAuth()) return;
 
     try {
-        const response = await fetch(`${API_URL}/api/WhiteList`, {
+        const response = await fetch(`${API_URL}/api/database/table/White_List?page=${page}`, {
             credentials: 'include',
             headers: {
-                'Accept': 'application/json',
                 'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
             }
         });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const result = await response.json();
-        tbody.innerHTML = '';
-        
-        if (result.success && result.data) {
-            if (result.data.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="3" style="text-align: center;">
-                            Список пуст
-                        </td>
-                    </tr>
-                `;
-                return;
-            }
 
-            result.data.forEach(item => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${item.UUID || 'Не указан'}</td>
-                    <td>${item.user || 'Не указан'}</td>
-                    <td>
-                        <button onclick="removeFromWhitelist('${item.UUID}')" class="action-btn delete">
-                            Удалить
+        const data = await handleResponse(response);
+        
+        if (data.success) {
+            const container = document.getElementById('databaseStructure');
+            container.innerHTML = `
+                <div class="database-table">
+                    <h3>White List</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>UUID</th>
+                                <th>User</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.data.rows.map(item => `
+                                <tr>
+                                    <td>${item.UUID || ''}</td>
+                                    <td>${item.user || ''}</td>
+                                    <td>
+                                        <button onclick="deleteWhiteListEntry('${item.UUID}')" class="action-btn delete">
+                                            Удалить
+                                        </button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    
+                    <div class="pagination">
+                        <button onclick="loadWhiteListData(${page - 1})" 
+                                ${page === 1 ? 'disabled' : ''}>
+                            Назад
                         </button>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
+                        <span>Страница ${page} из ${data.data.pages}</span>
+                        <button onclick="loadWhiteListData(${page + 1})"
+                                ${page === data.data.pages ? 'disabled' : ''}>
+                            Вперед
+                        </button>
+                    </div>
+
+                    <div class="whitelist-controls">
+                        <h4>Добавить новую запись</h4>
+                        <div class="input-group">
+                            <input type="text" id="uuidInput" placeholder="UUID">
+                            <input type="text" id="userInput" placeholder="Username">
+                            <button onclick="addWhiteListEntry()" class="action-btn add">
+                                Добавить
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
         }
-    } catch (error) {
-        console.error('Ошибка загрузки White List:', error);
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="3" style="color: red; text-align: center;">
-                    Ошибка загрузки данных: ${error.message}
-                </td>
-            </tr>
-        `;
+    } catch (err) {
+        console.error('Ошибка загрузки White List:', err);
+        alert('Ошибка при загрузке White List');
     }
 }
 
-async function removeFromWhitelist(uuid) {
+// Функция добавления записи
+async function addWhiteListEntry() {
+    const uuid = document.getElementById('uuidInput').value.trim();
+    const user = document.getElementById('userInput').value.trim();
+
+    if (!uuid || !user) {
+        alert('Пожалуйста, заполните оба поля');
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/api/database/table/White_List`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+            },
+            body: JSON.stringify({ UUID: uuid, user: user })
+        });
+
+        const data = await handleResponse(response);
+        
+        if (data.success) {
+            document.getElementById('uuidInput').value = '';
+            document.getElementById('userInput').value = '';
+            loadWhiteListData();
+        }
+    } catch (err) {
+        console.error('Ошибка добавления записи:', err);
+        alert('Ошибка при добавлении записи');
+    }
+}
+
+// Функция удаления записи
+async function deleteWhiteListEntry(uuid) {
     if (!confirm('Вы уверены, что хотите удалить эту запись?')) {
         return;
     }
 
     try {
-        const response = await fetch(`${API_URL}/api/WhiteList/${uuid}`, {
+        const response = await fetch(`${API_URL}/api/database/table/White_List/${uuid}`, {
             method: 'DELETE',
             credentials: 'include',
             headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
+                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
             }
         });
 
-        const result = await response.json();
+        const data = await handleResponse(response);
         
-        if (result.success) {
-            loadWhitelist(); // Перезагружаем список
-        } else {
-            throw new Error(result.error || 'Ошибка при удалении');
+        if (data.success) {
+            loadWhiteListData();
         }
-    } catch (error) {
-        alert('Не удалось удалить запись: ' + error.message);
+    } catch (err) {
+        console.error('Ошибка удаления записи:', err);
+        alert('Ошибка при удалении записи');
     }
 }
 
-// Загружаем данные при загрузке страницы
-document.addEventListener('DOMContentLoaded', loadWhitelist);
+// Добавляем вызов функции при загрузке страницы
+document.addEventListener('DOMContentLoaded', () => {
+    if (!checkAuth()) return;
+    loadWhiteListData();
+});
 
 async function testAPI() {
     try {
@@ -749,42 +800,5 @@ async function testAPI() {
 // Вызовем тест перед загрузкой данных
 document.addEventListener('DOMContentLoaded', async () => {
     await testAPI();
-    await loadWhitelist();
+    await loadWhiteListData();
 });
-
-async function addToWhitelist() {
-    const uuid = document.getElementById('uuidInput').value.trim();
-    const user = document.getElementById('userInput').value.trim();
-
-    if (!uuid || !user) {
-        alert('Пожалуйста, заполните оба поля');
-        return;
-    }
-
-    try {
-        const response = await fetch(`${API_URL}/api/WhiteList`, {
-            method: 'POST',
-            credentials: 'include',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-            },
-            body: JSON.stringify({ UUID: uuid, user: user })
-        });
-
-        const result = await response.json();
-        
-        if (result.success) {
-            // Очищаем поля ввода
-            document.getElementById('uuidInput').value = '';
-            document.getElementById('userInput').value = '';
-            // Перезагружаем список
-            loadWhitelist();
-        } else {
-            throw new Error(result.error || 'Ошибка при добавлении');
-        }
-    } catch (error) {
-        alert('Не удалось добавить запись: ' + error.message);
-    }
-}

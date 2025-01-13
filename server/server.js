@@ -3232,3 +3232,149 @@ app.get('/api/charts', checkAdmin, async (req, res) => {
         });
     }
 });
+
+// Обновляем endpoint для получения структуры таблицы White_List
+app.get('/api/database/structure', checkAdmin, async (req, res) => {
+    try {
+        // Получаем информацию о колонках таблицы White_List
+        const columns = await pool.query(`
+            SELECT 
+                COLUMN_NAME,
+                DATA_TYPE,
+                IS_NULLABLE,
+                COLUMN_KEY,
+                COLUMN_DEFAULT,
+                EXTRA
+            FROM information_schema.COLUMNS 
+            WHERE TABLE_SCHEMA = 'maincraft' 
+            AND TABLE_NAME = 'White_List'
+            ORDER BY ORDINAL_POSITION
+        `);
+
+        // Получаем количество записей в таблице
+        const count = await pool.query(`
+            SELECT COUNT(*) as count 
+            FROM "White_List"
+        `);
+
+        const databaseStructure = {
+            'White_List': {
+                columns: columns.rows,
+                rowCount: count.rows[0].count
+            }
+        };
+
+        res.json({
+            success: true,
+            structure: databaseStructure
+        });
+    } catch (err) {
+        console.error('Ошибка получения структуры базы данных:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при получении структуры базы данных',
+            details: err.message
+        });
+    }
+});
+
+// Обновляем endpoint для получения данных таблицы
+app.get('/api/database/table/White_List', checkAdmin, async (req, res) => {
+    try {
+        const { page = 1, limit = 10 } = req.query;
+        const offset = (page - 1) * limit;
+
+        // Получаем данные таблицы
+        const rows = await pool.query(`
+            SELECT * 
+            FROM "White_List" 
+            LIMIT $1 OFFSET $2
+        `, [parseInt(limit), offset]);
+
+        // Получаем общее количество записей
+        const count = await pool.query(`
+            SELECT COUNT(*) as total 
+            FROM "White_List"
+        `);
+
+        res.json({
+            success: true,
+            data: {
+                rows: rows.rows,
+                total: count.rows[0].total,
+                pages: Math.ceil(count.rows[0].total / parseInt(limit))
+            }
+        });
+    } catch (err) {
+        console.error('Ошибка получения данных таблицы:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при получении данных таблицы',
+            details: err.message
+        });
+    }
+});
+
+// Добавляем endpoint для добавления записи
+app.post('/api/database/table/White_List', checkAdmin, async (req, res) => {
+    try {
+        const { UUID, user } = req.body;
+
+        if (!UUID || !user) {
+            return res.status(400).json({
+                success: false,
+                error: 'UUID и user обязательны для заполнения'
+            });
+        }
+
+        const result = await pool.query(`
+            INSERT INTO "White_List" (UUID, user)
+            VALUES ($1, $2)
+            RETURNING *
+        `, [UUID, user]);
+
+        res.json({
+            success: true,
+            data: result.rows[0]
+        });
+    } catch (err) {
+        console.error('Ошибка добавления записи:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при добавлении записи',
+            details: err.message
+        });
+    }
+});
+
+// Добавляем endpoint для удаления записи
+app.delete('/api/database/table/White_List/:uuid', checkAdmin, async (req, res) => {
+    try {
+        const { uuid } = req.params;
+
+        const result = await pool.query(`
+            DELETE FROM "White_List"
+            WHERE UUID = $1
+            RETURNING *
+        `, [uuid]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'Запись не найдена'
+            });
+        }
+
+        res.json({
+            success: true,
+            data: result.rows[0]
+        });
+    } catch (err) {
+        console.error('Ошибка удаления записи:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при удалении записи',
+            details: err.message
+        });
+    }
+});
