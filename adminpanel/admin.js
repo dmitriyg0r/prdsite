@@ -408,7 +408,7 @@ async function login() {
 async function changeUserRole(userId, newRole) {
     try {
         const adminId = getAdminId();
-        const response = await fetch(`${API_URL}/api/admin/role`, {
+        const response = await fetch(`${API_URL}/api/role`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -443,7 +443,7 @@ let rolesChart = null;
 async function loadCharts() {
     try {
         const adminId = getAdminId();
-        const response = await fetch(`${API_URL}/api/admin/charts?adminId=${adminId}`, {
+        const response = await fetch(`${API_URL}/api/charts?adminId=${adminId}`, {
             credentials: 'include',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
