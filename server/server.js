@@ -33,7 +33,11 @@ const sslOptions = {
     cert: fs.readFileSync('/etc/letsencrypt/live/space-point.ru/fullchain.pem'),
     ca: fs.readFileSync('/etc/letsencrypt/live/space-point.ru/chain.pem')
 };
-
+const { 
+    getWhiteListData, 
+    addToWhiteList, 
+    removeFromWhiteList 
+} = require('../adminpanel/maindb.js');
 
 app.use(express.json());
 
