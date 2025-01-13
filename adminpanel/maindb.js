@@ -11,23 +11,24 @@ const pool = mysql.createPool({
     queueLimit: 0
 });
 
+// Убедимся, что у нас есть подключение к БД
+const db = require('../database/db.js');
+
 /**
  * Получение данных из White List с пагинацией
  * @param {number} page - Номер страницы
  * @param {number} limit - Количество записей на странице
  * @returns {Promise<{success: boolean, data?: {rows: Array, total: number}, error?: string}>}
  */
-async function getWhiteListData(page = 1, limit = 10) {
+const getWhiteListData = async (page = 1, limit = 10) => {
     try {
         const offset = (page - 1) * limit;
         
-        // Получаем общее количество записей
-        const [totalCount] = await pool.query(
+        const [totalCount] = await db.query(
             'SELECT COUNT(*) as count FROM White_List'
         );
         
-        // Получаем записи для текущей страницы
-        const [rows] = await pool.query(
+        const [rows] = await db.query(
             'SELECT UUID, user FROM White_List LIMIT ? OFFSET ?',
             [limit, offset]
         );
@@ -46,7 +47,7 @@ async function getWhiteListData(page = 1, limit = 10) {
             error: err.message
         };
     }
-}
+};
 
 // Функция для добавления записи в White_List
 async function addToWhiteList(uuid, user) {
@@ -76,6 +77,7 @@ async function removeFromWhiteList(uuid) {
     }
 }
 
+// Явно экспортируем все функции
 module.exports = {
     getWhiteListData,
     addToWhiteList,
