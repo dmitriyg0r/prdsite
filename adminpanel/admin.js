@@ -672,190 +672,83 @@ function createRolesChart(data) {
 
 // Инициализация
 document.addEventListener('DOMContentLoaded', () => {
-    if (!checkAuth()) return;
+    // Проверяем авторизацию без раннего возврата
+    const isAuthorized = checkAuth();
 
-    // Показываем дашборд по умолчанию
-    document.querySelector('.stats-grid').style.display = 'grid';
+    // Получаем элементы с проверкой на существование
+    const statsGrid = document.querySelector('.stats-grid');
+    
+    if (isAuthorized && statsGrid) {
+        statsGrid.style.display = 'grid';
+    }
     
     // Инициализируем обработчики табов
     const tabs = document.querySelectorAll('.admin-nav li');
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            const targetTab = tab.dataset.tab;
-            
-            // Скрываем все секции
-            document.querySelectorAll('.stats-grid, .users-table-section, .whitelist-section, .settings-section')
-                .forEach(section => section.style.display = 'none');
-            
-            // Показываем нужную секцию
-            switch(targetTab) {
-                case 'dashboard':
-                    document.querySelector('.stats-grid').style.display = 'grid';
-                    loadStats();
-                    break;
-                case 'users':
-                    document.querySelector('.users-table-section').style.display = 'block';
-                    loadUsers(1);
-                    break;
-                case 'whitelist':
-                    document.querySelector('.whitelist-section').style.display = 'block';
-                    loadWhiteListData();
-                    break;
-                case 'settings':
-                    document.querySelector('.settings-section').style.display = 'block';
-                    break;
-            }
+    if (tabs.length > 0) {
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const targetTab = tab.dataset.tab;
+                
+                // Получаем все секции с проверкой существования
+                const sections = document.querySelectorAll('.stats-grid, .users-table-section, .whitelist-section, .settings-section');
+                sections.forEach(section => {
+                    if (section) section.style.display = 'none';
+                });
+                
+                // Показываем нужную секцию с проверкой существования
+                switch(targetTab) {
+                    case 'dashboard':
+                        const statsGrid = document.querySelector('.stats-grid');
+                        if (statsGrid) statsGrid.style.display = 'grid';
+                        if (isAuthorized) loadStats();
+                        break;
+                    case 'users':
+                        const usersSection = document.querySelector('.users-table-section');
+                        if (usersSection) usersSection.style.display = 'block';
+                        if (isAuthorized) loadUsers(1);
+                        break;
+                    case 'whitelist':
+                        const whitelistSection = document.querySelector('.whitelist-section');
+                        if (whitelistSection) whitelistSection.style.display = 'block';
+                        if (isAuthorized) loadWhiteListData();
+                        break;
+                    case 'settings':
+                        const settingsSection = document.querySelector('.settings-section');
+                        if (settingsSection) settingsSection.style.display = 'block';
+                        break;
+                }
+            });
         });
-    });
+    }
 
-    // Улучшенная обработка поиска и фильтров
+    // Инициализация поиска и фильтров с проверками
     const searchInput = document.getElementById('searchUsers');
     const roleFilter = document.getElementById('roleFilter');
     const statusFilter = document.getElementById('statusFilter');
     let searchTimeout;
 
-    const handleFiltersChange = () => {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(() => {
-            currentPage = 1;
-            loadUsers(1, searchInput.value, {
-                role: roleFilter.value,
-                status: statusFilter.value
-            });
-        }, 300);
-    };
+    if (searchInput && roleFilter && statusFilter) {
+        const handleFiltersChange = () => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                currentPage = 1;
+                loadUsers(1, searchInput.value, {
+                    role: roleFilter.value,
+                    status: statusFilter.value
+                });
+            }, 300);
+        };
 
-    searchInput.addEventListener('input', handleFiltersChange);
-    roleFilter.addEventListener('change', handleFiltersChange);
-    statusFilter.addEventListener('change', handleFiltersChange);
-
-    // Добавляем индикатор загрузки
-    function showLoader() {
-        const loader = document.createElement('div');
-        loader.className = 'loader';
-        document.querySelector('.admin-panel').prepend(loader);
+        searchInput.addEventListener('input', handleFiltersChange);
+        roleFilter.addEventListener('change', handleFiltersChange);
+        statusFilter.addEventListener('change', handleFiltersChange);
     }
 
-    function hideLoader() {
-        const loader = document.querySelector('.loader');
-        if (loader) loader.remove();
+    // Если авторизован, загружаем начальные данные
+    if (isAuthorized) {
+        loadStats();
+        setTimeout(loadCharts, 100);
     }
-
-    // Улучшенная функция обновления таблицы пользователей
-    function updateUsersTable(users) {
-        const tbody = document.getElementById('usersTableBody');
-        const fragment = document.createDocumentFragment();
-        
-        users.forEach(user => {
-            const row = document.createElement('tr');
-            row.className = `user-row ${user.is_banned ? 'banned' : ''}`;
-            row.innerHTML = `
-                <td>${user.id}</td>
-                <td>
-                    <div class="user-info">
-                        <img src="${user.avatar || 'default-avatar.png'}" alt="" class="user-avatar">
-                        <div>
-                            <span class="username">${escapeHtml(user.username)}</span>
-                            ${user.is_online ? '<span class="online-badge">Online</span>' : ''}
-                        </div>
-                    </div>
-                </td>
-                <td>
-                    <select class="role-select" onchange="changeUserRole(${user.id}, this.value)">
-                        <option value="user" ${user.role === 'user' ? 'selected' : ''}>Пользователь</option>
-                        <option value="moderator" ${user.role === 'moderator' ? 'selected' : ''}>Модератор</option>
-                        <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Админ</option>
-                    </select>
-                </td>
-                <td>${formatDate(user.created_at)}</td>
-                <td class="actions">
-                    <div class="action-buttons">
-                        <button onclick="showUserDetails(${user.id})" class="action-btn view" title="Просмотр">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        <button onclick="banUser(${user.id})" class="action-btn ${user.is_banned ? 'unban' : 'ban'}" 
-                                title="${user.is_banned ? 'Разблокировать' : 'Заблокировать'}">
-                            <i class="fas fa-${user.is_banned ? 'unlock' : 'ban'}"></i>
-                        </button>
-                        <button onclick="deleteUser(${user.id})" class="action-btn delete" title="Удалить">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </td>
-            `;
-            fragment.appendChild(row);
-        });
-
-        // Анимация обновления
-        tbody.style.opacity = '0';
-        setTimeout(() => {
-            tbody.innerHTML = '';
-            tbody.appendChild(fragment);
-            tbody.style.opacity = '1';
-        }, 150);
-    }
-
-    // Вспомогательные функции
-    function escapeHtml(unsafe) {
-        return unsafe
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-    }
-
-    function formatDate(dateString) {
-        const date = new Date(dateString);
-        return new Intl.DateTimeFormat('ru-RU', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        }).format(date);
-    }
-
-    // Улучшенная система уведомлений
-    const notifications = {
-        show(message, type = 'info', duration = 3000) {
-            const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
-            notification.innerHTML = `
-                <i class="fas fa-${type === 'success' ? 'check-circle' : 
-                                  type === 'error' ? 'exclamation-circle' : 
-                                  'info-circle'}"></i>
-                <span>${message}</span>
-            `;
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.classList.add('show');
-                setTimeout(() => {
-                    notification.classList.remove('show');
-                    setTimeout(() => notification.remove(), 300);
-                }, duration);
-            }, 100);
-        },
-        
-        success(message) {
-            this.show(message, 'success');
-        },
-        
-        error(message) {
-            this.show(message, 'error');
-        },
-        
-        info(message) {
-            this.show(message, 'info');
-        }
-    };
-
-    // Инициализация
-    loadStats();
-    loadUsers();
-    setTimeout(loadCharts, 100);
 });
 
 // Добавим функцию выхода
