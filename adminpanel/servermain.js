@@ -67,13 +67,3 @@ app.get('/api/test', (req, res) => {
         time: new Date().toISOString()
     });
 });
-
-// Запускаем сервер на порту 5003
-const PORT = 5003;
-app.listen(PORT, () => {
-    console.log(`Сервер запущен на порту ${PORT}`);
-    console.log('Доступные маршруты:');
-    console.log('- GET /api/test');
-    console.log('- GET /api/WhiteList');
-    console.log('- DELETE /api/WhiteList/:uuid');
-});

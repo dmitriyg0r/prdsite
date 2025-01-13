@@ -75,11 +75,8 @@ async function loadStats() {
 
             // Создаем графики после загрузки данных
             createCharts(data.stats);
-        } else {
-            console.error('Ошибка загрузки статистики:', data.error);
         }
     } catch (err) {
-        console.error('Ошибка загрузки статистики:', err);
         if (err.message.includes('401')) {
             localStorage.removeItem('adminId');
             localStorage.removeItem('adminToken');
@@ -288,7 +285,6 @@ async function loadUsers(page = 1, search = '') {
             alert(data.error || 'Ошибка загрузки пользователей');
         }
     } catch (err) {
-        console.error('Ошибка загрузки пользователей:', err);
         handleError(err);
     }
 }
@@ -355,7 +351,6 @@ async function deleteUser(id) {
                 alert(data.error || 'Ошибка при удалении пользователя');
             }
         } catch (err) {
-            console.error('Ошибка удаления пользователя:', err);
             alert('Ошибка при удалении пользователя');
         }
     }
@@ -402,7 +397,6 @@ async function login() {
             throw new Error('Недостаточно прав для доступа к админ-панели');
         }
     } catch (err) {
-        console.error('Ошибка авторизации:', err);
         alert(err.message || 'Ошибка при попытке входа. Пожалуйста, попробуйте позже.');
     }
 }
@@ -431,7 +425,6 @@ async function changeUserRole(userId, newRole) {
             alert(data.error || 'Ошибка при изменении роли пользователя');
         }
     } catch (err) {
-        console.error('Ошибка при изменении роли:', err);
         alert('Ошибка при изменении роли пользователя');
     }
 }
@@ -477,16 +470,12 @@ async function loadCharts() {
             createRolesChart(data.data.roles);
         }
     } catch (err) {
-        console.error('Ошибка загрузки графиков:', err);
     }
 }
 
 function createRegistrationChart(data) {
     const ctx = document.getElementById('registrationChart');
-    if (!ctx) {
-        console.error('Canvas element registrationChart not found');
-        return;
-    }
+    if (!ctx) return;
     
     registrationChart = new Chart(ctx, {
         type: 'line',
@@ -523,10 +512,7 @@ function createRegistrationChart(data) {
 
 function createMessageChart(data) {
     const ctx = document.getElementById('messageChart');
-    if (!ctx) {
-        console.error('Canvas element messageChart not found');
-        return;
-    }
+    if (!ctx) return;
     
     messageChart = new Chart(ctx, {
         type: 'bar',
@@ -561,10 +547,7 @@ function createMessageChart(data) {
 
 function createUserActivityChart(data) {
     const ctx = document.getElementById('userActivityChart');
-    if (!ctx) {
-        console.error('Canvas element userActivityChart not found');
-        return;
-    }
+    if (!ctx) return;
     
     userActivityChart = new Chart(ctx, {
         type: 'doughnut',
@@ -594,10 +577,7 @@ function createUserActivityChart(data) {
 
 function createRolesChart(data) {
     const ctx = document.getElementById('rolesChart');
-    if (!ctx) {
-        console.error('Canvas element rolesChart not found');
-        return;
-    }
+    if (!ctx) return;
     
     rolesChart = new Chart(ctx, {
         type: 'doughnut',
@@ -631,12 +611,8 @@ function createRolesChart(data) {
 
 // Инициализация
 document.addEventListener('DOMContentLoaded', () => {
-    if (!checkAuth()) {
-        console.log('Требуется авторизация');
-        return;
-    }
+    if (!checkAuth()) return;
 
-    console.log('Admin logged in, initializing panel');
     document.getElementById('loginForm').style.display = 'none';
     document.querySelector('.admin-panel').style.display = 'block';
     loadStats();
@@ -675,7 +651,6 @@ window.addEventListener('unhandledrejection', function(event) {
 });
 
 async function loadWhitelist() {
-    console.log('Начало загрузки данных...');
     try {
         const response = await fetch(`${API_URL}/api/WhiteList`, {
             credentials: 'include',
@@ -685,11 +660,7 @@ async function loadWhitelist() {
             }
         });
         
-        console.log('Статус ответа:', response.status);
-        console.log('Тип контента:', response.headers.get('content-type'));
-        
         const result = await response.json();
-        console.log('Полученные данные:', result);
 
         const tbody = document.getElementById('whitelistTableBody');
         tbody.innerHTML = '';
@@ -712,7 +683,6 @@ async function loadWhitelist() {
             throw new Error(result.error || 'Ошибка загрузки данных');
         }
     } catch (error) {
-        console.error('Ошибка загрузки WhiteList:', error);
         const tbody = document.getElementById('whitelistTableBody');
         tbody.innerHTML = `
             <tr>
@@ -747,7 +717,6 @@ async function removeFromWhitelist(uuid) {
             throw new Error(result.error || 'Ошибка при удалении');
         }
     } catch (error) {
-        console.error('Ошибка при удалении:', error);
         alert('Не удалось удалить запись: ' + error.message);
     }
 }
@@ -755,22 +724,16 @@ async function removeFromWhitelist(uuid) {
 // Загружаем данные при загрузке страницы
 document.addEventListener('DOMContentLoaded', loadWhitelist);
 
-// Добавим функцию проверки API
 async function testAPI() {
     try {
         const response = await fetch(`${API_URL}/api/test`);
-        console.log('Тестовый запрос:', response.status);
         const data = await response.json();
-        console.log('Тестовый ответ:', data);
     } catch (error) {
-        console.error('Ошибка тестового запроса:', error);
     }
 }
 
 // Вызовем тест перед загрузкой данных
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log('Тестирование API...');
     await testAPI();
-    console.log('Загрузка данных...');
     await loadWhitelist();
 });
