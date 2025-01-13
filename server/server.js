@@ -3222,70 +3222,42 @@ app.get('/api/charts', checkAdmin, async (req, res) => {
 });
 
 
-// Обновляем endpoint для получения данных таблицы White_List
+// Единый эндпоинт для получения данных White_List
 app.get('/api/White_List', async (req, res) => {
     try {
         const { page = 1, limit = 10 } = req.query;
         const offset = (page - 1) * limit;
 
-        console.log('Fetching White_List data...'); // Добавляем лог
+        console.log('Fetching White_List data...');
 
-        // Сначала проверим существование таблицы
+        // Проверяем существование таблицы
         const tableCheck = await pool.query(`
             SELECT EXISTS (
                 SELECT FROM information_schema.tables 
                 WHERE table_schema = 'maincraft'
-                AND table_name = 'White_List'
+                AND table_name = 'white_list'
             );
         `);
 
-        console.log('Table exists:', tableCheck.rows[0].exists);
-
         if (!tableCheck.rows[0].exists) {
-            // Если таблица не существует, проверим все таблицы в схеме
-            const tables = await pool.query(`
-                SELECT table_name 
-                FROM information_schema.tables 
-                WHERE table_schema = 'maincraft'
-            `);
-            console.log('Available tables:', tables.rows);
-
             return res.status(404).json({
                 success: false,
-                error: 'Таблица не найдена',
-                availableTables: tables.rows
+                error: 'Таблица White_List не найдена'
             });
         }
 
-        // Проверим структуру таблицы
-        const columns = await pool.query(`
-            SELECT column_name, data_type
-            FROM information_schema.columns
-            WHERE table_schema = 'maincraft'
-            AND table_name = 'White_List'
-            ORDER BY ordinal_position;
-        `);
-
-        console.log('Table structure:', columns.rows);
-
-        // Теперь попробуем получить данные
+        // Получаем данные с правильным именем таблицы и схемы
         const rows = await pool.query(`
             SELECT * 
-            FROM maincraft."White_List"
+            FROM maincraft.white_list
             ORDER BY "user"
             LIMIT $1 OFFSET $2
         `, [parseInt(limit), offset]);
 
-        console.log('Query result:', {
-            command: rows.command,
-            rowCount: rows.rowCount,
-            rows: rows.rows
-        });
-
         // Получаем общее количество записей
         const count = await pool.query(`
             SELECT COUNT(*) as total 
-            FROM maincraft."White_List"
+            FROM maincraft.white_list
         `);
 
         res.json({
@@ -3296,31 +3268,25 @@ app.get('/api/White_List', async (req, res) => {
                 pages: Math.ceil(parseInt(count.rows[0].total) / parseInt(limit)),
                 currentPage: parseInt(page),
                 limit: parseInt(limit)
-            },
-            debug: {
-                tableExists: tableCheck.rows[0].exists,
-                tableStructure: columns.rows,
-                queryInfo: {
-                    command: rows.command,
-                    rowCount: rows.rowCount
-                }
             }
         });
+
     } catch (err) {
-        // Улучшаем логирование ошибок
         console.error('Database error:', {
             message: err.message,
             stack: err.stack,
             code: err.code,
-            detail: err.detail,
-            schema: err.schema,
-            table: err.table
+            detail: err.detail
+        });
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при получении данных таблицы',
+            details: err.message
         });
     }
 });
 
-
-// Добавляем endpoint для добавления записи
+// Обновляем эндпоинт добавления записи
 app.post('/api/White_List', checkAdmin, async (req, res) => {
     try {
         const { UUID, user } = req.body;
@@ -3333,7 +3299,7 @@ app.post('/api/White_List', checkAdmin, async (req, res) => {
         }
 
         const result = await pool.query(`
-            INSERT INTO "White_List" (UUID, user)
+            INSERT INTO maincraft.white_list ("UUID", "user")
             VALUES ($1, $2)
             RETURNING *
         `, [UUID, user]);
@@ -3352,14 +3318,14 @@ app.post('/api/White_List', checkAdmin, async (req, res) => {
     }
 });
 
-// Добавляем endpoint для удаления записи
+// Обновляем эндпоинт удаления записи
 app.delete('/api/White_List/:uuid', checkAdmin, async (req, res) => {
     try {
         const { uuid } = req.params;
 
         const result = await pool.query(`
-            DELETE FROM "White_List"
-            WHERE UUID = $1
+            DELETE FROM maincraft.white_list
+            WHERE "UUID" = $1
             RETURNING *
         `, [uuid]);
 
@@ -3379,51 +3345,6 @@ app.delete('/api/White_List/:uuid', checkAdmin, async (req, res) => {
         res.status(500).json({
             success: false,
             error: 'Ошибка при удалении записи',
-            details: err.message
-        });
-    }
-});
-
-
-
-// Обновляем endpoint для получения данных White_List
-app.get('/api/White_List', async (req, res) => {
-    try {
-        const { page = 1, limit = 10 } = req.query;
-        const offset = (page - 1) * limit;
-
-        // MySQL запрос (используем правильные имена таблиц и базы данных)
-        const [rows] = await pool.query(`
-            SELECT * 
-            FROM White_List
-            ORDER BY user
-            LIMIT ? OFFSET ?
-        `, [parseInt(limit), offset]);
-
-        // Получаем общее количество записей
-        const [count] = await pool.query(`
-            SELECT COUNT(*) as total 
-            FROM White_List
-        `);
-
-        console.log('Rows:', rows); // Добавляем лог
-        console.log('Count:', count); // Добавляем лог
-
-        res.json({
-            success: true,
-            data: {
-                rows: rows,
-                total: count[0].total,
-                pages: Math.ceil(count[0].total / parseInt(limit)),
-                currentPage: parseInt(page),
-                limit: parseInt(limit)
-            }
-        });
-    } catch (err) {
-        console.error('Database error:', err);
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка при получении данных таблицы',
             details: err.message
         });
     }
