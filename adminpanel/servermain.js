@@ -7,9 +7,10 @@ const app = express();
 
 // Настройка CORS
 app.use(cors({
-    origin: '*',
+    origin: 'https://space-point.ru',
     methods: ['GET', 'POST', 'DELETE', 'PUT', 'PATCH'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
 }));
 
 app.use(express.json());
@@ -54,7 +55,8 @@ app.delete('/api/whitelist/:uuid', async (req, res) => {
 // Путь к SSL сертификатам
 const options = {
     cert: fs.readFileSync('/etc/letsencrypt/live/space-point.ru/fullchain.pem'),
-    key: fs.readFileSync('/etc/letsencrypt/live/space-point.ru/privkey.pem')
+    key: fs.readFileSync('/etc/letsencrypt/live/space-point.ru/privkey.pem'),
+    ca: fs.readFileSync('/etc/letsencrypt/live/space-point.ru/chain.pem')
 };
 
 // Создаем HTTPS сервер
