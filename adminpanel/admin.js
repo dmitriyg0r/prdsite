@@ -28,11 +28,12 @@ async function handleResponse(response) {
         throw new Error('Unauthorized');
     }
     
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+    const data = await response.json();
+    if (!data.success) {
+        throw new Error(data.error || 'Ошибка запроса');
     }
     
-    return await response.json();
+    return data;
 }
 
 async function loadStats() {
@@ -244,22 +245,15 @@ async function loadUsers(page = 1, search = '') {
     if (!checkAuth()) return;
 
     try {
-        const adminId = localStorage.getItem('adminId');
         const response = await fetch(`${API_URL}/api/admin/users?page=${page}&search=${search}`, {
             credentials: 'include',
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+                'X-Admin-ID': localStorage.getItem('adminId')
             }
         });
 
-        if (response.status === 401) {
-            localStorage.removeItem('adminId');
-            localStorage.removeItem('adminToken');
-            location.reload();
-            return;
-        }
-
-        const data = await response.json();
+        const data = await handleResponse(response);
         
         if (data.success) {
             const tbody = document.getElementById('usersTableBody');
@@ -299,11 +293,7 @@ async function loadUsers(page = 1, search = '') {
         }
     } catch (err) {
         console.error('Ошибка загрузки пользователей:', err);
-        if (err.message.includes('401')) {
-            localStorage.removeItem('adminId');
-            localStorage.removeItem('adminToken');
-            location.reload();
-        }
+        handleError(err);
     }
 }
 
@@ -773,5 +763,17 @@ async function removeFromWhitelist(uuid) {
             console.error('Ошибка удаления из white list:', error);
             alert('Ошибка при удалении записи');
         }
+    }
+}
+
+// Добавляем функцию для обработки ошибок
+function handleError(err) {
+    console.error(err);
+    if (err.message.includes('401')) {
+        localStorage.removeItem('adminId');
+        localStorage.removeItem('adminToken');
+        location.reload();
+    } else {
+        alert(err.message || 'Произошла ошибка');
     }
 }
