@@ -731,3 +731,40 @@ document.addEventListener('DOMContentLoaded', async () => {
     await testAPI();
     await loadWhiteListData();
 });
+
+// Добавляем функцию для проверки доступных таблиц
+async function checkDatabaseTables() {
+    try {
+        console.log('Checking database tables...'); // Добавляем лог
+
+        const response = await fetch(`${API_URL}/api/database/tables`, {
+            credentials: 'include'
+        });
+
+        const data = await handleResponse(response);
+        console.log('Available tables:', data); // Логируем результат
+        
+        if (data.success) {
+            const container = document.getElementById('databaseStructure');
+            container.innerHTML = `
+                <div class="database-info">
+                    <h3>Доступные таблицы:</h3>
+                    <ul>
+                        ${data.tables.map(table => `
+                            <li>${table.table_name}</li>
+                        `).join('')}
+                    </ul>
+                </div>
+            `;
+        }
+    } catch (err) {
+        console.error('Ошибка проверки таблиц:', err);
+        alert('Ошибка при проверке таблиц базы данных');
+    }
+}
+
+// Добавляем вызов функции при загрузке страницы
+document.addEventListener('DOMContentLoaded', () => {
+    checkDatabaseTables(); // Сначала проверим таблицы
+    // loadWhiteListData(); // Закомментируем пока старую функцию
+});
