@@ -41,7 +41,7 @@ async function loadStats() {
     
     try {
         const adminId = localStorage.getItem('adminId');
-        const response = await fetch(`${API_URL}/api/admin/stats`, {
+        const response = await fetch(`${API_URL}/api/stats`, {
             credentials: 'include',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
@@ -245,7 +245,7 @@ async function loadUsers(page = 1, search = '') {
     if (!checkAuth()) return;
 
     try {
-        const response = await fetch(`${API_URL}/api/admin/users?page=${page}&search=${search}`, {
+        const response = await fetch(`${API_URL}/api/users?page=${page}&search=${search}`, {
             credentials: 'include',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
