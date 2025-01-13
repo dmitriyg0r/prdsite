@@ -1,4 +1,4 @@
-const API_URL = 'https://space-point.ru:3000/api';
+const API_URL = 'https://space-point.ru/api';
 
 let currentPage = 1;
 let totalPages = 1;
@@ -362,14 +362,10 @@ async function deleteUser(id) {
 // Модифицируем функцию login
 async function login() {
     try {
-        const username = document.getElementById('adminUsername').value;
-        const password = document.getElementById('adminPassword').value;
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
 
-        // Проверяем, что поля не пустые
-        if (!username || !password) {
-            alert('Пожалуйста, заполните все поля');
-            return;
-        }
+        console.log('Attempting login...'); // Добавляем логирование
 
         const response = await fetch(`${API_URL}/login`, {
             method: 'POST',
@@ -384,15 +380,23 @@ async function login() {
             })
         });
 
+        console.log('Response status:', response.status); // Добавляем логирование
+
+        // Проверяем тип контента
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            throw new Error('Получен неверный формат ответа от сервера');
+        }
+
         const data = await response.json();
-        
+        console.log('Response data:', data); // Добавляем логирование
+
         if (!response.ok) {
             throw new Error(data.error || 'Ошибка авторизации');
         }
 
-        if (response.ok && data.user && data.user.role === 'admin') {
+        if (data.success && data.user && data.user.role === 'admin') {
             localStorage.setItem('adminId', data.user.id);
-            localStorage.setItem('adminToken', data.token);
             document.getElementById('loginForm').style.display = 'none';
             document.querySelector('.admin-panel').style.display = 'block';
             loadStats();

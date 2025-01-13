@@ -11,18 +11,18 @@ const http = require('http');
 const { Server } = require('socket.io');
 
 const app = express();
-const PORT = 5003;
+const PORT = process.env.PORT || 3000;
 const STATUS_UPDATE_CACHE = new Map();
 const STATUS_UPDATE_INTERVAL = 5000; // 5 секунд между обновлениями
 
 // Middleware
 
-// Обновляем настройки CORS и SSL
+// Обновляем настройки CORS
 const corsOptions = {
-    origin: ['http://space-point.ru', 'https://space-point.ru'],
+    origin: ['https://space-point.ru', 'http://space-point.ru', 'http://localhost:3000'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
 };
 
 app.use(cors(corsOptions));
@@ -71,8 +71,11 @@ app.post('/api/login', async (req, res) => {
     try {
         const { username, password } = req.body;
 
+        console.log('Login attempt:', { username }); // Добавляем логирование
+
         if (!username || !password) {
             return res.status(400).json({ 
+                success: false,
                 error: 'Необходимо указать имя пользователя и пароль' 
             });
         }
@@ -84,15 +87,28 @@ app.post('/api/login', async (req, res) => {
         `, [username]);
 
         if (result.rows.length === 0) {
-            return res.status(401).json({ error: 'Неверное имя пользователя или пароль' });
+            return res.status(401).json({ 
+                success: false,
+                error: 'Неверное имя пользователя или пароль' 
+            });
         }
 
         const user = result.rows[0];
-
-        // Проверяем пароль
         const isValidPassword = await bcrypt.compare(password, user.password_hash);
+        
         if (!isValidPassword) {
-            return res.status(401).json({ error: 'Неверное имя пользователя или пароль' });
+            return res.status(401).json({ 
+                success: false,
+                error: 'Неверное имя пользователя или пароль' 
+            });
+        }
+
+        // Проверяем роль пользователя
+        if (user.role !== 'admin') {
+            return res.status(403).json({ 
+                success: false,
+                error: 'Доступ запрещен. Требуются права администратора.' 
+            });
         }
 
         // Обновляем last_login
@@ -102,13 +118,12 @@ app.post('/api/login', async (req, res) => {
             WHERE id = $1
         `, [user.id]);
 
-        // Отправляем данные пользователя, исключая хеш пароля
         const { password_hash: _, ...userWithoutPassword } = user;
         
-        // Добавляем логирование
-        console.log('Успешная авторизация пользователя:', {
-            id: user.id,
-            username: user.username
+        console.log('Successful login:', { 
+            id: user.id, 
+            username: user.username,
+            role: user.role 
         });
 
         res.json({ 
@@ -117,8 +132,11 @@ app.post('/api/login', async (req, res) => {
         });
 
     } catch (err) {
-        console.error('Ошибка авторизации:', err);
-        res.status(500).json({ error: 'Ошибка сервера: ' + err.message });
+        console.error('Login error:', err);
+        res.status(500).json({ 
+            success: false,
+            error: 'Ошибка сервера при авторизации: ' + err.message 
+        });
     }
 });
 
@@ -207,7 +225,7 @@ app.get('/api/download/:folder/:filename', (req, res) => {
         const mimeType = mimeTypes[ext] || 'application/octet-stream';
         const isImage = mimeType.startsWith('image/');
 
-        // Устанавливаем заголовки в зависимост о���� типа файла
+        // Устанавливаем заголовки в зависимост о типа файла
         if (!isImage) {
             res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(filename)}"`);
         }
