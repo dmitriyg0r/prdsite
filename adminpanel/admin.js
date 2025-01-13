@@ -757,34 +757,56 @@ async function addToWhitelist() {
 
 // Функция для удаления из White List
 async function removeFromWhitelist(uuid) {
+    if (!uuid) {
+        alert('Ошибка: UUID не может быть пустым');
+        return;
+    }
+
     if (!confirm('Вы уверены, что хотите удалить этого игрока из White List?')) {
         return;
     }
     
     try {
-        const response = await fetch(`${API_URL}/api/White_List/${uuid}`, {
+        console.log('Attempting to delete UUID:', uuid);
+        
+        // Если UUID равен "NULL" или "null", преобразуем его в строку "null"
+        const endpoint = uuid.toLowerCase() === 'null' ? 
+            `${API_URL}/api/White_List/null` : 
+            `${API_URL}/api/White_List/${uuid}`;
+
+        const response = await fetch(endpoint, {
             method: 'DELETE',
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+                'Content-Type': 'application/json'
             },
             credentials: 'include'
         });
         
+        console.log('Response status:', response.status);
+        
         const data = await handleResponse(response);
         
+        console.log('Response data:', data);
+        
         if (data.success) {
-            // Находим и удаляем строку из таблицы напрямую
-            const row = document.querySelector(`tr[data-uuid="${uuid}"]`);
+            // Ищем строку как по UUID, так и по значению "NULL"
+            const row = document.querySelector(`tr[data-uuid="${uuid}"], tr[data-uuid="NULL"], tr[data-uuid="null"]`);
+            console.log('Found row:', row);
+            
             if (row) {
-                row.remove();
+                row.parentNode.removeChild(row);
+                console.log('Row removed');
             } else {
-                // Если строка не найдена, перезагружаем всю таблицу
-                loadWhiteListData();
+                console.log('Row not found, reloading table');
+                await loadWhiteListData();
             }
+        } else {
+            throw new Error(data.error || 'Ошибка при удалении');
         }
     } catch (err) {
         console.error('Ошибка при удалении из White List:', err);
-        alert('Ошибка при удалении из White List');
+        alert('Ошибка при удалении из White List: ' + err.message);
     }
 }
 
