@@ -3221,53 +3221,9 @@ app.get('/api/charts', checkAdmin, async (req, res) => {
     }
 });
 
-// Обновляем endpoint для получения структуры таблицы White_List
-app.get('/api/database/structure', checkAdmin, async (req, res) => {
-    try {
-        // Получаем информацию о колонках таблицы White_List
-        const columns = await pool.query(`
-            SELECT 
-                COLUMN_NAME,
-                DATA_TYPE,
-                IS_NULLABLE,
-                COLUMN_KEY,
-                COLUMN_DEFAULT,
-                EXTRA
-            FROM information_schema.COLUMNS 
-            WHERE TABLE_SCHEMA = 'maincraft' 
-            AND TABLE_NAME = 'White_List'
-            ORDER BY ORDINAL_POSITION
-        `);
 
-        // Получаем количество записей в таблице
-        const count = await pool.query(`
-            SELECT COUNT(*) as count 
-            FROM "White_List"
-        `);
-
-        const databaseStructure = {
-            'White_List': {
-                columns: columns.rows,
-                rowCount: count.rows[0].count
-            }
-        };
-
-        res.json({
-            success: true,
-            structure: databaseStructure
-        });
-    } catch (err) {
-        console.error('Ошибка получения структуры базы данных:', err);
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка при получении структуры базы данных',
-            details: err.message
-        });
-    }
-});
-
-// Обновляем endpoint для получения данных таблицы White_List (без проверки авторизации)
-app.get('/api/database/table/White_List', async (req, res) => {
+// Обновляем endpoint для получения данных таблицы White_List
+app.get('/api/White_List', async (req, res) => {
     try {
         const { page = 1, limit = 10 } = req.query;
         const offset = (page - 1) * limit;
@@ -3360,72 +3316,12 @@ app.get('/api/database/table/White_List', async (req, res) => {
             schema: err.schema,
             table: err.table
         });
-
-        // Проверим все таблицы в базе данных
-        try {
-            const allTables = await pool.query(`
-                SELECT table_schema, table_name 
-                FROM information_schema.tables 
-                WHERE table_schema NOT IN ('pg_catalog', 'information_schema')
-                ORDER BY table_schema, table_name;
-            `);
-
-            res.status(500).json({
-                success: false,
-                error: 'Ошибка при получении данных таблицы',
-                details: err.message,
-                code: err.code,
-                availableTables: allTables.rows
-            });
-        } catch (debugErr) {
-            res.status(500).json({
-                success: false,
-                error: 'Ошибка при получении данных таблицы',
-                details: err.message,
-                debugError: debugErr.message
-            });
-        }
     }
 });
 
-// Добавляем тестовый endpoint для проверки структуры таблицы
-app.get('/api/database/check-structure', async (req, res) => {
-    try {
-        // Проверяем существование таблицы
-        const tableCheck = await pool.query(`
-            SELECT EXISTS (
-                SELECT FROM information_schema.tables 
-                WHERE table_schema = 'maincraft'
-                AND table_name = 'White_List'
-            );
-        `);
-
-        // Получаем информацию о колонках
-        const columns = await pool.query(`
-            SELECT column_name, data_type, is_nullable
-            FROM information_schema.columns
-            WHERE table_schema = 'maincraft'
-            AND table_name = 'White_List'
-            ORDER BY ordinal_position;
-        `);
-
-        res.json({
-            success: true,
-            tableExists: tableCheck.rows[0].exists,
-            columns: columns.rows
-        });
-    } catch (err) {
-        console.error('Structure check error:', err);
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка при проверке структуры',
-            details: err.message
-        });
-    }
-});
 
 // Добавляем endpoint для добавления записи
-app.post('/api/database/table/White_List', checkAdmin, async (req, res) => {
+app.post('/api/White_List', checkAdmin, async (req, res) => {
     try {
         const { UUID, user } = req.body;
 
@@ -3457,7 +3353,7 @@ app.post('/api/database/table/White_List', checkAdmin, async (req, res) => {
 });
 
 // Добавляем endpoint для удаления записи
-app.delete('/api/database/table/White_List/:uuid', checkAdmin, async (req, res) => {
+app.delete('/api/White_List/:uuid', checkAdmin, async (req, res) => {
     try {
         const { uuid } = req.params;
 
@@ -3488,73 +3384,10 @@ app.delete('/api/database/table/White_List/:uuid', checkAdmin, async (req, res) 
     }
 });
 
-// Добавим endpoint для проверки структуры таблицы
-app.get('/api/database/check-whitelist', checkAdmin, async (req, res) => {
-    try {
-        // Проверяем структуру таблицы
-        const tableInfo = await pool.query(`
-            SELECT column_name, data_type 
-            FROM information_schema.columns 
-            WHERE table_schema = 'maincraft' 
-            AND table_name = 'White_List'
-        `);
 
-        // Проверяем наличие данных
-        const sampleData = await pool.query(`
-            SELECT * FROM maincraft."White_List" LIMIT 1
-        `);
-
-        res.json({
-            success: true,
-            structure: tableInfo.rows,
-            hasSampleData: sampleData.rows.length > 0,
-            sampleData: sampleData.rows
-        });
-    } catch (err) {
-        console.error('Ошибка проверки таблицы:', err);
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка при проверке таблицы',
-            details: err.message
-        });
-    }
-});
-
-// Добавляем endpoint для просмотра всех таблиц
-app.get('/api/database/tables', async (req, res) => {
-    try {
-        // Запрос для MySQL
-        const [tables] = await pool.query(`
-            SHOW TABLES FROM maincraft;
-        `);
-
-        console.log('Tables in maincraft:', tables);
-
-        // Проверяем структуру White_List
-        const [columns] = await pool.query(`
-            DESCRIBE maincraft.White_List;
-        `);
-
-        console.log('White_List structure:', columns);
-
-        res.json({
-            success: true,
-            tables: tables,
-            whiteListStructure: columns,
-            message: 'Список таблиц в базе данных maincraft'
-        });
-    } catch (err) {
-        console.error('Error getting tables:', err);
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка при получении списка таблиц',
-            details: err.message
-        });
-    }
-});
 
 // Обновляем endpoint для получения данных White_List
-app.get('/api/database/table/White_List', async (req, res) => {
+app.get('/api/White_List', async (req, res) => {
     try {
         const { page = 1, limit = 10 } = req.query;
         const offset = (page - 1) * limit;
