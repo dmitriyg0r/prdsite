@@ -96,37 +96,40 @@ async function loadStats() {
 
 // Функция для создания графиков
 function createCharts(stats) {
-    // Общие настройки для всех графиков
     Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif';
-    Chart.defaults.font.size = 12;
+    Chart.defaults.font.size = 11;
     
+    const commonOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            }
+        }
+    };
+
     // График активности пользователей
     new Chart(document.getElementById('userActivityChart'), {
         type: 'line',
         data: {
-            labels: ['7 дней назад', '6 дней', '5 дней', '4 дня', '3 дня', '2 дня', 'Вчера', 'Сегодня'],
+            labels: ['7д', '6д', '5д', '4д', '3д', '2д', '1д', 'Сег'],
             datasets: [{
-                label: 'Новые пользователи',
                 data: stats.user_activity_data || [0, 0, 0, 0, 0, 0, stats.new_users_24h, stats.new_users_7d],
                 borderColor: '#3498db',
                 backgroundColor: 'rgba(52, 152, 219, 0.1)',
                 tension: 0.4,
-                fill: true
+                fill: true,
+                pointRadius: 2
             }]
         },
         options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom'
-                }
-            },
+            ...commonOptions,
             scales: {
                 y: {
                     beginAtZero: true,
                     grid: {
-                        color: 'rgba(0,0,0,0.05)'
+                        display: false
                     }
                 },
                 x: {
@@ -138,11 +141,11 @@ function createCharts(stats) {
         }
     });
 
-    // График ролей
+    // График ролей (делаем более компактным)
     new Chart(document.getElementById('rolesChart'), {
         type: 'doughnut',
         data: {
-            labels: ['Пользователи', 'Модераторы', 'Админы'],
+            labels: ['Польз.', 'Модер.', 'Админ'],
             datasets: [{
                 data: [
                     stats.total_users - stats.admin_count - stats.moderator_count,
@@ -158,11 +161,16 @@ function createCharts(stats) {
             }]
         },
         options: {
-            responsive: true,
-            maintainAspectRatio: false,
+            ...commonOptions,
+            cutout: '70%',
             plugins: {
                 legend: {
-                    position: 'bottom'
+                    display: true,
+                    position: 'right',
+                    labels: {
+                        boxWidth: 10,
+                        padding: 5
+                    }
                 }
             }
         }
@@ -172,27 +180,20 @@ function createCharts(stats) {
     new Chart(document.getElementById('messageChart'), {
         type: 'bar',
         data: {
-            labels: ['За 24ч', 'За 7 дней', 'Всего'],
+            labels: ['24ч', '7д', 'Всего'],
             datasets: [{
-                label: 'Сообщения',
                 data: [stats.new_messages_24h, stats.new_messages_7d, stats.total_messages],
                 backgroundColor: 'rgba(46, 204, 113, 0.8)',
-                borderRadius: 5
+                borderRadius: 3
             }]
         },
         options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                }
-            },
+            ...commonOptions,
             scales: {
                 y: {
                     beginAtZero: true,
                     grid: {
-                        color: 'rgba(0,0,0,0.05)'
+                        display: false
                     }
                 },
                 x: {
@@ -208,29 +209,23 @@ function createCharts(stats) {
     new Chart(document.getElementById('activityChart'), {
         type: 'line',
         data: {
-            labels: ['Онлайн', 'Активны 24ч'],
+            labels: ['Онлайн', 'Активны'],
             datasets: [{
-                label: 'Активность',
                 data: [stats.online_users, stats.active_users_24h],
                 borderColor: '#f1c40f',
                 backgroundColor: 'rgba(241, 196, 15, 0.1)',
                 tension: 0.4,
-                fill: true
+                fill: true,
+                pointRadius: 2
             }]
         },
         options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom'
-                }
-            },
+            ...commonOptions,
             scales: {
                 y: {
                     beginAtZero: true,
                     grid: {
-                        color: 'rgba(0,0,0,0.05)'
+                        display: false
                     }
                 },
                 x: {
