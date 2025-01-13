@@ -1030,3 +1030,23 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
+// Функции для индикатора загрузки
+function showLoader() {
+    const loader = document.createElement('div');
+    loader.className = 'loader-overlay';
+    loader.innerHTML = `
+        <div class="loader">
+            <div class="spinner"></div>
+            <span>Загрузка...</span>
+        </div>
+    `;
+    document.body.appendChild(loader);
+}
+
+function hideLoader() {
+    const loader = document.querySelector('.loader-overlay');
+    if (loader) {
+        loader.remove();
+    }
+}
+
