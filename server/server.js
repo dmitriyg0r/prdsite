@@ -3284,23 +3284,63 @@ app.get('/api/database/table/White_List', async (req, res) => {
 
         console.log('Fetching White_List data...'); // Добавляем лог
 
-        // Получаем данные таблицы (исправляем запрос)
+        // Сначала проверим существование таблицы
+        const tableCheck = await pool.query(`
+            SELECT EXISTS (
+                SELECT FROM information_schema.tables 
+                WHERE table_schema = 'maincraft'
+                AND table_name = 'White_List'
+            );
+        `);
+
+        console.log('Table exists:', tableCheck.rows[0].exists);
+
+        if (!tableCheck.rows[0].exists) {
+            // Если таблица не существует, проверим все таблицы в схеме
+            const tables = await pool.query(`
+                SELECT table_name 
+                FROM information_schema.tables 
+                WHERE table_schema = 'maincraft'
+            `);
+            console.log('Available tables:', tables.rows);
+
+            return res.status(404).json({
+                success: false,
+                error: 'Таблица не найдена',
+                availableTables: tables.rows
+            });
+        }
+
+        // Проверим структуру таблицы
+        const columns = await pool.query(`
+            SELECT column_name, data_type
+            FROM information_schema.columns
+            WHERE table_schema = 'maincraft'
+            AND table_name = 'White_List'
+            ORDER BY ordinal_position;
+        `);
+
+        console.log('Table structure:', columns.rows);
+
+        // Теперь попробуем получить данные
         const rows = await pool.query(`
             SELECT * 
-            FROM maincraft."White_List"  -- Используем двойные кавычки для имени таблицы
+            FROM maincraft."White_List"
             ORDER BY "user"
             LIMIT $1 OFFSET $2
         `, [parseInt(limit), offset]);
 
-        console.log('Fetched rows:', rows.rows); // Логируем результат
+        console.log('Query result:', {
+            command: rows.command,
+            rowCount: rows.rowCount,
+            rows: rows.rows
+        });
 
-        // Получаем общее количество записей (исправляем запрос)
+        // Получаем общее количество записей
         const count = await pool.query(`
             SELECT COUNT(*) as total 
-            FROM maincraft."White_List"  -- Используем двойные кавычки для имени таблицы
+            FROM maincraft."White_List"
         `);
-
-        console.log('Total count:', count.rows[0].total); // Логируем количество
 
         res.json({
             success: true,
@@ -3312,8 +3352,10 @@ app.get('/api/database/table/White_List', async (req, res) => {
                 limit: parseInt(limit)
             },
             debug: {
-                query: {
-                    text: rows.command,
+                tableExists: tableCheck.rows[0].exists,
+                tableStructure: columns.rows,
+                queryInfo: {
+                    command: rows.command,
                     rowCount: rows.rowCount
                 }
             }
@@ -3324,15 +3366,35 @@ app.get('/api/database/table/White_List', async (req, res) => {
             message: err.message,
             stack: err.stack,
             code: err.code,
-            detail: err.detail
+            detail: err.detail,
+            schema: err.schema,
+            table: err.table
         });
 
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка при получении данных таблицы',
-            details: err.message,
-            code: err.code
-        });
+        // Проверим все таблицы в базе данных
+        try {
+            const allTables = await pool.query(`
+                SELECT table_schema, table_name 
+                FROM information_schema.tables 
+                WHERE table_schema NOT IN ('pg_catalog', 'information_schema')
+                ORDER BY table_schema, table_name;
+            `);
+
+            res.status(500).json({
+                success: false,
+                error: 'Ошибка при получении данных таблицы',
+                details: err.message,
+                code: err.code,
+                availableTables: allTables.rows
+            });
+        } catch (debugErr) {
+            res.status(500).json({
+                success: false,
+                error: 'Ошибка при получении данных таблицы',
+                details: err.message,
+                debugError: debugErr.message
+            });
+        }
     }
 });
 
