@@ -148,13 +148,62 @@ app.get('/api/routes', (req, res) => {
     res.json(routes);
 });
 
-// Убедимся, что маршруты API обрабатываются до статических файлов
-const apiRoutes = express.Router();
-apiRoutes.get('/WhiteList', /* ... существующий обработчик ... */);
-apiRoutes.post('/WhiteList', /* ... существующий обработчик ... */);
-apiRoutes.delete('/WhiteList/:uuid', /* ... существующий обработчик ... */);
+// Создаем Router для API
+const apiRouter = express.Router();
 
-app.use('/api', apiRoutes);
+// Определяем маршруты для WhiteList
+apiRouter.get('/whitelist', async (req, res) => {
+    console.log('Получен запрос к /api/whitelist');
+    
+    try {
+        console.log('Выполняем запрос к базе данных...');
+        const [rows] = await db.query('SELECT * FROM White_List');
+        console.log('Получены данные:', rows);
+        
+        res.json({ 
+            success: true, 
+            data: rows 
+        });
+    } catch (error) {
+        console.error('Ошибка при обработке запроса:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message 
+        });
+    }
+});
+
+apiRouter.post('/whitelist', async (req, res) => {
+    try {
+        const { UUID, user } = req.body;
+        if (!UUID || !user) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'UUID и имя пользователя обязательны' 
+            });
+        }
+        
+        await db.query('INSERT INTO White_List (UUID, user) VALUES (?, ?)', [UUID, user]);
+        res.json({ success: true, message: 'Запись добавлена' });
+    } catch (error) {
+        console.error('Ошибка:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+apiRouter.delete('/whitelist/:uuid', async (req, res) => {
+    try {
+        const { uuid } = req.params;
+        await db.query('DELETE FROM White_List WHERE UUID = ?', [uuid]);
+        res.json({ success: true, message: 'Запись удалена' });
+    } catch (error) {
+        console.error('Ошибка:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Подключаем API маршруты
+app.use('/api', apiRouter);
 
 // Обработчик 404 ошибок
 app.use((req, res) => {
