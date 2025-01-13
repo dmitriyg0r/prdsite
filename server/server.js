@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcrypt');
-const { pool, testConnection } = require('./db');
+const { pool, testConnection, getWhiteListData, addToWhiteList, removeFromWhiteList } = require('./db');
 const https = require('https');
 const fs = require('fs');
 const multer = require('multer');
@@ -3228,88 +3228,31 @@ app.get('/api/charts', checkAdmin, async (req, res) => {
 app.get('/api/White_List', async (req, res) => {
     try {
         const { page = 1, limit = 10 } = req.query;
-        const offset = (page - 1) * limit;
-
-        console.log('Fetching White_List data with params:', { page, limit, offset });
-
-        // Используем MySQL синтаксис для LIMIT и OFFSET
-        const [rows] = await pool.query(
-            'SELECT * FROM White_List LIMIT ?, ?',
-            [parseInt(offset), parseInt(limit)]
-        );
-        console.log('Rows fetched:', rows.length);
-
-        // Получаем общее количество записей
-        const [countResult] = await pool.query(
-            'SELECT COUNT(*) as total FROM White_List'
-        );
-        console.log('Total count:', countResult[0].total);
-
-        const total = countResult[0].total;
-
-        const response = {
-            success: true,
-            data: {
-                rows,
-                total,
-                pages: Math.ceil(total / parseInt(limit)),
-                currentPage: parseInt(page),
-                limit: parseInt(limit)
-            }
-        };
-
-        console.log('Sending response:', {
-            rowCount: rows.length,
-            total,
-            pages: Math.ceil(total / parseInt(limit))
-        });
-
-        res.json(response);
-
+        const result = await getWhiteListData(parseInt(page), parseInt(limit));
+        res.json(result);
     } catch (err) {
-        console.error('Database error:', {
-            message: err.message,
-            stack: err.stack,
-            code: err.code,
-            sqlState: err.sqlState,
-            sqlMessage: err.sqlMessage
-        });
-        
+        console.error('Error fetching White_List:', err);
         res.status(500).json({
             success: false,
             error: 'Ошибка при получении данных таблицы',
-            details: {
-                message: err.message,
-                code: err.code,
-                sqlState: err.sqlState
-            }
+            details: err.message
         });
     }
 });
 
-// Обновляем эндпоинт добавления записи
-app.post('/api/White_List', checkAdmin, async (req, res) => {
+// Эндпоинт для добавления записи
+app.post('/api/White_List', async (req, res) => {
     try {
         const { UUID, user } = req.body;
-
         if (!UUID || !user) {
             return res.status(400).json({
                 success: false,
                 error: 'UUID и user обязательны для заполнения'
             });
         }
-
-        const [result] = await pool.query(
-            'INSERT INTO White_List (UUID, user) VALUES (?, ?)',
-            [UUID, user]
-        );
-
-        res.json({
-            success: true,
-            data: { UUID, user, id: result.insertId }
-        });
+        const result = await addToWhiteList(UUID, user);
+        res.json(result);
     } catch (err) {
-        console.error('Ошибка добавления записи:', err);
         res.status(500).json({
             success: false,
             error: 'Ошибка при добавлении записи',
@@ -3318,29 +3261,13 @@ app.post('/api/White_List', checkAdmin, async (req, res) => {
     }
 });
 
-// Обновляем эндпоинт удаления записи
-app.delete('/api/White_List/:uuid', checkAdmin, async (req, res) => {
+// Эндпоинт для удаления записи
+app.delete('/api/White_List/:uuid', async (req, res) => {
     try {
         const { uuid } = req.params;
-
-        const [result] = await pool.query(
-            'DELETE FROM White_List WHERE UUID = ?',
-            [uuid]
-        );
-
-        if (result.affectedRows === 0) {
-            return res.status(404).json({
-                success: false,
-                error: 'Запись не найдена'
-            });
-        }
-
-        res.json({
-            success: true,
-            message: 'Запись успешно удалена'
-        });
+        await removeFromWhiteList(uuid);
+        res.json({ success: true });
     } catch (err) {
-        console.error('Ошибка удаления записи:', err);
         res.status(500).json({
             success: false,
             error: 'Ошибка при удалении записи',
