@@ -651,12 +651,14 @@ window.addEventListener('unhandledrejection', function(event) {
 });
 
 async function loadWhitelist() {
+    const tbody = document.getElementById('whitelistTableBody');
+    tbody.innerHTML = '<tr><td colspan="3" style="text-align: center;">Загрузка...</td></tr>';
+
     try {
         const response = await fetch(`${API_URL}/api/WhiteList`, {
             credentials: 'include',
             headers: {
                 'Accept': 'application/json',
-                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
             }
         });
@@ -666,8 +668,6 @@ async function loadWhitelist() {
         }
         
         const result = await response.json();
-
-        const tbody = document.getElementById('whitelistTableBody');
         tbody.innerHTML = '';
         
         if (result.success && result.data) {
@@ -695,12 +695,9 @@ async function loadWhitelist() {
                 `;
                 tbody.appendChild(row);
             });
-        } else {
-            throw new Error(result.error || 'Ошибка загрузки данных');
         }
     } catch (error) {
         console.error('Ошибка загрузки White List:', error);
-        const tbody = document.getElementById('whitelistTableBody');
         tbody.innerHTML = `
             <tr>
                 <td colspan="3" style="color: red; text-align: center;">
@@ -754,3 +751,40 @@ document.addEventListener('DOMContentLoaded', async () => {
     await testAPI();
     await loadWhitelist();
 });
+
+async function addToWhitelist() {
+    const uuid = document.getElementById('uuidInput').value.trim();
+    const user = document.getElementById('userInput').value.trim();
+
+    if (!uuid || !user) {
+        alert('Пожалуйста, заполните оба поля');
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/api/WhiteList`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+            },
+            body: JSON.stringify({ UUID: uuid, user: user })
+        });
+
+        const result = await response.json();
+        
+        if (result.success) {
+            // Очищаем поля ввода
+            document.getElementById('uuidInput').value = '';
+            document.getElementById('userInput').value = '';
+            // Перезагружаем список
+            loadWhitelist();
+        } else {
+            throw new Error(result.error || 'Ошибка при добавлении');
+        }
+    } catch (error) {
+        alert('Не удалось добавить запись: ' + error.message);
+    }
+}
