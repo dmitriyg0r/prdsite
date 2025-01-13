@@ -4,16 +4,20 @@ const https = require('https');
 const fs = require('fs');
 const db = require('./maindb.js');
 const app = express();
+const path = require('path');
 
 // Настройка CORS
 app.use(cors({
-    origin: 'https://space-point.ru',
+    origin: ['https://space-point.ru', 'http://localhost:3000'],
     methods: ['GET', 'POST', 'DELETE', 'PUT', 'PATCH'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
     credentials: true
 }));
 
 app.use(express.json());
+
+// Добавить раздачу статических файлов
+app.use(express.static(__dirname));
 
 // Роуты
 app.get('/test', (req, res) => {
@@ -52,11 +56,25 @@ app.delete('/api/whitelist/:uuid', async (req, res) => {
     }
 });
 
+// Добавить маршрут для админ-панели
+app.get('/adminpanel', (req, res) => {
+    res.sendFile(__dirname + '/admin.html');
+});
+
+// Добавить обработку ошибок
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ 
+        success: false, 
+        error: 'Внутренняя ошибка сервера' 
+    });
+});
+
 // Путь к SSL сертификатам
 const options = {
-    cert: fs.readFileSync('/etc/letsencrypt/live/space-point.ru/fullchain.pem'),
-    key: fs.readFileSync('/etc/letsencrypt/live/space-point.ru/privkey.pem'),
-    ca: fs.readFileSync('/etc/letsencrypt/live/space-point.ru/chain.pem')
+    cert: fs.readFileSync(path.join('/etc/letsencrypt/live/space-point.ru', 'fullchain.pem')),
+    key: fs.readFileSync(path.join('/etc/letsencrypt/live/space-point.ru', 'privkey.pem')),
+    ca: fs.readFileSync(path.join('/etc/letsencrypt/live/space-point.ru', 'chain.pem'))
 };
 
 // Создаем HTTPS сервер

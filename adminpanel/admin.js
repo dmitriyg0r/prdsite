@@ -1,4 +1,4 @@
-const API_URL = 'https://space-point.ru:3000';
+const API_URL = 'https://space-point.ru:3000/api';
 
 let currentPage = 1;
 let totalPages = 1;
@@ -371,11 +371,13 @@ async function login() {
             return;
         }
 
-        const response = await fetch(`${API_URL}/api/login`, {
+        const response = await fetch(`${API_URL}/login`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
             },
+            credentials: 'include',
             body: JSON.stringify({
                 username: username.trim(),
                 password: password.trim()
@@ -383,19 +385,24 @@ async function login() {
         });
 
         const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.error || 'Ошибка авторизации');
+        }
 
         if (response.ok && data.user && data.user.role === 'admin') {
             localStorage.setItem('adminId', data.user.id);
+            localStorage.setItem('adminToken', data.token);
             document.getElementById('loginForm').style.display = 'none';
             document.querySelector('.admin-panel').style.display = 'block';
             loadStats();
             loadUsers();
         } else {
-            alert('Неверное имя пользователя или пароль');
+            throw new Error('Недостаточно прав для доступа к админ-панели');
         }
     } catch (err) {
         console.error('Ошибка авторизации:', err);
-        alert('Ошибка при попытке входа. Пожалуйста, попробуйте позже.');
+        alert(err.message || 'Ошибка при попытке входа. Пожалуйста, попробуйте позже.');
     }
 }
 
