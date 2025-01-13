@@ -670,63 +670,78 @@ function createRolesChart(data) {
     });
 }
 
-// Инициализация
-document.addEventListener('DOMContentLoaded', () => {
-    // Проверяем авторизацию без раннего возврата
-    const isAuthorized = checkAuth();
-
-    // Получаем элементы с проверкой на существование
-    const statsGrid = document.querySelector('.stats-grid');
-    
-    if (isAuthorized && statsGrid) {
-        statsGrid.style.display = 'grid';
+// Добавляем функцию для показа/скрытия модального окна
+function showAddWhitelistModal() {
+    const modal = document.getElementById('addWhitelistModal');
+    if (modal) {
+        modal.style.display = 'flex';
     }
+}
+
+function closeModal() {
+    const modal = document.getElementById('addWhitelistModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Обновляем обработчик событий в DOMContentLoaded
+document.addEventListener('DOMContentLoaded', () => {
+    // Проверяем авторизацию
+    const isAuthorized = checkAuth();
     
     // Инициализируем обработчики табов
-    const tabs = document.querySelectorAll('.admin-nav li');
+    const tabs = document.querySelectorAll('.nav-item');
+    const sections = {
+        dashboard: document.querySelector('.dashboard-section'),
+        users: document.querySelector('.users-section'),
+        whitelist: document.querySelector('.whitelist-section'),
+        settings: document.querySelector('.settings-section')
+    };
+
     if (tabs.length > 0) {
         tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
+            tab.addEventListener('click', (e) => {
+                e.preventDefault(); // Предотвращаем переход по ссылке
+                
+                // Убираем активный класс у всех табов
+                tabs.forEach(t => t.classList.remove('active'));
+                // Добавляем активный класс текущему табу
+                tab.classList.add('active');
+
                 const targetTab = tab.dataset.tab;
                 
-                // Получаем все секции с проверкой существования
-                const sections = document.querySelectorAll('.stats-grid, .users-table-section, .whitelist-section, .settings-section');
-                sections.forEach(section => {
+                // Скрываем все секции
+                Object.values(sections).forEach(section => {
                     if (section) section.style.display = 'none';
                 });
                 
-                // Показываем нужную секцию с проверкой существования
+                // Показываем нужную секцию
+                if (sections[targetTab]) {
+                    sections[targetTab].style.display = 'block';
+                }
+
+                // Загружаем данные в зависимости от выбранной вкладки
                 switch(targetTab) {
                     case 'dashboard':
-                        const statsGrid = document.querySelector('.stats-grid');
-                        if (statsGrid) statsGrid.style.display = 'grid';
                         if (isAuthorized) loadStats();
                         break;
                     case 'users':
-                        const usersSection = document.querySelector('.users-table-section');
-                        if (usersSection) usersSection.style.display = 'block';
                         if (isAuthorized) loadUsers(1);
                         break;
                     case 'whitelist':
-                        const whitelistSection = document.querySelector('.whitelist-section');
-                        if (whitelistSection) whitelistSection.style.display = 'block';
                         if (isAuthorized) loadWhiteListData();
-                        break;
-                    case 'settings':
-                        const settingsSection = document.querySelector('.settings-section');
-                        if (settingsSection) settingsSection.style.display = 'block';
                         break;
                 }
             });
         });
     }
 
-    // Инициализация поиска и фильтров с проверками
+    // Инициализация поиска и фильтров
     const searchInput = document.getElementById('searchUsers');
     const roleFilter = document.getElementById('roleFilter');
     const statusFilter = document.getElementById('statusFilter');
-    let searchTimeout;
-
+    
     if (searchInput && roleFilter && statusFilter) {
         const handleFiltersChange = () => {
             clearTimeout(searchTimeout);
@@ -743,6 +758,16 @@ document.addEventListener('DOMContentLoaded', () => {
         roleFilter.addEventListener('change', handleFiltersChange);
         statusFilter.addEventListener('change', handleFiltersChange);
     }
+
+    // Закрытие модального окна при клике вне его
+    window.addEventListener('click', (e) => {
+        const modals = document.querySelectorAll('.modal');
+        modals.forEach(modal => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    });
 
     // Если авторизован, загружаем начальные данные
     if (isAuthorized) {
