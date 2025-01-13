@@ -24,7 +24,7 @@ app.get('/test', (req, res) => {
     res.json({ message: 'Сервер работает' });
 });
 
-app.get('/api/whitelist', async (req, res) => {
+app.get('/api/WhiteList', async (req, res) => {
     try {
         const [rows] = await db.query('SELECT * FROM White_List');
         res.json({ success: true, data: rows });
@@ -34,7 +34,7 @@ app.get('/api/whitelist', async (req, res) => {
     }
 });
 
-app.post('/api/whitelist', async (req, res) => {
+app.post('/api/WhiteList', async (req, res) => {
     try {
         const { UUID, user } = req.body;
         if (!UUID || !user) {
@@ -52,7 +52,7 @@ app.post('/api/whitelist', async (req, res) => {
     }
 });
 
-app.delete('/api/whitelist/:uuid', async (req, res) => {
+app.delete('/api/WhiteList/:uuid', async (req, res) => {
     try {
         const { uuid } = req.params;
         await db.query('DELETE FROM White_List WHERE UUID = ?', [uuid]);
