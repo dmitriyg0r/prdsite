@@ -16,14 +16,8 @@ app.use(cors({
 
 app.use(express.json());
 
-// Добавить раздачу статических файлов
-app.use(express.static(__dirname));
-
-// Роуты
-app.get('/test', (req, res) => {
-    res.json({ message: 'Сервер работает' });
-});
-
+// Переместить статические маршруты после API-маршрутов
+// Сначала определяем все API-маршруты
 app.get('/api/WhiteList', async (req, res) => {
     try {
         // Проверка авторизации
@@ -78,9 +72,18 @@ app.delete('/api/WhiteList/:uuid', async (req, res) => {
     }
 });
 
-// Добавить маршрут для админ-панели
+// Затем определяем статические маршруты
+app.use('/adminpanel', express.static(path.join(__dirname, 'admin')));
 app.get('/adminpanel', (req, res) => {
-    res.sendFile(__dirname + '/admin.html');
+    res.sendFile(path.join(__dirname, 'admin.html'));
+});
+
+// В самом конце - общая статика
+app.use(express.static(__dirname));
+
+// Роуты
+app.get('/test', (req, res) => {
+    res.json({ message: 'Сервер работает' });
 });
 
 // Добавить обработку ошибок

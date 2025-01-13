@@ -21,19 +21,16 @@ function checkAuth() {
 
 // Общая функция для проверки ответа
 async function handleResponse(response) {
-    if (response.status === 401) {
-        localStorage.removeItem('adminId');
-        localStorage.removeItem('adminToken');
-        location.reload();
-        throw new Error('Unauthorized');
+    if (!response.ok) {
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Ошибка сервера');
+        } else {
+            throw new Error(`HTTP ошибка! статус: ${response.status}`);
+        }
     }
-    
-    const data = await response.json();
-    if (!data.success) {
-        throw new Error(data.error || 'Ошибка запроса');
-    }
-    
-    return data;
+    return await response.json();
 }
 
 async function loadStats() {
@@ -679,14 +676,17 @@ window.addEventListener('unhandledrejection', function(event) {
 
 async function loadWhitelist() {
     try {
+        console.log('Загрузка whitelist...');  // Отладочный вывод
         const response = await fetch(`${API_URL}/api/WhiteList?adminId=${localStorage.getItem('adminId')}`, {
             credentials: 'include',
             headers: {
+                'Accept': 'application/json',
                 'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
             }
         });
         
         const data = await handleResponse(response);
+        console.log('Полученные данные:', data);  // Отладочный вывод
         
         if (data.success) {
             const tbody = document.getElementById('whitelistTableBody');
