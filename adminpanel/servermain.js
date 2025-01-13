@@ -5,7 +5,25 @@ const pool = require('./maindb');
 const app = express();
 const port = 3000;
 
-app.use(cors());
+// Разрешаем запросы с обоих доменов
+const allowedOrigins = [
+    'http://localhost:3000',
+    'http://localhost',
+    'https://space-point.ru'
+];
+
+app.use(cors({
+    origin: function(origin, callback) {
+        // Разрешаем запросы без origin (например, от Postman)
+        if (!origin) return callback(null, true);
+        
+        if (allowedOrigins.indexOf(origin) === -1) {
+            return callback(new Error('Политика CORS не разрешает доступ с этого источника.'), false);
+        }
+        return callback(null, true);
+    },
+    credentials: true
+}));
 app.use(express.json());
 
 // Получение данных из White_List

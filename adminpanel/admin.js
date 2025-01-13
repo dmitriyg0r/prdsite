@@ -1,4 +1,13 @@
-const API_URL = 'https://space-point.ru';
+const API_URL = (() => {
+    switch(window.location.hostname) {
+        case 'localhost':
+            return 'http://localhost:3000';
+        case 'space-point.ru':
+            return 'https://space-point.ru';
+        default:
+            return 'https://space-point.ru'; // fallback на продакшен
+    }
+})();
 
 let currentPage = 1;
 let totalPages = 1;
