@@ -3,180 +3,247 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Админ панель - SpacePoint</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>SpacePoint Admin</title>
     <link rel="stylesheet" href="admin.css">
-    <meta name="theme-color" content="#2c3e50">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <div class="login-form" id="loginForm">
-        <h2>Вход в админ панель</h2>
-        <input type="text" id="adminUsername" placeholder="Имя пользователя">
-        <input type="password" id="adminPassword" placeholder="Пароль">
-        <button onclick="login()">Войти</button>
-    </div>
-
-    <div class="admin-panel" style="display: none;">
-        <nav class="admin-nav">
-            <ul>
-                <li data-tab="dashboard" class="active">Дашборд</li>
-                <li data-tab="users">Пользователи</li>
-                <li data-tab="whitelist">White List</li>
-                <li data-tab="settings">Настройки</li>
-            </ul>
-        </nav>
-
-        <div class="admin-header">
-            <div class="header-left">
-                <h1>Админ панель SpacePoint</h1>
-                <span class="server-status online">Сервер активен</span>
+    <!-- Форма входа -->
+    <div class="login-container" id="loginForm">
+        <div class="login-card">
+            <div class="login-header">
+                <img src="logo.svg" alt="SpacePoint" class="login-logo">
+                <h2>Вход в панель управления</h2>
             </div>
-            <div class="header-right">
-                <div class="admin-profile">
-                    <span class="admin-name">Админ</span>
-                    <button onclick="logout()" class="logout-btn">
-                        <i class="fas fa-sign-out-alt"></i> Выйти
-                    </button>
+            <div class="login-form">
+                <div class="input-group">
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="adminUsername" placeholder="Имя пользователя">
                 </div>
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="adminPassword" placeholder="Пароль">
+                </div>
+                <button class="login-btn" onclick="login()">
+                    <span>Войти</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
             </div>
         </div>
+    </div>
 
-        <div class="stats-grid">
-            <div class="stat-card users">
-                <h3>Пользователи</h3>
-                <div class="stat-details">
-                    <div class="stat-item">
-                        <span class="label">Всего:</span>
-                        <span class="value" id="totalUsers">-</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="label">Новых за 24ч:</span>
-                        <span class="value" id="newUsers24h">-</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="label">Новых за 7д:</span>
-                        <span class="value" id="newUsers7d">-</span>
-                    </div>
-                </div>
-                <canvas id="userActivityChart"></canvas>
+    <!-- Основная панель -->
+    <div class="admin-container" style="display: none;">
+        <!-- Боковое меню -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="logo.svg" alt="SpacePoint" class="sidebar-logo">
+                <span class="sidebar-title">SpacePoint</span>
             </div>
+            
+            <nav class="sidebar-nav">
+                <a href="#dashboard" class="nav-item active" data-tab="dashboard">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Дашборд</span>
+                </a>
+                <a href="#users" class="nav-item" data-tab="users">
+                    <i class="fas fa-users"></i>
+                    <span>Пользователи</span>
+                </a>
+                <a href="#whitelist" class="nav-item" data-tab="whitelist">
+                    <i class="fas fa-list-check"></i>
+                    <span>White List</span>
+                </a>
+                <a href="#settings" class="nav-item" data-tab="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>Настройки</span>
+                </a>
+            </nav>
 
-            <div class="stat-card roles">
-                <h3>Роли пользователей</h3>
-                <div class="stat-details">
-                    <div class="stat-item">
-                        <span class="label">Админы:</span>
-                        <span class="value" id="adminCount">-</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="label">Модераторы:</span>
-                        <span class="value" id="moderatorCount">-</span>
+            <div class="sidebar-footer">
+                <div class="admin-info">
+                    <img src="avatar.png" alt="Admin" class="admin-avatar">
+                    <div class="admin-details">
+                        <span class="admin-name">Админ</span>
+                        <span class="admin-role">Администратор</span>
                     </div>
                 </div>
-                <canvas id="rolesChart"></canvas>
+                <button class="logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
             </div>
+        </aside>
 
-            <div class="stat-card messages">
-                <h3>Сообщения</h3>
-                <div class="stat-details">
-                    <div class="stat-item">
-                        <span class="label">Всего:</span>
-                        <span class="value" id="totalMessages">-</span>
+        <!-- Основной контент -->
+        <main class="main-content">
+            <!-- Верхняя панель -->
+            <header class="content-header">
+                <div class="header-search">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Поиск...">
+                </div>
+                <div class="header-actions">
+                    <button class="action-btn">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge">3</span>
+                    </button>
+                    <button class="action-btn">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Дашборд -->
+            <section class="dashboard-section" id="dashboardSection">
+                <div class="quick-stats">
+                    <div class="stat-card">
+                        <div class="stat-icon users">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Пользователи</h3>
+                            <span class="stat-value" id="totalUsers">-</span>
+                            <span class="stat-change positive">+5.2%</span>
+                        </div>
                     </div>
-                    <div class="stat-item">
-                        <span class="label">За 24ч:</span>
-                        <span class="value" id="newMessages24h">-</span>
+                    <!-- Аналогичные карточки для других метрик -->
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3>Активность пользователей</h3>
+                            <div class="chart-actions">
+                                <button class="chart-period active">День</button>
+                                <button class="chart-period">Неделя</button>
+                                <button class="chart-period">Месяц</button>
+                            </div>
+                        </div>
+                        <canvas id="userActivityChart"></canvas>
                     </div>
-                    <div class="stat-item">
-                        <span class="label">За 7д:</span>
-                        <span class="value" id="newMessages7d">-</span>
+                    <!-- Другие графики -->
+                </div>
+            </section>
+
+            <!-- Пользователи -->
+            <section class="users-section" id="usersSection" style="display: none;">
+                <div class="section-header">
+                    <h2>Управление пользователями</h2>
+                    <button class="primary-btn">
+                        <i class="fas fa-plus"></i>
+                        <span>Добавить пользователя</span>
+                    </button>
+                </div>
+
+                <div class="filters-bar">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchUsers" placeholder="Поиск пользователей...">
+                    </div>
+                    <div class="filters">
+                        <select id="roleFilter">
+                            <option value="">Все роли</option>
+                            <option value="user">Пользователи</option>
+                            <option value="moderator">Модераторы</option>
+                            <option value="admin">Админы</option>
+                        </select>
+                        <select id="statusFilter">
+                            <option value="">Все статусы</option>
+                            <option value="active">Активные</option>
+                            <option value="banned">Заблокированные</option>
+                        </select>
                     </div>
                 </div>
-                <canvas id="messageChart"></canvas>
-            </div>
 
-            <div class="stat-card activity">
-                <h3>Активность</h3>
-                <div class="stat-details">
-                    <div class="stat-item">
-                        <span class="label">Онлайн сейчас:</span>
-                        <span class="value" id="onlineUsers">-</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="label">Активны за 24ч:</span>
-                        <span class="value" id="activeUsers24h">-</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="label">Всего друзей:</span>
-                        <span class="value" id="totalFriendships">-</span>
-                    </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <input type="checkbox" class="select-all">
+                                </th>
+                                <th>Пользователь</th>
+                                <th>Роль</th>
+                                <th>Статус</th>
+                                <th>Регистрация</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <!-- Данные добавляются через JavaScript -->
+                        </tbody>
+                    </table>
                 </div>
-                <canvas id="activityChart"></canvas>
-            </div>
 
-            <div class="stat-card whitelist">
-                <h3>White List Minecraft</h3>
-                <div class="whitelist-controls">
-                    <input type="text" id="uuidInput" placeholder="UUID игрока">
-                    <input type="text" id="userInput" placeholder="Имя игрока">
-                    <button onclick="addToWhitelist()" class="add-btn">Добавить</button>
+                <div class="pagination">
+                    <!-- Пагинация добавляется через JavaScript -->
                 </div>
-                <div class="whitelist-table-container">
-                    <table class="whitelist-table">
+            </section>
+
+            <!-- White List -->
+            <section class="whitelist-section" id="whitelistSection" style="display: none;">
+                <div class="section-header">
+                    <h2>White List</h2>
+                    <button class="primary-btn" onclick="showAddWhitelistModal()">
+                        <i class="fas fa-plus"></i>
+                        <span>Добавить игрока</span>
+                    </button>
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table">
                         <thead>
                             <tr>
                                 <th>UUID</th>
                                 <th>Имя игрока</th>
+                                <th>Дата добавления</th>
                                 <th>Действия</th>
                             </tr>
                         </thead>
                         <tbody id="whitelistTableBody">
-                            <!-- Данные будут добавлены через JavaScript -->
+                            <!-- Данные добавляются через JavaScript -->
                         </tbody>
                     </table>
                 </div>
+            </section>
+
+            <!-- Настройки -->
+            <section class="settings-section" id="settingsSection" style="display: none;">
+                <div class="settings-grid">
+                    <div class="settings-card">
+                        <h3>Основные настройки</h3>
+                        <!-- Настройки -->
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Модальные окна -->
+    <div class="modal" id="addWhitelistModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Добавить в White List</h3>
+                <button class="close-modal">&times;</button>
             </div>
-        </div>
-
-        <div class="search-bar">
-            <input type="text" id="searchUsers" placeholder="Поиск пользователей...">
-            <div class="search-filters">
-                <select id="roleFilter">
-                    <option value="">Все роли</option>
-                    <option value="user">Пользователи</option>
-                    <option value="moderator">Модераторы</option>
-                    <option value="admin">Админы</option>
-                </select>
-                <select id="statusFilter">
-                    <option value="">Все статусы</option>
-                    <option value="active">Активные</option>
-                    <option value="banned">Заблокированные</option>
-                </select>
+            <div class="modal-body">
+                <div class="input-group">
+                    <label>UUID игрока</label>
+                    <input type="text" id="uuidInput">
+                </div>
+                <div class="input-group">
+                    <label>Имя игрока</label>
+                    <input type="text" id="userInput">
+                </div>
             </div>
-        </div>
-
-        <table class="users-table">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Имя пользователя</th>
-                    <th>Роль</th>
-                    <th>Дата регистрации</th>
-                    <th>Сообщений</th>
-                    <th>Друзей</th>
-                    <th>Действия</th>
-                </tr>
-            </thead>
-            <tbody id="usersTableBody">
-            </tbody>
-        </table>
-
-        <div class="pagination" id="pagination">
+            <div class="modal-footer">
+                <button class="secondary-btn" onclick="closeModal()">Отмена</button>
+                <button class="primary-btn" onclick="addToWhitelist()">Добавить</button>
+            </div>
         </div>
     </div>
+
     <script src="admin.js"></script>
 </body>
 </html>

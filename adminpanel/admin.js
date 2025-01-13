@@ -28,18 +28,23 @@ function checkAuth() {
     return true;
 }
 
-// Общая функция для проверки ответа
+// Улучшенная функция обработки ответа с типизацией и детальной обработкой ошибок
 async function handleResponse(response) {
+    const contentType = response.headers.get('content-type');
+    
     if (!response.ok) {
-        const contentType = response.headers.get('content-type');
-        if (contentType && contentType.includes('application/json')) {
+        if (contentType?.includes('application/json')) {
             const errorData = await response.json();
-            throw new Error(errorData.error || 'Ошибка сервера');
-        } else {
-            throw new Error(`HTTP ошибка! статус: ${response.status}`);
+            throw new Error(errorData.error || `Ошибка сервера: ${response.status}`);
         }
+        throw new Error(`HTTP ошибка! статус: ${response.status}`);
     }
-    return await response.json();
+
+    if (contentType?.includes('application/json')) {
+        return await response.json();
+    }
+    
+    throw new Error('Неподдерживаемый тип контента');
 }
 
 async function loadStats() {
@@ -243,40 +248,61 @@ function createCharts(stats) {
     });
 }
 
+// Улучшенная функция загрузки пользователей с кэшированием и дебаунсингом
+const userCache = new Map();
+let loadUsersTimeout;
+
 async function loadUsers(page = 1, search = '', filters = {}) {
     if (!checkAuth()) return;
 
-    showLoader();
-    try {
-        const queryParams = new URLSearchParams({
-            page,
-            limit: 50, // Увеличиваем лимит на странице
-            search,
-            ...filters,
-            adminId: localStorage.getItem('adminId')
-        });
-
-        const response = await fetch(`${API_URL}/api/users?${queryParams}`, {
-            credentials: 'include',
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
-                'X-Admin-ID': localStorage.getItem('adminId')
-            }
-        });
-
-        const data = await handleResponse(response);
-        
-        if (data.success) {
-            updateUsersTable(data.users);
-            updatePagination(data.totalPages || Math.ceil(data.total / 50));
-            // Показываем секцию с пользователями
-            document.querySelector('.users-table-section').style.display = 'block';
+    const cacheKey = `${page}-${search}-${JSON.stringify(filters)}`;
+    if (userCache.has(cacheKey)) {
+        const cachedData = userCache.get(cacheKey);
+        if (Date.now() - cachedData.timestamp < 30000) { // 30 секунд
+            updateUsersTable(cachedData.data.users);
+            updatePagination(cachedData.data.totalPages);
+            return;
         }
-    } catch (err) {
-        handleError(err);
-    } finally {
-        hideLoader();
     }
+
+    clearTimeout(loadUsersTimeout);
+    loadUsersTimeout = setTimeout(async () => {
+        showLoader();
+        try {
+            const queryParams = new URLSearchParams({
+                page,
+                limit: 50,
+                search,
+                ...filters,
+                adminId: localStorage.getItem('adminId')
+            });
+
+            const response = await fetch(`${API_URL}/api/users?${queryParams}`, {
+                credentials: 'include',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+                    'X-Admin-ID': localStorage.getItem('adminId')
+                }
+            });
+
+            const data = await handleResponse(response);
+            
+            if (data.success) {
+                userCache.set(cacheKey, {
+                    data,
+                    timestamp: Date.now()
+                });
+                
+                updateUsersTable(data.users);
+                updatePagination(data.totalPages || Math.ceil(data.total / 50));
+                document.querySelector('.users-table-section').style.display = 'block';
+            }
+        } catch (err) {
+            handleError(err);
+        } finally {
+            hideLoader();
+        }
+    }, 300); // Дебаунсинг 300мс
 }
 
 function updatePagination(totalPages) {
@@ -696,61 +722,113 @@ document.addEventListener('DOMContentLoaded', () => {
     // Улучшенная функция обновления таблицы пользователей
     function updateUsersTable(users) {
         const tbody = document.getElementById('usersTableBody');
-        tbody.innerHTML = '';
+        const fragment = document.createDocumentFragment();
         
         users.forEach(user => {
             const row = document.createElement('tr');
-            row.className = user.is_banned ? 'banned' : '';
+            row.className = `user-row ${user.is_banned ? 'banned' : ''}`;
             row.innerHTML = `
                 <td>${user.id}</td>
                 <td>
                     <div class="user-info">
-                        <span class="username">${user.username}</span>
-                        ${user.is_online ? '<span class="online-badge">Online</span>' : ''}
+                        <img src="${user.avatar || 'default-avatar.png'}" alt="" class="user-avatar">
+                        <div>
+                            <span class="username">${escapeHtml(user.username)}</span>
+                            ${user.is_online ? '<span class="online-badge">Online</span>' : ''}
+                        </div>
                     </div>
                 </td>
                 <td>
-                    <span class="role-badge ${user.role}">${user.role}</span>
+                    <select class="role-select" onchange="changeUserRole(${user.id}, this.value)">
+                        <option value="user" ${user.role === 'user' ? 'selected' : ''}>Пользователь</option>
+                        <option value="moderator" ${user.role === 'moderator' ? 'selected' : ''}>Модератор</option>
+                        <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Админ</option>
+                    </select>
                 </td>
-                <td>${new Date(user.created_at).toLocaleDateString()}</td>
-                <td>${user.messages_sent}</td>
-                <td>${user.friends_count}</td>
+                <td>${formatDate(user.created_at)}</td>
                 <td class="actions">
                     <div class="action-buttons">
-                        <button onclick="deleteUser(${user.id})" class="action-btn delete" title="Удалить">
-                            <i class="fas fa-trash"></i>
+                        <button onclick="showUserDetails(${user.id})" class="action-btn view" title="Просмотр">
+                            <i class="fas fa-eye"></i>
                         </button>
                         <button onclick="banUser(${user.id})" class="action-btn ${user.is_banned ? 'unban' : 'ban'}" 
                                 title="${user.is_banned ? 'Разблокировать' : 'Заблокировать'}">
                             <i class="fas fa-${user.is_banned ? 'unlock' : 'ban'}"></i>
                         </button>
-                        <select onchange="changeUserRole(${user.id}, this.value)" class="role-select">
-                            <option value="user" ${user.role === 'user' ? 'selected' : ''}>Пользователь</option>
-                            <option value="moderator" ${user.role === 'moderator' ? 'selected' : ''}>Модератор</option>
-                            <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Админ</option>
-                        </select>
+                        <button onclick="deleteUser(${user.id})" class="action-btn delete" title="Удалить">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </div>
                 </td>
             `;
-            tbody.appendChild(row);
+            fragment.appendChild(row);
         });
+
+        // Анимация обновления
+        tbody.style.opacity = '0';
+        setTimeout(() => {
+            tbody.innerHTML = '';
+            tbody.appendChild(fragment);
+            tbody.style.opacity = '1';
+        }, 150);
     }
 
-    // Добавляем анимации для действий
-    function showNotification(message, type = 'success') {
-        const notification = document.createElement('div');
-        notification.className = `notification ${type}`;
-        notification.textContent = message;
-        document.body.appendChild(notification);
-        
-        setTimeout(() => {
-            notification.classList.add('show');
-            setTimeout(() => {
-                notification.classList.remove('show');
-                setTimeout(() => notification.remove(), 300);
-            }, 3000);
-        }, 100);
+    // Вспомогательные функции
+    function escapeHtml(unsafe) {
+        return unsafe
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
     }
+
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+        return new Intl.DateTimeFormat('ru-RU', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        }).format(date);
+    }
+
+    // Улучшенная система уведомлений
+    const notifications = {
+        show(message, type = 'info', duration = 3000) {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 
+                                  type === 'error' ? 'exclamation-circle' : 
+                                  'info-circle'}"></i>
+                <span>${message}</span>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.add('show');
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                    setTimeout(() => notification.remove(), 300);
+                }, duration);
+            }, 100);
+        },
+        
+        success(message) {
+            this.show(message, 'success');
+        },
+        
+        error(message) {
+            this.show(message, 'error');
+        },
+        
+        info(message) {
+            this.show(message, 'info');
+        }
+    };
 
     // Инициализация
     loadStats();
