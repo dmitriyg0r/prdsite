@@ -430,6 +430,8 @@
 }
 
 .rules-section {
+    height: 394.438px;
+    transform: translate(0px, 90px);
     position: relative;
     left: 733px;
     top: -1376px;
@@ -498,12 +500,12 @@
 }
 
 .reviews-section {
+    height: 545.016px;
+    transform: translate(-114px, 52px);
     position: relative;
     left: 147px;
     top: 226px;
     width: 490px;
-    height: 573.016px;
-    transform: translate(-114px, -216px);
     transition: none;
     max-width: 494px;
     margin: 2rem 0;
