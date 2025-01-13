@@ -290,3 +290,61 @@
 .whitelist-table .action-btn:hover {
     background: #c0392b;
 }
+
+.admin-nav {
+    margin-bottom: 20px;
+}
+
+.admin-nav ul {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    background: white;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.admin-nav li {
+    padding: 15px 25px;
+    cursor: pointer;
+    color: #2c3e50;
+    transition: all 0.3s ease;
+}
+
+.admin-nav li:hover {
+    background: #f8f9fa;
+}
+
+.admin-nav li.active {
+    background: #2c3e50;
+    color: white;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.server-status {
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 14px;
+}
+
+.server-status.online {
+    background: #27ae60;
+    color: white;
+}
+
+.admin-profile {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.admin-name {
+    color: white;
+    font-weight: 500;
+}

@@ -177,6 +177,39 @@
         <div class="pagination" id="pagination">
         </div>
     </div>
+
+    <div class="whitelist-section" style="display: none;">
+        <div class="stat-card whitelist">
+            <h3>White List Minecraft</h3>
+            <div class="whitelist-controls">
+                <input type="text" id="uuidInput" placeholder="UUID игрока">
+                <input type="text" id="userInput" placeholder="Имя игрока">
+                <button onclick="addToWhitelist()" class="add-btn">Добавить</button>
+            </div>
+            <div class="whitelist-table-container">
+                <table class="whitelist-table">
+                    <thead>
+                        <tr>
+                            <th>UUID</th>
+                            <th>Имя игрока</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="whitelistTableBody">
+                        <!-- Данные будут добавлены через JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="settings-section" style="display: none;">
+        <div class="stat-card">
+            <h3>Настройки</h3>
+            <p>Раздел в разработке</p>
+        </div>
+    </div>
+
     <script src="admin.js"></script>
 </body>
 </html>

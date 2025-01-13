@@ -641,6 +641,38 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     loadWhiteListData();
+
+    // Добавляем обработку вкладок
+    const tabs = document.querySelectorAll('.admin-nav li');
+    const contentSections = {
+        dashboard: document.querySelector('.stats-grid'),
+        users: document.querySelector('.users-section'),
+        whitelist: document.querySelector('.whitelist-section'),
+        settings: document.querySelector('.settings-section')
+    };
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            // Убираем активный класс у всех вкладок
+            tabs.forEach(t => t.classList.remove('active'));
+            // Добавляем активный класс текущей вкладке
+            tab.classList.add('active');
+
+            // Скрываем все секции
+            Object.values(contentSections).forEach(section => {
+                if (section) section.style.display = 'none';
+            });
+
+            // Показываем нужную секцию
+            const sectionId = tab.dataset.tab;
+            if (contentSections[sectionId]) {
+                contentSections[sectionId].style.display = 'block';
+            }
+        });
+    });
+
+    // Активируем первую вкладку по умолчанию
+    tabs[0].click();
 });
 
 // Добавим функцию выхода
