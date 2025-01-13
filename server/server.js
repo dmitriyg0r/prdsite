@@ -11,7 +11,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = 5003;
 const STATUS_UPDATE_CACHE = new Map();
 const STATUS_UPDATE_INTERVAL = 5000; // 5 секунд между обновлениями
 
