@@ -20,37 +20,26 @@ function getAdminId() {
 // Добавим функцию проверки авторизации
 function checkAuth() {
     const adminId = localStorage.getItem('adminId');
-    const loginForm = document.getElementById('loginForm');
-    const adminPanel = document.querySelector('.admin-container');
-
     if (!adminId) {
-        if (loginForm) loginForm.style.display = 'block';
-        if (adminPanel) adminPanel.style.display = 'none';
+        document.getElementById('loginForm').style.display = 'block';
+        document.querySelector('.admin-panel').style.display = 'none';
         return false;
     }
-
-    if (loginForm) loginForm.style.display = 'none';
-    if (adminPanel) adminPanel.style.display = 'block';
     return true;
 }
 
-// Улучшенная функция обработки ответа с типизацией и детальной обработкой ошибок
+// Общая функция для проверки ответа
 async function handleResponse(response) {
-    const contentType = response.headers.get('content-type');
-    
     if (!response.ok) {
-        if (contentType?.includes('application/json')) {
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
             const errorData = await response.json();
-            throw new Error(errorData.error || `Ошибка сервера: ${response.status}`);
+            throw new Error(errorData.error || 'Ошибка сервера');
+        } else {
+            throw new Error(`HTTP ошибка! статус: ${response.status}`);
         }
-        throw new Error(`HTTP ошибка! статус: ${response.status}`);
     }
-
-    if (contentType?.includes('application/json')) {
-        return await response.json();
-    }
-    
-    throw new Error('Неподдерживаемый тип контента');
+    return await response.json();
 }
 
 async function loadStats() {
@@ -254,74 +243,64 @@ function createCharts(stats) {
     });
 }
 
-// Улучшенная функция загрузки пользователей с кэшированием и дебаунсингом
-const userCache = new Map();
-let loadUsersTimeout;
-
-async function loadUsers(page = 1, search = '', filters = {}) {
+async function loadUsers(page = 1, search = '') {
     if (!checkAuth()) return;
 
-    const cacheKey = `${page}-${search}-${JSON.stringify(filters)}`;
-    if (userCache.has(cacheKey)) {
-        const cachedData = userCache.get(cacheKey);
-        if (Date.now() - cachedData.timestamp < 30000) { // 30 секунд
-            updateUsersTable(cachedData.data.users);
-            updatePagination(cachedData.data.totalPages);
-            return;
-        }
-    }
-
-    clearTimeout(loadUsersTimeout);
-    loadUsersTimeout = setTimeout(async () => {
-        showLoader();
-        try {
-            const queryParams = new URLSearchParams({
-                page,
-                limit: 50,
-                search,
-                ...filters,
-                adminId: localStorage.getItem('adminId')
-            });
-
-            const response = await fetch(`${API_URL}/api/users?${queryParams}`, {
-                credentials: 'include',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
-                    'X-Admin-ID': localStorage.getItem('adminId')
-                }
-            });
-
-            const data = await handleResponse(response);
-            
-            if (data.success) {
-                userCache.set(cacheKey, {
-                    data,
-                    timestamp: Date.now()
-                });
-                
-                updateUsersTable(data.users);
-                updatePagination(data.totalPages || Math.ceil(data.total / 50));
-                document.querySelector('.users-table-section').style.display = 'block';
+    try {
+        const response = await fetch(`${API_URL}/api/users?page=${page}&search=${search}&adminId=${localStorage.getItem('adminId')}`, {
+            credentials: 'include',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+                'X-Admin-ID': localStorage.getItem('adminId')
             }
-        } catch (err) {
-            handleError(err);
-        } finally {
-            hideLoader();
+        });
+
+        const data = await handleResponse(response);
+        
+        if (data.success) {
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = '';
+            
+            data.users.forEach(user => {
+                const row = document.createElement('tr');
+                if (user.is_banned) {
+                    row.classList.add('banned');
+                }
+                row.innerHTML = `
+                    <td>${user.id}</td>
+                    <td>${user.username}</td>
+                    <td>${user.role}</td>
+                    <td>${new Date(user.created_at).toLocaleDateString()}</td>
+                    <td>${user.messages_sent}</td>
+                    <td>${user.friends_count}</td>
+                    <td>
+                        <button onclick="deleteUser(${user.id})" class="action-btn delete">Удалить</button>
+                        <button onclick="banUser(${user.id})" class="action-btn ban">
+                            ${user.is_banned ? 'Разблокировать' : 'Заблокировать'}
+                        </button>
+                        <select onchange="changeUserRole(${user.id}, this.value)" class="role-select">
+                            <option value="user" ${user.role === 'user' ? 'selected' : ''}>Пользователь</option>
+                            <option value="moderator" ${user.role === 'moderator' ? 'selected' : ''}>Модератор</option>
+                            <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Админ</option>
+                        </select>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            totalPages = data.pages;
+            updatePagination();
+        } else {
+            alert(data.error || 'Ошибка загрузки пользователей');
         }
-    }, 300); // Дебаунсинг 300мс
+    } catch (err) {
+        handleError(err);
+    }
 }
 
-function updatePagination(totalPages) {
+function updatePagination() {
     const pagination = document.getElementById('pagination');
     pagination.innerHTML = '';
-
-    // Кнопка "Первая страница"
-    if (currentPage > 1) {
-        const firstButton = document.createElement('button');
-        firstButton.textContent = '<<';
-        firstButton.onclick = () => loadUsers(1, document.getElementById('searchUsers').value);
-        pagination.appendChild(firstButton);
-    }
 
     // Кнопка "Назад"
     const prevButton = document.createElement('button');
@@ -335,17 +314,10 @@ function updatePagination(totalPages) {
     };
     pagination.appendChild(prevButton);
 
-    // Номера страниц
-    for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) {
-        const pageButton = document.createElement('button');
-        pageButton.textContent = i;
-        pageButton.className = i === currentPage ? 'active' : '';
-        pageButton.onclick = () => {
-            currentPage = i;
-            loadUsers(i, document.getElementById('searchUsers').value);
-        };
-        pagination.appendChild(pageButton);
-    }
+    // Номер текущей страницы
+    const pageInfo = document.createElement('span');
+    pageInfo.textContent = `${currentPage} из ${totalPages}`;
+    pagination.appendChild(pageInfo);
 
     // Кнопка "Вперед"
     const nextButton = document.createElement('button');
@@ -358,14 +330,6 @@ function updatePagination(totalPages) {
         }
     };
     pagination.appendChild(nextButton);
-
-    // Кнопка "Последняя страница"
-    if (currentPage < totalPages) {
-        const lastButton = document.createElement('button');
-        lastButton.textContent = '>>';
-        lastButton.onclick = () => loadUsers(totalPages, document.getElementById('searchUsers').value);
-        pagination.appendChild(lastButton);
-    }
 }
 
 async function deleteUser(id) {
@@ -404,8 +368,8 @@ async function deleteUser(id) {
 // Модифицируем функцию login
 async function login() {
     try {
-        const username = document.getElementById('adminUsername')?.value;
-        const password = document.getElementById('adminPassword')?.value;
+        const username = document.getElementById('adminUsername').value;
+        const password = document.getElementById('adminPassword').value;
 
         if (!username || !password) {
             throw new Error('Пожалуйста, заполните все поля');
@@ -434,31 +398,15 @@ async function login() {
         if (data.success && data.user && data.user.role === 'admin') {
             localStorage.setItem('adminId', data.user.id);
             localStorage.setItem('adminToken', data.token);
-            
-            // Получаем элементы и проверяем их существование
-            const loginForm = document.getElementById('loginForm');
-            const adminPanel = document.querySelector('.admin-container');
-            
-            if (loginForm) {
-                loginForm.style.display = 'none';
-            } else {
-                console.error('Элемент loginForm не найден');
-            }
-            
-            if (adminPanel) {
-                adminPanel.style.display = 'block';
-            } else {
-                console.error('Элемент admin-container не найден');
-            }
-            
+            document.getElementById('loginForm').style.display = 'none';
+            document.querySelector('.admin-panel').style.display = 'block';
             loadStats();
             loadUsers();
         } else {
             throw new Error('Недостаточно прав для доступа к админ-панели');
         }
     } catch (err) {
-        // Используем новую систему уведомлений
-        notifications.error(err.message || 'Ошибка при попытке входа. Пожалуйста, попробуйте позже.');
+        alert(err.message || 'Ошибка при попытке входа. Пожалуйста, попробуйте позже.');
     }
 }
 
@@ -670,110 +618,29 @@ function createRolesChart(data) {
     });
 }
 
-// Добавляем функцию для показа/скрытия модального окна
-function showAddWhitelistModal() {
-    const modal = document.getElementById('addWhitelistModal');
-    if (modal) {
-        modal.style.display = 'flex';
-    }
-}
-
-function closeModal() {
-    const modal = document.getElementById('addWhitelistModal');
-    if (modal) {
-        modal.style.display = 'none';
-    }
-}
-
-// Обновляем обработчик событий в DOMContentLoaded
+// Инициализация
 document.addEventListener('DOMContentLoaded', () => {
-    // Проверяем авторизацию
-    const isAuthorized = checkAuth();
-    
-    // Инициализируем обработчики табов
-    const tabs = document.querySelectorAll('.nav-item');
-    const sections = {
-        dashboard: document.querySelector('.dashboard-section'),
-        users: document.querySelector('.users-section'),
-        whitelist: document.querySelector('.whitelist-section'),
-        settings: document.querySelector('.settings-section')
-    };
+    if (!checkAuth()) return;
 
-    if (tabs.length > 0) {
-        tabs.forEach(tab => {
-            tab.addEventListener('click', (e) => {
-                e.preventDefault(); // Предотвращаем переход по ссылке
-                
-                // Убираем активный класс у всех табов
-                tabs.forEach(t => t.classList.remove('active'));
-                // Добавляем активный класс текущему табу
-                tab.classList.add('active');
+    document.getElementById('loginForm').style.display = 'none';
+    document.querySelector('.admin-panel').style.display = 'block';
+    loadStats();
+    loadUsers();
+    setTimeout(loadCharts, 100);
 
-                const targetTab = tab.dataset.tab;
-                
-                // Скрываем все секции
-                Object.values(sections).forEach(section => {
-                    if (section) section.style.display = 'none';
-                });
-                
-                // Показываем нужную секцию
-                if (sections[targetTab]) {
-                    sections[targetTab].style.display = 'block';
-                }
-
-                // Загружаем данные в зависимости от выбранной вкладки
-                switch(targetTab) {
-                    case 'dashboard':
-                        if (isAuthorized) loadStats();
-                        break;
-                    case 'users':
-                        if (isAuthorized) loadUsers(1);
-                        break;
-                    case 'whitelist':
-                        if (isAuthorized) loadWhiteListData();
-                        break;
-                }
-            });
-        });
-    }
-
-    // Инициализация поиска и фильтров
+    // Добавляем обработчик поиска
     const searchInput = document.getElementById('searchUsers');
-    const roleFilter = document.getElementById('roleFilter');
-    const statusFilter = document.getElementById('statusFilter');
-    
-    if (searchInput && roleFilter && statusFilter) {
-        const handleFiltersChange = () => {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                currentPage = 1;
-                loadUsers(1, searchInput.value, {
-                    role: roleFilter.value,
-                    status: statusFilter.value
-                });
-            }, 300);
-        };
+    let searchTimeout;
 
-        searchInput.addEventListener('input', handleFiltersChange);
-        roleFilter.addEventListener('change', handleFiltersChange);
-        statusFilter.addEventListener('change', handleFiltersChange);
-    }
-
-    // Закрытие модального окна при клике вне его
-    window.addEventListener('click', (e) => {
-        const modals = document.querySelectorAll('.modal');
-        modals.forEach(modal => {
-            if (e.target === modal) {
-                modal.style.display = 'none';
-            }
-        });
+    searchInput.addEventListener('input', (e) => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            currentPage = 1;
+            loadUsers(1, e.target.value);
+        }, 300);
     });
 
-    // Если авторизован, загружаем начальные данные
-    if (isAuthorized) {
-        loadStats();
-        setTimeout(loadCharts, 100);
-    }
+    loadWhiteListData();
 });
 
 // Добавим функцию выхода
@@ -884,273 +751,6 @@ async function removeFromWhitelist(uuid) {
     } catch (err) {
         console.error('Ошибка при удалении из White List:', err);
         alert('Ошибка при удалении из White List');
-    }
-}
-
-// Добавляем функцию для безопасного вывода HTML
-function escapeHtml(unsafe) {
-    if (!unsafe) return '';
-    return unsafe
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-}
-
-// Добавляем функцию форматирования даты
-function formatDate(dateString) {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat('ru-RU', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    }).format(date);
-}
-
-// Добавляем систему уведомлений
-const notifications = {
-    container: null,
-    
-    init() {
-        if (!this.container) {
-            this.container = document.createElement('div');
-            this.container.className = 'notifications-container';
-            document.body.appendChild(this.container);
-        }
-    },
-    
-    show(message, type = 'info', duration = 3000) {
-        this.init();
-        
-        const notification = document.createElement('div');
-        notification.className = `notification ${type}`;
-        notification.innerHTML = `
-            <i class="fas fa-${type === 'success' ? 'check-circle' : 
-                              type === 'error' ? 'exclamation-circle' : 
-                              'info-circle'}"></i>
-            <span>${message}</span>
-        `;
-        
-        this.container.appendChild(notification);
-        
-        // Анимация появления
-        setTimeout(() => notification.classList.add('show'), 10);
-        
-        // Автоматическое скрытие
-        setTimeout(() => {
-            notification.classList.remove('show');
-            setTimeout(() => notification.remove(), 300);
-        }, duration);
-    },
-    
-    success(message) {
-        this.show(message, 'success');
-    },
-    
-    error(message) {
-        this.show(message, 'error');
-    },
-    
-    info(message) {
-        this.show(message, 'info');
-    }
-};
-
-// Добавляем функцию обработки ошибок
-function handleError(error) {
-    console.error('Error:', error);
-    notifications.error(error.message || 'Произошла ошибка');
-    
-    if (error.message.includes('401')) {
-        localStorage.removeItem('adminId');
-        localStorage.removeItem('adminToken');
-        location.reload();
-    }
-}
-
-// Добавим стили для уведомлений в head
-const style = document.createElement('style');
-style.textContent = `
-    .notifications-container {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 9999;
-    }
-
-    .notification {
-        background: white;
-        border-radius: 8px;
-        padding: 12px 24px;
-        margin-bottom: 10px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        transform: translateX(120%);
-        transition: transform 0.3s ease;
-        max-width: 400px;
-    }
-
-    .notification.show {
-        transform: translateX(0);
-    }
-
-    .notification.success {
-        border-left: 4px solid #22c55e;
-    }
-
-    .notification.error {
-        border-left: 4px solid #ef4444;
-    }
-
-    .notification.info {
-        border-left: 4px solid #3b82f6;
-    }
-
-    .notification i {
-        font-size: 1.25rem;
-    }
-
-    .notification.success i {
-        color: #22c55e;
-    }
-
-    .notification.error i {
-        color: #ef4444;
-    }
-
-    .notification.info i {
-        color: #3b82f6;
-    }
-`;
-document.head.appendChild(style);
-
-// Функции для индикатора загрузки
-function showLoader() {
-    const loader = document.createElement('div');
-    loader.className = 'loader-overlay';
-    loader.innerHTML = `
-        <div class="loader">
-            <div class="spinner"></div>
-            <span>Загрузка...</span>
-        </div>
-    `;
-    document.body.appendChild(loader);
-}
-
-function hideLoader() {
-    const loader = document.querySelector('.loader-overlay');
-    if (loader) {
-        loader.remove();
-    }
-}
-
-// Функция обновления таблицы пользователей
-function updateUsersTable(users) {
-    const tbody = document.getElementById('usersTableBody');
-    if (!tbody) return;
-
-    tbody.innerHTML = '';
-
-    users.forEach(user => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td>
-                <input type="checkbox" class="select-user" data-id="${user.id}">
-            </td>
-            <td>
-                <div class="user-info">
-                    <img src="${user.avatar || 'default-avatar.png'}" alt="${user.name}" class="user-avatar">
-                    <div>
-                        <div class="user-name">${user.name}</div>
-                        <div class="user-email">${user.email}</div>
-                    </div>
-                </div>
-            </td>
-            <td>
-                <span class="role-badge ${user.role}">${user.role}</span>
-            </td>
-            <td>
-                <span class="status-badge ${user.status}">${user.status}</span>
-            </td>
-            <td>${new Date(user.registrationDate).toLocaleDateString()}</td>
-            <td>
-                <div class="table-actions">
-                    <button class="action-btn" onclick="editUser(${user.id})">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="action-btn" onclick="deleteUser(${user.id})">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            </td>
-        `;
-        tbody.appendChild(tr);
-    });
-
-    // Обновляем пагинацию
-    updatePagination(totalUsers, currentPage);
-}
-
-// Вспомогательная функция для обновления пагинации
-function updatePagination(total, current) {
-    const pagination = document.querySelector('.pagination');
-    if (!pagination) return;
-
-    const pages = Math.ceil(total / USERS_PER_PAGE);
-    let paginationHTML = '';
-
-    // Кнопка "Назад"
-    paginationHTML += `
-        <button class="pagination-btn" 
-                ${current === 1 ? 'disabled' : ''} 
-                onclick="loadUsers(${current - 1})">
-            <i class="fas fa-chevron-left"></i>
-        </button>
-    `;
-
-    // Номера страниц
-    for (let i = 1; i <= pages; i++) {
-        paginationHTML += `
-            <button class="pagination-btn ${i === current ? 'active' : ''}" 
-                    onclick="loadUsers(${i})">
-                ${i}
-            </button>
-        `;
-    }
-
-    // Кнопка "Вперед"
-    paginationHTML += `
-        <button class="pagination-btn" 
-                ${current === pages ? 'disabled' : ''} 
-                onclick="loadUsers(${current + 1})">
-            <i class="fas fa-chevron-right"></i>
-        </button>
-    `;
-
-    pagination.innerHTML = paginationHTML;
-}
-
-// Константа для количества пользователей на странице
-const USERS_PER_PAGE = 10;
-let currentPage = 1;
-let totalUsers = 0;
-
-// Функции для работы с пользователями
-function editUser(userId) {
-    // Реализация редактирования пользователя
-    console.log('Редактирование пользователя:', userId);
-}
-
-function deleteUser(userId) {
-    // Реализация удаления пользователя
-    if (confirm('Вы уверены, что хотите удалить этого пользователя?')) {
-        console.log('Удаление пользователя:', userId);
     }
 }
 
