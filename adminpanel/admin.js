@@ -899,3 +899,170 @@ async function banUser(userId) {
     }
 }
 
+// Добавим функцию для обновления таблицы пользователей
+function updateUsersTable(users) {
+    const tbody = document.getElementById('usersTableBody');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+    
+    users.forEach(user => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>
+                <input type="checkbox" class="user-select" value="${user.id}">
+            </td>
+            <td>
+                <div class="user-info">
+                    <span class="username">${escapeHtml(user.username)}</span>
+                    <span class="email">${escapeHtml(user.email || '')}</span>
+                </div>
+            </td>
+            <td>
+                <select onchange="changeUserRole(${user.id}, this.value)" class="role-select">
+                    <option value="user" ${user.role === 'user' ? 'selected' : ''}>Пользователь</option>
+                    <option value="moderator" ${user.role === 'moderator' ? 'selected' : ''}>Модератор</option>
+                    <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Админ</option>
+                </select>
+            </td>
+            <td>
+                <span class="status-badge ${user.is_banned ? 'banned' : 'active'}">
+                    ${user.is_banned ? 'Заблокирован' : 'Активен'}
+                </span>
+            </td>
+            <td>${formatDate(user.created_at)}</td>
+            <td>
+                <div class="action-buttons">
+                    <button onclick="banUser(${user.id})" class="action-btn ${user.is_banned ? 'unban' : 'ban'}">
+                        <i class="fas fa-${user.is_banned ? 'unlock' : 'ban'}"></i>
+                    </button>
+                    <button onclick="deleteUser(${user.id})" class="action-btn delete">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+// Улучшим функцию загрузки пользователей
+async function loadUsers(page = 1, search = '', filters = {}) {
+    if (!checkAuth()) return;
+
+    try {
+        showLoader();
+        
+        const queryParams = new URLSearchParams({
+            page,
+            limit: 50,
+            search,
+            ...filters,
+            adminId: localStorage.getItem('adminId')
+        });
+
+        const response = await fetch(`${API_URL}/api/users?${queryParams}`, {
+            credentials: 'include',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+                'X-Admin-ID': localStorage.getItem('adminId')
+            }
+        });
+
+        const data = await handleResponse(response);
+        
+        if (data.success) {
+            updateUsersTable(data.users);
+            updatePagination(data.totalPages || Math.ceil(data.total / 50));
+            
+            const usersSection = document.querySelector('.users-table-section');
+            if (usersSection) {
+                usersSection.style.display = 'block';
+            }
+        }
+    } catch (err) {
+        handleError(err);
+    } finally {
+        hideLoader();
+    }
+}
+
+// Добавим функции для работы с лоадером
+function showLoader() {
+    const loader = document.querySelector('.loader');
+    if (loader) loader.style.display = 'flex';
+}
+
+function hideLoader() {
+    const loader = document.querySelector('.loader');
+    if (loader) loader.style.display = 'none';
+}
+
+// Обновим обработчики событий для кнопок в навигации
+document.addEventListener('DOMContentLoaded', () => {
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.preventDefault();
+            
+            // Удаляем активный класс у всех элементов
+            navItems.forEach(nav => nav.classList.remove('active'));
+            // Добавляем активный класс текущему элементу
+            item.classList.add('active');
+            
+            const targetTab = item.getAttribute('data-tab');
+            
+            // Скрываем все секции
+            document.querySelectorAll('section[id$="Section"]').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Показываем нужную секцию
+            switch(targetTab) {
+                case 'dashboard':
+                    document.getElementById('dashboardSection').style.display = 'block';
+                    loadStats();
+                    break;
+                case 'users':
+                    document.getElementById('usersSection').style.display = 'block';
+                    loadUsers(1);
+                    break;
+                case 'whitelist':
+                    document.getElementById('whitelistSection').style.display = 'block';
+                    loadWhiteListData();
+                    break;
+                case 'settings':
+                    document.getElementById('settingsSection').style.display = 'block';
+                    break;
+            }
+        });
+    });
+
+    // Инициализация поиска
+    const searchInput = document.getElementById('searchUsers');
+    if (searchInput) {
+        searchInput.addEventListener('input', debounce(() => {
+            loadUsers(1, searchInput.value);
+        }, 300));
+    }
+
+    // Если пользователь авторизован, загружаем начальные данные
+    if (checkAuth()) {
+        loadStats();
+        loadUsers(1);
+    }
+});
+
+// Вспомогательная функция debounce
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
