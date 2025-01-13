@@ -3284,25 +3284,24 @@ app.get('/api/database/table/White_List', async (req, res) => {
 
         console.log('Fetching White_List data...'); // Добавляем лог
 
-        // Получаем данные таблицы (изменяем запрос)
+        // Получаем данные таблицы (исправляем запрос)
         const rows = await pool.query(`
             SELECT * 
-            FROM "White_List"  -- Убираем схему maincraft из запроса
-            ORDER BY "user"    -- Добавляем сортировку
+            FROM maincraft."White_List"  -- Используем двойные кавычки для имени таблицы
+            ORDER BY "user"
             LIMIT $1 OFFSET $2
         `, [parseInt(limit), offset]);
 
         console.log('Fetched rows:', rows.rows); // Логируем результат
 
-        // Получаем общее количество записей (изменяем запрос)
+        // Получаем общее количество записей (исправляем запрос)
         const count = await pool.query(`
             SELECT COUNT(*) as total 
-            FROM "White_List"
+            FROM maincraft."White_List"  -- Используем двойные кавычки для имени таблицы
         `);
 
         console.log('Total count:', count.rows[0].total); // Логируем количество
 
-        // Добавляем больше информации в ответ для отладки
         res.json({
             success: true,
             data: {
@@ -3333,6 +3332,42 @@ app.get('/api/database/table/White_List', async (req, res) => {
             error: 'Ошибка при получении данных таблицы',
             details: err.message,
             code: err.code
+        });
+    }
+});
+
+// Добавляем тестовый endpoint для проверки структуры таблицы
+app.get('/api/database/check-structure', async (req, res) => {
+    try {
+        // Проверяем существование таблицы
+        const tableCheck = await pool.query(`
+            SELECT EXISTS (
+                SELECT FROM information_schema.tables 
+                WHERE table_schema = 'maincraft'
+                AND table_name = 'White_List'
+            );
+        `);
+
+        // Получаем информацию о колонках
+        const columns = await pool.query(`
+            SELECT column_name, data_type, is_nullable
+            FROM information_schema.columns
+            WHERE table_schema = 'maincraft'
+            AND table_name = 'White_List'
+            ORDER BY ordinal_position;
+        `);
+
+        res.json({
+            success: true,
+            tableExists: tableCheck.rows[0].exists,
+            columns: columns.rows
+        });
+    } catch (err) {
+        console.error('Structure check error:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при проверке структуры',
+            details: err.message
         });
     }
 });
