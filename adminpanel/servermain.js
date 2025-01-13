@@ -27,7 +27,9 @@ app.use(cors({
 app.use(express.json());
 
 // Получение данных из White_List
+console.log('Регистрация маршрута GET /api/White_List');
 app.get('/api/White_List', async (req, res) => {
+    console.log('Получен запрос к /api/White_List');
     try {
         const [rows] = await pool.query('SELECT * FROM White_List');
         res.json({ success: true, data: rows });
