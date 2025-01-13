@@ -243,11 +243,19 @@ function createCharts(stats) {
     });
 }
 
-async function loadUsers(page = 1, search = '') {
+async function loadUsers(page = 1, search = '', filters = {}) {
     if (!checkAuth()) return;
 
+    showLoader();
     try {
-        const response = await fetch(`${API_URL}/api/users?page=${page}&search=${search}&adminId=${localStorage.getItem('adminId')}`, {
+        const queryParams = new URLSearchParams({
+            page,
+            search,
+            ...filters,
+            adminId: localStorage.getItem('adminId')
+        });
+
+        const response = await fetch(`${API_URL}/api/users?${queryParams}`, {
             credentials: 'include',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
@@ -258,43 +266,13 @@ async function loadUsers(page = 1, search = '') {
         const data = await handleResponse(response);
         
         if (data.success) {
-            const tbody = document.getElementById('usersTableBody');
-            tbody.innerHTML = '';
-            
-            data.users.forEach(user => {
-                const row = document.createElement('tr');
-                if (user.is_banned) {
-                    row.classList.add('banned');
-                }
-                row.innerHTML = `
-                    <td>${user.id}</td>
-                    <td>${user.username}</td>
-                    <td>${user.role}</td>
-                    <td>${new Date(user.created_at).toLocaleDateString()}</td>
-                    <td>${user.messages_sent}</td>
-                    <td>${user.friends_count}</td>
-                    <td>
-                        <button onclick="deleteUser(${user.id})" class="action-btn delete">Удалить</button>
-                        <button onclick="banUser(${user.id})" class="action-btn ban">
-                            ${user.is_banned ? 'Разблокировать' : 'Заблокировать'}
-                        </button>
-                        <select onchange="changeUserRole(${user.id}, this.value)" class="role-select">
-                            <option value="user" ${user.role === 'user' ? 'selected' : ''}>Пользователь</option>
-                            <option value="moderator" ${user.role === 'moderator' ? 'selected' : ''}>Модератор</option>
-                            <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Админ</option>
-                        </select>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
-
-            totalPages = data.pages;
-            updatePagination();
-        } else {
-            alert(data.error || 'Ошибка загрузки пользователей');
+            updateUsersTable(data.users);
+            updatePagination(data.pages);
         }
     } catch (err) {
         handleError(err);
+    } finally {
+        hideLoader();
     }
 }
 
@@ -622,25 +600,178 @@ function createRolesChart(data) {
 document.addEventListener('DOMContentLoaded', () => {
     if (!checkAuth()) return;
 
-    document.getElementById('loginForm').style.display = 'none';
-    document.querySelector('.admin-panel').style.display = 'block';
-    loadStats();
-    loadUsers();
-    setTimeout(loadCharts, 100);
+    // Инициализация табов
+    const tabs = document.querySelectorAll('.admin-nav li');
+    const contentSections = {
+        dashboard: document.querySelector('.stats-grid'),
+        users: document.querySelector('.users-table-section'),
+        whitelist: document.querySelector('.whitelist-section'),
+        settings: document.querySelector('.settings-section')
+    };
 
-    // Добавляем обработчик поиска
+    // Обработчик переключения табов
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            // Убираем активный класс у всех табов
+            tabs.forEach(t => t.classList.remove('active'));
+            // Добавляем активный класс текущему табу
+            tab.classList.add('active');
+
+            // Скрываем все секции
+            Object.values(contentSections).forEach(section => {
+                if (section) section.style.display = 'none';
+            });
+
+            // Показываем нужную секцию
+            const targetSection = contentSections[tab.dataset.tab];
+            if (targetSection) targetSection.style.display = 'block';
+
+            // Обновляем данные при переключении табов
+            switch(tab.dataset.tab) {
+                case 'dashboard':
+                    loadStats();
+                    loadCharts();
+                    break;
+                case 'users':
+                    loadUsers(1, document.getElementById('searchUsers').value);
+                    break;
+                case 'whitelist':
+                    loadWhiteListData();
+                    break;
+            }
+        });
+    });
+
+    // Улучшенная обработка поиска и фильтров
     const searchInput = document.getElementById('searchUsers');
+    const roleFilter = document.getElementById('roleFilter');
+    const statusFilter = document.getElementById('statusFilter');
     let searchTimeout;
 
-    searchInput.addEventListener('input', (e) => {
+    const handleFiltersChange = () => {
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(() => {
             currentPage = 1;
-            loadUsers(1, e.target.value);
+            loadUsers(1, searchInput.value, {
+                role: roleFilter.value,
+                status: statusFilter.value
+            });
         }, 300);
-    });
+    };
 
-    loadWhiteListData();
+    searchInput.addEventListener('input', handleFiltersChange);
+    roleFilter.addEventListener('change', handleFiltersChange);
+    statusFilter.addEventListener('change', handleFiltersChange);
+
+    // Модифицируем функцию loadUsers для поддержки фильтров
+    async function loadUsers(page = 1, search = '', filters = {}) {
+        if (!checkAuth()) return;
+
+        showLoader();
+        try {
+            const queryParams = new URLSearchParams({
+                page,
+                search,
+                ...filters,
+                adminId: localStorage.getItem('adminId')
+            });
+
+            const response = await fetch(`${API_URL}/api/users?${queryParams}`, {
+                credentials: 'include',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+                    'X-Admin-ID': localStorage.getItem('adminId')
+                }
+            });
+
+            const data = await handleResponse(response);
+            
+            if (data.success) {
+                updateUsersTable(data.users);
+                updatePagination(data.pages);
+            }
+        } catch (err) {
+            handleError(err);
+        } finally {
+            hideLoader();
+        }
+    }
+
+    // Добавляем индикатор загрузки
+    function showLoader() {
+        const loader = document.createElement('div');
+        loader.className = 'loader';
+        document.querySelector('.admin-panel').prepend(loader);
+    }
+
+    function hideLoader() {
+        const loader = document.querySelector('.loader');
+        if (loader) loader.remove();
+    }
+
+    // Улучшенная функция обновления таблицы пользователей
+    function updateUsersTable(users) {
+        const tbody = document.getElementById('usersTableBody');
+        tbody.innerHTML = '';
+        
+        users.forEach(user => {
+            const row = document.createElement('tr');
+            row.className = user.is_banned ? 'banned' : '';
+            row.innerHTML = `
+                <td>${user.id}</td>
+                <td>
+                    <div class="user-info">
+                        <span class="username">${user.username}</span>
+                        ${user.is_online ? '<span class="online-badge">Online</span>' : ''}
+                    </div>
+                </td>
+                <td>
+                    <span class="role-badge ${user.role}">${user.role}</span>
+                </td>
+                <td>${new Date(user.created_at).toLocaleDateString()}</td>
+                <td>${user.messages_sent}</td>
+                <td>${user.friends_count}</td>
+                <td class="actions">
+                    <div class="action-buttons">
+                        <button onclick="deleteUser(${user.id})" class="action-btn delete" title="Удалить">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                        <button onclick="banUser(${user.id})" class="action-btn ${user.is_banned ? 'unban' : 'ban'}" 
+                                title="${user.is_banned ? 'Разблокировать' : 'Заблокировать'}">
+                            <i class="fas fa-${user.is_banned ? 'unlock' : 'ban'}"></i>
+                        </button>
+                        <select onchange="changeUserRole(${user.id}, this.value)" class="role-select">
+                            <option value="user" ${user.role === 'user' ? 'selected' : ''}>Пользователь</option>
+                            <option value="moderator" ${user.role === 'moderator' ? 'selected' : ''}>Модератор</option>
+                            <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Админ</option>
+                        </select>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    // Добавляем анимации для действий
+    function showNotification(message, type = 'success') {
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }, 100);
+    }
+
+    // Инициализация
+    loadStats();
+    loadUsers();
+    setTimeout(loadCharts, 100);
 });
 
 // Добавим функцию выхода
@@ -751,6 +882,18 @@ async function removeFromWhitelist(uuid) {
     } catch (err) {
         console.error('Ошибка при удалении из White List:', err);
         alert('Ошибка при удалении из White List');
+    }
+}
+
+// Обработка ошибок
+function handleError(error) {
+    console.error('Error:', error);
+    showNotification(error.message || 'Произошла ошибка', 'error');
+    
+    if (error.message.includes('401')) {
+        localStorage.removeItem('adminId');
+        localStorage.removeItem('adminToken');
+        location.reload();
     }
 }
 
