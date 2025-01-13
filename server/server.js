@@ -3529,3 +3529,115 @@ app.get('/api/database/check-whitelist', checkAdmin, async (req, res) => {
         });
     }
 });
+
+// Добавляем endpoint для просмотра всех таблиц
+app.get('/api/database/tables', async (req, res) => {
+    try {
+        // Получаем список всех таблиц в схеме maincraft
+        const tables = await pool.query(`
+            SELECT table_name 
+            FROM information_schema.tables 
+            WHERE table_schema = 'maincraft'
+            ORDER BY table_name;
+        `);
+
+        console.log('Available tables:', tables.rows);
+
+        // Для первой найденной таблицы получим структуру
+        if (tables.rows.length > 0) {
+            const firstTable = tables.rows[0].table_name;
+            const columns = await pool.query(`
+                SELECT column_name, data_type
+                FROM information_schema.columns
+                WHERE table_schema = 'maincraft'
+                AND table_name = $1
+                ORDER BY ordinal_position;
+            `, [firstTable]);
+
+            console.log(`Structure of table ${firstTable}:`, columns.rows);
+        }
+
+        res.json({
+            success: true,
+            tables: tables.rows,
+            message: 'Список всех таблиц в базе данных'
+        });
+    } catch (err) {
+        console.error('Error getting tables:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при получении списка таблиц',
+            details: err.message
+        });
+    }
+});
+
+// Обновляем endpoint для получения данных White_List
+app.get('/api/database/table/White_List', async (req, res) => {
+    try {
+        // Сначала получим список всех таблиц для проверки
+        const tables = await pool.query(`
+            SELECT table_name 
+            FROM information_schema.tables 
+            WHERE table_schema = 'maincraft'
+            ORDER BY table_name;
+        `);
+
+        console.log('Available tables:', tables.rows);
+
+        // Ищем таблицу White_List (проверяем разные варианты написания)
+        const whiteListTable = tables.rows.find(t => 
+            t.table_name.toLowerCase() === 'white_list' || 
+            t.table_name === 'White_List' ||
+            t.table_name === 'whitelist' ||
+            t.table_name === 'WhiteList'
+        );
+
+        if (!whiteListTable) {
+            return res.status(404).json({
+                success: false,
+                error: 'Таблица White_List не найдена',
+                availableTables: tables.rows,
+                message: 'Пожалуйста, проверьте точное название таблицы'
+            });
+        }
+
+        const { page = 1, limit = 10 } = req.query;
+        const offset = (page - 1) * limit;
+
+        // Используем найденное имя таблицы
+        const rows = await pool.query(`
+            SELECT * 
+            FROM maincraft."${whiteListTable.table_name}"
+            ORDER BY "user"
+            LIMIT $1 OFFSET $2
+        `, [parseInt(limit), offset]);
+
+        const count = await pool.query(`
+            SELECT COUNT(*) as total 
+            FROM maincraft."${whiteListTable.table_name}"
+        `);
+
+        res.json({
+            success: true,
+            data: {
+                rows: rows.rows,
+                total: parseInt(count.rows[0].total),
+                pages: Math.ceil(parseInt(count.rows[0].total) / parseInt(limit)),
+                currentPage: parseInt(page),
+                limit: parseInt(limit)
+            },
+            debug: {
+                tableName: whiteListTable.table_name,
+                availableTables: tables.rows
+            }
+        });
+    } catch (err) {
+        console.error('Database error:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при получении данных таблицы',
+            details: err.message
+        });
+    }
+});
