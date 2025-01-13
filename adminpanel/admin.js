@@ -723,7 +723,6 @@ async function loadWhiteListData() {
 
 // Функция для добавления в White List
 async function addToWhitelist() {
-    const uuid = document.getElementById('uuidInput').value.trim();
     const user = document.getElementById('userInput').value.trim();
     
     if (!user) {
@@ -739,16 +738,12 @@ async function addToWhitelist() {
                 'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
             },
             credentials: 'include',
-            body: JSON.stringify({ 
-                uuid: uuid || undefined, // Отправляем UUID только если он указан
-                user: user
-            })
+            body: JSON.stringify({ user: user })
         });
         
         const data = await handleResponse(response);
         
         if (data.success) {
-            document.getElementById('uuidInput').value = '';
             document.getElementById('userInput').value = '';
             loadWhiteListData();
         }
