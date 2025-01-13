@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3000';
+const API_URL = 'https://space-point.ru';
 
 let currentPage = 1;
 let totalPages = 1;
