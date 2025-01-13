@@ -675,38 +675,40 @@ window.addEventListener('unhandledrejection', function(event) {
 });
 
 async function loadWhitelist() {
+    console.log('Начало загрузки данных...');
     try {
+        // URL с правильным регистром букв
         const response = await fetch(`${API_URL}/api/WhiteList`);
-        const result = await response.json();
+        console.log('Статус ответа:', response.status);
         
-        if (!result.success) {
-            throw new Error(result.error || 'Ошибка получения данных');
-        }
+        const result = await response.json();
+        console.log('Полученные данные:', result);
 
         const tbody = document.getElementById('whitelistTableBody');
         tbody.innerHTML = '';
         
-        result.data.forEach(item => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${item.UUID || 'Не указан'}</td>
-                <td>${item.user || 'Не указан'}</td>
-                <td>
-                    <button onclick="removeFromWhitelist('${item.UUID}')" class="action-btn delete">
-                        Удалить
-                    </button>
-                </td>
-            `;
-            tbody.appendChild(row);
-        });
+        if (result.data) {
+            result.data.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.UUID || 'Не указан'}</td>
+                    <td>${item.user || 'Не указан'}</td>
+                    <td>
+                        <button onclick="removeFromWhitelist('${item.UUID}')" class="action-btn delete">
+                            Удалить
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
     } catch (error) {
-        console.error('Ошибка загрузки whitelist:', error);
-        // Показываем ошибку пользователю
+        console.error('Ошибка загрузки WhiteList:', error);
         const tbody = document.getElementById('whitelistTableBody');
         tbody.innerHTML = `
             <tr>
                 <td colspan="3" style="color: red; text-align: center;">
-                    Ошибка загрузки данных. Пожалуйста, обновите страницу.
+                    Ошибка загрузки данных: ${error.message}
                 </td>
             </tr>
         `;
@@ -748,21 +750,16 @@ async function addToWhitelist() {
 async function removeFromWhitelist(uuid) {
     try {
         const response = await fetch(`${API_URL}/api/WhiteList/${uuid}`, {
-            method: 'DELETE',
-            credentials: 'include',
-            headers: {
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
-            }
+            method: 'DELETE'
         });
-        
-        const data = await handleResponse(response);
-        if (data.success) {
+        if (response.ok) {
             loadWhitelist();
+        } else {
+            throw new Error('Ошибка при удалении записи');
         }
     } catch (error) {
-        console.error('Ошибка удаления из white list:', error);
-        handleError(error);
+        console.error('Ошибка при удалении:', error);
+        alert('Не удалось удалить запись');
     }
 }
 

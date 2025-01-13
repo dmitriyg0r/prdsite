@@ -77,15 +77,12 @@ app.get('/test', (req, res) => {
     res.json({ message: 'Сервер работает' });
 });
 
-// Маршрут для получения данных из White_List
+// Маршруты API с правильным регистром
 app.get('/api/WhiteList', async (req, res) => {
     console.log('Получен запрос к /api/WhiteList');
     try {
-        // Прямой запрос к таблице White_List
         const [rows] = await db.query('SELECT UUID, user FROM White_List');
         console.log('Данные получены из БД:', rows);
-        
-        // Отправляем данные клиенту
         res.json({
             success: true,
             data: rows
@@ -94,7 +91,23 @@ app.get('/api/WhiteList', async (req, res) => {
         console.error('Ошибка при запросе к БД:', error);
         res.status(500).json({
             success: false,
-            error: 'Ошибка при получении данных из White_List'
+            error: error.message
+        });
+    }
+});
+
+app.delete('/api/WhiteList/:uuid', async (req, res) => {
+    try {
+        const { uuid } = req.params;
+        await db.query('DELETE FROM White_List WHERE UUID = ?', [uuid]);
+        res.json({
+            success: true,
+            message: 'Запись удалена'
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
         });
     }
 });
