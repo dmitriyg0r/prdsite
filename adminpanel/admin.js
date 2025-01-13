@@ -1,4 +1,4 @@
-const API_URL = 'https://space-point.ru:5003/api';
+const API_URL = 'https://space-point.ru';
 
 let currentPage = 1;
 let totalPages = 1;
