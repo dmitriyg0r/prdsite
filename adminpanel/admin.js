@@ -24,7 +24,7 @@ async function loadStats() {
     
     try {
         const adminId = localStorage.getItem('adminId');
-        const response = await fetch(`${API_URL}/api/admin/stats?adminId=${adminId}`, {
+        const response = await fetch(`${API_URL}/api/stats?adminId=${adminId}`, {
             credentials: 'include',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
@@ -229,7 +229,7 @@ async function loadUsers(page = 1, search = '') {
 
     try {
         const adminId = localStorage.getItem('adminId');
-        const response = await fetch(`${API_URL}/api/admin/users?adminId=${adminId}&page=${page}&search=${search}`, {
+        const response = await fetch(`${API_URL}/api/users?adminId=${adminId}&page=${page}&search=${search}`, {
             credentials: 'include',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
@@ -329,7 +329,7 @@ async function deleteUser(id) {
     if (confirm('Вы уверены, что хотите удалить этого пользователя?')) {
         try {
             const adminId = getAdminId();
-            const response = await fetch(`${API_URL}/api/admin/users/${id}?adminId=${adminId}`, {
+            const response = await fetch(`${API_URL}/api/users/${id}?adminId=${adminId}`, {
                 method: 'DELETE',
                 credentials: 'include',
                 headers: {
@@ -369,7 +369,7 @@ async function login() {
             throw new Error('Пожалуйста, заполните все поля');
         }
 
-        const response = await fetch(`${API_URL}/api/admin/login`, {
+        const response = await fetch(`${API_URL}/api/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
