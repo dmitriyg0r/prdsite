@@ -8,7 +8,7 @@ app.use((req, res, next) => {
     console.log('=== Новый запрос ===');
     console.log('URL:', req.url);
     console.log('Метод:', req.method);
-    console.log('Headers:', req.headers);
+    console.log('Headers:', JSON.stringify(req.headers, null, 2));
     next();
 });
 
@@ -43,6 +43,15 @@ app.get('/api/WhiteList', async (req, res) => {
             error: error.message
         });
     }
+});
+
+// Добавим тестовый маршрут
+app.get('/api/test', (req, res) => {
+    res.json({
+        message: 'API работает',
+        time: new Date().toISOString(),
+        headers: req.headers
+    });
 });
 
 // Обработка 404

@@ -789,3 +789,23 @@ console.log('API_URL:', API_URL);
 
 // Вызываем функцию при загрузке страницы
 document.addEventListener('DOMContentLoaded', loadWhitelist);
+
+// Добавим функцию проверки API
+async function testAPI() {
+    try {
+        const response = await fetch(`${API_URL}/api/test`);
+        console.log('Тестовый запрос:', response.status);
+        const data = await response.json();
+        console.log('Тестовый ответ:', data);
+    } catch (error) {
+        console.error('Ошибка тестового запроса:', error);
+    }
+}
+
+// Вызовем тест перед загрузкой данных
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log('Тестирование API...');
+    await testAPI();
+    console.log('Загрузка данных...');
+    await loadWhitelist();
+});
