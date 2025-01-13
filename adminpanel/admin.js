@@ -666,7 +666,7 @@ async function loadWhiteListData(page = 1) {
     try {
         console.log('Fetching White_List data from client...'); // Добавляем лог
 
-        const response = await fetch(`${API_URL}/api/White_List?page=${page}`, {
+        const response = await fetch(`${API_URL}/api/White_List`, {
             credentials: 'include'
         });
 
