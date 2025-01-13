@@ -221,3 +221,72 @@
 .logout-btn:hover {
     background: #c0392b;
 }
+
+.stat-card.whitelist {
+    border-top: 3px solid #9b59b6;
+}
+
+.whitelist-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.whitelist-controls input {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.whitelist-controls .add-btn {
+    padding: 8px 15px;
+    background: #9b59b6;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.whitelist-controls .add-btn:hover {
+    background: #8e44ad;
+}
+
+.whitelist-table-container {
+    overflow-x: auto;
+    margin-top: 15px;
+}
+
+.whitelist-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.whitelist-table th,
+.whitelist-table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.whitelist-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+}
+
+.whitelist-table tr:hover {
+    background: #f8f9fa;
+}
+
+.whitelist-table .action-btn {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    background: #e74c3c;
+    color: white;
+}
+
+.whitelist-table .action-btn:hover {
+    background: #c0392b;
+}

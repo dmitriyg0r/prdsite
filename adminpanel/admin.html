@@ -93,6 +93,29 @@
                 </div>
                 <canvas id="activityChart"></canvas>
             </div>
+
+            <div class="stat-card whitelist">
+                <h3>White List Minecraft</h3>
+                <div class="whitelist-controls">
+                    <input type="text" id="uuidInput" placeholder="UUID игрока">
+                    <input type="text" id="userInput" placeholder="Имя игрока">
+                    <button onclick="addToWhitelist()" class="add-btn">Добавить</button>
+                </div>
+                <div class="whitelist-table-container">
+                    <table class="whitelist-table">
+                        <thead>
+                            <tr>
+                                <th>UUID</th>
+                                <th>Имя игрока</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="whitelistTableBody">
+                            <!-- Данные будут добавлены через JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
         <div class="search-bar">
