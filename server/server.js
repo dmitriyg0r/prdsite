@@ -3143,3 +3143,138 @@ app.delete('/api/reviews/:reviewId', async (req, res) => {
         });
     }
 });
+
+// Добавляем эндпоинт для получения статистики
+app.get('/api/stats', checkAdmin, async (req, res) => {
+    try {
+        const stats = await pool.query(`
+            SELECT 
+                (SELECT COUNT(*) FROM users) as total_users,
+                (SELECT COUNT(*) FROM users WHERE created_at > NOW() - INTERVAL '24 HOURS') as new_users_24h,
+                (SELECT COUNT(*) FROM users WHERE created_at > NOW() - INTERVAL '7 DAYS') as new_users_7d,
+                (SELECT COUNT(*) FROM users WHERE role = 'admin') as admin_count,
+                (SELECT COUNT(*) FROM users WHERE role = 'moderator') as moderator_count,
+                (SELECT COUNT(*) FROM messages) as total_messages,
+                (SELECT COUNT(*) FROM messages WHERE created_at > NOW() - INTERVAL '24 HOURS') as new_messages_24h,
+                (SELECT COUNT(*) FROM messages WHERE created_at > NOW() - INTERVAL '7 DAYS') as new_messages_7d,
+                (SELECT COUNT(*) FROM friendships WHERE status = 'accepted') as total_friendships,
+                (SELECT COUNT(*) FROM users WHERE is_online = true) as online_users,
+                (SELECT COUNT(*) FROM users WHERE last_activity > NOW() - INTERVAL '24 HOURS') as active_users_24h
+        `);
+        
+        res.json({ 
+            success: true, 
+            stats: stats.rows[0] 
+        });
+    } catch (err) {
+        console.error('Ошибка получения статистики:', err);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Ошибка при получении статистики',
+            details: err.message
+        });
+    }
+});
+
+// Обновляем эндпоинт для получения списка пользователей
+app.get('/api/users', checkAdmin, async (req, res) => {
+    try {
+        const { page = 1, limit = 10, search = '' } = req.query;
+        const offset = (page - 1) * limit;
+
+        const users = await pool.query(`
+            SELECT 
+                u.*, 
+                (SELECT COUNT(*) FROM messages WHERE sender_id = u.id) as messages_sent,
+                (SELECT COUNT(*) FROM friendships WHERE (user_id = u.id OR friend_id = u.id) AND status = 'accepted') as friends_count
+            FROM users u
+            WHERE u.username ILIKE $1
+            ORDER BY u.created_at DESC
+            LIMIT $2 OFFSET $3
+        `, [`%${search}%`, limit, offset]);
+
+        const total = await pool.query(
+            'SELECT COUNT(*) FROM users WHERE username ILIKE $1',
+            [`%${search}%`]
+        );
+
+        res.json({
+            success: true,
+            users: users.rows,
+            total: parseInt(total.rows[0].count),
+            pages: Math.ceil(total.rows[0].count / limit)
+        });
+    } catch (err) {
+        console.error('Ошибка получения списка пользователей:', err);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Ошибка при получении списка пользователей',
+            details: err.message
+        });
+    }
+});
+
+// Добавляем эндпоинт для получения данных графиков
+app.get('/api/charts', checkAdmin, async (req, res) => {
+    try {
+        const [registrations, messages, roles] = await Promise.all([
+            pool.query(`
+                SELECT DATE(created_at) as date, COUNT(*) as count
+                FROM users
+                WHERE created_at > NOW() - INTERVAL '7 days'
+                GROUP BY DATE(created_at)
+                ORDER BY date
+            `),
+            pool.query(`
+                SELECT DATE(created_at) as date, COUNT(*) as count
+                FROM messages
+                WHERE created_at > NOW() - INTERVAL '7 days'
+                GROUP BY DATE(created_at)
+                ORDER BY date
+            `),
+            pool.query(`
+                SELECT role, COUNT(*) as count
+                FROM users
+                GROUP BY role
+            `)
+        ]);
+
+        res.json({
+            success: true,
+            charts: {
+                registrations: registrations.rows,
+                messages: messages.rows,
+                roles: roles.rows
+            }
+        });
+    } catch (err) {
+        console.error('Ошибка получения данных для графиков:', err);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Ошибка при получении данных для графиков',
+            details: err.message
+        });
+    }
+});
+
+// Добавляем эндпоинт для получения whitelist
+app.get('/api/whitelist', checkAdmin, async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT * FROM whitelist
+            ORDER BY created_at DESC
+        `);
+
+        res.json({
+            success: true,
+            whitelist: result.rows
+        });
+    } catch (err) {
+        console.error('Ошибка получения white list:', err);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Ошибка при получении white list',
+            details: err.message
+        });
+    }
+});
