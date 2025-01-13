@@ -2059,18 +2059,15 @@ const httpServer = http.createServer((req, res) => {
 
 const httpsServer = https.createServer(sslOptions, app);
 
-// Запускаем HTTP сервер на порту 80 для редиректа
-httpServer.listen(80, () => {
-    console.log('HTTP Server running on port 80 (redirect)');
+// Запускаем HTTPS сервер на порту 5003
+httpsServer.listen(5003, () => {
+    console.log('HTTPS Server running on port 5003');
 });
 
-// Запускаем HTTPS сервер на указанном порту
-httpsServer.listen(PORT, () => {
-    console.log(`HTTPS Server running on port ${PORT}`);
-});
-
-// Удаляем HTTP сервер, так как используем только HTTPS
-// http.createServer(app).listen(POR
+// Удаляем или комментируем старый HTTP сервер
+// http.createServer(app).listen(PORT, () => {
+//     console.log(`HTTP Server running on port ${PORT}`);
+// });
 
 // Создаем Map для хранения активных соединений
 const activeConnections = new Map();
