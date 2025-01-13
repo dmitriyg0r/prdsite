@@ -1,94 +1,43 @@
 const express = require('express');
 const cors = require('cors');
-const https = require('https');
-const fs = require('fs');
 const db = require('./maindb.js');
 const app = express();
-const path = require('path');
 
-// Настройка CORS и middleware
+// Добавим подробное логирование
+app.use((req, res, next) => {
+    console.log('=== Новый запрос ===');
+    console.log('URL:', req.url);
+    console.log('Метод:', req.method);
+    console.log('Headers:', req.headers);
+    next();
+});
+
+// Настройка CORS
 app.use(cors({
     origin: ['https://space-point.ru', 'http://localhost:3000'],
-    methods: ['GET', 'POST', 'DELETE', 'PUT', 'PATCH'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+    methods: ['GET', 'POST', 'DELETE'],
     credentials: true
 }));
 
 app.use(express.json());
-
-// Добавьте сразу после создания app
-app.use((req, res, next) => {
-    console.log('Входящий запрос:', {
-        method: req.method,
-        url: req.url,
-        headers: req.headers
-    });
-    next();
-});
-
-// Создаем Router для API
-const apiRouter = express.Router();
-
-// Определяем маршруты API
-apiRouter.get('/WhiteList', async (req, res) => {
-    try {
-        console.log('Выполняется запрос к базе данных White_List...');
-        const [rows] = await db.query('SELECT * FROM White_List');
-        console.log('Получены данные:', rows);
-        
-        res.json(rows);
-    } catch (error) {
-        console.error('Ошибка при запросе к БД:', error);
-        res.status(500).json({ error: 'Ошибка при получении данных' });
-    }
-});
-
-apiRouter.post('/WhiteList', async (req, res) => {
-    try {
-        const { UUID, user } = req.body;
-        await db.query('INSERT INTO White_List (UUID, user) VALUES (?, ?)', [UUID, user]);
-        res.json({ success: true, message: 'Запись добавлена' });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-apiRouter.delete('/WhiteList/:uuid', async (req, res) => {
-    try {
-        const { uuid } = req.params;
-        await db.query('DELETE FROM White_List WHERE UUID = ?', [uuid]);
-        res.json({ success: true, message: 'Запись удалена' });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
-});
-
-// Важно: подключаем API маршруты ДО статических маршрутов
-app.use('/api', apiRouter);
-
-// Статические маршруты
-app.use('/adminpanel', express.static(path.join(__dirname, 'admin')));
-app.get('/adminpanel', (req, res) => {
-    res.sendFile(path.join(__dirname, 'admin.html'));
-});
 
 // Тестовый маршрут
 app.get('/test', (req, res) => {
     res.json({ message: 'Сервер работает' });
 });
 
-// Маршруты API с правильным регистром
+// Маршрут для White_List
 app.get('/api/WhiteList', async (req, res) => {
-    console.log('Получен запрос к /api/WhiteList');
+    console.log('=== Запрос к White_List ===');
     try {
-        const [rows] = await db.query('SELECT UUID, user FROM White_List');
-        console.log('Данные получены из БД:', rows);
+        const [rows] = await db.query('SELECT * FROM White_List');
+        console.log('Данные из БД:', rows);
         res.json({
             success: true,
             data: rows
         });
     } catch (error) {
-        console.error('Ошибка при запросе к БД:', error);
+        console.error('Ошибка БД:', error);
         res.status(500).json({
             success: false,
             error: error.message
@@ -96,40 +45,7 @@ app.get('/api/WhiteList', async (req, res) => {
     }
 });
 
-app.delete('/api/WhiteList/:uuid', async (req, res) => {
-    try {
-        const { uuid } = req.params;
-        await db.query('DELETE FROM White_List WHERE UUID = ?', [uuid]);
-        res.json({
-            success: true,
-            message: 'Запись удалена'
-        });
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
-    }
-});
-
-// Добавляем маршрут для проверки соединения
-app.get('/api/check', async (req, res) => {
-    try {
-        const [result] = await db.query('SELECT 1');
-        res.json({
-            success: true,
-            message: 'Соединение с БД работает',
-            dbResult: result
-        });
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            error: 'Ошибка подключения к БД'
-        });
-    }
-});
-
-// Обработчик 404
+// Обработка 404
 app.use((req, res) => {
     console.log('404 для URL:', req.url);
     res.status(404).json({
@@ -138,4 +54,11 @@ app.use((req, res) => {
     });
 });
 
-// ... rest of the code (SSL setup and server start) ...
+// Запуск сервера
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Сервер запущен на порту ${PORT}`);
+    console.log('Доступные маршруты:');
+    console.log('- GET /test');
+    console.log('- GET /api/WhiteList');
+});

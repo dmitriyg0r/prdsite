@@ -675,20 +675,29 @@ window.addEventListener('unhandledrejection', function(event) {
 });
 
 async function loadWhitelist() {
-    console.log('Начало загрузки данных...');
+    const url = `${API_URL}/api/WhiteList`;
+    console.log('Загрузка данных с:', url);
+    
     try {
-        // URL с правильным регистром букв
-        const response = await fetch(`${API_URL}/api/WhiteList`);
+        const response = await fetch(url);
         console.log('Статус ответа:', response.status);
+        console.log('Тип контента:', response.headers.get('content-type'));
         
-        const result = await response.json();
-        console.log('Полученные данные:', result);
+        if (!response.ok) {
+            throw new Error(`HTTP ошибка! статус: ${response.status}`);
+        }
+        
+        const text = await response.text();
+        console.log('Полученный текст:', text);
+        
+        const data = JSON.parse(text);
+        console.log('Распарсенные данные:', data);
 
         const tbody = document.getElementById('whitelistTableBody');
         tbody.innerHTML = '';
         
-        if (result.data) {
-            result.data.forEach(item => {
+        if (data.data) {
+            data.data.forEach(item => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${item.UUID || 'Не указан'}</td>
