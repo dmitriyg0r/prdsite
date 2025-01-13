@@ -3232,52 +3232,42 @@ app.get('/api/White_List', async (req, res) => {
 
         console.log('Fetching White_List data with params:', { page, limit, offset });
 
-        // Сначала проверим подключение к базе
-        const connection = await pool.getConnection();
-        console.log('Database connection established');
+        // Получаем данные
+        const [rows] = await pool.query(
+            'SELECT * FROM White_List LIMIT ? OFFSET ?',
+            [parseInt(limit), parseInt(offset)]
+        );
+        console.log('Rows fetched:', rows.length);
 
-        try {
-            // Получаем данные
-            const [rows] = await connection.query(
-                'SELECT * FROM White_List LIMIT ? OFFSET ?',
-                [parseInt(limit), parseInt(offset)]
-            );
-            console.log('Rows fetched:', rows.length);
+        // Получаем общее количество записей
+        const [countResult] = await pool.query(
+            'SELECT COUNT(*) as total FROM White_List'
+        );
+        console.log('Total count:', countResult[0].total);
 
-            // Получаем общее количество записей
-            const [countResult] = await connection.query(
-                'SELECT COUNT(*) as total FROM White_List'
-            );
-            console.log('Total count:', countResult[0].total);
+        const total = countResult[0].total;
 
-            const total = countResult[0].total;
-
-            const response = {
-                success: true,
-                data: {
-                    rows,
-                    total,
-                    pages: Math.ceil(total / parseInt(limit)),
-                    currentPage: parseInt(page),
-                    limit: parseInt(limit)
-                }
-            };
-
-            console.log('Sending response:', {
-                rowCount: rows.length,
+        const response = {
+            success: true,
+            data: {
+                rows,
                 total,
-                pages: Math.ceil(total / parseInt(limit))
-            });
+                pages: Math.ceil(total / parseInt(limit)),
+                currentPage: parseInt(page),
+                limit: parseInt(limit)
+            }
+        };
 
-            res.json(response);
-        } finally {
-            // Всегда освобождаем соединение
-            connection.release();
-            console.log('Database connection released');
-        }
+        console.log('Sending response:', {
+            rowCount: rows.length,
+            total,
+            pages: Math.ceil(total / parseInt(limit))
+        });
+
+        res.json(response);
 
     } catch (err) {
-        console.error('Detailed Database error:', {
+        console.error('Database error:', {
             message: err.message,
             stack: err.stack,
             code: err.code,
