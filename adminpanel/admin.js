@@ -676,7 +676,6 @@ window.addEventListener('unhandledrejection', function(event) {
 
 async function loadWhitelist() {
     try {
-        console.log('Загрузка whitelist...');  // Отладочный вывод
         const response = await fetch(`${API_URL}/api/WhiteList?adminId=${localStorage.getItem('adminId')}`, {
             credentials: 'include',
             headers: {
@@ -686,7 +685,6 @@ async function loadWhitelist() {
         });
         
         const data = await handleResponse(response);
-        console.log('Полученные данные:', data);  // Отладочный вывод
         
         if (data.success) {
             const tbody = document.getElementById('whitelistTableBody');
@@ -745,22 +743,23 @@ async function addToWhitelist() {
 }
 
 async function removeFromWhitelist(uuid) {
-    if (confirm('Вы уверены, что хотите удалить этого игрока из white list?')) {
-        try {
-            const response = await fetch(`${API_URL}/api/whitelist/${uuid}`, {
-                method: 'DELETE'
-            });
-            
-            const data = await response.json();
-            if (data.success) {
-                loadWhitelist();
-            } else {
-                alert(data.error || 'Ошибка при удалении записи');
+    try {
+        const response = await fetch(`${API_URL}/api/WhiteList/${uuid}`, {
+            method: 'DELETE',
+            credentials: 'include',
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
             }
-        } catch (error) {
-            console.error('Ошибка удаления из white list:', error);
-            alert('Ошибка при удалении записи');
+        });
+        
+        const data = await handleResponse(response);
+        if (data.success) {
+            loadWhitelist();
         }
+    } catch (error) {
+        console.error('Ошибка удаления из white list:', error);
+        handleError(error);
     }
 }
 
