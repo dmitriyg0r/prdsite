@@ -659,8 +659,9 @@
     position: relative;
     left: 875px;
     top: -1119px;
-    width: 600px;
-    transform: translate(-30px, 0px);
+    height: 804.016px;
+    transform: translate(-30px, 317px);
+    width: 621px;
 }
 
 /* Добавляем новые стили для контейнера с описанием */
