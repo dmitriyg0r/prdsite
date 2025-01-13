@@ -43,12 +43,6 @@ app.get('/api/White_List', async (req, res) => {
 app.post('/api/White_List', async (req, res) => {
     const { uuid, user } = req.body;
     
-    if (!uuid || !user) {
-        return res.status(400).json({ 
-            success: false, 
-            error: 'UUID и user обязательны' 
-        });
-    }
 
     try {
         await pool.query('INSERT INTO White_List (uuid, user) VALUES (?, ?)', [uuid, user]);
