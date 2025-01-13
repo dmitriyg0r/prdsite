@@ -650,6 +650,17 @@ window.addEventListener('unhandledrejection', function(event) {
     }
 });
 
+// Добавляем функцию для тестирования API
+async function testAPI() {
+    try {
+        const response = await fetch(`${API_URL}/api/test`);
+        const data = await response.json();
+        console.log('API test result:', data);
+    } catch (error) {
+        console.error('API test error:', error);
+    }
+}
+
 // Функция загрузки данных White_List
 async function loadWhiteListData(page = 1) {
     try {
@@ -712,19 +723,6 @@ async function loadWhiteListData(page = 1) {
     } catch (err) {
         console.error('Ошибка загрузки White List:', err);
         alert('Ошибка при загрузке White List');
-    }
-}
-
-// Добавляем вызов функции при загрузке страницы
-document.addEventListener('DOMContentLoaded', () => {
-    loadWhiteListData();
-});
-
-async function testAPI() {
-    try {
-        const response = await fetch(`${API_URL}/api/test`);
-        const data = await response.json();
-    } catch (error) {
     }
 }
 

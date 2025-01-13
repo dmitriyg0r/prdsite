@@ -49,7 +49,6 @@ testConnection().then(connected => {
 app.get('/api/test', async (req, res) => {
     try {
         const result = await pool.query('SELECT NOW()');
-        res.header('Content-Type', 'application/json');
         res.json({ 
             success: true, 
             message: 'Database connection successful',
@@ -57,7 +56,6 @@ app.get('/api/test', async (req, res) => {
         });
     } catch (err) {
         console.error('Database connection error:', err);
-        res.header('Content-Type', 'application/json');
         res.status(500).json({ 
             success: false, 
             error: 'Database connection failed',
