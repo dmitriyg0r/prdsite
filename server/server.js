@@ -1113,30 +1113,6 @@ app.get('/api/admin/charts', checkAdmin, async (req, res) => {
     }
 });
 
-// Добавляем роут для white list
-app.get('/api/admin/whitelist', checkAdmin, async (req, res) => {
-    try {
-        console.log('Запрос white list от админа:', req.admin);
-
-        const result = await pool.query(`
-            SELECT * FROM whitelist
-            ORDER BY created_at DESC
-        `);
-
-        res.json({
-            success: true,
-            whitelist: result.rows
-        });
-    } catch (err) {
-        console.error('Ошибка получения white list:', err);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Ошибка при получении white list',
-            details: err.message
-        });
-    }
-});
-
 app.delete('/api/admin/users/:id', checkAdmin, async (req, res) => {
     try {
         const userId = req.params.id;
