@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Авторизация - SpacePoint</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="authreg.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="../flow.ico">
+</head>
+<body>
+    <div id="error-message" style="display: none;"></div>
+    <div id="success-message" style="display: none;"></div>
+
+    <div class="auth-container">
+        <div class="auth-box">
+            <div class="auth-header">
+                <img src="../flow.ico" alt="Flow Logo" class="auth-logo">
+                <h1>SpacePoint</h1>
+            </div>
+
+            <!-- Форма входа -->
+            <div id="login-form-container">
+                <h2>Вход в панель майнкрафт</h2>
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="login-username">Логин майнкрафт</label>
+                        <input type="text" id="login-username" maxlength="20" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">UUID</label>
+                        <div class="password-input">
+                            <input type="password" id="login-password" required>
+                            <i class="fas fa-eye toggle-password"></i>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn primary-btn">
+                        <span class="button-text">Войти</span>
+                        <span class="loader" style="display: none;">
+                            <i class="fas fa-spinner"></i>
+                        </span>
+                    </button>
+                    <p class="forgot-password">
+                        <a href="#" id="forgot-password-link">Забыли пароль?</a>
+                    </p>
+                </form>
+                <p class="auth-switch">
+                    Нет аккаунта? <a href="#" class="toggle-form-link">Зарегистрироваться</a>
+                </p>
+            </div>
+
+            <!-- Форма регистрации -->
+            <div id="register-form-container" style="display: none;">
+                <h2>Регистрация</h2>
+                <form id="register-form">
+                    <div class="form-group">
+                        <label for="reg-username">Имя пользователя</label>
+                        <input type="text" id="reg-username" maxlength="20" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-email">Email</label>
+                        <input type="email" id="reg-email" required>
+                        <span class="email-validation-message"></span>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-password">Пароль</label>
+                        <div class="password-input">
+                            <input type="password" id="reg-password" required>
+                            <i class="fas fa-eye toggle-password"></i>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-password-confirm">Подтвердите пароль</label>
+                        <div class="password-input">
+                            <input type="password" id="reg-password-confirm" required>
+                            <i class="fas fa-eye toggle-password"></i>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <input type="checkbox" id="terms-checkbox" required>
+                        <label for="terms-checkbox">
+                            Я принимаю <a href="../sogl.html" target="_blank">пользовательское соглашение</a>
+                        </label>
+                    </div>
+                    <button type="submit" class="btn primary-btn">
+                        <span class="button-text">Зарегистрироваться</span>
+                        <span class="loader" style="display: none;">
+                            <i class="fas fa-spinner fa-spin"></i>
+                        </span>
+                    </button>
+                </form>
+                <p class="auth-switch">
+                    Уже есть аккаунт? <a href="#" class="toggle-form-link">Войти</a>
+                </p>
+            </div>
+
+            <!-- Добавляем модальное окно восстановления пароля -->
+            <div id="password-recovery-modal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Восстановление пароля</h3>
+                        <button class="modal-close">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Шаг 1: Ввод имени пользователя -->
+                        <div id="step-username" class="recovery-step">
+                            <p>Введите имя пользователя для восстановления пароля</p>
+                            <div class="form-group">
+                                <input type="text" id="recovery-username" placeholder="Имя пользователя" required>
+                            </div>
+                            <button id="check-username-btn" class="btn primary-btn">Продолжить</button>
+                        </div>
+
+                        <!-- Шаг 2: Подтверждение email -->
+                        <div id="step-email" class="recovery-step" style="display: none;">
+                            <p>Код подтверждения будет отправлен на email:</p>
+                            <p id="confirm-email" class="email-display"></p>
+                            <button id="send-code-btn" class="btn primary-btn">Отправить код</button>
+                        </div>
+
+                        <!-- Шаг 3: Ввод кода и нового пароля -->
+                        <div id="step-verification" class="recovery-step" style="display: none;">
+                            <div class="form-group">
+                                <label for="verification-code">Код подтверждения</label>
+                                <input type="text" id="verification-code" maxlength="6" required>
+                                <div class="resend-code">
+                                    <span id="resend-timer"></span>
+                                    <button type="button" id="resend-code" class="link-btn" disabled>
+                                        Отправить код повторно
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="new-password">Новый пароль</label>
+                                <div class="password-input">
+                                    <input type="password" id="new-password" required>
+                                    <i class="fas fa-eye toggle-password"></i>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="confirm-password">Подтвердите пароль</label>
+                                <div class="password-input">
+                                    <input type="password" id="confirm-password" required>
+                                    <i class="fas fa-eye toggle-password"></i>
+                                </div>
+                            </div>
+                            <button id="reset-password-btn" class="btn primary-btn">Сменить пароль</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="authreg.js"></script>
+</body>
+</html> 
