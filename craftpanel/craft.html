@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Вход в донат-панель</title>
+    <title>Донат-панель</title>
     <link rel="stylesheet" href="craft.css">
 </head>
 <body>
-    <div class="login-container">
+    <div class="login-container" id="login-section">
         <h1>Вход в донат-панель</h1>
         <form id="login-form">
             <div class="form-group">
@@ -17,6 +17,9 @@
             <button type="submit">Войти</button>
             <div id="error-message" class="error"></div>
         </form>
+    </div>
+    <div id="donate-panel" class="donate-panel" style="display: none;">
+        <iframe id="donate-frame" src="" frameborder="0"></iframe>
     </div>
     <script src="craft.js"></script>
 </body>

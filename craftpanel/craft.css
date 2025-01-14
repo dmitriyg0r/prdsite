@@ -41,3 +41,18 @@ button:hover {
     margin-top: 10px;
     display: none;
 }
+
+.donate-panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #fff;
+}
+
+.donate-panel iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}

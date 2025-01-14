@@ -22,7 +22,6 @@ document.getElementById('login-form').addEventListener('submit', async function(
     }
     
     try {
-        // Сначала проверяем, есть ли пользователь в White_List
         const response = await fetch(`${API_URL}/api/White_List`, {
             method: 'GET',
             headers: {
@@ -33,16 +32,22 @@ document.getElementById('login-form').addEventListener('submit', async function(
         const result = await response.json();
         
         if (result.success) {
-            // Проверяем, есть ли пользователь в списке
             const userExists = result.data.some(entry => 
                 entry.user.toLowerCase() === username.toLowerCase()
             );
             
             if (userExists) {
-                // Сохраняем имя пользователя в localStorage для использования в панели
+                // Сохраняем имя пользователя
                 localStorage.setItem('craftUser', username);
-                // Перенаправляем на панель
-                window.location.href = '/dashboard';
+                
+                // Скрываем форму входа
+                document.getElementById('login-section').style.display = 'none';
+                
+                // Показываем панель с iframe и устанавливаем URL
+                const donatePanel = document.getElementById('donate-panel');
+                const donateFrame = document.getElementById('donate-frame');
+                donateFrame.src = 'http://188.127.241.209:25991/';
+                donatePanel.style.display = 'block';
             } else {
                 errorMessage.textContent = 'Пользователь не найден в White List';
                 errorMessage.style.display = 'block';
@@ -55,5 +60,17 @@ document.getElementById('login-form').addEventListener('submit', async function(
         console.error('Ошибка при входе:', error);
         errorMessage.textContent = 'Ошибка сервера. Пожалуйста, попробуйте позже.';
         errorMessage.style.display = 'block';
+    }
+});
+
+// Проверяем авторизацию при загрузке страницы
+window.addEventListener('load', () => {
+    const craftUser = localStorage.getItem('craftUser');
+    if (craftUser) {
+        document.getElementById('login-section').style.display = 'none';
+        const donatePanel = document.getElementById('donate-panel');
+        const donateFrame = document.getElementById('donate-frame');
+        donateFrame.src = 'http://188.127.241.209:25991/';
+        donatePanel.style.display = 'block';
     }
 });
