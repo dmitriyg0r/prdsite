@@ -36,9 +36,9 @@ const proxyOptions = {
         '^/donate-panel': ''
     },
     onProxyRes: function(proxyRes, req, res) {
-        Object.assign(proxyRes.headers, {
-            'Access-Control-Allow-Origin': '*'
-        });
+        proxyRes.headers['access-control-allow-origin'] = '*';
+        proxyRes.headers['access-control-allow-methods'] = 'GET, POST, PUT, DELETE, OPTIONS';
+        proxyRes.headers['access-control-allow-headers'] = 'Origin, X-Requested-With, Content-Type, Accept';
     },
     onError: (err, req, res) => {
         console.error('Proxy Error:', err);
