@@ -25,7 +25,7 @@ app.use(cors({
 }));
 
 // Статические файлы
-app.use(express.static(path.join(__dirname, 'public')));
+app.use('/', express.static(path.join(__dirname)));
 
 // Добавляем прокси для донат-панели
 app.use('/donate-panel', createProxyMiddleware({
@@ -39,12 +39,19 @@ app.use('/donate-panel', createProxyMiddleware({
     }
 }));
 
-// Маршрут для главной страницы
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'craft.html'));
+// Маршрут для главной страницы и craft.html
+app.get(['/craftpanel', '/craftpanel/craft.html'], (req, res) => {
+    res.sendFile(path.join(__dirname, 'craft.html'));
 });
 
 // Запуск сервера
 app.listen(port, () => {
     console.log(`Сервер запущен на порту ${port}`);
+    console.log(`Путь к статическим файлам: ${path.join(__dirname)}`);
+});
+
+// Обработка ошибок
+app.use((err, req, res, next) => {
+    console.error('Ошибка:', err);
+    res.status(500).send('Внутренняя ошибка сервера');
 });
