@@ -10,6 +10,11 @@ const wss = new WebSocket.Server({ port: 3002 });
 app.use(bodyParser.json());
 app.use(cors());
 
+// Функция для очистки ANSI-кодов
+function stripAnsi(str) {
+    return str.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '');
+}
+
 const activeConnections = new Map();
 
 wss.on('connection', (ws) => {
@@ -26,7 +31,13 @@ wss.on('connection', (ws) => {
     
     conn.on('ready', () => {
         console.log('SSH соединение установлено');
-        conn.shell({ term: 'xterm-color' }, (err, stream) => {
+        conn.shell({ 
+            term: 'xterm-256color',
+            env: {
+                TERM: 'xterm-256color',
+                PS1: '\\w\\$ ' // Упрощенный промпт
+            }
+        }, (err, stream) => {
             if (err) {
                 console.error('Ошибка создания shell:', err);
                 return;
@@ -37,17 +48,24 @@ wss.on('connection', (ws) => {
             connection.currentStream = stream;
             connection.shellSession = stream;
 
+            // Отключаем автоматическую настройку терминала
+            stream.write('export TERM=xterm-256color\n');
+            stream.write('export PS1="\\w\\$ "\n');
+            stream.write('stty -echo\n'); // Отключаем локальное эхо
+
             stream.on('data', (data) => {
+                const cleanData = stripAnsi(data.toString());
                 ws.send(JSON.stringify({
                     type: 'output',
-                    data: data.toString()
+                    data: cleanData
                 }));
             });
 
             stream.stderr.on('data', (data) => {
+                const cleanData = stripAnsi(data.toString());
                 ws.send(JSON.stringify({
                     type: 'error',
-                    data: data.toString()
+                    data: cleanData
                 }));
             });
 
