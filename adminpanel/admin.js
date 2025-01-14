@@ -826,6 +826,8 @@ async function removeFromWhitelist(uuid) {
 
 let ws = null;
 let terminalSessionId = null;
+let commandHistory = [];
+let historyIndex = -1;
 
 function initializeTerminal() {
     const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -833,7 +835,9 @@ function initializeTerminal() {
     ws = new WebSocket(wsUrl);
     
     // Добавляем обработчик клавиатуры для терминала
-    document.getElementById('consoleInput').addEventListener('keydown', (e) => {
+    const input = document.getElementById('consoleInput');
+    
+    input.addEventListener('keydown', (e) => {
         if (e.ctrlKey) {
             switch(e.key.toLowerCase()) {
                 case 'c':
@@ -854,6 +858,34 @@ function initializeTerminal() {
                     break;
             }
         }
+        
+        switch(e.key) {
+            case 'ArrowUp':
+                e.preventDefault();
+                if (historyIndex < commandHistory.length - 1) {
+                    historyIndex++;
+                    input.value = commandHistory[historyIndex];
+                }
+                break;
+            case 'ArrowDown':
+                e.preventDefault();
+                if (historyIndex > 0) {
+                    historyIndex--;
+                    input.value = commandHistory[historyIndex];
+                } else {
+                    historyIndex = -1;
+                    input.value = '';
+                }
+                break;
+            case 'Enter':
+                const command = input.value.trim();
+                if (command) {
+                    commandHistory.unshift(command);
+                    historyIndex = -1;
+                    executeCommand();
+                }
+                break;
+        }
     });
 
     ws.onopen = () => {
@@ -870,11 +902,11 @@ function initializeTerminal() {
                 break;
             case 'output':
             case 'error':
-                output.textContent += data.data;
-                output.scrollTop = output.scrollHeight;
-                break;
-            case 'close':
-                output.textContent += data.data;
+                const isCommand = data.data.includes('$');
+                const div = document.createElement('div');
+                div.className = isCommand ? 'command-line' : 'output-line';
+                div.textContent = data.data;
+                output.appendChild(div);
                 output.scrollTop = output.scrollHeight;
                 break;
         }
@@ -906,4 +938,25 @@ function executeCommand() {
         alert('Ошибка подключения к терминалу');
     }
 }
+
+function clearTerminal() {
+    document.getElementById('consoleOutput').innerHTML = '';
+}
+
+function toggleFullscreen() {
+    const terminal = document.querySelector('.terminal-container');
+    if (!document.fullscreenElement) {
+        terminal.requestFullscreen();
+    } else {
+        document.exitFullscreen();
+    }
+}
+
+// Добавим автодополнение по Tab
+document.getElementById('consoleInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Tab') {
+        e.preventDefault();
+        // Здесь можно добавить логику автодополнения
+    }
+});
 

@@ -448,25 +448,51 @@
 
 .terminal-container {
     background: #1e1e1e;
-    border-radius: 5px;
-    padding: 10px;
-    margin-top: 10px;
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 15px;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
 }
 
 .terminal-container pre {
     background: transparent;
     color: #fff;
-    font-family: 'Courier New', monospace;
-    height: 400px;
+    height: 500px;
     overflow-y: auto;
     margin: 0;
     padding: 10px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.terminal-container pre::-webkit-scrollbar {
+    width: 8px;
+}
+
+.terminal-container pre::-webkit-scrollbar-track {
+    background: #2d2d2d;
+    border-radius: 4px;
+}
+
+.terminal-container pre::-webkit-scrollbar-thumb {
+    background: #666;
+    border-radius: 4px;
 }
 
 .terminal-input {
     display: flex;
     gap: 10px;
-    margin-top: 10px;
+    margin-top: 15px;
+    position: relative;
+}
+
+.terminal-input::before {
+    content: '$';
+    color: #0f0;
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 .terminal-input input {
@@ -474,8 +500,10 @@
     background: #2d2d2d;
     color: #fff;
     border: 1px solid #3d3d3d;
-    padding: 8px;
-    font-family: 'Courier New', monospace;
+    padding: 8px 8px 8px 24px;
+    font-family: inherit;
+    font-size: 14px;
+    border-radius: 4px;
 }
 
 .terminal-input button {
@@ -484,8 +512,59 @@
     border: none;
     padding: 8px 16px;
     cursor: pointer;
+    border-radius: 4px;
+    font-family: inherit;
+    transition: background 0.2s;
 }
 
 .terminal-input button:hover {
     background: #0052a3;
+}
+
+.command-line {
+    color: #0f0;
+    margin: 5px 0;
+}
+
+.output-line {
+    color: #fff;
+    margin: 2px 0;
+}
+
+.error-line {
+    color: #ff4444;
+    margin: 2px 0;
+}
+
+.terminal-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 10px;
+    background: #2d2d2d;
+    border-radius: 4px 4px 0 0;
+    margin-bottom: 5px;
+}
+
+.terminal-title {
+    color: #fff;
+    font-size: 14px;
+}
+
+.terminal-controls {
+    display: flex;
+    gap: 5px;
+}
+
+.terminal-controls button {
+    background: none;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    padding: 2px 8px;
+    border-radius: 3px;
+}
+
+.terminal-controls button:hover {
+    background: #3d3d3d;
 }

@@ -183,6 +183,13 @@
         <div class="console-section" style="display: none;">
             <h2>Консоль сервера</h2>
             <div class="terminal-container">
+                <div class="terminal-toolbar">
+                    <div class="terminal-title">Terminal</div>
+                    <div class="terminal-controls">
+                        <button onclick="clearTerminal()">Clear</button>
+                        <button onclick="toggleFullscreen()">Fullscreen</button>
+                    </div>
+                </div>
                 <pre id="consoleOutput"></pre>
                 <div class="terminal-input">
                     <input type="text" id="consoleInput" placeholder="Введите команду...">
