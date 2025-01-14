@@ -75,6 +75,31 @@ app.delete('/api/White_List/:uuid', async (req, res) => {
     }
 });
 
+// Обработка входа пользователя
+app.post('/api/login', async (req, res) => {
+    const { username } = req.body;
+    
+    if (!username) {
+        return res.status(400).json({ 
+            success: false, 
+            error: 'Имя пользователя обязательно' 
+        });
+    }
+
+    try {
+        const [rows] = await pool.query('SELECT * FROM White_List WHERE user = ?', [username]);
+        
+        if (rows.length > 0) {
+            res.json({ success: true });
+        } else {
+            res.status(401).json({ success: false, error: 'Пользователь не найден' });
+        }
+    } catch (error) {
+        console.error('Ошибка при проверке пользователя:', error);
+        res.status(500).json({ success: false, error: 'Ошибка сервера' });
+    }
+});
+
 app.listen(port, () => {
     console.log(`Сервер запущен на порту ${port}`);
 });
