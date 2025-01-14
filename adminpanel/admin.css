@@ -409,9 +409,7 @@
 
 .console-section {
     padding: 20px;
-    background: #f5f5f5;
-    border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    height: calc(100vh - 100px);
 }
 
 .console-section textarea {
@@ -449,24 +447,21 @@
 .terminal-container {
     background: #1e1e1e;
     border-radius: 8px;
-    padding: 15px;
-    margin-top: 15px;
-    font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
-    height: calc(100vh - 200px);
     display: flex;
     flex-direction: column;
+    height: 100%;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
 }
 
 .terminal-container pre {
+    flex: 1;
     background: transparent;
     color: #fff;
-    flex: 1;
-    overflow-y: auto;
     margin: 0;
-    padding: 10px;
+    padding: 15px;
+    overflow-y: auto;
     white-space: pre-wrap;
     word-wrap: break-word;
-    min-height: 700px;
 }
 
 .terminal-container pre::-webkit-scrollbar {
@@ -475,7 +470,6 @@
 
 .terminal-container pre::-webkit-scrollbar-track {
     background: #2d2d2d;
-    border-radius: 4px;
 }
 
 .terminal-container pre::-webkit-scrollbar-thumb {
@@ -486,22 +480,22 @@
 .terminal-input {
     display: flex;
     gap: 10px;
-    margin-top: 15px;
-    position: relative;
+    padding: 15px;
+    background: #2d2d2d;
+    border-radius: 0 0 8px 8px;
 }
 
 .terminal-input::before {
     content: '$';
     color: #0f0;
     position: absolute;
-    left: 8px;
-    top: 50%;
-    transform: translateY(-50%);
+    left: 23px;
+    margin-top: 8px;
 }
 
 .terminal-input input {
     flex: 1;
-    background: #2d2d2d;
+    background: #1e1e1e;
     color: #fff;
     border: 1px solid #3d3d3d;
     padding: 8px 8px 8px 24px;
@@ -544,10 +538,9 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 5px 10px;
+    padding: 10px 15px;
     background: #2d2d2d;
-    border-radius: 4px 4px 0 0;
-    margin-bottom: 5px;
+    border-radius: 8px 8px 0 0;
 }
 
 .terminal-title {
@@ -557,7 +550,7 @@
 
 .terminal-controls {
     display: flex;
-    gap: 5px;
+    gap: 10px;
 }
 
 .terminal-controls button {
@@ -565,8 +558,9 @@
     border: none;
     color: #fff;
     cursor: pointer;
-    padding: 2px 8px;
-    border-radius: 3px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
 }
 
 .terminal-controls button:hover {
