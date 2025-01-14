@@ -918,7 +918,34 @@ function initializeTerminal() {
         setTimeout(initializeTerminal, 5000);
     };
 }
-
+function updateSystemInfo(info) {
+    // Парсим вывод команд и обновляем интерфейс
+    const lines = info.split('\n');
+    
+    // Обработка CPU
+    const cpuLine = lines.find(line => line.includes('Cpu(s)'));
+    if (cpuLine) {
+        const cpuUsage = 100 - parseFloat(cpuLine.match(/(\d+\.\d+)\s*ni/)[1]);
+        document.getElementById('cpuUsage').textContent = `${cpuUsage.toFixed(1)}%`;
+    }
+    
+    // Обработка RAM
+    const memLine = lines.find(line => line.includes('Mem:'));
+    if (memLine) {
+        const memParts = memLine.split(/\s+/);
+        const total = parseInt(memParts[1]);
+        const used = parseInt(memParts[2]);
+        const usagePercent = ((used / total) * 100).toFixed(1);
+        document.getElementById('ramUsage').textContent = `${usagePercent}%`;
+    }
+    
+    // Обработка Disk
+    const diskLine = lines.find(line => line.includes('/dev/'));
+    if (diskLine) {
+        const diskParts = diskLine.split(/\s+/);
+        document.getElementById('diskUsage').textContent = diskParts[4];
+    }
+}
 // Обновляем функцию executeCommand
 function executeCommand() {
     const command = document.getElementById('consoleInput').value.trim();

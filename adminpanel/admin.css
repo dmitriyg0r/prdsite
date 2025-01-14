@@ -422,8 +422,9 @@
 }
 
 .terminal-toolbar {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 20px;
     align-items: center;
     padding: 8px 15px;
     background: #2d2d2d;
@@ -587,4 +588,25 @@
 
 .terminal-container.drag-over {
     border: 2px dashed #0066cc;
+}
+
+.system-info {
+    display: flex;
+    gap: 20px;
+    color: #d4d4d4;
+    font-size: 12px;
+    font-family: monospace;
+}
+
+.system-info-item {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.system-info-item span {
+    color: #4CAF50;
 }

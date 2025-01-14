@@ -3,6 +3,8 @@ const { Client } = require('ssh2');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const WebSocket = require('ws');
+const os = require('os');
+const { exec } = require('child_process');
 
 const app = express();
 const wss = new WebSocket.Server({ port: 3002 });
@@ -16,6 +18,35 @@ function stripAnsi(str) {
 }
 
 const activeConnections = new Map();
+
+// Функция для получения системной информации
+async function getSystemInfo() {
+    return new Promise((resolve) => {
+        exec('top -bn1 | grep "Cpu(s)" && free -m && df -h', (error, stdout) => {
+            if (error) {
+                console.error('Ошибка получения системной информации:', error);
+                resolve({
+                    cpu: 'N/A',
+                    memory: 'N/A',
+                    disk: 'N/A'
+                });
+                return;
+            }
+            resolve({
+                data: stdout
+            });
+        });
+    });
+}
+
+// Функция для отправки системной информации
+async function sendSystemInfo(ws) {
+    const systemInfo = await getSystemInfo();
+    ws.send(JSON.stringify({
+        type: 'system_info',
+        data: systemInfo.data
+    }));
+}
 
 wss.on('connection', (ws) => {
     const sessionId = Date.now().toString();
@@ -109,6 +140,11 @@ wss.on('connection', (ws) => {
         }
     });
 
+    // Добавляем интервал обновления системной информации
+    const systemInfoInterval = setInterval(() => {
+        sendSystemInfo(ws);
+    }, 5000); // Обновление каждые 5 секунд
+
     ws.on('close', () => {
         console.log(`Закрытие соединения: ${sessionId}`);
         const connection = activeConnections.get(sessionId);
@@ -121,6 +157,7 @@ wss.on('connection', (ws) => {
             }
         }
         activeConnections.delete(sessionId);
+        clearInterval(systemInfoInterval);
     });
 
     ws.send(JSON.stringify({ type: 'session', sessionId }));
