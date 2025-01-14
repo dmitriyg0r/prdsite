@@ -10,25 +10,37 @@ const wss = new WebSocket.Server({ port: 3002 });
 app.use(bodyParser.json());
 app.use(cors());
 
-// Хранилище активных соединений
+// Хранилище активных соединений и процессов
 const activeConnections = new Map();
 
-// WebSocket обработчик подключений
 wss.on('connection', (ws) => {
     const sessionId = Date.now().toString();
     let sshClient = null;
+    let currentStream = null; // Добавляем отслеживание текущего потока
 
     console.log(`Новое WebSocket подключение: ${sessionId}`);
 
-    // Сохраняем соединение
-    activeConnections.set(sessionId, { ws, sshClient });
+    activeConnections.set(sessionId, { ws, sshClient, currentStream });
 
     ws.on('message', async (message) => {
         try {
             const data = JSON.parse(message);
+            const connection = activeConnections.get(sessionId);
             
-            if (data.type === 'command') {
-                executeCommand(data.command, sessionId);
+            switch(data.type) {
+                case 'command':
+                    executeCommand(data.command, sessionId);
+                    break;
+                case 'signal':
+                    // Обработка сигналов (Ctrl+C и др.)
+                    if (connection.currentStream) {
+                        if (data.signal === 'SIGINT') {
+                            connection.currentStream.write('\x03'); // Ctrl+C
+                        } else if (data.signal === 'SIGTSTP') {
+                            connection.currentStream.write('\x1A'); // Ctrl+Z
+                        }
+                    }
+                    break;
             }
         } catch (err) {
             console.error('Ошибка обработки сообщения:', err);
@@ -38,13 +50,17 @@ wss.on('connection', (ws) => {
     ws.on('close', () => {
         console.log(`Закрытие соединения: ${sessionId}`);
         const connection = activeConnections.get(sessionId);
-        if (connection && connection.sshClient) {
-            connection.sshClient.end();
+        if (connection) {
+            if (connection.currentStream) {
+                connection.currentStream.end();
+            }
+            if (connection.sshClient) {
+                connection.sshClient.end();
+            }
         }
         activeConnections.delete(sessionId);
     });
 
-    // Отправляем sessionId клиенту
     ws.send(JSON.stringify({ type: 'session', sessionId }));
 });
 
@@ -59,7 +75,9 @@ function executeCommand(command, sessionId) {
     
     conn.on('ready', () => {
         console.log(`Выполнение команды: ${command}`);
-        conn.exec(command, (err, stream) => {
+        
+        // Используем shell вместо exec для интерактивных команд
+        conn.shell((err, stream) => {
             if (err) {
                 connection.ws.send(JSON.stringify({
                     type: 'error',
@@ -68,14 +86,19 @@ function executeCommand(command, sessionId) {
                 return;
             }
 
-            // Обновляем SSH клиент в соединении
+            // Сохраняем поток и клиент
             connection.sshClient = conn;
+            connection.currentStream = stream;
 
-            stream.on('close', (code, signal) => {
+            // Отправляем команду
+            stream.write(`${command}\n`);
+
+            stream.on('close', () => {
                 connection.ws.send(JSON.stringify({
                     type: 'close',
-                    data: `\nКоманда завершена (код: ${code})`
+                    data: '\nСессия завершена'
                 }));
+                connection.currentStream = null;
                 conn.end();
             });
 
@@ -103,7 +126,7 @@ function executeCommand(command, sessionId) {
         host: 'localhost',
         port: 22,
         username: 'root',
-        password: 'sGLTccA_Na#9zC'
+        password: 'ваш_пароль'
     });
 }
 

@@ -828,11 +828,34 @@ let ws = null;
 let terminalSessionId = null;
 
 function initializeTerminal() {
-    // Заменяем прямое подключение к порту на путь /ws
     const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const wsUrl = `${wsProtocol}//${window.location.hostname}/ws`;
     ws = new WebSocket(wsUrl);
     
+    // Добавляем обработчик клавиатуры для терминала
+    document.getElementById('consoleInput').addEventListener('keydown', (e) => {
+        if (e.ctrlKey) {
+            switch(e.key.toLowerCase()) {
+                case 'c':
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({
+                            type: 'signal',
+                            signal: 'SIGINT'
+                        }));
+                    }
+                    break;
+                case 'z':
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        ws.send(JSON.stringify({
+                            type: 'signal',
+                            signal: 'SIGTSTP'
+                        }));
+                    }
+                    break;
+            }
+        }
+    });
+
     ws.onopen = () => {
         console.log('WebSocket соединение установлено');
     };
