@@ -909,6 +909,9 @@ function initializeTerminal() {
                 output.appendChild(div);
                 output.scrollTop = output.scrollHeight;
                 break;
+            case 'system_info':
+                updateSystemInfo(data.data);
+                break;
         }
     };
     
@@ -918,8 +921,8 @@ function initializeTerminal() {
         setTimeout(initializeTerminal, 5000);
     };
 }
+
 function updateSystemInfo(info) {
-    // Парсим вывод команд и обновляем интерфейс
     const lines = info.split('\n');
     
     // Обработка CPU
@@ -946,6 +949,7 @@ function updateSystemInfo(info) {
         document.getElementById('diskUsage').textContent = diskParts[4];
     }
 }
+
 // Обновляем функцию executeCommand
 function executeCommand() {
     const command = document.getElementById('consoleInput').value.trim();
