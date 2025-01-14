@@ -1,6 +1,7 @@
 const express = require('express');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const cors = require('cors');
+const path = require('path');
 
 const app = express();
 const port = 3003;
@@ -24,7 +25,7 @@ app.use(cors({
 }));
 
 // Статические файлы
-app.use(express.static('craftpanel'));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Добавляем прокси для донат-панели
 app.use('/donate-panel', createProxyMiddleware({
@@ -37,6 +38,11 @@ app.use('/donate-panel', createProxyMiddleware({
         proxyRes.headers['Access-Control-Allow-Origin'] = '*';
     }
 }));
+
+// Маршрут для главной страницы
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'craft.html'));
+});
 
 // Запуск сервера
 app.listen(port, () => {
