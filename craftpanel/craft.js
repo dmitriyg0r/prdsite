@@ -37,16 +37,12 @@ document.getElementById('login-form').addEventListener('submit', async function(
             );
             
             if (userExists) {
-                // Сохраняем имя пользователя
                 localStorage.setItem('craftUser', username);
-                
-                // Скрываем форму входа
                 document.getElementById('login-section').style.display = 'none';
                 
-                // Показываем панель с iframe и устанавливаем URL
                 const donatePanel = document.getElementById('donate-panel');
                 const donateFrame = document.getElementById('donate-frame');
-                donateFrame.src = 'http://188.127.241.209:25991/';
+                donateFrame.src = 'https://188.127.241.209:25991/';
                 donatePanel.style.display = 'block';
             } else {
                 errorMessage.textContent = 'Пользователь не найден в White List';
@@ -70,7 +66,7 @@ window.addEventListener('load', () => {
         document.getElementById('login-section').style.display = 'none';
         const donatePanel = document.getElementById('donate-panel');
         const donateFrame = document.getElementById('donate-frame');
-        donateFrame.src = 'http://188.127.241.209:25991/';
+        donateFrame.src = 'https://188.127.241.209:25991/';
         donatePanel.style.display = 'block';
     }
 });
