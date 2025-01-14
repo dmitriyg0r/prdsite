@@ -822,3 +822,27 @@ async function removeFromWhitelist(uuid) {
     }
 }
 
+function executeCommand() {
+    const command = document.getElementById('consoleInput').value.trim();
+    if (!command) {
+        alert('Пожалуйста, введите команду');
+        return;
+    }
+
+    fetch('/execute-command', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ command })
+    })
+    .then(response => response.text())
+    .then(output => {
+        document.getElementById('consoleOutput').textContent = output;
+    })
+    .catch(err => {
+        console.error('Ошибка при выполнении команды:', err);
+        alert('Ошибка при выполнении команды');
+    });
+}
+

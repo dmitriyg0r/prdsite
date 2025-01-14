@@ -26,6 +26,7 @@
                 <li data-tab="users">Пользователи</li>
                 <li data-tab="whitelist">White List</li>
                 <li data-tab="settings">Настройки</li>
+                <li data-tab="console">Консоль</li>
             </ul>
         </nav>
 
@@ -177,6 +178,13 @@
                 <h3>Настройки</h3>
                 <p>Раздел в разработке</p>
             </div>
+        </div>
+
+        <div class="console-section" style="display: none;">
+            <h2>Консоль сервера</h2>
+            <textarea id="consoleInput" placeholder="Введите команду..."></textarea>
+            <button onclick="executeCommand()">Выполнить</button>
+            <pre id="consoleOutput"></pre>
         </div>
     </div>
 
