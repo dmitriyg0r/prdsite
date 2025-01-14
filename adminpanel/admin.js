@@ -676,7 +676,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Инициализируем обработчики при загрузке страницы
     initializeEventHandlers();
-    
+    initializeContextMenu()
     loadStats();
     loadUsers();
     loadWhiteListData();
@@ -959,4 +959,87 @@ document.getElementById('consoleInput').addEventListener('keydown', (e) => {
         // Здесь можно добавить логику автодополнения
     }
 });
+
+function handleHotkeys(e) {
+    // Ctrl + L - очистка терминала
+    if (e.ctrlKey && e.key === 'l') {
+        e.preventDefault();
+        clearTerminal();
+    }
+    
+    // Ctrl + K - очистка текущей строки
+    if (e.ctrlKey && e.key === 'k') {
+        e.preventDefault();
+        document.getElementById('consoleInput').value = '';
+    }
+    
+    // Alt + C - копировать выделенный текст
+    if (e.altKey && e.key === 'c') {
+        e.preventDefault();
+        const selection = window.getSelection().toString();
+        if (selection) {
+            navigator.clipboard.writeText(selection);
+        }
+    }
+}
+
+document.addEventListener('keydown', handleHotkeys);
+
+function showExecutingIndicator(show) {
+    const button = document.querySelector('.terminal-input-container button');
+    if (show) {
+        button.disabled = true;
+        button.innerHTML = '<span class="spinner"></span> Выполняется...';
+    } else {
+        button.disabled = false;
+        button.innerHTML = 'Выполнить';
+    }
+}
+
+// Добавляем стили для спиннера
+const style = document.createElement('style');
+style.textContent = `
+    .spinner {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border: 2px solid #ffffff;
+        border-radius: 50%;
+        border-top-color: transparent;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        to {transform: rotate(360deg);}
+    }
+`;
+document.head.appendChild(style);
+
+function initializeContextMenu() {
+    const terminal = document.querySelector('.terminal-container');
+    
+    terminal.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        
+        const menu = document.createElement('div');
+        menu.className = 'terminal-context-menu';
+        menu.innerHTML = `
+            <div class="menu-item" onclick="copySelected()">Копировать</div>
+            <div class="menu-item" onclick="pasteFromClipboard()">Вставить</div>
+            <div class="menu-item" onclick="clearTerminal()">Очистить терминал</div>
+        `;
+        
+        menu.style.left = `${e.pageX}px`;
+        menu.style.top = `${e.pageY}px`;
+        
+        document.body.appendChild(menu);
+        
+        setTimeout(() => {
+            document.addEventListener('click', function removeMenu() {
+                menu.remove();
+                document.removeEventListener('click', removeMenu);
+            });
+        }, 0);
+    });
+}
 

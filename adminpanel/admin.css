@@ -563,3 +563,28 @@
     color: #ff4444;
     margin: 2px 0;
 }
+
+.terminal-context-menu {
+    position: fixed;
+    background: #2d2d2d;
+    border: 1px solid #3d3d3d;
+    border-radius: 4px;
+    padding: 5px 0;
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.menu-item {
+    padding: 8px 15px;
+    color: #d4d4d4;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.menu-item:hover {
+    background: #3d3d3d;
+}
+
+.terminal-container.drag-over {
+    border: 2px dashed #0066cc;
+}
