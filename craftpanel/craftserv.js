@@ -15,7 +15,7 @@ app.use(cors({
             'https://space-point.ru'
         ];
         
-        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+        if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
             callback(new Error('Not allowed by CORS'));
@@ -24,20 +24,30 @@ app.use(cors({
     credentials: true
 }));
 
-// Статические файлы
+// Статические файлы для основного приложения
 app.use('/', express.static(path.join(__dirname)));
 
-// Добавляем прокси для донат-панели
-app.use('/donate-panel', createProxyMiddleware({
+// Настройка прокси для донат-панели
+const proxyOptions = {
     target: 'http://188.127.241.209:25991',
     changeOrigin: true,
+    ws: true,
     pathRewrite: {
-        '^/donate-panel': '/'
+        '^/donate-panel': ''
     },
     onProxyRes: function(proxyRes, req, res) {
-        proxyRes.headers['Access-Control-Allow-Origin'] = '*';
-    }
-}));
+        Object.assign(proxyRes.headers, {
+            'Access-Control-Allow-Origin': '*'
+        });
+    },
+    onError: (err, req, res) => {
+        console.error('Proxy Error:', err);
+        res.status(500).send('Proxy Error');
+    },
+    logLevel: 'debug'
+};
+
+app.use('/donate-panel', createProxyMiddleware(proxyOptions));
 
 // Маршрут для главной страницы и craft.html
 app.get(['/craftpanel', '/craftpanel/craft.html'], (req, res) => {
@@ -54,4 +64,13 @@ app.listen(port, () => {
 app.use((err, req, res, next) => {
     console.error('Ошибка:', err);
     res.status(500).send('Внутренняя ошибка сервера');
+});
+
+// Обработка необработанных ошибок
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Необработанное отклонение промиса:', reason);
+});
+
+process.on('uncaughtException', (error) => {
+    console.error('Необработанная ошибка:', error);
 });
