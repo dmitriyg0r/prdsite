@@ -830,7 +830,7 @@ function executeCommand() {
         return;
     }
 
-    fetch('/execute-command', {
+    fetch('/terminal/execute-command', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'

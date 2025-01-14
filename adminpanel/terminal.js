@@ -1,9 +1,11 @@
 const express = require('express');
 const { Client } = require('ssh2');
 const bodyParser = require('body-parser');
+const cors = require('cors'); // Добавляем CORS
 
 const app = express();
 app.use(bodyParser.json());
+app.use(cors()); // Разрешаем все CORS-запросы
 
 app.post('/execute-command', (req, res) => {
     const { command } = req.body;
