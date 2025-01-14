@@ -360,6 +360,53 @@ async function deleteUser(id) {
     }
 }
 
+// Добавляем новую функцию для инициализации обработчиков событий
+function initializeEventHandlers() {
+    // Обработчики для вкладок
+    const tabs = document.querySelectorAll('.admin-nav li');
+    const contentSections = {
+        dashboard: document.querySelector('.stats-grid'),
+        users: document.querySelector('.users-section'),
+        whitelist: document.querySelector('.whitelist-section'),
+        settings: document.querySelector('.settings-section')
+    };
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+
+            Object.values(contentSections).forEach(section => {
+                if (section) section.style.display = 'none';
+            });
+
+            const sectionId = tab.dataset.tab;
+            if (contentSections[sectionId]) {
+                contentSections[sectionId].style.display = 'block';
+            }
+        });
+    });
+
+    // Обработчик поиска
+    const searchInput = document.getElementById('searchUsers');
+    let searchTimeout;
+
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                currentPage = 1;
+                loadUsers(1, e.target.value);
+            }, 300);
+        });
+    }
+
+    // Активируем первую вкладку
+    if (tabs.length > 0) {
+        tabs[0].click();
+    }
+}
+
 // Модифицируем функцию login
 async function login() {
     try {
@@ -395,8 +442,14 @@ async function login() {
             localStorage.setItem('adminToken', data.token);
             document.getElementById('loginForm').style.display = 'none';
             document.querySelector('.admin-panel').style.display = 'block';
+            
+            // Инициализируем обработчики после успешного входа
+            initializeEventHandlers();
+            
             loadStats();
             loadUsers();
+            loadWhiteListData();
+            setTimeout(loadCharts, 100);
         } else {
             throw new Error('Недостаточно прав для доступа к админ-панели');
         }
@@ -619,55 +672,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('loginForm').style.display = 'none';
     document.querySelector('.admin-panel').style.display = 'block';
+    
+    // Инициализируем обработчики при загрузке страницы
+    initializeEventHandlers();
+    
     loadStats();
     loadUsers();
-    setTimeout(loadCharts, 100);
-
-    // Добавляем обработчик поиска
-    const searchInput = document.getElementById('searchUsers');
-    let searchTimeout;
-
-    searchInput.addEventListener('input', (e) => {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(() => {
-            currentPage = 1;
-            loadUsers(1, e.target.value);
-        }, 300);
-    });
-
     loadWhiteListData();
-
-    // Добавляем обработку вкладок
-    const tabs = document.querySelectorAll('.admin-nav li');
-    const contentSections = {
-        dashboard: document.querySelector('.stats-grid'),
-        users: document.querySelector('.users-section'),
-        whitelist: document.querySelector('.whitelist-section'),
-        settings: document.querySelector('.settings-section')
-    };
-
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            // Убираем активный класс у всех вкладок
-            tabs.forEach(t => t.classList.remove('active'));
-            // Добавляем активный класс текущей вкладке
-            tab.classList.add('active');
-
-            // Скрываем все секции
-            Object.values(contentSections).forEach(section => {
-                if (section) section.style.display = 'none';
-            });
-
-            // Показываем нужную секцию
-            const sectionId = tab.dataset.tab;
-            if (contentSections[sectionId]) {
-                contentSections[sectionId].style.display = 'block';
-            }
-        });
-    });
-
-    // Активируем первую вкладку по умолчанию
-    tabs[0].click();
+    setTimeout(loadCharts, 100);
 });
 
 // Добавим функцию выхода
