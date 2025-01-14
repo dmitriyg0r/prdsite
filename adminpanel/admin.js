@@ -368,7 +368,8 @@ function initializeEventHandlers() {
         dashboard: document.querySelector('.stats-grid'),
         users: document.querySelector('.users-section'),
         whitelist: document.querySelector('.whitelist-section'),
-        settings: document.querySelector('.settings-section')
+        settings: document.querySelector('.settings-section'),
+        console: document.querySelector('.console-section')
     };
 
     tabs.forEach(tab => {
