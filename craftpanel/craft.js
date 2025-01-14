@@ -38,11 +38,15 @@ document.getElementById('login-form').addEventListener('submit', async function(
             
             if (userExists) {
                 localStorage.setItem('craftUser', username);
-                window.open('http://188.127.241.209:25991/', 'donate_window', 
-                    'width=1024,height=768,menubar=no,toolbar=no,location=no,status=no');
                 
+                // Скрываем форму входа
                 document.getElementById('login-section').style.display = 'none';
-                document.body.innerHTML = '<h2 style="text-align: center; margin-top: 20px;">Донат-панель открыта в новом окне</h2>';
+                
+                // Показываем панель с iframe и устанавливаем URL на наш прокси
+                const donatePanel = document.getElementById('donate-panel');
+                const donateFrame = document.getElementById('donate-frame');
+                donateFrame.src = `${API_URL}/donate-panel/`;
+                donatePanel.style.display = 'block';
             } else {
                 errorMessage.textContent = 'Пользователь не найден в White List';
                 errorMessage.style.display = 'block';
@@ -62,9 +66,10 @@ document.getElementById('login-form').addEventListener('submit', async function(
 window.addEventListener('load', () => {
     const craftUser = localStorage.getItem('craftUser');
     if (craftUser) {
-        window.open('http://188.127.241.209:25991/', 'donate_window', 
-            'width=1024,height=768,menubar=no,toolbar=no,location=no,status=no');
         document.getElementById('login-section').style.display = 'none';
-        document.body.innerHTML = '<h2 style="text-align: center; margin-top: 20px;">Донат-панель открыта в новом окне</h2>';
+        const donatePanel = document.getElementById('donate-panel');
+        const donateFrame = document.getElementById('donate-frame');
+        donateFrame.src = `${API_URL}/donate-panel/`;
+        donatePanel.style.display = 'block';
     }
 });
