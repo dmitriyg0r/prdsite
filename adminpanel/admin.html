@@ -182,9 +182,13 @@
 
         <div class="console-section" style="display: none;">
             <h2>Консоль сервера</h2>
-            <textarea id="consoleInput" placeholder="Введите команду..."></textarea>
-            <button onclick="executeCommand()">Выполнить</button>
-            <pre id="consoleOutput"></pre>
+            <div class="terminal-container">
+                <pre id="consoleOutput"></pre>
+                <div class="terminal-input">
+                    <input type="text" id="consoleInput" placeholder="Введите команду...">
+                    <button onclick="executeCommand()">Выполнить</button>
+                </div>
+            </div>
         </div>
     </div>
 

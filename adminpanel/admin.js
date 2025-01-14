@@ -681,6 +681,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadUsers();
     loadWhiteListData();
     setTimeout(loadCharts, 100);
+    initializeTerminal();
 });
 
 // Добавим функцию выхода
@@ -823,6 +824,47 @@ async function removeFromWhitelist(uuid) {
     }
 }
 
+let ws = null;
+let terminalSessionId = null;
+
+function initializeTerminal() {
+    // Заменяем прямое подключение к порту на путь /ws
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${wsProtocol}//${window.location.hostname}/ws`;
+    ws = new WebSocket(wsUrl);
+    
+    ws.onopen = () => {
+        console.log('WebSocket соединение установлено');
+    };
+    
+    ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        const output = document.getElementById('consoleOutput');
+        
+        switch(data.type) {
+            case 'session':
+                terminalSessionId = data.sessionId;
+                break;
+            case 'output':
+            case 'error':
+                output.textContent += data.data;
+                output.scrollTop = output.scrollHeight;
+                break;
+            case 'close':
+                output.textContent += data.data;
+                output.scrollTop = output.scrollHeight;
+                break;
+        }
+    };
+    
+    ws.onclose = () => {
+        console.log('WebSocket соединение закрыто');
+        // Попытка переподключения через 5 секунд
+        setTimeout(initializeTerminal, 5000);
+    };
+}
+
+// Обновляем функцию executeCommand
 function executeCommand() {
     const command = document.getElementById('consoleInput').value.trim();
     if (!command) {
@@ -830,20 +872,15 @@ function executeCommand() {
         return;
     }
 
-    fetch('/terminal/execute-command', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ command })
-    })
-    .then(response => response.text())
-    .then(output => {
-        document.getElementById('consoleOutput').textContent = output;
-    })
-    .catch(err => {
-        console.error('Ошибка при выполнении команды:', err);
-        alert('Ошибка при выполнении команды');
-    });
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        document.getElementById('consoleOutput').textContent = '';
+        ws.send(JSON.stringify({
+            type: 'command',
+            command: command,
+            sessionId: terminalSessionId
+        }));
+    } else {
+        alert('Ошибка подключения к терминалу');
+    }
 }
 
