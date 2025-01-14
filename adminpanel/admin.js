@@ -925,10 +925,19 @@ function initializeTerminal() {
 function updateSystemInfo(info) {
     const lines = info.split('\n');
     
-    // Обработка CPU
-    const cpuLine = lines.find(line => line.includes('Cpu(s)'));
+    // Обновленный парсинг CPU
+    const cpuLine = lines.find(line => line.includes('all') || line.includes('Cpu(s)'));
     if (cpuLine) {
-        const cpuUsage = 100 - parseFloat(cpuLine.match(/(\d+\.\d+)\s*ni/)[1]);
+        let cpuUsage;
+        if (cpuLine.includes('all')) {
+            // Парсинг вывода mpstat
+            const parts = cpuLine.split(/\s+/);
+            cpuUsage = 100 - parseFloat(parts[parts.length - 1]);
+        } else {
+            // Парсинг вывода top
+            const idle = parseFloat(cpuLine.match(/(\d+\.\d+)\s*id/)[1]);
+            cpuUsage = 100 - idle;
+        }
         document.getElementById('cpuUsage').textContent = `${cpuUsage.toFixed(1)}%`;
     }
     

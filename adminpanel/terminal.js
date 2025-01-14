@@ -22,13 +22,21 @@ const activeConnections = new Map();
 // Функция для получения системной информации
 async function getSystemInfo() {
     return new Promise((resolve) => {
-        exec('top -bn1 | grep "Cpu(s)" && free -m && df -h', (error, stdout) => {
+        // Используем более точную команду для CPU
+        exec('mpstat 1 1 | tail -1 && free -m && df -h', (error, stdout) => {
             if (error) {
-                console.error('Ошибка получения системной информации:', error);
-                resolve({
-                    cpu: 'N/A',
-                    memory: 'N/A',
-                    disk: 'N/A'
+                // Если mpstat не установлен, используем запасной вариант
+                exec('top -bn1 | grep "Cpu(s)" && free -m && df -h', (error2, stdout2) => {
+                    if (error2) {
+                        console.error('Ошибка получения системной информации:', error2);
+                        resolve({
+                            data: 'CPU: N/A\nMem: N/A\nDisk: N/A'
+                        });
+                        return;
+                    }
+                    resolve({
+                        data: stdout2
+                    });
                 });
                 return;
             }
