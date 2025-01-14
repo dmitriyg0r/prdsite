@@ -452,17 +452,21 @@
     padding: 15px;
     margin-top: 15px;
     font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+    height: calc(100vh - 200px);
+    display: flex;
+    flex-direction: column;
 }
 
 .terminal-container pre {
     background: transparent;
     color: #fff;
-    height: 500px;
+    flex: 1;
     overflow-y: auto;
     margin: 0;
     padding: 10px;
     white-space: pre-wrap;
     word-wrap: break-word;
+    min-height: 700px;
 }
 
 .terminal-container pre::-webkit-scrollbar {
