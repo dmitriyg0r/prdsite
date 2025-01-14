@@ -38,12 +38,11 @@ document.getElementById('login-form').addEventListener('submit', async function(
             
             if (userExists) {
                 localStorage.setItem('craftUser', username);
-                document.getElementById('login-section').style.display = 'none';
+                window.open('http://188.127.241.209:25991/', 'donate_window', 
+                    'width=1024,height=768,menubar=no,toolbar=no,location=no,status=no');
                 
-                const donatePanel = document.getElementById('donate-panel');
-                const donateFrame = document.getElementById('donate-frame');
-                donateFrame.src = 'https://188.127.241.209:25991/';
-                donatePanel.style.display = 'block';
+                document.getElementById('login-section').style.display = 'none';
+                document.body.innerHTML = '<h2 style="text-align: center; margin-top: 20px;">Донат-панель открыта в новом окне</h2>';
             } else {
                 errorMessage.textContent = 'Пользователь не найден в White List';
                 errorMessage.style.display = 'block';
@@ -63,10 +62,9 @@ document.getElementById('login-form').addEventListener('submit', async function(
 window.addEventListener('load', () => {
     const craftUser = localStorage.getItem('craftUser');
     if (craftUser) {
+        window.open('http://188.127.241.209:25991/', 'donate_window', 
+            'width=1024,height=768,menubar=no,toolbar=no,location=no,status=no');
         document.getElementById('login-section').style.display = 'none';
-        const donatePanel = document.getElementById('donate-panel');
-        const donateFrame = document.getElementById('donate-frame');
-        donateFrame.src = 'https://188.127.241.209:25991/';
-        donatePanel.style.display = 'block';
+        document.body.innerHTML = '<h2 style="text-align: center; margin-top: 20px;">Донат-панель открыта в новом окне</h2>';
     }
 });
