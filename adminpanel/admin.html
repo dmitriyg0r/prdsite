@@ -180,8 +180,7 @@
             </div>
         </div>
 
-        <div class="console-section" style="display: none;">
-            <h2>Консоль сервера</h2>
+        <div class="console-section">
             <div class="terminal-container">
                 <div class="terminal-toolbar">
                     <div class="terminal-title">Terminal</div>
@@ -190,10 +189,14 @@
                         <button onclick="toggleFullscreen()">Fullscreen</button>
                     </div>
                 </div>
-                <pre id="consoleOutput"></pre>
-                <div class="terminal-input">
-                    <input type="text" id="consoleInput" placeholder="Введите команду...">
-                    <button onclick="executeCommand()">Выполнить</button>
+                <div class="terminal-content">
+                    <pre id="consoleOutput"></pre>
+                    <div class="terminal-input-container">
+                        <div class="terminal-input-wrapper">
+                            <input type="text" id="consoleInput" placeholder="Введите команду...">
+                        </div>
+                        <button onclick="executeCommand()">Выполнить</button>
+                    </div>
                 </div>
             </div>
         </div>
