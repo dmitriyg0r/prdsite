@@ -500,11 +500,9 @@
 }
 
 .reviews-section {
-    height: 545.016px;
-    transform: translate(-114px, -193px);
-    left: 144px;
-    top: 250px;
-    width: 490px;
+    width: 495px;
+    height: 544.016px;
+    transform: translate(32px, 23px);
     transition: none;
     max-width: 494px;
     margin: 2rem 0;
