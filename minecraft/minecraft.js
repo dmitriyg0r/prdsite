@@ -124,36 +124,22 @@ document.getElementById('payment-form').addEventListener('submit', async functio
     const minecraftLogin = document.getElementById('minecraft-login').value;
     
     try {
-        // Создаем платеж через ЮKassa
-        const response = await fetch('https://api.yookassa.ru/v3/payments', {
+        // Отправляем запрос на наш бэкенд
+        const response = await fetch('/api/create-payment', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Basic ' + btoa('test_MFf6u1tHyZpHjV83E4L6v6ZimX8xjq0ckzsJUodHsvk:'),
-                'Idempotence-Key': Date.now().toString()
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                amount: {
-                    value: "50.00",
-                    currency: "RUB"
-                },
-                capture: true,
-                confirmation: {
-                    type: "redirect",
-                    return_url: window.location.origin + "/minecraft/success.html"
-                },
-                description: `Доступ к серверу Minecraft для ${minecraftLogin}`,
-                metadata: {
-                    minecraft_login: minecraftLogin
-                }
+                minecraftLogin: minecraftLogin,
+                amount: 50
             })
         });
 
         const result = await response.json();
         
-        if (result.confirmation && result.confirmation.confirmation_url) {
-            // Перенаправляем пользователя на страницу оплаты
-            window.location.href = result.confirmation.confirmation_url;
+        if (result.confirmationUrl) {
+            window.location.href = result.confirmationUrl;
         } else {
             throw new Error('Не удалось получить ссылку на оплату');
         }
