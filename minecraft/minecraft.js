@@ -124,28 +124,42 @@ document.getElementById('payment-form').addEventListener('submit', async functio
     const minecraftLogin = document.getElementById('minecraft-login').value;
     
     try {
-        // Здесь должна быть интеграция с вашей платёжной системой
-        // После успешной оплаты:
-        const response = await fetch('process_payment.php', {
+        // Создаем платеж через ЮKassa
+        const response = await fetch('https://api.yookassa.ru/v3/payments', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': 'Basic ' + btoa('test_MFf6u1tHyZpHjV83E4L6v6ZimX8xjq0ckzsJUodHsvk:'),
+                'Idempotence-Key': Date.now().toString()
             },
             body: JSON.stringify({
-                minecraft_login: minecraftLogin,
-                payment_status: 'completed'
+                amount: {
+                    value: "50.00",
+                    currency: "RUB"
+                },
+                capture: true,
+                confirmation: {
+                    type: "redirect",
+                    return_url: window.location.origin + "/minecraft/success.html"
+                },
+                description: `Доступ к серверу Minecraft для ${minecraftLogin}`,
+                metadata: {
+                    minecraft_login: minecraftLogin
+                }
             })
         });
 
         const result = await response.json();
         
-        if (result.success) {
-            alert('Оплата прошла успешно! Доступ к серверу открыт.');
+        if (result.confirmation && result.confirmation.confirmation_url) {
+            // Перенаправляем пользователя на страницу оплаты
+            window.location.href = result.confirmation.confirmation_url;
         } else {
-            throw new Error(result.error || 'Произошла ошибка при обработке платежа');
+            throw new Error('Не удалось получить ссылку на оплату');
         }
     } catch (error) {
-        alert('Ошибка: ' + error.message);
+        console.error('Ошибка при создании платежа:', error);
+        alert('Произошла ошибка при создании платежа. Пожалуйста, попробуйте позже.');
     } finally {
         hideLoadingIndicator();
     }
