@@ -11,13 +11,14 @@ const multer = require('multer');
 const upload = multer({ dest: 'uploads/' });
 
 const app = express();
-const wss = new WebSocket.Server({ 
-    port: 3002,
-    server: process.env.NODE_ENV === 'production' ? httpsServer : undefined
-});
-
 app.use(bodyParser.json());
 app.use(cors());
+
+// Создаем HTTP сервер
+const server = require('http').createServer(app);
+
+// Настраиваем WebSocket сервер на том же HTTP сервере
+const wss = new WebSocket.Server({ server });
 
 // Функция для очистки ANSI-кодов
 function stripAnsi(str) {
@@ -406,6 +407,18 @@ wss.on('error', (error) => {
 // Логирование при запуске
 console.log('WebSocket сервер запущен на порту 3002');
 
-app.listen(3002, () => {
-    console.log('Терминал сервер запущен на порту 3002');
+// Запускаем единый сервер на порту 3001
+server.listen(3001, () => {
+    console.log('Сервер запущен на порту 3001');
+});
+
+// Запускаем файловый менеджер на отдельном порту
+const fileManagerApp = express();
+fileManagerApp.use(bodyParser.json());
+fileManagerApp.use(cors());
+
+// ... весь код обработки файлового менеджера ...
+
+fileManagerApp.listen(3003, () => {
+    console.log('Файловый менеджер запущен на порту 3003');
 });
