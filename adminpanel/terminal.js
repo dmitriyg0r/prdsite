@@ -11,7 +11,10 @@ const multer = require('multer');
 const upload = multer({ dest: 'uploads/' });
 
 const app = express();
-const wss = new WebSocket.Server({ port: 3002 });
+const wss = new WebSocket.Server({ 
+    port: 3002,
+    server: process.env.NODE_ENV === 'production' ? httpsServer : undefined
+});
 
 app.use(bodyParser.json());
 app.use(cors());
@@ -354,6 +357,14 @@ app.post('/api/files/rename', async (req, res) => {
         });
     }
 });
+
+// Добавим обработку ошибок WebSocket сервера
+wss.on('error', (error) => {
+    console.error('WebSocket Server Error:', error);
+});
+
+// Логирование при запуске
+console.log('WebSocket сервер запущен на порту 3002');
 
 app.listen(3001, () => {
     console.log('Терминал сервер запущен на порту 3001');
