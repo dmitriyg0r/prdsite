@@ -718,11 +718,11 @@ async function loadWhiteListData() {
             
             data.data.forEach(item => {
                 const row = document.createElement('tr');
-                // Добавляем data-uuid для идентификации строки
                 row.setAttribute('data-uuid', item.UUID);
                 row.innerHTML = `
                     <td>${item.UUID}</td>
                     <td>${item.user}</td>
+                    <td>${new Date(item.payment_date).toLocaleDateString()}</td>
                     <td>
                         <button onclick="removeFromWhitelist('${item.UUID}')" class="action-btn delete">
                             Удалить
