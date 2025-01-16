@@ -14,9 +14,9 @@ const FILE_API_URL = (() => {
         case 'localhost':
             return 'http://localhost:3001';
         case 'space-point.ru':
-            return 'https://space-point.ru:3001';
+            return 'https://space-point.ru';
         default:
-            return 'https://space-point.ru:3001';
+            return 'https://space-point.ru';
     }
 })();
 

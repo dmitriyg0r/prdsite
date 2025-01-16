@@ -15,7 +15,7 @@ app.use(bodyParser.json());
 app.use(cors({
     origin: ['http://localhost:3000', 'https://space-point.ru'],
     credentials: true,
-    methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
+    methods: ['GET', 'POST', 'DELETE', 'OPTIONS', 'PUT'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
@@ -417,7 +417,7 @@ wss.on('error', (error) => {
 // Логирование при запуске
 console.log('WebSocket сервер запущен на порту 3002');
 
-// Запускаем единый сервер на порту 3001
-server.listen(3001, () => {
-    console.log('Сервер запущен на порту 3001');
+// Запускаем сервер на localhost:3001
+server.listen(3001, 'localhost', () => {
+    console.log('Сервер запущен на localhost:3001');
 });
