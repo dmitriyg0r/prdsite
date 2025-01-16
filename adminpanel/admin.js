@@ -912,9 +912,17 @@ function updateSystemInfo(data) {
     const ramElement = document.getElementById('ramUsage');
     const diskElement = document.getElementById('diskUsage');
     
-    if (cpuElement) cpuElement.textContent = data.cpu || 'N/A';
-    if (ramElement) ramElement.textContent = data.ram || 'N/A';
-    if (diskElement) diskElement.textContent = data.disk || 'N/A';
+    if (typeof data === 'object') {
+        if (cpuElement) cpuElement.textContent = data.cpu || 'N/A';
+        if (ramElement) ramElement.textContent = data.ram || 'N/A';
+        if (diskElement) diskElement.textContent = data.disk || 'N/A';
+    } else {
+        // Обработка старого формата данных для обратной совместимости
+        const lines = data.split('\n');
+        if (cpuElement) cpuElement.textContent = lines[0]?.replace('CPU:', '').trim() || 'N/A';
+        if (ramElement) ramElement.textContent = lines[1]?.replace('Mem:', '').trim() || 'N/A';
+        if (diskElement) diskElement.textContent = lines[2]?.replace('Disk:', '').trim() || 'N/A';
+    }
 }
 
 // Добавим функцию для экранирования HTML

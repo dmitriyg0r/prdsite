@@ -33,26 +33,28 @@ const activeConnections = new Map();
 // Функция для получения системной информации
 async function getSystemInfo() {
     return new Promise((resolve) => {
-        // Используем более точную команду для CPU
-        exec('mpstat 1 1 | tail -1 && free -m && df -h', (error, stdout) => {
+        // Используем комбинацию команд для получения информации о системе
+        exec(`
+            top -bn1 | grep "Cpu(s)" | awk '{print $2}' && 
+            free -m | grep Mem | awk '{print $3"/"$2"M"}' && 
+            df -h / | tail -1 | awk '{print $5}'
+        `, (error, stdout) => {
             if (error) {
-                // Если mpstat не установлен, используем запасной вариант
-                exec('top -bn1 | grep "Cpu(s)" && free -m && df -h', (error2, stdout2) => {
-                    if (error2) {
-                        console.error('Ошибка получения системной информации:', error2);
-                        resolve({
-                            data: 'CPU: N/A\nMem: N/A\nDisk: N/A'
-                        });
-                        return;
-                    }
-                    resolve({
-                        data: stdout2
-                    });
+                console.error('Ошибка получения системной информации:', error);
+                resolve({
+                    data: 'CPU: N/A\nMem: N/A\nDisk: N/A'
                 });
                 return;
             }
+            
+            const [cpu, mem, disk] = stdout.trim().split('\n');
+            
             resolve({
-                data: stdout
+                data: {
+                    cpu: `${cpu}%`,
+                    ram: mem,
+                    disk: disk
+                }
             });
         });
     });
