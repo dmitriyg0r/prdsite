@@ -5,12 +5,28 @@ const cors = require('cors');
 const WebSocket = require('ws');
 const os = require('os');
 const { exec } = require('child_process');
+const fs = require('fs').promises;
+const path = require('path');
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/' });
 
 const app = express();
-const wss = new WebSocket.Server({ port: 3002 });
-
 app.use(bodyParser.json());
-app.use(cors());
+app.use(cors({
+    origin: ['http://localhost:3000', 'https://space-point.ru'],
+    credentials: true,
+    methods: ['GET', 'POST', 'DELETE', 'OPTIONS', 'PUT'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+// Создаем HTTP сервер
+const server = require('http').createServer(app);
+
+// Настраиваем WebSocket сервер на том же HTTP сервере
+const wss = new WebSocket.Server({ 
+    server: server,
+    path: '/ws'  // Добавляем путь /ws
+});
 
 // Функция для очистки ANSI-кодов
 function stripAnsi(str) {
@@ -22,26 +38,28 @@ const activeConnections = new Map();
 // Функция для получения системной информации
 async function getSystemInfo() {
     return new Promise((resolve) => {
-        // Используем более точную команду для CPU
-        exec('mpstat 1 1 | tail -1 && free -m && df -h', (error, stdout) => {
+        // Используем комбинацию команд для получения информации о системе
+        exec(`
+            top -bn1 | grep "Cpu(s)" | awk '{print $2}' && 
+            free -m | grep Mem | awk '{print $3"/"$2"M"}' && 
+            df -h / | tail -1 | awk '{print $5}'
+        `, (error, stdout) => {
             if (error) {
-                // Если mpstat не установлен, используем запасной вариант
-                exec('top -bn1 | grep "Cpu(s)" && free -m && df -h', (error2, stdout2) => {
-                    if (error2) {
-                        console.error('Ошибка получения системной информации:', error2);
-                        resolve({
-                            data: 'CPU: N/A\nMem: N/A\nDisk: N/A'
-                        });
-                        return;
-                    }
-                    resolve({
-                        data: stdout2
-                    });
+                console.error('Ошибка получения системной информации:', error);
+                resolve({
+                    data: 'CPU: N/A\nMem: N/A\nDisk: N/A'
                 });
                 return;
             }
+            
+            const [cpu, mem, disk] = stdout.trim().split('\n');
+            
             resolve({
-                data: stdout
+                data: {
+                    cpu: `${cpu}%`,
+                    ram: mem,
+                    disk: disk
+                }
             });
         });
     });
@@ -72,13 +90,19 @@ wss.on('connection', (ws) => {
         console.log('SSH соединение установлено');
         conn.shell({ 
             term: 'xterm-256color',
+            rows: 30,
+            cols: 100,
             env: {
                 TERM: 'xterm-256color',
-                PS1: '\\w\\$ ' // Упрощенный промпт
+                LANG: 'en_US.UTF-8'
             }
         }, (err, stream) => {
             if (err) {
                 console.error('Ошибка создания shell:', err);
+                ws.send(JSON.stringify({
+                    type: 'error',
+                    data: 'Ошибка создания shell: ' + err.message
+                }));
                 return;
             }
 
@@ -87,39 +111,60 @@ wss.on('connection', (ws) => {
             connection.currentStream = stream;
             connection.shellSession = stream;
 
-            // Отключаем автоматическую настройку терминала
-            stream.write('export TERM=xterm-256color\n');
-            stream.write('export PS1="\\w\\$ "\n');
-            stream.write('stty -echo\n'); // Отключаем локальное эхо
+            // Отправляем подтверждение успешного подключения
+            ws.send(JSON.stringify({
+                type: 'connected',
+                data: 'Терминал подключен'
+            }));
 
             stream.on('data', (data) => {
-                const cleanData = stripAnsi(data.toString());
-                ws.send(JSON.stringify({
-                    type: 'output',
-                    data: cleanData
-                }));
+                try {
+                    const cleanData = stripAnsi(data.toString());
+                    ws.send(JSON.stringify({
+                        type: 'output',
+                        data: cleanData
+                    }));
+                } catch (err) {
+                    console.error('Ошибка отправки данных:', err);
+                }
             });
 
             stream.stderr.on('data', (data) => {
-                const cleanData = stripAnsi(data.toString());
-                ws.send(JSON.stringify({
-                    type: 'error',
-                    data: cleanData
-                }));
+                try {
+                    const cleanData = stripAnsi(data.toString());
+                    ws.send(JSON.stringify({
+                        type: 'error',
+                        data: cleanData
+                    }));
+                } catch (err) {
+                    console.error('Ошибка отправки ошибки:', err);
+                }
             });
 
             stream.on('close', () => {
-                ws.send(JSON.stringify({
-                    type: 'close',
-                    data: '\nСессия завершена'
-                }));
+                try {
+                    ws.send(JSON.stringify({
+                        type: 'close',
+                        data: '\nСессия завершена'
+                    }));
+                } catch (err) {
+                    console.error('Ошибка закрытия потока:', err);
+                }
             });
         });
+    }).on('error', (err) => {
+        console.error('Ошибка SSH соединения:', err);
+        ws.send(JSON.stringify({
+            type: 'error',
+            data: 'Ошибка SSH соединения: ' + err.message
+        }));
     }).connect({
         host: 'localhost',
         port: 22,
         username: 'root',
-        password: 'sGLTccA_Na#9zC'
+        password: 'sGLTccA_Na#9zC',
+        readyTimeout: 20000,
+        keepaliveInterval: 10000
     });
 
     ws.on('message', async (message) => {
@@ -153,8 +198,21 @@ wss.on('connection', (ws) => {
         sendSystemInfo(ws);
     }, 5000); // Обновление каждые 5 секунд
 
+    // Добавляем обработку ошибок WebSocket
+    ws.on('error', (error) => {
+        console.error('WebSocket ошибка:', error);
+    });
+
+    // Добавляем пинг для поддержания соединения
+    const pingInterval = setInterval(() => {
+        if (ws.readyState === ws.OPEN) {
+            ws.ping();
+        }
+    }, 30000);
+
     ws.on('close', () => {
         console.log(`Закрытие соединения: ${sessionId}`);
+        clearInterval(pingInterval);
         const connection = activeConnections.get(sessionId);
         if (connection) {
             if (connection.shellSession) {
@@ -171,6 +229,195 @@ wss.on('connection', (ws) => {
     ws.send(JSON.stringify({ type: 'session', sessionId }));
 });
 
-app.listen(3001, () => {
-    console.log('Терминал сервер запущен на порту 3001');
+// Добавляем новые эндпоинты для файлового менеджера
+app.get('/api/files', async (req, res) => {
+    try {
+        const dirPath = req.query.path || '/var/www/html';
+        
+        // Проверяем, что путь находится внутри /var/www/html
+        if (!dirPath.startsWith('/var/www/html')) {
+            return res.status(403).json({
+                success: false,
+                error: 'Доступ запрещен'
+            });
+        }
+
+        const files = await fs.readdir(dirPath);
+        const fileList = await Promise.all(files.map(async (file) => {
+            const filePath = path.join(dirPath, file);
+            const stats = await fs.stat(filePath);
+            return {
+                name: file,
+                type: stats.isDirectory() ? 'directory' : 'file',
+                size: stats.size,
+                modified: stats.mtime
+            };
+        }));
+
+        // Сортируем: сначала папки, потом файлы
+        fileList.sort((a, b) => {
+            if (a.type === b.type) {
+                return a.name.localeCompare(b.name);
+            }
+            return a.type === 'directory' ? -1 : 1;
+        });
+
+        res.json({
+            success: true,
+            files: fileList
+        });
+    } catch (err) {
+        console.error('Ошибка при чтении директории:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при чтении директории'
+        });
+    }
+});
+
+app.post('/api/files/upload', upload.single('file'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                error: 'Файл не найден'
+            });
+        }
+
+        const uploadPath = req.body.path || '/var/www/html';
+        
+        // Проверяем, что путь находится внутри /var/www/html
+        if (!uploadPath.startsWith('/var/www/html')) {
+            return res.status(403).json({
+                success: false,
+                error: 'Доступ запрещен'
+            });
+        }
+
+        const finalPath = path.join(uploadPath, req.file.originalname);
+        await fs.rename(req.file.path, finalPath);
+
+        res.json({
+            success: true,
+            message: 'Файл успешно загружен'
+        });
+    } catch (err) {
+        console.error('Ошибка при загрузке файла:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при загрузке файла'
+        });
+    }
+});
+
+app.post('/api/files/folder', async (req, res) => {
+    try {
+        const { path: dirPath, folderName } = req.body;
+        
+        // Проверяем, что путь находится внутри /var/www/html
+        if (!dirPath.startsWith('/var/www/html')) {
+            return res.status(403).json({
+                success: false,
+                error: 'Доступ запрещен'
+            });
+        }
+
+        const newFolderPath = path.join(dirPath, folderName);
+        await fs.mkdir(newFolderPath);
+
+        res.json({
+            success: true,
+            message: 'Папка успешно создана'
+        });
+    } catch (err) {
+        console.error('Ошибка при создании папки:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при создании папки'
+        });
+    }
+});
+
+app.delete('/api/files', async (req, res) => {
+    try {
+        const { path: filePath } = req.body;
+        
+        // Проверяем, что путь находится внутри /var/www/html
+        if (!filePath.startsWith('/var/www/html')) {
+            return res.status(403).json({
+                success: false,
+                error: 'Доступ запрещен'
+            });
+        }
+
+        const stats = await fs.stat(filePath);
+        
+        if (stats.isDirectory()) {
+            await fs.rmdir(filePath, { recursive: true });
+        } else {
+            await fs.unlink(filePath);
+        }
+
+        res.json({
+            success: true,
+            message: 'Файл/папка успешно удален(а)'
+        });
+    } catch (err) {
+        console.error('Ошибка при удалении:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при удалении файла/папки'
+        });
+    }
+});
+
+app.post('/api/files/rename', async (req, res) => {
+    try {
+        const { oldPath, newName } = req.body;
+        
+        // Проверяем, что путь находится внутри /var/www/html
+        if (!oldPath.startsWith('/var/www/html')) {
+            return res.status(403).json({
+                success: false,
+                error: 'Доступ запрещен'
+            });
+        }
+
+        const dirPath = path.dirname(oldPath);
+        const newPath = path.join(dirPath, newName);
+        
+        // Проверяем, что новый путь также находится внутри /var/www/html
+        if (!newPath.startsWith('/var/www/html')) {
+            return res.status(403).json({
+                success: false,
+                error: 'Доступ запрещен'
+            });
+        }
+
+        await fs.rename(oldPath, newPath);
+
+        res.json({
+            success: true,
+            message: 'Файл/папка успешно переименован(а)'
+        });
+    } catch (err) {
+        console.error('Ошибка при переименовании:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при переименовании файла/папки'
+        });
+    }
+});
+
+// Добавим обработку ошибок WebSocket сервера
+wss.on('error', (error) => {
+    console.error('WebSocket Server Error:', error);
+});
+
+// Логирование при запуске
+console.log('WebSocket сервер запущен на порту 3002');
+
+// Запускаем сервер на localhost:3001
+server.listen(3001, 'localhost', () => {
+    console.log('Сервер запущен на localhost:3001');
 });

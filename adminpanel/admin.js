@@ -1,11 +1,22 @@
 const API_URL = (() => {
     switch(window.location.hostname) {
         case 'localhost':
-            return 'http://localhost:3000';
+            return 'http://localhost:3001';
         case 'space-point.ru':
             return 'https://space-point.ru';
         default:
-            return 'https://space-point.ru'; // fallback на продакшен
+            return 'https://space-point.ru';
+    }
+})();
+
+const FILE_API_URL = (() => {
+    switch(window.location.hostname) {
+        case 'localhost':
+            return 'http://localhost:3001';
+        case 'space-point.ru':
+            return 'https://space-point.ru';
+        default:
+            return 'https://space-point.ru';
     }
 })();
 
@@ -30,16 +41,29 @@ function checkAuth() {
 
 // Общая функция для проверки ответа
 async function handleResponse(response) {
+    console.log('Обработка ответа:', response);
     if (!response.ok) {
         const contentType = response.headers.get('content-type');
-        if (contentType && contentType.includes('application/json')) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || 'Ошибка сервера');
-        } else {
-            throw new Error(`HTTP ошибка! статус: ${response.status}`);
+        let errorMessage;
+        
+        try {
+            if (contentType && contentType.includes('application/json')) {
+                const errorData = await response.json();
+                errorMessage = errorData.error || 'Ошибка сервера';
+            } else {
+                errorMessage = await response.text();
+            }
+        } catch (e) {
+            errorMessage = `HTTP ошибка! статус: ${response.status}`;
         }
+        
+        console.error('Ошибка ответа:', errorMessage);
+        throw new Error(errorMessage);
     }
-    return await response.json();
+    
+    const data = await response.json();
+    console.log('Данные ответа:', data);
+    return data;
 }
 
 async function loadStats() {
@@ -96,6 +120,17 @@ async function loadStats() {
 
 // Функция для создания графиков
 function createCharts(stats) {
+    // Проверяем наличие элементов перед созданием графиков
+    const userActivityElement = document.getElementById('userActivityChart');
+    const rolesElement = document.getElementById('rolesChart');
+    const messageElement = document.getElementById('messageChart');
+    const activityElement = document.getElementById('activityChart');
+
+    if (!userActivityElement || !rolesElement || !messageElement || !activityElement) {
+        console.warn('Не все элементы для графиков найдены');
+        return;
+    }
+
     Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif';
     Chart.defaults.font.size = 11;
     
@@ -369,7 +404,8 @@ function initializeEventHandlers() {
         users: document.querySelector('.users-section'),
         whitelist: document.querySelector('.whitelist-section'),
         settings: document.querySelector('.settings-section'),
-        console: document.querySelector('.console-section')
+        console: document.querySelector('.console-section'),
+        files: document.querySelector('.files-section')
     };
 
     tabs.forEach(tab => {
@@ -384,6 +420,11 @@ function initializeEventHandlers() {
             const sectionId = tab.dataset.tab;
             if (contentSections[sectionId]) {
                 contentSections[sectionId].style.display = 'block';
+                
+                // Добавляем загрузку файлов при переключении на вкладку files
+                if (sectionId === 'files') {
+                    loadFileList();
+                }
             }
         });
     });
@@ -830,133 +871,97 @@ let commandHistory = [];
 let historyIndex = -1;
 
 function initializeTerminal() {
+    const terminalOutput = document.getElementById('consoleOutput');
+    if (!terminalOutput) {
+        console.error('Элемент consoleOutput не найден');
+        return;
+    }
+
     const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${wsProtocol}//${window.location.hostname}/ws`;
+    const wsUrl = (() => {
+        switch(window.location.hostname) {
+            case 'localhost':
+                return 'ws://localhost:3001/ws';
+            case 'space-point.ru':
+                return `${wsProtocol}//${window.location.hostname}/ws`;
+            default:
+                return `${wsProtocol}//${window.location.hostname}/ws`;
+        }
+    })();
+
+    console.log('Подключение к WebSocket:', wsUrl);
+
     ws = new WebSocket(wsUrl);
     
-    // Добавляем обработчик клавиатуры для терминала
-    const input = document.getElementById('consoleInput');
-    
-    input.addEventListener('keydown', (e) => {
-        if (e.ctrlKey) {
-            switch(e.key.toLowerCase()) {
-                case 'c':
-                    if (ws && ws.readyState === WebSocket.OPEN) {
-                        ws.send(JSON.stringify({
-                            type: 'signal',
-                            signal: 'SIGINT'
-                        }));
-                    }
-                    break;
-                case 'z':
-                    if (ws && ws.readyState === WebSocket.OPEN) {
-                        ws.send(JSON.stringify({
-                            type: 'signal',
-                            signal: 'SIGTSTP'
-                        }));
-                    }
-                    break;
-            }
-        }
-        
-        switch(e.key) {
-            case 'ArrowUp':
-                e.preventDefault();
-                if (historyIndex < commandHistory.length - 1) {
-                    historyIndex++;
-                    input.value = commandHistory[historyIndex];
-                }
-                break;
-            case 'ArrowDown':
-                e.preventDefault();
-                if (historyIndex > 0) {
-                    historyIndex--;
-                    input.value = commandHistory[historyIndex];
-                } else {
-                    historyIndex = -1;
-                    input.value = '';
-                }
-                break;
-            case 'Enter':
-                const command = input.value.trim();
-                if (command) {
-                    commandHistory.unshift(command);
-                    historyIndex = -1;
-                    executeCommand();
-                }
-                break;
-        }
-    });
-
     ws.onopen = () => {
         console.log('WebSocket соединение установлено');
+        terminalOutput.innerHTML += '<div class="output-line">Соединение установлено...</div>';
     };
-    
-    ws.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        const output = document.getElementById('consoleOutput');
-        
-        switch(data.type) {
-            case 'session':
-                terminalSessionId = data.sessionId;
-                break;
-            case 'output':
-            case 'error':
-                const isCommand = data.data.includes('$');
-                const div = document.createElement('div');
-                div.className = isCommand ? 'command-line' : 'output-line';
-                div.textContent = data.data;
-                output.appendChild(div);
-                output.scrollTop = output.scrollHeight;
-                break;
-            case 'system_info':
-                updateSystemInfo(data.data);
-                break;
-        }
-    };
-    
+
     ws.onclose = () => {
         console.log('WebSocket соединение закрыто');
+        if (terminalOutput) {
+            terminalOutput.innerHTML += '<div class="error-line">Соединение закрыто. Переподключение...</div>';
+        }
         // Попытка переподключения через 5 секунд
         setTimeout(initializeTerminal, 5000);
     };
+
+    ws.onerror = (error) => {
+        console.error('WebSocket ошибка:', error);
+        if (terminalOutput) {
+            terminalOutput.innerHTML += '<div class="error-line">Ошибка соединения</div>';
+        }
+    };
+
+    ws.onmessage = (event) => {
+        try {
+            const data = JSON.parse(event.data);
+            switch(data.type) {
+                case 'output':
+                    terminalOutput.innerHTML += `<div class="output-line">${data.data}</div>`;
+                    break;
+                case 'error':
+                    terminalOutput.innerHTML += `<div class="error-line">${data.data}</div>`;
+                    break;
+                case 'system_info':
+                    updateSystemInfo(data.data);
+                    break;
+            }
+            // Прокрутка вниз
+            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+        } catch (err) {
+            console.error('Ошибка обработки сообщения:', err);
+        }
+    };
 }
 
-function updateSystemInfo(info) {
-    const lines = info.split('\n');
+function updateSystemInfo(data) {
+    const cpuElement = document.getElementById('cpuUsage');
+    const ramElement = document.getElementById('ramUsage');
+    const diskElement = document.getElementById('diskUsage');
     
-    // Обновленный парсинг CPU
-    const cpuLine = lines.find(line => line.includes('all') || line.includes('Cpu(s)'));
-    if (cpuLine) {
-        let cpuUsage;
-        if (cpuLine.includes('all')) {
-            // Парсинг вывода mpstat
-            const parts = cpuLine.split(/\s+/);
-            cpuUsage = 100 - parseFloat(parts[parts.length - 1]);
-        } else {
-            // Парсинг вывода top
-            const idle = parseFloat(cpuLine.match(/(\d+\.\d+)\s*id/)[1]);
-            cpuUsage = 100 - idle;
-        }
-        document.getElementById('cpuUsage').textContent = `${cpuUsage.toFixed(1)}%`;
+    if (typeof data === 'object') {
+        if (cpuElement) cpuElement.textContent = data.cpu || 'N/A';
+        if (ramElement) ramElement.textContent = data.ram || 'N/A';
+        if (diskElement) diskElement.textContent = data.disk || 'N/A';
+    } else {
+        // Обработка старого формата данных для обратной совместимости
+        const lines = data.split('\n');
+        if (cpuElement) cpuElement.textContent = lines[0]?.replace('CPU:', '').trim() || 'N/A';
+        if (ramElement) ramElement.textContent = lines[1]?.replace('Mem:', '').trim() || 'N/A';
+        if (diskElement) diskElement.textContent = lines[2]?.replace('Disk:', '').trim() || 'N/A';
     }
-    
-    // Обработка RAM
-    const memLine = lines.find(line => line.includes('Mem:'));
-    if (memLine) {
-        const memParts = memLine.split(/\s+/);
-        const total = parseInt(memParts[1]);
-        const used = parseInt(memParts[2]);
-        const usagePercent = ((used / total) * 100).toFixed(1);
-        document.getElementById('ramUsage').textContent = `${usagePercent}%`;
-    }
-    
-    // Обработка Disk
-    const diskLine = lines.find(line => line.includes('/dev/'));
-    if (diskLine) {
-        const diskParts = diskLine.split(/\s+/);
-        document.getElementById('diskUsage').textContent = diskParts[4];
-    }
+}
+
+// Добавим функцию для экранирования HTML
+function escapeHtml(unsafe) {
+    return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 }
 
 // Обновляем функцию executeCommand
@@ -1081,5 +1086,320 @@ function initializeContextMenu() {
             });
         }, 0);
     });
+}
+
+async function loadFileList(path = '/var/www/html') {
+    console.log('Загрузка файлов для пути:', path);
+    try {
+        const response = await fetch(`${FILE_API_URL}/api/files?path=${encodeURIComponent(path)}`, {
+            credentials: 'include',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+            }
+        });
+        
+        console.log('Ответ от сервера:', response);
+        const data = await handleResponse(response);
+        console.log('Данные файлов:', data);
+        
+        if (data.success) {
+            const fileList = document.getElementById('fileList');
+            if (!fileList) {
+                console.error('Элемент fileList не найден');
+                return;
+            }
+            
+            fileList.innerHTML = '';
+            
+            // Добавляем кнопку "Назад" если мы не в корневой директории
+            if (path !== '/var/www/html') {
+                const backItem = createFileItem({
+                    name: '..',
+                    type: 'directory',
+                    isBack: true
+                }, path);
+                fileList.appendChild(backItem);
+            }
+            
+            // Сначала отображаем папки
+            data.files
+                .filter(file => file.type === 'directory')
+                .forEach(file => {
+                    const fileItem = createFileItem(file, path);
+                    fileList.appendChild(fileItem);
+                });
+            
+            // Затем отображаем файлы
+            data.files
+                .filter(file => file.type !== 'directory')
+                .forEach(file => {
+                    const fileItem = createFileItem(file, path);
+                    fileList.appendChild(fileItem);
+                });
+            
+            document.querySelector('.current-path').textContent = path;
+        }
+    } catch (err) {
+        console.error('Ошибка при загрузке файлов:', err);
+        alert('Ошибка при загрузке файлов: ' + err.message);
+    }
+}
+
+function createFileItem(file, currentPath) {
+    const item = document.createElement('div');
+    item.className = 'file-item';
+    
+    // Добавляем соответствующую иконку
+    const icon = document.createElement('i');
+    icon.className = `file-icon fas ${getFileIcon(file)}`;
+    
+    const name = document.createElement('span');
+    name.className = 'file-name';
+    name.textContent = file.name;
+    
+    const details = document.createElement('div');
+    details.className = 'file-details';
+    if (!file.isBack) {
+        details.textContent = file.size ? formatFileSize(file.size) : '';
+        
+        const modified = document.createElement('span');
+        modified.className = 'file-modified';
+        modified.textContent = file.modified ? new Date(file.modified).toLocaleString() : '';
+        details.appendChild(modified);
+    }
+    
+    item.appendChild(icon);
+    item.appendChild(name);
+    item.appendChild(details);
+    
+    if (!file.isBack) {
+        const actions = document.createElement('div');
+        actions.className = 'file-actions';
+        
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete-btn';
+        deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+        deleteBtn.onclick = (e) => {
+            e.stopPropagation();
+            deleteFile(`${currentPath}/${file.name}`);
+        };
+        
+        const renameBtn = document.createElement('button');
+        renameBtn.className = 'rename-btn';
+        renameBtn.innerHTML = '<i class="fas fa-edit"></i>';
+        renameBtn.onclick = (e) => {
+            e.stopPropagation();
+            renameFile(`${currentPath}/${file.name}`);
+        };
+        
+        if (file.type !== 'directory') {
+            const downloadBtn = document.createElement('button');
+            downloadBtn.className = 'download-btn';
+            downloadBtn.innerHTML = '<i class="fas fa-download"></i>';
+            downloadBtn.onclick = (e) => {
+                e.stopPropagation();
+                downloadFile(`${currentPath}/${file.name}`);
+            };
+            actions.appendChild(downloadBtn);
+        }
+        
+        actions.appendChild(renameBtn);
+        actions.appendChild(deleteBtn);
+        item.appendChild(actions);
+    }
+    
+    item.onclick = () => {
+        if (file.type === 'directory') {
+            const newPath = file.isBack 
+                ? currentPath.split('/').slice(0, -1).join('/') 
+                : `${currentPath}/${file.name}`;
+            loadFileList(newPath);
+        }
+    };
+    
+    return item;
+}
+
+function getFileIcon(file) {
+    if (file.type === 'directory') return 'fa-folder';
+    
+    const extension = file.name.split('.').pop().toLowerCase();
+    switch (extension) {
+        case 'pdf': return 'fa-file-pdf';
+        case 'doc':
+        case 'docx': return 'fa-file-word';
+        case 'xls':
+        case 'xlsx': return 'fa-file-excel';
+        case 'jpg':
+        case 'jpeg':
+        case 'png':
+        case 'gif': return 'fa-file-image';
+        case 'mp4':
+        case 'avi':
+        case 'mov': return 'fa-file-video';
+        case 'mp3':
+        case 'wav': return 'fa-file-audio';
+        case 'zip':
+        case 'rar':
+        case '7z': return 'fa-file-archive';
+        case 'js':
+        case 'php':
+        case 'py':
+        case 'html':
+        case 'css': return 'fa-file-code';
+        default: return 'fa-file';
+    }
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+async function downloadFile(path) {
+    try {
+        const response = await fetch(`${FILE_API_URL}/api/files/download?path=${encodeURIComponent(path)}`, {
+            credentials: 'include',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+            }
+        });
+        
+        if (!response.ok) throw new Error('Ошибка загрузки файла');
+        
+        const blob = await response.blob();
+        const fileName = path.split('/').pop();
+        
+        const link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.download = fileName;
+        link.click();
+        window.URL.revokeObjectURL(link.href);
+    } catch (err) {
+        console.error('Ошибка при скачивании файла:', err);
+        alert('Ошибка при скачивании файла');
+    }
+}
+
+async function uploadFile() {
+    const input = document.getElementById('fileUpload');
+    input.click();
+    
+    input.onchange = async () => {
+        const files = input.files;
+        const currentPath = document.querySelector('.current-path').textContent;
+        
+        for (const file of files) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('path', currentPath);
+            
+            try {
+                const response = await fetch(`${API_URL}/api/files/upload`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+                    },
+                    body: formData
+                });
+                
+                const data = await handleResponse(response);
+                if (data.success) {
+                    loadFileList(currentPath);
+                }
+            } catch (err) {
+                console.error('Ошибка при загрузке файла:', err);
+                alert(`Ошибка при загрузке файла ${file.name}`);
+            }
+        }
+        
+        input.value = '';
+    };
+}
+
+async function createFolder() {
+    const folderName = prompt('Введите имя новой папки:');
+    if (!folderName) return;
+    
+    const currentPath = document.querySelector('.current-path').textContent;
+    
+    try {
+        const response = await fetch(`${FILE_API_URL}/api/files/folder`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+            },
+            body: JSON.stringify({
+                path: currentPath,
+                folderName
+            })
+        });
+        
+        const data = await handleResponse(response);
+        if (data.success) {
+            loadFileList(currentPath);
+        }
+    } catch (err) {
+        console.error('Ошибка при создании папки:', err);
+        alert('Ошибка при создании папки');
+    }
+}
+
+async function deleteFile(path) {
+    if (!confirm('Вы уверены, что хотите удалить этот файл/папку?')) return;
+    
+    try {
+        const response = await fetch(`${FILE_API_URL}/api/files`, {
+            method: 'DELETE',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+            },
+            body: JSON.stringify({ path })
+        });
+        
+        const data = await handleResponse(response);
+        if (data.success) {
+            loadFileList(path.split('/').slice(0, -1).join('/'));
+        }
+    } catch (err) {
+        console.error('Ошибка при удалении:', err);
+        alert('Ошибка при удалении файла/папки');
+    }
+}
+
+async function renameFile(path) {
+    const newName = prompt('Введите новое имя:');
+    if (!newName) return;
+    
+    try {
+        const response = await fetch(`${API_URL}/api/files/rename`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+            },
+            body: JSON.stringify({
+                oldPath: path,
+                newName
+            })
+        });
+        
+        const data = await handleResponse(response);
+        if (data.success) {
+            loadFileList(path.split('/').slice(0, -1).join('/'));
+        }
+    } catch (err) {
+        console.error('Ошибка при переименовании:', err);
+        alert('Ошибка при переименовании файла/папки');
+    }
 }
 

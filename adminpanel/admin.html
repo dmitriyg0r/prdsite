@@ -14,9 +14,11 @@
 <body>
     <div class="login-form" id="loginForm">
         <h2>Вход в админ панель</h2>
-        <input type="text" id="adminUsername" placeholder="Имя пользователя">
-        <input type="password" id="adminPassword" placeholder="Пароль">
-        <button onclick="login()">Войти</button>
+        <form onsubmit="login(); return false;">
+            <input type="text" id="adminUsername" placeholder="Имя пользователя">
+            <input type="password" id="adminPassword" placeholder="Пароль">
+            <button type="submit">Войти</button>
+        </form>
     </div>
 
     <div class="admin-panel" style="display: none;">
@@ -27,6 +29,7 @@
                 <li data-tab="whitelist">White List</li>
                 <li data-tab="settings">Настройки</li>
                 <li data-tab="console">Консоль</li>
+                <li data-tab="files">Файлы</li>
             </ul>
         </nav>
 
@@ -202,6 +205,26 @@
                         </div>
                         <button onclick="executeCommand()">Выполнить</button>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="files-section" style="display: none;">
+            <div class="file-manager">
+                <div class="file-toolbar">
+                    <div class="current-path">/var/www/html/</div>
+                    <div class="file-controls">
+                        <button onclick="uploadFile()">
+                            <i class="fas fa-upload"></i> Загрузить
+                        </button>
+                        <button onclick="createFolder()">
+                            <i class="fas fa-folder-plus"></i> Новая папка
+                        </button>
+                        <input type="file" id="fileUpload" style="display: none;" multiple>
+                    </div>
+                </div>
+                <div class="file-list" id="fileList">
+                    <!-- Файлы будут добавляться здесь динамически -->
                 </div>
             </div>
         </div>
