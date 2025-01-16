@@ -832,7 +832,17 @@ let historyIndex = -1;
 
 function initializeTerminal() {
     const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${wsProtocol}//${window.location.hostname}/ws`;
+    const wsUrl = (() => {
+        switch(window.location.hostname) {
+            case 'localhost':
+                return 'ws://localhost:3002';
+            case 'space-point.ru':
+                return 'wss://space-point.ru:3002';
+            default:
+                return 'wss://space-point.ru:3002';
+        }
+    })();
+
     ws = new WebSocket(wsUrl);
     
     // Добавляем обработчик клавиатуры для терминала
