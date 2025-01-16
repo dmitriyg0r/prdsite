@@ -411,14 +411,3 @@ console.log('WebSocket сервер запущен на порту 3002');
 server.listen(3001, () => {
     console.log('Сервер запущен на порту 3001');
 });
-
-// Запускаем файловый менеджер на отдельном порту
-const fileManagerApp = express();
-fileManagerApp.use(bodyParser.json());
-fileManagerApp.use(cors());
-
-// ... весь код обработки файлового менеджера ...
-
-fileManagerApp.listen(3003, () => {
-    console.log('Файловый менеджер запущен на порту 3003');
-});

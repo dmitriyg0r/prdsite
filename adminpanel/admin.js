@@ -1,7 +1,7 @@
 const API_URL = (() => {
     switch(window.location.hostname) {
         case 'localhost':
-            return 'http://localhost:3003';
+            return 'http://localhost:3001';
         case 'space-point.ru':
             return 'https://space-point.ru';
         default:
