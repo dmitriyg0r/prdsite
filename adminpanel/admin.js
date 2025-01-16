@@ -9,6 +9,17 @@ const API_URL = (() => {
     }
 })();
 
+const FILE_API_URL = (() => {
+    switch(window.location.hostname) {
+        case 'localhost':
+            return 'http://localhost:3001';
+        case 'space-point.ru':
+            return 'https://api.space-point.ru:3001';
+        default:
+            return 'https://api.space-point.ru:3001';
+    }
+})();
+
 let currentPage = 1;
 let totalPages = 1;
 
@@ -1080,7 +1091,7 @@ function initializeContextMenu() {
 async function loadFileList(path = '/var/www/html') {
     console.log('Загрузка файлов для пути:', path);
     try {
-        const response = await fetch(`${API_URL}/api/files?path=${encodeURIComponent(path)}`, {
+        const response = await fetch(`${FILE_API_URL}/api/files?path=${encodeURIComponent(path)}`, {
             credentials: 'include',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
@@ -1250,7 +1261,7 @@ function formatFileSize(bytes) {
 
 async function downloadFile(path) {
     try {
-        const response = await fetch(`${API_URL}/api/files/download?path=${encodeURIComponent(path)}`, {
+        const response = await fetch(`${FILE_API_URL}/api/files/download?path=${encodeURIComponent(path)}`, {
             credentials: 'include',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
@@ -1317,7 +1328,7 @@ async function createFolder() {
     const currentPath = document.querySelector('.current-path').textContent;
     
     try {
-        const response = await fetch(`${API_URL}/api/files/folder`, {
+        const response = await fetch(`${FILE_API_URL}/api/files/folder`, {
             method: 'POST',
             credentials: 'include',
             headers: {
@@ -1344,7 +1355,7 @@ async function deleteFile(path) {
     if (!confirm('Вы уверены, что хотите удалить этот файл/папку?')) return;
     
     try {
-        const response = await fetch(`${API_URL}/api/files`, {
+        const response = await fetch(`${FILE_API_URL}/api/files`, {
             method: 'DELETE',
             credentials: 'include',
             headers: {

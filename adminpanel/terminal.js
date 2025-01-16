@@ -12,7 +12,10 @@ const upload = multer({ dest: 'uploads/' });
 
 const app = express();
 app.use(bodyParser.json());
-app.use(cors());
+app.use(cors({
+    origin: ['http://localhost:3000', 'https://space-point.ru'],
+    credentials: true
+}));
 
 // Создаем HTTP сервер
 const server = require('http').createServer(app);
