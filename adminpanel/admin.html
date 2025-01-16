@@ -14,9 +14,11 @@
 <body>
     <div class="login-form" id="loginForm">
         <h2>Вход в админ панель</h2>
-        <input type="text" id="adminUsername" placeholder="Имя пользователя">
-        <input type="password" id="adminPassword" placeholder="Пароль">
-        <button onclick="login()">Войти</button>
+        <form onsubmit="login(); return false;">
+            <input type="text" id="adminUsername" placeholder="Имя пользователя">
+            <input type="password" id="adminPassword" placeholder="Пароль">
+            <button type="submit">Войти</button>
+        </form>
     </div>
 
     <div class="admin-panel" style="display: none;">

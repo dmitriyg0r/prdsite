@@ -96,6 +96,17 @@ async function loadStats() {
 
 // Функция для создания графиков
 function createCharts(stats) {
+    // Проверяем наличие элементов перед созданием графиков
+    const userActivityElement = document.getElementById('userActivityChart');
+    const rolesElement = document.getElementById('rolesChart');
+    const messageElement = document.getElementById('messageChart');
+    const activityElement = document.getElementById('activityChart');
+
+    if (!userActivityElement || !rolesElement || !messageElement || !activityElement) {
+        console.warn('Не все элементы для графиков найдены');
+        return;
+    }
+
     Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif';
     Chart.defaults.font.size = 11;
     
@@ -831,15 +842,21 @@ let commandHistory = [];
 let historyIndex = -1;
 
 function initializeTerminal() {
+    const terminalOutput = document.getElementById('consoleOutput');
+    if (!terminalOutput) {
+        console.error('Элемент consoleOutput не найден');
+        return;
+    }
+
     const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const wsUrl = (() => {
         switch(window.location.hostname) {
             case 'localhost':
-                return 'ws://localhost:3002';
+                return 'ws://localhost:3001/ws';
             case 'space-point.ru':
-                return `${wsProtocol}//${window.location.hostname}/ws`;
+                return `${wsProtocol}//${window.location.hostname}:3001/ws`;
             default:
-                return `${wsProtocol}//${window.location.hostname}/ws`;
+                return `${wsProtocol}//${window.location.hostname}:3001/ws`;
         }
     })();
 
@@ -854,14 +871,18 @@ function initializeTerminal() {
 
     ws.onclose = () => {
         console.log('WebSocket соединение закрыто');
-        terminalOutput.innerHTML += '<div class="error-line">Соединение закрыто. Переподключение...</div>';
+        if (terminalOutput) {
+            terminalOutput.innerHTML += '<div class="error-line">Соединение закрыто. Переподключение...</div>';
+        }
         // Попытка переподключения через 5 секунд
         setTimeout(initializeTerminal, 5000);
     };
 
     ws.onerror = (error) => {
         console.error('WebSocket ошибка:', error);
-        terminalOutput.innerHTML += '<div class="error-line">Ошибка соединения</div>';
+        if (terminalOutput) {
+            terminalOutput.innerHTML += '<div class="error-line">Ошибка соединения</div>';
+        }
     };
 
     ws.onmessage = (event) => {
