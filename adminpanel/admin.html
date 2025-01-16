@@ -27,6 +27,7 @@
                 <li data-tab="whitelist">White List</li>
                 <li data-tab="settings">Настройки</li>
                 <li data-tab="console">Консоль</li>
+                <li data-tab="files">Файлы</li>
             </ul>
         </nav>
 
@@ -202,6 +203,22 @@
                         </div>
                         <button onclick="executeCommand()">Выполнить</button>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="files-section" style="display: none;">
+            <div class="file-manager">
+                <div class="file-toolbar">
+                    <div class="current-path">/var/www/html/</div>
+                    <div class="file-controls">
+                        <button onclick="uploadFile()"><i class="fas fa-upload"></i> Загрузить</button>
+                        <button onclick="createFolder()"><i class="fas fa-folder-plus"></i> Новая папка</button>
+                        <input type="file" id="fileUpload" style="display: none;" multiple>
+                    </div>
+                </div>
+                <div class="file-list" id="fileList">
+                    <!-- Файлы будут добавляться здесь динамически -->
                 </div>
             </div>
         </div>

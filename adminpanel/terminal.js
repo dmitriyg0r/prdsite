@@ -5,6 +5,10 @@ const cors = require('cors');
 const WebSocket = require('ws');
 const os = require('os');
 const { exec } = require('child_process');
+const fs = require('fs').promises;
+const path = require('path');
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/' });
 
 const app = express();
 const wss = new WebSocket.Server({ port: 3002 });
@@ -169,6 +173,186 @@ wss.on('connection', (ws) => {
     });
 
     ws.send(JSON.stringify({ type: 'session', sessionId }));
+});
+
+// Добавляем новые эндпоинты для файлового менеджера
+app.get('/api/files', async (req, res) => {
+    try {
+        const dirPath = req.query.path || '/var/www/html';
+        
+        // Проверяем, что путь находится внутри /var/www/html
+        if (!dirPath.startsWith('/var/www/html')) {
+            return res.status(403).json({
+                success: false,
+                error: 'Доступ запрещен'
+            });
+        }
+
+        const files = await fs.readdir(dirPath);
+        const fileList = await Promise.all(files.map(async (file) => {
+            const filePath = path.join(dirPath, file);
+            const stats = await fs.stat(filePath);
+            return {
+                name: file,
+                type: stats.isDirectory() ? 'directory' : 'file',
+                size: stats.size,
+                modified: stats.mtime
+            };
+        }));
+
+        // Сортируем: сначала папки, потом файлы
+        fileList.sort((a, b) => {
+            if (a.type === b.type) {
+                return a.name.localeCompare(b.name);
+            }
+            return a.type === 'directory' ? -1 : 1;
+        });
+
+        res.json({
+            success: true,
+            files: fileList
+        });
+    } catch (err) {
+        console.error('Ошибка при чтении директории:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при чтении директории'
+        });
+    }
+});
+
+app.post('/api/files/upload', upload.single('file'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                error: 'Файл не найден'
+            });
+        }
+
+        const uploadPath = req.body.path || '/var/www/html';
+        
+        // Проверяем, что путь находится внутри /var/www/html
+        if (!uploadPath.startsWith('/var/www/html')) {
+            return res.status(403).json({
+                success: false,
+                error: 'Доступ запрещен'
+            });
+        }
+
+        const finalPath = path.join(uploadPath, req.file.originalname);
+        await fs.rename(req.file.path, finalPath);
+
+        res.json({
+            success: true,
+            message: 'Файл успешно загружен'
+        });
+    } catch (err) {
+        console.error('Ошибка при загрузке файла:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при загрузке файла'
+        });
+    }
+});
+
+app.post('/api/files/folder', async (req, res) => {
+    try {
+        const { path: dirPath, folderName } = req.body;
+        
+        // Проверяем, что путь находится внутри /var/www/html
+        if (!dirPath.startsWith('/var/www/html')) {
+            return res.status(403).json({
+                success: false,
+                error: 'Доступ запрещен'
+            });
+        }
+
+        const newFolderPath = path.join(dirPath, folderName);
+        await fs.mkdir(newFolderPath);
+
+        res.json({
+            success: true,
+            message: 'Папка успешно создана'
+        });
+    } catch (err) {
+        console.error('Ошибка при создании папки:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при создании папки'
+        });
+    }
+});
+
+app.delete('/api/files', async (req, res) => {
+    try {
+        const { path: filePath } = req.body;
+        
+        // Проверяем, что путь находится внутри /var/www/html
+        if (!filePath.startsWith('/var/www/html')) {
+            return res.status(403).json({
+                success: false,
+                error: 'Доступ запрещен'
+            });
+        }
+
+        const stats = await fs.stat(filePath);
+        
+        if (stats.isDirectory()) {
+            await fs.rmdir(filePath, { recursive: true });
+        } else {
+            await fs.unlink(filePath);
+        }
+
+        res.json({
+            success: true,
+            message: 'Файл/папка успешно удален(а)'
+        });
+    } catch (err) {
+        console.error('Ошибка при удалении:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при удалении файла/папки'
+        });
+    }
+});
+
+app.post('/api/files/rename', async (req, res) => {
+    try {
+        const { oldPath, newName } = req.body;
+        
+        // Проверяем, что путь находится внутри /var/www/html
+        if (!oldPath.startsWith('/var/www/html')) {
+            return res.status(403).json({
+                success: false,
+                error: 'Доступ запрещен'
+            });
+        }
+
+        const dirPath = path.dirname(oldPath);
+        const newPath = path.join(dirPath, newName);
+        
+        // Проверяем, что новый путь также находится внутри /var/www/html
+        if (!newPath.startsWith('/var/www/html')) {
+            return res.status(403).json({
+                success: false,
+                error: 'Доступ запрещен'
+            });
+        }
+
+        await fs.rename(oldPath, newPath);
+
+        res.json({
+            success: true,
+            message: 'Файл/папка успешно переименован(а)'
+        });
+    } catch (err) {
+        console.error('Ошибка при переименовании:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при переименовании файла/папки'
+        });
+    }
 });
 
 app.listen(3001, () => {

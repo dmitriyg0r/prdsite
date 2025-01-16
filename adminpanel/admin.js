@@ -369,7 +369,8 @@ function initializeEventHandlers() {
         users: document.querySelector('.users-section'),
         whitelist: document.querySelector('.whitelist-section'),
         settings: document.querySelector('.settings-section'),
-        console: document.querySelector('.console-section')
+        console: document.querySelector('.console-section'),
+        files: document.querySelector('.files-section')
     };
 
     tabs.forEach(tab => {
@@ -1081,5 +1082,213 @@ function initializeContextMenu() {
             });
         }, 0);
     });
+}
+
+async function loadFileList(path = '/var/www/html') {
+    try {
+        const response = await fetch(`${API_URL}/api/files?path=${encodeURIComponent(path)}`, {
+            credentials: 'include',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+            }
+        });
+        
+        const data = await handleResponse(response);
+        
+        if (data.success) {
+            const fileList = document.getElementById('fileList');
+            fileList.innerHTML = '';
+            
+            // Добавляем кнопку "Назад" если мы не в корневой директории
+            if (path !== '/var/www/html') {
+                const backItem = createFileItem({
+                    name: '..',
+                    type: 'directory',
+                    isBack: true
+                }, path);
+                fileList.appendChild(backItem);
+            }
+            
+            data.files.forEach(file => {
+                const fileItem = createFileItem(file, path);
+                fileList.appendChild(fileItem);
+            });
+            
+            document.querySelector('.current-path').textContent = path;
+        }
+    } catch (err) {
+        console.error('Ошибка при загрузке файлов:', err);
+        alert('Ошибка при загрузке файлов');
+    }
+}
+
+function createFileItem(file, currentPath) {
+    const item = document.createElement('div');
+    item.className = 'file-item';
+    
+    const icon = document.createElement('i');
+    icon.className = `file-icon fas ${file.type === 'directory' ? 'fa-folder' : 'fa-file'}`;
+    
+    const name = document.createElement('span');
+    name.className = 'file-name';
+    name.textContent = file.name;
+    
+    item.appendChild(icon);
+    item.appendChild(name);
+    
+    if (!file.isBack) {
+        const actions = document.createElement('div');
+        actions.className = 'file-actions';
+        
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete-btn';
+        deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+        deleteBtn.onclick = (e) => {
+            e.stopPropagation();
+            deleteFile(`${currentPath}/${file.name}`);
+        };
+        
+        const renameBtn = document.createElement('button');
+        renameBtn.className = 'rename-btn';
+        renameBtn.innerHTML = '<i class="fas fa-edit"></i>';
+        renameBtn.onclick = (e) => {
+            e.stopPropagation();
+            renameFile(`${currentPath}/${file.name}`);
+        };
+        
+        actions.appendChild(renameBtn);
+        actions.appendChild(deleteBtn);
+        item.appendChild(actions);
+    }
+    
+    item.onclick = () => {
+        if (file.type === 'directory') {
+            const newPath = file.isBack 
+                ? currentPath.split('/').slice(0, -1).join('/') 
+                : `${currentPath}/${file.name}`;
+            loadFileList(newPath);
+        }
+    };
+    
+    return item;
+}
+
+async function uploadFile() {
+    const input = document.getElementById('fileUpload');
+    input.click();
+    
+    input.onchange = async () => {
+        const files = input.files;
+        const currentPath = document.querySelector('.current-path').textContent;
+        
+        for (const file of files) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('path', currentPath);
+            
+            try {
+                const response = await fetch(`${API_URL}/api/files/upload`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+                    },
+                    body: formData
+                });
+                
+                const data = await handleResponse(response);
+                if (data.success) {
+                    loadFileList(currentPath);
+                }
+            } catch (err) {
+                console.error('Ошибка при загрузке файла:', err);
+                alert(`Ошибка при загрузке файла ${file.name}`);
+            }
+        }
+        
+        input.value = '';
+    };
+}
+
+async function createFolder() {
+    const folderName = prompt('Введите имя новой папки:');
+    if (!folderName) return;
+    
+    const currentPath = document.querySelector('.current-path').textContent;
+    
+    try {
+        const response = await fetch(`${API_URL}/api/files/folder`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+            },
+            body: JSON.stringify({
+                path: currentPath,
+                folderName
+            })
+        });
+        
+        const data = await handleResponse(response);
+        if (data.success) {
+            loadFileList(currentPath);
+        }
+    } catch (err) {
+        console.error('Ошибка при создании папки:', err);
+        alert('Ошибка при создании папки');
+    }
+}
+
+async function deleteFile(path) {
+    if (!confirm('Вы уверены, что хотите удалить этот файл/папку?')) return;
+    
+    try {
+        const response = await fetch(`${API_URL}/api/files`, {
+            method: 'DELETE',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+            },
+            body: JSON.stringify({ path })
+        });
+        
+        const data = await handleResponse(response);
+        if (data.success) {
+            loadFileList(path.split('/').slice(0, -1).join('/'));
+        }
+    } catch (err) {
+        console.error('Ошибка при удалении:', err);
+        alert('Ошибка при удалении файла/папки');
+    }
+}
+
+async function renameFile(path) {
+    const newName = prompt('Введите новое имя:');
+    if (!newName) return;
+    
+    try {
+        const response = await fetch(`${API_URL}/api/files/rename`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+            },
+            body: JSON.stringify({
+                oldPath: path,
+                newName
+            })
+        });
+        
+        const data = await handleResponse(response);
+        if (data.success) {
+            loadFileList(path.split('/').slice(0, -1).join('/'));
+        }
+    } catch (err) {
+        console.error('Ошибка при переименовании:', err);
+        alert('Ошибка при переименовании файла/папки');
+    }
 }
 
