@@ -30,16 +30,29 @@ function checkAuth() {
 
 // Общая функция для проверки ответа
 async function handleResponse(response) {
+    console.log('Обработка ответа:', response);
     if (!response.ok) {
         const contentType = response.headers.get('content-type');
-        if (contentType && contentType.includes('application/json')) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || 'Ошибка сервера');
-        } else {
-            throw new Error(`HTTP ошибка! статус: ${response.status}`);
+        let errorMessage;
+        
+        try {
+            if (contentType && contentType.includes('application/json')) {
+                const errorData = await response.json();
+                errorMessage = errorData.error || 'Ошибка сервера';
+            } else {
+                errorMessage = await response.text();
+            }
+        } catch (e) {
+            errorMessage = `HTTP ошибка! статус: ${response.status}`;
         }
+        
+        console.error('Ошибка ответа:', errorMessage);
+        throw new Error(errorMessage);
     }
-    return await response.json();
+    
+    const data = await response.json();
+    console.log('Данные ответа:', data);
+    return data;
 }
 
 async function loadStats() {
@@ -396,6 +409,11 @@ function initializeEventHandlers() {
             const sectionId = tab.dataset.tab;
             if (contentSections[sectionId]) {
                 contentSections[sectionId].style.display = 'block';
+                
+                // Добавляем загрузку файлов при переключении на вкладку files
+                if (sectionId === 'files') {
+                    loadFileList();
+                }
             }
         });
     });
@@ -1060,6 +1078,7 @@ function initializeContextMenu() {
 }
 
 async function loadFileList(path = '/var/www/html') {
+    console.log('Загрузка файлов для пути:', path);
     try {
         const response = await fetch(`${API_URL}/api/files?path=${encodeURIComponent(path)}`, {
             credentials: 'include',
@@ -1068,10 +1087,17 @@ async function loadFileList(path = '/var/www/html') {
             }
         });
         
+        console.log('Ответ от сервера:', response);
         const data = await handleResponse(response);
+        console.log('Данные файлов:', data);
         
         if (data.success) {
             const fileList = document.getElementById('fileList');
+            if (!fileList) {
+                console.error('Элемент fileList не найден');
+                return;
+            }
+            
             fileList.innerHTML = '';
             
             // Добавляем кнопку "Назад" если мы не в корневой директории
@@ -1104,7 +1130,7 @@ async function loadFileList(path = '/var/www/html') {
         }
     } catch (err) {
         console.error('Ошибка при загрузке файлов:', err);
-        alert('Ошибка при загрузке файлов');
+        alert('Ошибка при загрузке файлов: ' + err.message);
     }
 }
 
