@@ -631,9 +631,15 @@
 
 .current-path {
     font-family: monospace;
-    padding: 8px;
+    padding: 8px 12px;
     background: #f5f5f5;
     border-radius: 4px;
+    font-size: 13px;
+    color: #2c3e50;
+    max-width: 500px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .file-controls {
@@ -662,11 +668,13 @@
 }
 
 .file-item {
-    display: flex;
+    display: grid;
+    grid-template-columns: auto 1fr auto auto;
     align-items: center;
-    padding: 10px;
+    padding: 10px 15px;
     border-bottom: 1px solid #eee;
     cursor: pointer;
+    gap: 15px;
 }
 
 .file-item:hover {
@@ -674,12 +682,25 @@
 }
 
 .file-icon {
-    margin-right: 10px;
     color: #2c3e50;
+    width: 20px;
+    text-align: center;
 }
 
 .file-name {
-    flex: 1;
+    font-size: 14px;
+    color: #2c3e50;
+}
+
+.file-details {
+    color: #7f8c8d;
+    font-size: 12px;
+    display: flex;
+    gap: 15px;
+}
+
+.file-modified {
+    color: #95a5a6;
 }
 
 .file-actions {
@@ -698,14 +719,22 @@
     border: none;
     border-radius: 3px;
     cursor: pointer;
+    color: white;
+    font-size: 12px;
 }
 
 .file-actions .delete-btn {
     background: #e74c3c;
-    color: white;
 }
 
 .file-actions .rename-btn {
     background: #3498db;
-    color: white;
+}
+
+.file-actions .download-btn {
+    background: #2ecc71;
+}
+
+.file-actions button:hover {
+    opacity: 0.9;
 }

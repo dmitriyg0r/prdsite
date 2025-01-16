@@ -1084,10 +1084,21 @@ async function loadFileList(path = '/var/www/html') {
                 fileList.appendChild(backItem);
             }
             
-            data.files.forEach(file => {
-                const fileItem = createFileItem(file, path);
-                fileList.appendChild(fileItem);
-            });
+            // Сначала отображаем папки
+            data.files
+                .filter(file => file.type === 'directory')
+                .forEach(file => {
+                    const fileItem = createFileItem(file, path);
+                    fileList.appendChild(fileItem);
+                });
+            
+            // Затем отображаем файлы
+            data.files
+                .filter(file => file.type !== 'directory')
+                .forEach(file => {
+                    const fileItem = createFileItem(file, path);
+                    fileList.appendChild(fileItem);
+                });
             
             document.querySelector('.current-path').textContent = path;
         }
@@ -1101,15 +1112,28 @@ function createFileItem(file, currentPath) {
     const item = document.createElement('div');
     item.className = 'file-item';
     
+    // Добавляем соответствующую иконку
     const icon = document.createElement('i');
-    icon.className = `file-icon fas ${file.type === 'directory' ? 'fa-folder' : 'fa-file'}`;
+    icon.className = `file-icon fas ${getFileIcon(file)}`;
     
     const name = document.createElement('span');
     name.className = 'file-name';
     name.textContent = file.name;
     
+    const details = document.createElement('div');
+    details.className = 'file-details';
+    if (!file.isBack) {
+        details.textContent = file.size ? formatFileSize(file.size) : '';
+        
+        const modified = document.createElement('span');
+        modified.className = 'file-modified';
+        modified.textContent = file.modified ? new Date(file.modified).toLocaleString() : '';
+        details.appendChild(modified);
+    }
+    
     item.appendChild(icon);
     item.appendChild(name);
+    item.appendChild(details);
     
     if (!file.isBack) {
         const actions = document.createElement('div');
@@ -1131,6 +1155,17 @@ function createFileItem(file, currentPath) {
             renameFile(`${currentPath}/${file.name}`);
         };
         
+        if (file.type !== 'directory') {
+            const downloadBtn = document.createElement('button');
+            downloadBtn.className = 'download-btn';
+            downloadBtn.innerHTML = '<i class="fas fa-download"></i>';
+            downloadBtn.onclick = (e) => {
+                e.stopPropagation();
+                downloadFile(`${currentPath}/${file.name}`);
+            };
+            actions.appendChild(downloadBtn);
+        }
+        
         actions.appendChild(renameBtn);
         actions.appendChild(deleteBtn);
         item.appendChild(actions);
@@ -1146,6 +1181,70 @@ function createFileItem(file, currentPath) {
     };
     
     return item;
+}
+
+function getFileIcon(file) {
+    if (file.type === 'directory') return 'fa-folder';
+    
+    const extension = file.name.split('.').pop().toLowerCase();
+    switch (extension) {
+        case 'pdf': return 'fa-file-pdf';
+        case 'doc':
+        case 'docx': return 'fa-file-word';
+        case 'xls':
+        case 'xlsx': return 'fa-file-excel';
+        case 'jpg':
+        case 'jpeg':
+        case 'png':
+        case 'gif': return 'fa-file-image';
+        case 'mp4':
+        case 'avi':
+        case 'mov': return 'fa-file-video';
+        case 'mp3':
+        case 'wav': return 'fa-file-audio';
+        case 'zip':
+        case 'rar':
+        case '7z': return 'fa-file-archive';
+        case 'js':
+        case 'php':
+        case 'py':
+        case 'html':
+        case 'css': return 'fa-file-code';
+        default: return 'fa-file';
+    }
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+async function downloadFile(path) {
+    try {
+        const response = await fetch(`${API_URL}/api/files/download?path=${encodeURIComponent(path)}`, {
+            credentials: 'include',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+            }
+        });
+        
+        if (!response.ok) throw new Error('Ошибка загрузки файла');
+        
+        const blob = await response.blob();
+        const fileName = path.split('/').pop();
+        
+        const link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.download = fileName;
+        link.click();
+        window.URL.revokeObjectURL(link.href);
+    } catch (err) {
+        console.error('Ошибка при скачивании файла:', err);
+        alert('Ошибка при скачивании файла');
+    }
 }
 
 async function uploadFile() {
