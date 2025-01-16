@@ -854,9 +854,9 @@ function initializeTerminal() {
             case 'localhost':
                 return 'ws://localhost:3001/ws';
             case 'space-point.ru':
-                return `${wsProtocol}//${window.location.hostname}:3001/ws`;
+                return `${wsProtocol}//${window.location.hostname}/ws`;
             default:
-                return `${wsProtocol}//${window.location.hostname}:3001/ws`;
+                return `${wsProtocol}//${window.location.hostname}/ws`;
         }
     })();
 
@@ -889,22 +889,17 @@ function initializeTerminal() {
         try {
             const data = JSON.parse(event.data);
             switch(data.type) {
-                case 'connected':
-                    terminalOutput.innerHTML += '<div class="output-line">Терминал готов к работе</div>';
-                    break;
                 case 'output':
-                    terminalOutput.innerHTML += `<div class="output-line">${escapeHtml(data.data)}</div>`;
+                    terminalOutput.innerHTML += `<div class="output-line">${data.data}</div>`;
                     break;
                 case 'error':
-                    terminalOutput.innerHTML += `<div class="error-line">${escapeHtml(data.data)}</div>`;
-                    break;
-                case 'close':
-                    terminalOutput.innerHTML += `<div class="output-line">${escapeHtml(data.data)}</div>`;
+                    terminalOutput.innerHTML += `<div class="error-line">${data.data}</div>`;
                     break;
                 case 'system_info':
                     updateSystemInfo(data.data);
                     break;
             }
+            // Прокрутка вниз
             terminalOutput.scrollTop = terminalOutput.scrollHeight;
         } catch (err) {
             console.error('Ошибка обработки сообщения:', err);
@@ -912,41 +907,14 @@ function initializeTerminal() {
     };
 }
 
-function updateSystemInfo(info) {
-    const lines = info.split('\n');
+function updateSystemInfo(data) {
+    const cpuElement = document.getElementById('cpuUsage');
+    const ramElement = document.getElementById('ramUsage');
+    const diskElement = document.getElementById('diskUsage');
     
-    // Обновленный парсинг CPU
-    const cpuLine = lines.find(line => line.includes('all') || line.includes('Cpu(s)'));
-    if (cpuLine) {
-        let cpuUsage;
-        if (cpuLine.includes('all')) {
-            // Парсинг вывода mpstat
-            const parts = cpuLine.split(/\s+/);
-            cpuUsage = 100 - parseFloat(parts[parts.length - 1]);
-        } else {
-            // Парсинг вывода top
-            const idle = parseFloat(cpuLine.match(/(\d+\.\d+)\s*id/)[1]);
-            cpuUsage = 100 - idle;
-        }
-        document.getElementById('cpuUsage').textContent = `${cpuUsage.toFixed(1)}%`;
-    }
-    
-    // Обработка RAM
-    const memLine = lines.find(line => line.includes('Mem:'));
-    if (memLine) {
-        const memParts = memLine.split(/\s+/);
-        const total = parseInt(memParts[1]);
-        const used = parseInt(memParts[2]);
-        const usagePercent = ((used / total) * 100).toFixed(1);
-        document.getElementById('ramUsage').textContent = `${usagePercent}%`;
-    }
-    
-    // Обработка Disk
-    const diskLine = lines.find(line => line.includes('/dev/'));
-    if (diskLine) {
-        const diskParts = diskLine.split(/\s+/);
-        document.getElementById('diskUsage').textContent = diskParts[4];
-    }
+    if (cpuElement) cpuElement.textContent = data.cpu || 'N/A';
+    if (ramElement) ramElement.textContent = data.ram || 'N/A';
+    if (diskElement) diskElement.textContent = data.disk || 'N/A';
 }
 
 // Добавим функцию для экранирования HTML

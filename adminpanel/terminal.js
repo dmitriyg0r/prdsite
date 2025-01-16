@@ -18,7 +18,10 @@ app.use(cors());
 const server = require('http').createServer(app);
 
 // Настраиваем WebSocket сервер на том же HTTP сервере
-const wss = new WebSocket.Server({ server });
+const wss = new WebSocket.Server({ 
+    server: server,
+    path: '/ws'  // Добавляем путь /ws
+});
 
 // Функция для очистки ANSI-кодов
 function stripAnsi(str) {
