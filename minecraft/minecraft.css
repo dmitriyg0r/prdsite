@@ -810,3 +810,37 @@ main {
 .return-btn:hover {
     background-color: var(--accent-color-hover);
 }
+
+.channel-text {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 1rem;
+    background-color: var(--background-secondary);
+    border-radius: 12px;
+    margin-bottom: 1rem;
+}
+
+.channel-text span {
+    color: var(--text-primary);
+}
+
+.channel-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #0088cc; /* Цвет Telegram */
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.channel-link:hover {
+    color: #0077b3;
+    transform: translateY(-1px);
+}
+
+.channel-link i {
+    font-size: 1.2rem;
+}
