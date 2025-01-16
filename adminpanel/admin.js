@@ -837,99 +837,57 @@ function initializeTerminal() {
             case 'localhost':
                 return 'ws://localhost:3002';
             case 'space-point.ru':
-                return 'wss://space-point.ru:3002';
+                return `${wsProtocol}//${window.location.hostname}/ws`;
             default:
-                return 'wss://space-point.ru:3002';
+                return `${wsProtocol}//${window.location.hostname}/ws`;
         }
     })();
 
+    console.log('Подключение к WebSocket:', wsUrl);
+
     ws = new WebSocket(wsUrl);
     
-    // Добавляем обработчик клавиатуры для терминала
-    const input = document.getElementById('consoleInput');
-    
-    input.addEventListener('keydown', (e) => {
-        if (e.ctrlKey) {
-            switch(e.key.toLowerCase()) {
-                case 'c':
-                    if (ws && ws.readyState === WebSocket.OPEN) {
-                        ws.send(JSON.stringify({
-                            type: 'signal',
-                            signal: 'SIGINT'
-                        }));
-                    }
-                    break;
-                case 'z':
-                    if (ws && ws.readyState === WebSocket.OPEN) {
-                        ws.send(JSON.stringify({
-                            type: 'signal',
-                            signal: 'SIGTSTP'
-                        }));
-                    }
-                    break;
-            }
-        }
-        
-        switch(e.key) {
-            case 'ArrowUp':
-                e.preventDefault();
-                if (historyIndex < commandHistory.length - 1) {
-                    historyIndex++;
-                    input.value = commandHistory[historyIndex];
-                }
-                break;
-            case 'ArrowDown':
-                e.preventDefault();
-                if (historyIndex > 0) {
-                    historyIndex--;
-                    input.value = commandHistory[historyIndex];
-                } else {
-                    historyIndex = -1;
-                    input.value = '';
-                }
-                break;
-            case 'Enter':
-                const command = input.value.trim();
-                if (command) {
-                    commandHistory.unshift(command);
-                    historyIndex = -1;
-                    executeCommand();
-                }
-                break;
-        }
-    });
-
     ws.onopen = () => {
         console.log('WebSocket соединение установлено');
+        terminalOutput.innerHTML += '<div class="output-line">Соединение установлено...</div>';
     };
-    
-    ws.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        const output = document.getElementById('consoleOutput');
-        
-        switch(data.type) {
-            case 'session':
-                terminalSessionId = data.sessionId;
-                break;
-            case 'output':
-            case 'error':
-                const isCommand = data.data.includes('$');
-                const div = document.createElement('div');
-                div.className = isCommand ? 'command-line' : 'output-line';
-                div.textContent = data.data;
-                output.appendChild(div);
-                output.scrollTop = output.scrollHeight;
-                break;
-            case 'system_info':
-                updateSystemInfo(data.data);
-                break;
-        }
-    };
-    
+
     ws.onclose = () => {
         console.log('WebSocket соединение закрыто');
+        terminalOutput.innerHTML += '<div class="error-line">Соединение закрыто. Переподключение...</div>';
         // Попытка переподключения через 5 секунд
         setTimeout(initializeTerminal, 5000);
+    };
+
+    ws.onerror = (error) => {
+        console.error('WebSocket ошибка:', error);
+        terminalOutput.innerHTML += '<div class="error-line">Ошибка соединения</div>';
+    };
+
+    ws.onmessage = (event) => {
+        try {
+            const data = JSON.parse(event.data);
+            switch(data.type) {
+                case 'connected':
+                    terminalOutput.innerHTML += '<div class="output-line">Терминал готов к работе</div>';
+                    break;
+                case 'output':
+                    terminalOutput.innerHTML += `<div class="output-line">${escapeHtml(data.data)}</div>`;
+                    break;
+                case 'error':
+                    terminalOutput.innerHTML += `<div class="error-line">${escapeHtml(data.data)}</div>`;
+                    break;
+                case 'close':
+                    terminalOutput.innerHTML += `<div class="output-line">${escapeHtml(data.data)}</div>`;
+                    break;
+                case 'system_info':
+                    updateSystemInfo(data.data);
+                    break;
+            }
+            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+        } catch (err) {
+            console.error('Ошибка обработки сообщения:', err);
+        }
     };
 }
 
@@ -968,6 +926,16 @@ function updateSystemInfo(info) {
         const diskParts = diskLine.split(/\s+/);
         document.getElementById('diskUsage').textContent = diskParts[4];
     }
+}
+
+// Добавим функцию для экранирования HTML
+function escapeHtml(unsafe) {
+    return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 }
 
 // Обновляем функцию executeCommand

@@ -79,13 +79,19 @@ wss.on('connection', (ws) => {
         console.log('SSH соединение установлено');
         conn.shell({ 
             term: 'xterm-256color',
+            rows: 30,
+            cols: 100,
             env: {
                 TERM: 'xterm-256color',
-                PS1: '\\w\\$ ' // Упрощенный промпт
+                LANG: 'en_US.UTF-8'
             }
         }, (err, stream) => {
             if (err) {
                 console.error('Ошибка создания shell:', err);
+                ws.send(JSON.stringify({
+                    type: 'error',
+                    data: 'Ошибка создания shell: ' + err.message
+                }));
                 return;
             }
 
@@ -94,39 +100,60 @@ wss.on('connection', (ws) => {
             connection.currentStream = stream;
             connection.shellSession = stream;
 
-            // Отключаем автоматическую настройку терминала
-            stream.write('export TERM=xterm-256color\n');
-            stream.write('export PS1="\\w\\$ "\n');
-            stream.write('stty -echo\n'); // Отключаем локальное эхо
+            // Отправляем подтверждение успешного подключения
+            ws.send(JSON.stringify({
+                type: 'connected',
+                data: 'Терминал подключен'
+            }));
 
             stream.on('data', (data) => {
-                const cleanData = stripAnsi(data.toString());
-                ws.send(JSON.stringify({
-                    type: 'output',
-                    data: cleanData
-                }));
+                try {
+                    const cleanData = stripAnsi(data.toString());
+                    ws.send(JSON.stringify({
+                        type: 'output',
+                        data: cleanData
+                    }));
+                } catch (err) {
+                    console.error('Ошибка отправки данных:', err);
+                }
             });
 
             stream.stderr.on('data', (data) => {
-                const cleanData = stripAnsi(data.toString());
-                ws.send(JSON.stringify({
-                    type: 'error',
-                    data: cleanData
-                }));
+                try {
+                    const cleanData = stripAnsi(data.toString());
+                    ws.send(JSON.stringify({
+                        type: 'error',
+                        data: cleanData
+                    }));
+                } catch (err) {
+                    console.error('Ошибка отправки ошибки:', err);
+                }
             });
 
             stream.on('close', () => {
-                ws.send(JSON.stringify({
-                    type: 'close',
-                    data: '\nСессия завершена'
-                }));
+                try {
+                    ws.send(JSON.stringify({
+                        type: 'close',
+                        data: '\nСессия завершена'
+                    }));
+                } catch (err) {
+                    console.error('Ошибка закрытия потока:', err);
+                }
             });
         });
+    }).on('error', (err) => {
+        console.error('Ошибка SSH соединения:', err);
+        ws.send(JSON.stringify({
+            type: 'error',
+            data: 'Ошибка SSH соединения: ' + err.message
+        }));
     }).connect({
         host: 'localhost',
         port: 22,
         username: 'root',
-        password: 'sGLTccA_Na#9zC'
+        password: 'sGLTccA_Na#9zC',
+        readyTimeout: 20000,
+        keepaliveInterval: 10000
     });
 
     ws.on('message', async (message) => {
@@ -160,8 +187,21 @@ wss.on('connection', (ws) => {
         sendSystemInfo(ws);
     }, 5000); // Обновление каждые 5 секунд
 
+    // Добавляем обработку ошибок WebSocket
+    ws.on('error', (error) => {
+        console.error('WebSocket ошибка:', error);
+    });
+
+    // Добавляем пинг для поддержания соединения
+    const pingInterval = setInterval(() => {
+        if (ws.readyState === ws.OPEN) {
+            ws.ping();
+        }
+    }, 30000);
+
     ws.on('close', () => {
         console.log(`Закрытие соединения: ${sessionId}`);
+        clearInterval(pingInterval);
         const connection = activeConnections.get(sessionId);
         if (connection) {
             if (connection.shellSession) {
@@ -366,6 +406,6 @@ wss.on('error', (error) => {
 // Логирование при запуске
 console.log('WebSocket сервер запущен на порту 3002');
 
-app.listen(3001, () => {
-    console.log('Терминал сервер запущен на порту 3001');
+app.listen(3002, () => {
+    console.log('Терминал сервер запущен на порту 3002');
 });
