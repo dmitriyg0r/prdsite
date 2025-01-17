@@ -852,3 +852,33 @@ main {
 .channel-link i {
     font-size: 1.2rem;
 }
+
+.delete-review-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.delete-review-btn:hover {
+    color: #ff4444;
+    background-color: rgba(255, 68, 68, 0.1);
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.review-username {
+    margin-right: auto;
+}
+
+.review-time {
+    margin: 0 1rem;
+}
