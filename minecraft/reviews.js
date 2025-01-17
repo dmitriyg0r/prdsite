@@ -162,8 +162,14 @@ document.addEventListener('DOMContentLoaded', () => {
         return null;
     };
 
-    // Добавляем обработчик для автоматического расширения поля ввода
+    // Добавляем обработчик для проверки длины текста
     reviewInput.addEventListener('input', () => {
+        const maxLength = 250;
+        if (reviewInput.value.length > maxLength) {
+            reviewInput.value = reviewInput.value.slice(0, maxLength);
+        }
+        
+        // Автоматическое изменение высоты поля ввода
         reviewInput.style.height = 'auto';
         reviewInput.style.height = reviewInput.scrollHeight + 'px';
     });

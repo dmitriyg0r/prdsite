@@ -566,6 +566,9 @@
 .review-text {
     color: var(--text-primary);
     line-height: 1.4;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    max-width: 100%;
 }
 
 .review-form {
@@ -584,6 +587,11 @@
     background-color: var(--background-secondary);
     color: var(--text-primary);
     transition: all 0.3s ease;
+    resize: none;
+    min-height: 40px;
+    max-height: 120px;
+    overflow-y: auto;
+    word-wrap: break-word;
 }
 
 #review-input:focus {
