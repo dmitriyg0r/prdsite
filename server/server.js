@@ -71,7 +71,7 @@ app.post('/api/login', async (req, res) => {
     try {
         const { username, password } = req.body;
 
-        console.log('Login attempt:', { username }); // Добавляем логирование
+        console.log('Login attempt:', { username });
 
         if (!username || !password) {
             return res.status(400).json({ 
@@ -93,13 +93,14 @@ app.post('/api/login', async (req, res) => {
             });
         }
 
-        const user = result.rows[0]; // Добавляем эту строку
+        const user = result.rows[0];
 
-        // Проверяем роль пользователя
-        if (user.role !== 'admin') {
-            return res.status(403).json({ 
+        // Проверяем пароль
+        const isValidPassword = await bcrypt.compare(password, user.password_hash);
+        if (!isValidPassword) {
+            return res.status(401).json({
                 success: false,
-                error: 'Доступ запрещен. Требуются права администратора.' 
+                error: 'Неверное имя пользователя или пароль'
             });
         }
 
