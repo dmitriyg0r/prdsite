@@ -1,4 +1,18 @@
+// Добавляем отладочную информацию для проверки авторизации
+const checkUserAuth = () => {
+    // Проверяем все возможные места хранения данных пользователя
+    console.log('Проверка авторизации:');
+    console.log('localStorage userData:', localStorage.getItem('userData'));
+    console.log('localStorage user:', localStorage.getItem('user'));
+    console.log('sessionStorage userData:', sessionStorage.getItem('userData'));
+    console.log('sessionStorage user:', sessionStorage.getItem('user'));
+    
+    // Проверяем cookies
+    console.log('Cookies:', document.cookie);
+};
+
 document.addEventListener('DOMContentLoaded', () => {
+    checkUserAuth();
     const reviewsContainer = document.getElementById('reviews-messages');
     const reviewForm = document.getElementById('review-form');
     const reviewInput = document.getElementById('review-input');
