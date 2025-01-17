@@ -16,11 +16,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Функция для создания элемента отзыва
     const createReviewElement = (review) => {
+        console.log('Создание элемента отзыва:', review);
+        console.log('Пользователь админ?', isAdmin());
+        
         const reviewElement = document.createElement('div');
         reviewElement.className = 'review-message';
-        
-        // Добавляем data-id для идентификации отзыва
         reviewElement.dataset.reviewId = review.id;
+        
+        const deleteButton = isAdmin() ? 
+            `<button class="delete-review-btn" title="Удалить отзыв">
+                <i class="fas fa-trash"></i>
+            </button>` : '';
         
         reviewElement.innerHTML = `
             <img src="${review.avatar || '/uploads/avatars/default.png'}" 
@@ -30,18 +36,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="review-header">
                     <span class="review-username">${review.username}</span>
                     <span class="review-time">${formatTime(new Date(review.timestamp))}</span>
-                    ${isAdmin() ? `<button class="delete-review-btn" title="Удалить отзыв">
-                        <i class="fas fa-trash"></i>
-                    </button>` : ''}
+                    ${deleteButton}
                 </div>
                 <p class="review-text">${review.text}</p>
             </div>
         `;
         
-        // Добавляем обработчик для кнопки удаления
         if (isAdmin()) {
             const deleteBtn = reviewElement.querySelector('.delete-review-btn');
-            deleteBtn.addEventListener('click', () => deleteReview(review.id));
+            if (deleteBtn) {
+                deleteBtn.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Нажата кнопка удаления для отзыва:', review.id);
+                    await deleteReview(review.id);
+                });
+            }
         }
         
         return reviewElement;
@@ -49,11 +59,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Функция проверки прав администратора
     const isAdmin = () => {
-        // Проверяем localStorage на наличие данных пользователя
         const userData = localStorage.getItem('userData');
+        console.log('Данные пользователя из localStorage:', userData);
+        
         if (userData) {
             try {
                 const user = JSON.parse(userData);
+                console.log('Роль пользователя:', user.role);
                 return user.role === 'admin';
             } catch (e) {
                 console.error('Ошибка при парсинге данных пользователя:', e);
@@ -64,12 +76,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Функция удаления отзыва
     const deleteReview = async (reviewId) => {
+        console.log('Попытка удаления отзыва:', reviewId);
+        
         if (!confirm('Вы уверены, что хотите удалить этот отзыв?')) {
+            console.log('Удаление отменено пользователем');
             return;
         }
 
         try {
             const userId = getCurrentUserId();
+            console.log('ID пользователя для удаления:', userId);
+            
             const response = await fetch(`/api/reviews/${reviewId}`, {
                 method: 'DELETE',
                 headers: {
@@ -78,15 +95,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({ userId })
             });
 
+            console.log('Ответ сервера:', response);
             const data = await response.json();
+            console.log('Данные ответа:', data);
             
             if (data.success) {
-                // Находим и удаляем элемент отзыва из DOM
                 const reviewElement = document.querySelector(`[data-review-id="${reviewId}"]`);
                 if (reviewElement) {
                     reviewElement.remove();
+                    console.log('Отзыв успешно удален из DOM');
                 }
             } else {
+                console.error('Ошибка при удалении:', data.error);
                 alert(data.error || 'Ошибка при удалении отзыва');
             }
         } catch (error) {
@@ -97,18 +117,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Функция для загрузки отзывов
     const loadReviews = async () => {
+        console.log('Начало загрузки отзывов');
         try {
             const response = await fetch('/api/reviews');
             const data = await response.json();
+            console.log('Полученные отзывы:', data);
             
             if (data.success) {
                 const reviewsContainer = document.getElementById('reviews-messages');
-                reviewsContainer.innerHTML = ''; // Очищаем контейнер
+                reviewsContainer.innerHTML = '';
                 
                 data.reviews.forEach(review => {
                     const reviewElement = createReviewElement(review);
                     reviewsContainer.appendChild(reviewElement);
                 });
+                console.log('Отзывы успешно загружены и отображены');
             }
         } catch (error) {
             console.error('Ошибка при загрузке отзывов:', error);
