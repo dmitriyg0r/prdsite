@@ -6,11 +6,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Функция для форматирования времени
     const formatTime = (date) => {
         return new Intl.DateTimeFormat('ru-RU', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
             hour: '2-digit',
-            minute: '2-digit',
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
+            minute: '2-digit'
         }).format(date);
     };
 
@@ -102,16 +102,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             
             if (data.success) {
+                const reviewsContainer = document.getElementById('reviews-messages');
                 reviewsContainer.innerHTML = ''; // Очищаем контейнер
                 
-                // Добавляем отзывы в контейнер
                 data.reviews.forEach(review => {
                     const reviewElement = createReviewElement(review);
                     reviewsContainer.appendChild(reviewElement);
                 });
-                
-                // Прокручиваем к последнему сообщению
-                reviewsContainer.scrollTop = reviewsContainer.scrollHeight;
             }
         } catch (error) {
             console.error('Ошибка при загрузке отзывов:', error);
@@ -182,43 +179,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Функция для получения ID текущего пользователя
     const getCurrentUserId = () => {
-        // Проверяем все возможные места хранения данных пользователя
-        console.log('Проверка всех данных авторизации:');
-        
-        // Проверяем localStorage
-        const allLocalStorage = { ...localStorage };
-        console.log('localStorage:', allLocalStorage);
-        
-        // Проверяем sessionStorage
-        const allSessionStorage = { ...sessionStorage };
-        console.log('sessionStorage:', allSessionStorage);
-        
-        // Проверяем cookies
-        console.log('cookies:', document.cookie);
-
-        // Проверяем конкретные ключи, которые могут использоваться
-        const possibleKeys = ['userData', 'user', 'authData', 'currentUser', 'userInfo'];
-        
-        for (const key of possibleKeys) {
-            const data = localStorage.getItem(key);
-            if (data) {
-                console.log(`Найдены данные в localStorage по ключу ${key}:`, data);
-                try {
-                    const parsed = JSON.parse(data);
-                    if (parsed && parsed.id) {
-                        console.log('Найден ID пользователя:', parsed.id);
-                        return parsed.id;
-                    }
-                } catch (e) {
-                    console.log(`Ошибка парсинга данных из ${key}:`, e);
-                }
+        const userData = localStorage.getItem('userData');
+        if (userData) {
+            try {
+                const user = JSON.parse(userData);
+                return user.id;
+            } catch (e) {
+                console.error('Ошибка при получении ID пользователя:', e);
+                return null;
             }
         }
-
-        // Если ID не найден в localStorage, проверяем другие источники
-        // Добавьте здесь проверку тех механизмов авторизации, которые вы используете
-        
-        console.error('ID пользователя не найден в доступных источниках');
         return null;
     };
 
