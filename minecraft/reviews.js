@@ -71,21 +71,69 @@ document.addEventListener('DOMContentLoaded', () => {
         return reviewElement;
     };
 
-    // Функция проверки прав администратора
+    // Функция проверки авторизации
     const isAdmin = () => {
-        const userData = localStorage.getItem('userData');
-        console.log('Данные пользователя из localStorage:', userData);
-        
-        if (userData) {
-            try {
-                const user = JSON.parse(userData);
-                console.log('Роль пользователя:', user.role);
-                return user.role === 'admin';
-            } catch (e) {
-                console.error('Ошибка при парсинге данных пользователя:', e);
+        // Проверяем все возможные источники данных
+        const userDataSources = [
+            localStorage.getItem('userData'),
+            localStorage.getItem('user'),
+            localStorage.getItem('adminData'),
+            sessionStorage.getItem('userData'),
+            sessionStorage.getItem('user'),
+            sessionStorage.getItem('adminData')
+        ];
+
+        console.log('Все источники данных:', userDataSources);
+
+        for (const source of userDataSources) {
+            if (source) {
+                try {
+                    const userData = JSON.parse(source);
+                    console.log('Найдены данные пользователя:', userData);
+                    if (userData.role === 'admin') {
+                        return true;
+                    }
+                } catch (e) {
+                    console.error('Ошибка парсинга данных:', e);
+                }
             }
         }
+
+        // Проверяем cookie
+        const cookies = document.cookie.split(';').reduce((acc, cookie) => {
+            const [key, value] = cookie.trim().split('=');
+            acc[key] = value;
+            return acc;
+        }, {});
+        
+        console.log('Cookies:', cookies);
+
         return false;
+    };
+
+    // Функция для получения текущего пользователя
+    const getCurrentUser = () => {
+        // Проверяем все возможные источники данных
+        const sources = ['userData', 'user', 'adminData'];
+        
+        for (const source of sources) {
+            const data = localStorage.getItem(source) || sessionStorage.getItem(source);
+            if (data) {
+                try {
+                    return JSON.parse(data);
+                } catch (e) {
+                    console.error(`Ошибка парсинга ${source}:`, e);
+                }
+            }
+        }
+        
+        return null;
+    };
+
+    // Функция получения ID текущего пользователя
+    const getCurrentUserId = () => {
+        const user = getCurrentUser();
+        return user ? user.id : null;
     };
 
     // Функция удаления отзыва
@@ -213,21 +261,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
-
-    // Функция для получения ID текущего пользователя
-    const getCurrentUserId = () => {
-        const userData = localStorage.getItem('userData');
-        if (userData) {
-            try {
-                const user = JSON.parse(userData);
-                return user.id;
-            } catch (e) {
-                console.error('Ошибка при получении ID пользователя:', e);
-                return null;
-            }
-        }
-        return null;
-    };
 
     // Добавляем обработчик для проверки длины текста
     reviewInput.addEventListener('input', () => {
