@@ -99,6 +99,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.querySelectorAll('.accordion-header').forEach(button => {
         button.addEventListener('click', () => {
+            // Сначала закрываем все accordion items
+            document.querySelectorAll('.accordion-item').forEach(item => {
+                if (item !== button.parentElement && item.classList.contains('active')) {
+                    item.classList.remove('active');
+                }
+            });
+            
+            // Затем открываем/закрываем текущий accordion item
             const accordionItem = button.parentElement;
             accordionItem.classList.toggle('active');
         });
