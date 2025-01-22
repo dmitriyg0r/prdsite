@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const YooKassa = require('yookassa');
+const crypto = require('crypto');
 require('dotenv').config();
 
 const app = express();
@@ -9,34 +9,24 @@ app.use(cors({
     origin: 'https://space-point.ru'
 }));
 
-// Инициализация ЮKassa
-const yooKassa = new YooKassa({
-    shopId: process.env.YOOKASSA_SHOP_ID,
-    secretKey: process.env.YOOKASSA_SECRET_KEY
-});
-
 app.post('/api/create-payment', async (req, res) => {
     try {
         const { minecraftLogin, amount } = req.body;
-
-        const payment = await yooKassa.createPayment({
-            amount: {
-                value: amount.toFixed(2),
-                currency: 'RUB'
-            },
-            capture: true,
-            confirmation: {
-                type: 'redirect',
-                return_url: 'https://space-point.ru/minecraft/success.html'
-            },
-            description: `Доступ к серверу Minecraft для ${minecraftLogin}`,
-            metadata: {
-                minecraft_login: minecraftLogin
-            }
-        });
+        
+        // Создаем уникальный ID заказа
+        const orderId = Date.now();
+        
+        // Формируем строку для подписи
+        const signature = crypto
+            .createHash('md5')
+            .update(`${process.env.ROBOKASSA_LOGIN}:${amount}:${orderId}:${process.env.ROBOKASSA_PASSWORD1}`)
+            .digest('hex');
+        
+        // Формируем URL для перехода на страницу оплаты
+        const paymentUrl = `https://auth.robokassa.ru/Merchant/Index.aspx?MerchantLogin=${process.env.ROBOKASSA_LOGIN}&OutSum=${amount}&InvId=${orderId}&Description=Доступ к серверу Minecraft для ${minecraftLogin}&SignatureValue=${signature}&IsTest=1`;
 
         res.json({
-            confirmationUrl: payment.confirmation.confirmation_url
+            confirmationUrl: paymentUrl
         });
     } catch (error) {
         console.error('Payment creation error:', error);
@@ -46,11 +36,26 @@ app.post('/api/create-payment', async (req, res) => {
     }
 });
 
-// Обработчик уведомлений от ЮKassa
-app.post('/api/webhook', express.raw({type: 'application/json'}), async (req, res) => {
-    const signature = req.headers['yookassa-signature'];
-    // Проверка подписи и обработка уведомления
-    // ...
+// Обработчик уведомлений от Robokassa
+app.post('/api/result', express.urlencoded({ extended: true }), async (req, res) => {
+    const { OutSum, InvId, SignatureValue } = req.body;
+    
+    // Формируем подпись для проверки
+    const signature = crypto
+        .createHash('md5')
+        .update(`${OutSum}:${InvId}:${process.env.ROBOKASSA_PASSWORD2}`)
+        .digest('hex')
+        .toUpperCase();
+    
+    if (SignatureValue.toUpperCase() === signature) {
+        // Подпись верна, обрабатываем платеж
+        console.log(`Успешный платеж: Заказ #${InvId}, Сумма: ${OutSum}`);
+        res.send('OK');
+    } else {
+        // Подпись неверна
+        console.error('Неверная подпись платежа');
+        res.status(400).send('Bad signature');
+    }
 });
 
 const PORT = process.env.PORT || 3004;
