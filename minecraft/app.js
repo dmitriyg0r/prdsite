@@ -13,25 +13,54 @@ app.post('/api/create-payment', async (req, res) => {
     try {
         const { minecraftLogin, amount } = req.body;
         
-        // Создаем уникальный ID заказа
+        // Проверка входных данных
+        if (!minecraftLogin || !amount) {
+            console.error('Missing required fields:', { minecraftLogin, amount });
+            return res.status(400).json({
+                error: 'Отсутствуют обязательные поля'
+            });
+        }
+
+        // Проверка формата суммы
+        const parsedAmount = parseFloat(amount);
+        if (isNaN(parsedAmount) || parsedAmount <= 0) {
+            console.error('Invalid amount:', amount);
+            return res.status(400).json({
+                error: 'Неверная сумма'
+            });
+        }
+
         const orderId = Date.now();
         
-        // Формируем строку для подписи
+        // Логируем данные перед формированием подписи
+        console.log('Payment data:', {
+            login: process.env.ROBOKASSA_LOGIN,
+            amount: parsedAmount,
+            orderId,
+            minecraftLogin
+        });
+
         const signature = crypto
             .createHash('md5')
-            .update(`${process.env.ROBOKASSA_LOGIN}:${amount}:${orderId}:${process.env.ROBOKASSA_PASSWORD1}`)
+            .update(`${process.env.ROBOKASSA_LOGIN}:${parsedAmount}:${orderId}:${process.env.ROBOKASSA_PASSWORD1}`)
             .digest('hex');
         
-        // Формируем URL для перехода на страницу оплаты
-        const paymentUrl = `https://auth.robokassa.ru/Merchant/Index.aspx?MerchantLogin=${process.env.ROBOKASSA_LOGIN}&OutSum=${amount}&InvId=${orderId}&Description=Доступ к серверу Minecraft для ${minecraftLogin}&SignatureValue=${signature}&IsTest=1`;
+        // Кодируем параметры для URL
+        const description = encodeURIComponent(`Доступ к серверу Minecraft для ${minecraftLogin}`);
+        
+        const paymentUrl = `https://auth.robokassa.ru/Merchant/Index.aspx?MerchantLogin=${process.env.ROBOKASSA_LOGIN}&OutSum=${parsedAmount}&InvId=${orderId}&Description=${description}&SignatureValue=${signature}&IsTest=1`;
 
-        res.json({
-            confirmationUrl: paymentUrl
+        console.log('Generated payment URL:', paymentUrl);
+
+        return res.json({
+            confirmationUrl: paymentUrl,
+            orderId: orderId
         });
     } catch (error) {
-        console.error('Payment creation error:', error);
-        res.status(500).json({
-            error: 'Ошибка при создании платежа'
+        console.error('Detailed payment creation error:', error);
+        return res.status(500).json({
+            error: 'Ошибка при создании платежа',
+            details: error.message
         });
     }
 });
