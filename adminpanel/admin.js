@@ -22,6 +22,8 @@ const FILE_API_URL = (() => {
 
 let currentPage = 1;
 let totalPages = 1;
+let commandHistory = [];
+let historyIndex = -1;
 
 // Добавим функцию для получения userId из URL или localStorage
 function getAdminId() {
@@ -867,8 +869,6 @@ async function removeFromWhitelist(uuid) {
 
 let ws = null;
 let terminalSessionId = null;
-let commandHistory = [];
-let historyIndex = -1;
 
 function initializeTerminal() {
     const terminalOutput = document.getElementById('consoleOutput');
@@ -934,6 +934,25 @@ function initializeTerminal() {
             console.error('Ошибка обработки сообщения:', err);
         }
     };
+
+    loadCommandHistory();
+    
+    // Добавляем индикатор статуса
+    const statusElement = document.createElement('div');
+    statusElement.className = 'terminal-status';
+    document.querySelector('.terminal-container').appendChild(statusElement);
+    
+    ws.onopen = () => {
+        statusElement.textContent = 'Connected';
+        statusElement.style.color = '#0f0';
+        // ... existing onopen code ...
+    };
+    
+    ws.onclose = () => {
+        statusElement.textContent = 'Disconnected';
+        statusElement.style.color = '#ff4444';
+        // ... existing onclose code ...
+    };
 }
 
 function updateSystemInfo(data) {
@@ -964,15 +983,35 @@ function escapeHtml(unsafe) {
         .replace(/'/g, "&#039;");
 }
 
-// Добавляем обработчик для терминального ввода
+// Обновляем обработчик для терминального ввода
 const consoleInput = document.getElementById('consoleInput');
 if (consoleInput) {
     consoleInput.addEventListener('keydown', function(event) {
         if (event.key === 'Enter') {
             event.preventDefault();
-            const command = this.value;
-            if (command.trim()) {
+            const command = this.value.trim();
+            if (command) {
+                // Добавляем команду в историю
+                commandHistory.push(command);
+                historyIndex = commandHistory.length;
                 executeCommand(command);
+                this.value = '';
+            }
+        } else if (event.key === 'ArrowUp') {
+            // Навигация по истории вверх
+            event.preventDefault();
+            if (historyIndex > 0) {
+                historyIndex--;
+                this.value = commandHistory[historyIndex];
+            }
+        } else if (event.key === 'ArrowDown') {
+            // Навигация по истории вниз
+            event.preventDefault();
+            if (historyIndex < commandHistory.length - 1) {
+                historyIndex++;
+                this.value = commandHistory[historyIndex];
+            } else {
+                historyIndex = commandHistory.length;
                 this.value = '';
             }
         } else if (event.key === 'c' && event.ctrlKey) {
@@ -987,6 +1026,20 @@ if (consoleInput) {
     });
 }
 
+// Добавляем функцию для сохранения истории команд
+function saveCommandHistory() {
+    localStorage.setItem('terminalHistory', JSON.stringify(commandHistory.slice(-100)));
+}
+
+// Загружаем историю при инициализации
+function loadCommandHistory() {
+    const savedHistory = localStorage.getItem('terminalHistory');
+    if (savedHistory) {
+        commandHistory = JSON.parse(savedHistory);
+        historyIndex = commandHistory.length;
+    }
+}
+
 // Обновляем функцию executeCommand
 function executeCommand(command) {
     if (!command) {
@@ -999,90 +1052,66 @@ function executeCommand(command) {
             command: command
         }));
         
-        // Добавляем введенную команду в вывод терминала
         const consoleOutput = document.getElementById('consoleOutput');
-        consoleOutput.innerHTML += `<div class="command-line">$ ${command}</div>`;
+        const timestamp = new Date().toLocaleTimeString();
+        consoleOutput.innerHTML += `
+            <div class="command-line">
+                <span class="timestamp">[${timestamp}]</span>
+                <span class="prompt">$</span>
+                <span class="command">${escapeHtml(command)}</span>
+            </div>
+        `;
         
-        // Прокручиваем к последней строке
         consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        saveCommandHistory();
     }
 }
 
-function clearTerminal() {
-    document.getElementById('consoleOutput').innerHTML = '';
-}
-
-function toggleFullscreen() {
-    const terminal = document.querySelector('.terminal-container');
-    if (!document.fullscreenElement) {
-        terminal.requestFullscreen();
-    } else {
-        document.exitFullscreen();
-    }
-}
-
-// Добавим автодополнение по Tab
-document.getElementById('consoleInput').addEventListener('keydown', (e) => {
-    if (e.key === 'Tab') {
-        e.preventDefault();
-        // Здесь можно добавить логику автодополнения
-    }
-});
-
-function handleHotkeys(e) {
-    // Ctrl + L - очистка терминала
-    if (e.ctrlKey && e.key === 'l') {
-        e.preventDefault();
-        clearTerminal();
+// Добавляем стили для улучшенного вывода
+const terminalStyles = `
+    .timestamp {
+        color: #666;
+        font-size: 0.9em;
+        margin-right: 8px;
     }
     
-    // Ctrl + K - очистка текущей строки
-    if (e.ctrlKey && e.key === 'k') {
-        e.preventDefault();
-        document.getElementById('consoleInput').value = '';
+    .prompt {
+        color: #0f0;
+        margin-right: 8px;
     }
     
-    // Alt + C - копировать выделенный текст
-    if (e.altKey && e.key === 'c') {
-        e.preventDefault();
-        const selection = window.getSelection().toString();
-        if (selection) {
-            navigator.clipboard.writeText(selection);
-        }
-    }
-}
-
-document.addEventListener('keydown', handleHotkeys);
-
-function showExecutingIndicator(show) {
-    const button = document.querySelector('.terminal-input-container button');
-    if (show) {
-        button.disabled = true;
-        button.innerHTML = '<span class="spinner"></span> Выполняется...';
-    } else {
-        button.disabled = false;
-        button.innerHTML = 'Выполнить';
-    }
-}
-
-// Добавляем стили для спиннера
-const style = document.createElement('style');
-style.textContent = `
-    .spinner {
-        display: inline-block;
-        width: 12px;
-        height: 12px;
-        border: 2px solid #ffffff;
-        border-radius: 50%;
-        border-top-color: transparent;
-        animation: spin 1s linear infinite;
+    .command {
+        color: #fff;
     }
     
-    @keyframes spin {
-        to {transform: rotate(360deg);}
+    .output-line {
+        padding: 2px 0;
+        line-height: 1.4;
+    }
+    
+    .error-line {
+        color: #ff4444;
+        padding: 2px 0;
+        line-height: 1.4;
+    }
+    
+    .terminal-container {
+        position: relative;
+    }
+    
+    .terminal-status {
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        font-size: 12px;
+        color: #666;
     }
 `;
-document.head.appendChild(style);
+
+// Добавляем новые стили
+const styleElement = document.createElement('style');
+styleElement.textContent = terminalStyles;
+document.head.appendChild(styleElement);
 
 function initializeContextMenu() {
     const terminal = document.querySelector('.terminal-container');
