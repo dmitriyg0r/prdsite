@@ -964,23 +964,47 @@ function escapeHtml(unsafe) {
         .replace(/'/g, "&#039;");
 }
 
-// Обновляем функцию executeCommand
-function executeCommand() {
-    const command = document.getElementById('consoleInput').value.trim();
-    if (!command) {
-        alert('Пожалуйста, введите команду');
-        return;
-    }
+// Добавляем обработчик для терминального ввода
+const consoleInput = document.getElementById('consoleInput');
+if (consoleInput) {
+    consoleInput.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            const command = this.value;
+            if (command.trim()) {
+                executeCommand(command);
+                this.value = '';
+            }
+        } else if (event.key === 'c' && event.ctrlKey) {
+            event.preventDefault();
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'signal',
+                    signal: 'SIGINT'
+                }));
+            }
+        }
+    });
+}
 
+// Обновляем функцию executeCommand
+function executeCommand(command) {
+    if (!command) {
+        command = document.getElementById('consoleInput').value;
+    }
+    
     if (ws && ws.readyState === WebSocket.OPEN) {
-        document.getElementById('consoleOutput').textContent = '';
         ws.send(JSON.stringify({
             type: 'command',
-            command: command,
-            sessionId: terminalSessionId
+            command: command
         }));
-    } else {
-        alert('Ошибка подключения к терминалу');
+        
+        // Добавляем введенную команду в вывод терминала
+        const consoleOutput = document.getElementById('consoleOutput');
+        consoleOutput.innerHTML += `<div class="command-line">$ ${command}</div>`;
+        
+        // Прокручиваем к последней строке
+        consoleOutput.scrollTop = consoleOutput.scrollHeight;
     }
 }
 
