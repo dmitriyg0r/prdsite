@@ -112,14 +112,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    const cards = document.querySelectorAll('.pricing-card');
-    let activeCard = null;
-
-    cards.forEach(card => {
-        // Добавляем форму в каждую карточку
-        const formContainer = document.createElement('div');
-        formContainer.className = 'login-form-container';
-        formContainer.innerHTML = `
+    // Создаем модальное окно
+    const modalOverlay = document.createElement('div');
+    modalOverlay.className = 'modal-overlay';
+    modalOverlay.innerHTML = `
+        <div class="modal-card">
+            <button class="modal-close">&times;</button>
+            <h3 class="modal-title"></h3>
+            <div class="modal-price"></div>
             <form class="minecraft-login-form">
                 <input type="text" 
                        class="minecraft-login-input" 
@@ -127,67 +127,78 @@ document.addEventListener('DOMContentLoaded', function() {
                        required>
                 <button type="submit" class="pay-button">Оплатить</button>
             </form>
-        `;
-        card.appendChild(formContainer);
+        </div>
+    `;
+    document.body.appendChild(modalOverlay);
 
-        // Обработчик клика по карточке
-        card.addEventListener('click', function(e) {
-            if (e.target.closest('.minecraft-login-form')) {
-                return; // Игнорируем клики по форме
-            }
+    const modal = {
+        overlay: modalOverlay,
+        card: modalOverlay.querySelector('.modal-card'),
+        closeBtn: modalOverlay.querySelector('.modal-close'),
+        title: modalOverlay.querySelector('.modal-title'),
+        price: modalOverlay.querySelector('.modal-price'),
+        form: modalOverlay.querySelector('.minecraft-login-form'),
+        currentPrice: 0,
+        currentTitle: ''
+    };
 
-            if (activeCard && activeCard !== card) {
-                activeCard.classList.remove('expanded');
-            }
-
-            card.classList.toggle('expanded');
-            activeCard = card.classList.contains('expanded') ? card : null;
-        });
-
-        // Обработчик отправки формы
-        card.querySelector('.minecraft-login-form').addEventListener('submit', async function(e) {
-            e.preventDefault();
+    // Обработчики для карточек
+    document.querySelectorAll('.pricing-card').forEach(card => {
+        card.addEventListener('click', function() {
+            modal.currentTitle = this.querySelector('h4').textContent;
+            modal.currentPrice = this.querySelector('.price').textContent;
             
-            const login = this.querySelector('.minecraft-login-input').value;
-            const price = card.querySelector('.price').textContent.replace('₽', '');
-            const title = card.querySelector('h4').textContent;
-
-            showLoadingIndicator();
-            
-            try {
-                const response = await fetch('/api/create-payment', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        minecraftLogin: login,
-                        amount: parseInt(price),
-                        description: `Тариф ${title}`
-                    })
-                });
-
-                const result = await response.json();
-                
-                if (result.confirmationUrl) {
-                    window.location.href = result.confirmationUrl;
-                } else {
-                    throw new Error('Не удалось получить ссылку на оплату');
-                }
-            } catch (error) {
-                console.error('Ошибка при создании платежа:', error);
-                alert('Произошла ошибка при создании платежа. Пожалуйста, попробуйте снова.');
-            } finally {
-                hideLoadingIndicator();
-            }
+            modal.title.textContent = modal.currentTitle;
+            modal.price.textContent = modal.currentPrice;
+            modal.overlay.classList.add('active');
         });
     });
 
-    // Закрытие активной карточки при клике вне её
-    document.addEventListener('click', function(e) {
-        if (!e.target.closest('.pricing-card') && activeCard) {
-            activeCard.classList.remove('expanded');
-            activeCard = null;
+    // Закрытие модального окна
+    modal.closeBtn.addEventListener('click', () => {
+        modal.overlay.classList.remove('active');
+    });
+
+    modal.overlay.addEventListener('click', (e) => {
+        if (e.target === modal.overlay) {
+            modal.overlay.classList.remove('active');
+        }
+    });
+
+    // Обработка отправки формы
+    modal.form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const login = this.querySelector('.minecraft-login-input').value;
+        const price = modal.currentPrice.replace('₽', '');
+
+        showLoadingIndicator();
+        
+        try {
+            const response = await fetch('/api/create-payment', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    minecraftLogin: login,
+                    amount: parseInt(price),
+                    description: `Тариф ${modal.currentTitle}`
+                })
+            });
+
+            const result = await response.json();
+            
+            if (result.confirmationUrl) {
+                window.location.href = result.confirmationUrl;
+            } else {
+                throw new Error('Не удалось получить ссылку на оплату');
+            }
+        } catch (error) {
+            console.error('Ошибка при создании платежа:', error);
+            alert('Произошла ошибка при создании платежа. Пожалуйста, попробуйте снова.');
+        } finally {
+            hideLoadingIndicator();
         }
     });
 });
