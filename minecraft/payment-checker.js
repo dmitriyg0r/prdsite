@@ -44,7 +44,6 @@ class TochkaPaymentChecker {
         try {
             const url = `${this.baseUrl}/accounts/${this.accountId}/${this.bankId}/balances`;
             console.log('Запрос баланса URL:', url);
-            console.log('Заголовки:', this.getHeaders());
 
             const response = await fetch(url, {
                 method: 'GET',
@@ -80,7 +79,6 @@ class TochkaPaymentChecker {
         try {
             const url = `${this.baseUrl}/accounts/${this.accountId}/${this.bankId}/transactions`;
             console.log('Запрос транзакций URL:', url);
-            console.log('Заголовки:', this.getHeaders());
 
             const response = await fetch(url, {
                 method: 'GET',

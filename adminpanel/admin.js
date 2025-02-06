@@ -1465,30 +1465,40 @@ async function loadBalanceData() {
             }
         });
 
-        if (response.status === 401) {
-            handleUnauthorized();
+        if (!response.ok) {
+            console.error('Ошибка при получении баланса:', response.status);
+            const errorText = await response.text();
+            console.error('Ответ сервера:', errorText);
             return;
         }
 
         const data = await response.json();
-        
-        if (data.success) {
-            const balanceElement = document.getElementById('accountBalance');
-            if (balanceElement) {
-                const formattedBalance = new Intl.NumberFormat('ru-RU', { 
-                    style: 'currency', 
+        console.log('Полученные данные баланса:', data); // Отладочный вывод
+
+        const balanceElement = document.getElementById('accountBalance');
+        if (balanceElement) {
+            if (data.success && data.balance !== undefined) {
+                const formattedBalance = new Intl.NumberFormat('ru-RU', {
+                    style: 'currency',
                     currency: data.currency || 'RUB',
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2
-                }).format(parseFloat(data.balance));
+                }).format(data.balance);
                 
                 balanceElement.textContent = formattedBalance;
+                balanceElement.classList.remove('error');
+            } else {
+                balanceElement.textContent = 'Ошибка загрузки баланса';
+                balanceElement.classList.add('error');
             }
-        } else {
-            console.error('Ошибка при получении баланса:', data.error);
         }
     } catch (error) {
         console.error('Ошибка при загрузке баланса:', error);
+        const balanceElement = document.getElementById('accountBalance');
+        if (balanceElement) {
+            balanceElement.textContent = 'Ошибка загрузки баланса';
+            balanceElement.classList.add('error');
+        }
     }
 }
 
@@ -1543,15 +1553,12 @@ async function loadPaymentsData() {
     }
 }
 
-// Добавляем автообновление баланса каждые 5 минут
+// Добавляем автообновление баланса
 let balanceUpdateInterval;
 
 function startBalanceAutoUpdate() {
-    // Сразу загружаем баланс
-    loadBalanceData();
-    
-    // Устанавливаем интервал обновления
-    balanceUpdateInterval = setInterval(loadBalanceData, 5 * 60 * 1000);
+    loadBalanceData(); // Загружаем сразу
+    balanceUpdateInterval = setInterval(loadBalanceData, 60000); // Обновляем каждую минуту
 }
 
 function stopBalanceAutoUpdate() {
@@ -1566,23 +1573,25 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // ... existing initialization code ...
     
-    // Запускаем автообновление при переходе на вкладку платежей
-    document.querySelector('[data-section="payments"]').addEventListener('click', () => {
-        loadPaymentsData();
-        startBalanceAutoUpdate();
-    });
+    // Добавляем обработчик для вкладки платежей
+    const paymentsTab = document.querySelector('[data-tab="payments"]');
+    if (paymentsTab) {
+        paymentsTab.addEventListener('click', () => {
+            loadPaymentsData();
+            startBalanceAutoUpdate();
+        });
+    }
 });
 
 // Обновляем функцию переключения вкладок
-function switchSection(sectionName) {
-    // Останавливаем автообновление при переходе на другую вкладку
-    stopBalanceAutoUpdate();
-    
-    // ... existing section switching code ...
-    
-    if (sectionName === 'payments') {
+function switchTab(tabName) {
+    // ... existing code ...
+
+    if (tabName === 'payments') {
         loadPaymentsData();
         startBalanceAutoUpdate();
+    } else {
+        stopBalanceAutoUpdate();
     }
 }
 

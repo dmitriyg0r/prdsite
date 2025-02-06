@@ -137,11 +137,13 @@ function extractMinecraftLogin(description) {
     return match ? match[1] : 'Неизвестно';
 }
 
-// Добавляем новый эндпоинт для получения баланса
+// Добавляем эндпоинт для получения баланса
 app.get('/api/balance', async (req, res) => {
     try {
         const paymentChecker = new TochkaPaymentChecker();
         const balanceData = await paymentChecker.getAccountBalance();
+        
+        console.log('Полученные данные баланса:', balanceData); // Отладочный вывод
         
         res.json({
             success: true,
@@ -150,9 +152,9 @@ app.get('/api/balance', async (req, res) => {
         });
     } catch (error) {
         console.error('Ошибка при получении баланса:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Ошибка при получении баланса' 
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при получении баланса'
         });
     }
 });
