@@ -100,6 +100,42 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
+app.get('/api/payments', async (req, res) => {
+    try {
+        const paymentChecker = new TochkaPaymentChecker();
+        
+        // Получаем баланс
+        const balanceData = await paymentChecker.getAccountBalance();
+        
+        // Получаем последние платежи
+        const payments = await paymentChecker.getRecentPayments();
+        
+        res.json({
+            success: true,
+            balance: balanceData.balance,
+            payments: payments.map(payment => ({
+                date: payment.date,
+                minecraftLogin: extractMinecraftLogin(payment.description),
+                amount: payment.amount,
+                status: payment.status
+            }))
+        });
+    } catch (error) {
+        console.error('Ошибка при получении данных платежей:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Ошибка при получении данных платежей' 
+        });
+    }
+});
+
+function extractMinecraftLogin(description) {
+    // Предполагаем, что логин указан в описании платежа
+    // Можно настроить регулярное выражение под конкретный формат
+    const match = description.match(/login:\s*(\w+)/i);
+    return match ? match[1] : 'Неизвестно';
+}
+
 app.listen(port, () => {
     console.log(`Сервер запущен на порту ${port}`);
 });

@@ -1456,3 +1456,70 @@ async function renameFile(path) {
     }
 }
 
+async function loadPaymentsData() {
+    if (!checkAuth()) return;
+    
+    try {
+        const response = await fetch(`${API_URL}/api/payments`, {
+            credentials: 'include',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+            }
+        });
+
+        if (response.status === 401) {
+            handleUnauthorized();
+            return;
+        }
+
+        const data = await response.json();
+        
+        if (data.success) {
+            // Обновляем баланс
+            document.getElementById('accountBalance').textContent = 
+                new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB' })
+                    .format(data.balance);
+
+            // Обновляем таблицу платежей
+            const tbody = document.getElementById('paymentsTableBody');
+            tbody.innerHTML = '';
+            
+            data.payments.forEach(payment => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${new Date(payment.date).toLocaleString('ru-RU')}</td>
+                    <td>${payment.minecraftLogin}</td>
+                    <td>${new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB' })
+                        .format(payment.amount)}</td>
+                    <td><span class="payment-status status-${payment.status.toLowerCase()}">
+                        ${payment.status}</span></td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+    } catch (err) {
+        console.error('Ошибка при загрузке данных платежей:', err);
+    }
+}
+
+// Добавляем вызов функции при инициализации
+document.addEventListener('DOMContentLoaded', () => {
+    if (!checkAuth()) return;
+    
+    // ... existing initialization code ...
+    
+    // Добавляем обработчик для вкладки платежей
+    document.querySelector('[data-section="payments"]').addEventListener('click', () => {
+        loadPaymentsData();
+    });
+});
+
+// Обновляем функцию переключения вкладок
+function switchSection(sectionName) {
+    // ... existing code ...
+    
+    if (sectionName === 'payments') {
+        loadPaymentsData();
+    }
+}
+

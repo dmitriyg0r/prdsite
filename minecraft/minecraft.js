@@ -1,3 +1,5 @@
+import TochkaPaymentChecker from './payment-checker.js';
+
 document.addEventListener('DOMContentLoaded', function() {
     const serverIP = '188.127.241.209';
     const serverPort = 25971;
@@ -170,33 +172,40 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         
         const login = this.querySelector('.minecraft-login-input').value;
-        const price = modal.currentPrice.replace('₽', '');
+        const price = parseInt(modal.currentPrice.replace('₽', ''));
 
         showLoadingIndicator();
         
         try {
-            const response = await fetch('/api/create-payment', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    minecraftLogin: login,
-                    amount: parseInt(price),
-                    description: `Тариф ${modal.currentTitle}`
-                })
-            });
-
-            const result = await response.json();
+            const paymentChecker = new TochkaPaymentChecker();
+            const paymentResult = await paymentChecker.checkPayment(price, login);
             
-            if (result.confirmationUrl) {
-                window.location.href = result.confirmationUrl;
+            if (paymentResult.found) {
+                // Добавляем пользователя в whitelist
+                const response = await fetch('/api/add-to-whitelist', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        minecraftLogin: login,
+                        paymentDetails: paymentResult.paymentDetails
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    window.location.href = '/minecraft/success.html';
+                } else {
+                    throw new Error('Не удалось добавить пользователя в whitelist');
+                }
             } else {
-                throw new Error('Не удалось получить ссылку на оплату');
+                alert('Платеж не найден. Пожалуйста, убедитесь, что вы совершили оплату и правильно указали логин в описании платежа.');
             }
         } catch (error) {
-            console.error('Ошибка при создании платежа:', error);
-            alert('Произошла ошибка при создании платежа. Пожалуйста, попробуйте снова.');
+            console.error('Ошибка:', error);
+            alert('Произошла ошибка при проверке платежа. Пожалуйста, попробуйте позже или свяжитесь с администрацией.');
         } finally {
             hideLoadingIndicator();
         }

@@ -27,6 +27,7 @@
                 <li data-tab="dashboard" class="active">Дашборд</li>
                 <li data-tab="users">Пользователи</li>
                 <li data-tab="whitelist">White List</li>
+                <li data-tab="payments">Платежи</li>
                 <li data-tab="settings">Настройки</li>
                 <li data-tab="console">Консоль</li>
                 <li data-tab="files">Файлы</li>
@@ -46,6 +47,15 @@
                     </button>
                 </div>
             </div>
+        </div>
+
+        <div class="menu-section">
+            <button class="menu-btn active" data-section="stats">Статистика</button>
+            <button class="menu-btn" data-section="users">Пользователи</button>
+            <button class="menu-btn" data-section="whitelist">White List</button>
+            <button class="menu-btn" data-section="payments">Платежи</button>
+            <button class="menu-btn" data-section="settings">Настройки</button>
+            <button class="menu-btn" data-section="console">Консоль</button>
         </div>
 
         <div class="stats-grid">
@@ -180,6 +190,29 @@
             <div class="stat-card">
                 <h3>Настройки</h3>
                 <p>Раздел в разработке</p>
+            </div>
+        </div>
+
+        <div class="payments-section" style="display: none;">
+            <div class="stat-card balance-card">
+                <h3>Баланс счета</h3>
+                <div class="balance-amount" id="accountBalance">-</div>
+            </div>
+            
+            <div class="payments-table-container">
+                <h3>История платежей</h3>
+                <table class="payments-table">
+                    <thead>
+                        <tr>
+                            <th>Дата</th>
+                            <th>Minecraft логин</th>
+                            <th>Сумма</th>
+                            <th>Статус</th>
+                        </tr>
+                    </thead>
+                    <tbody id="paymentsTableBody">
+                    </tbody>
+                </table>
             </div>
         </div>
 

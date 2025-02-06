@@ -738,3 +738,64 @@
 .file-actions button:hover {
     opacity: 0.9;
 }
+
+.payments-section {
+    padding: 20px;
+}
+
+.balance-card {
+    margin-bottom: 30px;
+}
+
+.balance-amount {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #2ecc71;
+    margin-top: 10px;
+}
+
+.payments-table-container {
+    background: white;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.payments-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.payments-table th,
+.payments-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.payments-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+}
+
+.payment-status {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.status-success {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.status-pending {
+    background: #fff3e0;
+    color: #ef6c00;
+}
+
+.status-failed {
+    background: #ffebee;
+    color: #c62828;
+}
