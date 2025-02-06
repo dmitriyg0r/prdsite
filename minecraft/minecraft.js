@@ -111,6 +111,42 @@ document.addEventListener('DOMContentLoaded', function() {
             accordionItem.classList.toggle('active');
         });
     });
+
+    // Добавляем обработчики для карточек с тарифами
+    document.querySelectorAll('.pricing-card').forEach(card => {
+        card.addEventListener('click', async function() {
+            const price = this.querySelector('.price').textContent.replace('₽', '');
+            const title = this.querySelector('h4').textContent;
+            showLoadingIndicator();
+            
+            try {
+                const response = await fetch('/api/create-payment', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        minecraftLogin: document.getElementById('minecraft-login').value || '',
+                        amount: parseInt(price),
+                        description: `Тариф ${title}`
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.confirmationUrl) {
+                    window.location.href = result.confirmationUrl;
+                } else {
+                    throw new Error('Не удалось получить ссылку на оплату');
+                }
+            } catch (error) {
+                console.error('Ошибка при создании платежа:', error);
+                alert('Пожалуйста, сначала введите ваш логин Minecraft в форме ниже');
+            } finally {
+                hideLoadingIndicator();
+            }
+        });
+    });
 });
 
 function showLoadingIndicator() {
