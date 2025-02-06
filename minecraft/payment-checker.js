@@ -11,10 +11,10 @@ dotenv.config({ path: join(__dirname, '..', '.env') });
 
 // Проверяем наличие переменных окружения и используем значения по умолчанию для разработки
 const config = {
-    baseUrl: 'https://enter.tochka.com/uapi/open-banking/v1.0',  // Обновленный URL
-    accountId: '40817810802000000008', // Номер счета
-    bankId: '044525104', // БИК банка
-    token: process.env.TOCHKA_API_TOKEN
+    baseUrl: 'https://enter.tochka.com/uapi/open-banking/v1.0',
+    accountId: '40817810802000000008',
+    bankId: '044525104',
+    token: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJqVlhHd3I4Z3NxY0FsZTJhd05CUGdVaTJ6c0ZBUDhBbSJ9.Uk-n6PHtKr79GIwEBijZFr4MhG3QK7dmOBKvD8gU68Ip8dAooHm9Xm3_Oa3HfZHBc0z8_CsHiR0XvR_HVPfKiNjgh9mKyUUg0xuEw6lCo0AXnf9nuzkhBjMWTniUvxaCFAMDZFszT2e1AjKq09O4PkVttjgayCJiT5IAiF27C00Mk38hQZo8ybTj8ZVeiCWCB_ba9kz1kYr_EaQ-K4DT1uggGKtoRrpRGJruF__g8OwPknU91xY0O5y57NdfGLD7O64Nvqecf6Vp_Lcf6eHtoEX3F4-1blU-cNJVdf1uIiKQZai2DGhMnuMHVobHCjMPnJ4lY_upKIimKtR5sfek1wTcecxa-hJy5MEG0MpjbS7S43HAIzoB_jOI3ZuyRD9ubGJS-ZcMEUACzyBahbSVIP7A-J0_Z8TgBcDL-FuUvCShzGzneceqRuiKpmQFDznsJEuJGy4DBr0s7e4sLKYEKUZ3syg-hgYtl0WkAo4GArasn6af5baefLgLy0j-ZARI' // Токен напрямую в конфиге
 };
 
 // Проверяем только в production режиме
@@ -30,19 +30,25 @@ class TochkaPaymentChecker {
         this.token = config.token;
     }
 
+    // Получение заголовков для запросов
+    getHeaders() {
+        return {
+            'Authorization': `Bearer ${this.token}`,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        };
+    }
+
     // Получение баланса счета
     async getAccountBalance() {
         try {
-            // Формируем URL в соответствии с документацией
             const url = `${this.baseUrl}/accounts/${this.accountId}/${this.bankId}/balances`;
-            console.log('Запрос баланса URL:', url); // Отладка
+            console.log('Запрос баланса URL:', url);
+            console.log('Заголовки:', this.getHeaders());
 
             const response = await fetch(url, {
                 method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${this.token}`,
-                    'Accept': 'application/json'
-                }
+                headers: this.getHeaders()
             });
 
             if (!response.ok) {
@@ -55,7 +61,6 @@ class TochkaPaymentChecker {
             const data = await response.json();
             console.log('Ответ API баланса:', data);
 
-            // Обработка ответа API
             const balanceInfo = data.Data?.Balance?.[0] || {};
             return {
                 balance: balanceInfo.Amount?.Amount || 0,
@@ -74,14 +79,12 @@ class TochkaPaymentChecker {
     async getRecentPayments() {
         try {
             const url = `${this.baseUrl}/accounts/${this.accountId}/${this.bankId}/transactions`;
-            console.log('Запрос транзакций URL:', url); // Отладка
+            console.log('Запрос транзакций URL:', url);
+            console.log('Заголовки:', this.getHeaders());
 
             const response = await fetch(url, {
                 method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${this.token}`,
-                    'Accept': 'application/json'
-                }
+                headers: this.getHeaders()
             });
 
             if (!response.ok) {
@@ -94,7 +97,6 @@ class TochkaPaymentChecker {
             const data = await response.json();
             console.log('Ответ API платежей:', data);
 
-            // Обработка ответа API
             return data.Data?.Transaction || [];
         } catch (error) {
             console.error('Ошибка при получении платежей:', error);
@@ -105,12 +107,13 @@ class TochkaPaymentChecker {
     // Метод для проверки доступности API
     async testConnection() {
         try {
-            const response = await fetch(`${this.baseUrl}/accounts`, {
+            const url = `${this.baseUrl}/accounts/${this.accountId}/${this.bankId}/balances`;
+            console.log('Тестовый запрос URL:', url);
+            console.log('Заголовки:', this.getHeaders());
+
+            const response = await fetch(url, {
                 method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${this.token}`,
-                    'Accept': 'application/json'
-                }
+                headers: this.getHeaders()
             });
             
             if (!response.ok) {
@@ -181,7 +184,7 @@ console.log('Конфигурация API:');
 console.log('Base URL:', config.baseUrl);
 console.log('Account ID:', config.accountId);
 console.log('Bank ID:', config.bankId);
-console.log('Token present:', !!config.token);
+console.log('Token:', config.token ? 'Present' : 'Missing');
 
 checker.testConnection().then(isConnected => {
     console.log('Подключение к API:', isConnected ? 'успешно' : 'ошибка');
