@@ -4,7 +4,7 @@ const pool = require('./maindb');
 import TochkaPaymentChecker from '../minecraft/payment-checker.js';
 
 const app = express();
-const port = 3001;
+const port = 3000;
 
 // Разрешаем запросы с обоих доменов
 const allowedOrigins = [
