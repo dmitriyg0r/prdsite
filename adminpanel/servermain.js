@@ -1,6 +1,6 @@
-const express = require('express');
-const cors = require('cors');
-const pool = require('./maindb');
+import express from 'express';
+import cors from 'cors';
+import { createPool } from 'mysql2/promise';
 import TochkaPaymentChecker from '../minecraft/payment-checker.js';
 
 const app = express();
@@ -159,6 +159,16 @@ app.get('/api/balance', async (req, res) => {
             error: 'Ошибка при получении баланса'
         });
     }
+});
+
+const pool = createPool({
+    host: 'localhost',
+    user: 'root',
+    password: 'sGLTccA_Na#9zC',
+    database: 'maincraft',
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
 });
 
 app.listen(port, () => {
