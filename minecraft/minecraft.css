@@ -282,6 +282,7 @@
     border-radius: 20px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
     cursor: pointer;
+    transition: all 0.3s ease;
 }
 
 .pricing-card:hover {
@@ -337,6 +338,54 @@
 
 .pricing-card:active {
     transform: scale(0.98);
+}
+
+.pricing-card.expanded {
+    max-width: 100%;
+    flex: 1 1 100%;
+    margin: 1rem 0;
+}
+
+.login-form-container {
+    height: 0;
+    overflow: hidden;
+    transition: height 0.3s ease;
+    margin-top: 20px;
+}
+
+.expanded .login-form-container {
+    height: auto;
+    min-height: 150px;
+}
+
+.minecraft-login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 20px 0;
+}
+
+.minecraft-login-input {
+    padding: 12px;
+    border: 2px solid #3498db;
+    border-radius: 8px;
+    font-size: 16px;
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.pay-button {
+    padding: 12px 24px;
+    background: #27ae60;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.pay-button:hover {
+    background: #219a52;
 }
 
 @media (min-width: 1024px) {

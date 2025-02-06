@@ -112,11 +112,46 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Добавляем обработчики для карточек с тарифами
-    document.querySelectorAll('.pricing-card').forEach(card => {
-        card.addEventListener('click', async function() {
-            const price = this.querySelector('.price').textContent.replace('₽', '');
-            const title = this.querySelector('h4').textContent;
+    const cards = document.querySelectorAll('.pricing-card');
+    let activeCard = null;
+
+    cards.forEach(card => {
+        // Добавляем форму в каждую карточку
+        const formContainer = document.createElement('div');
+        formContainer.className = 'login-form-container';
+        formContainer.innerHTML = `
+            <form class="minecraft-login-form">
+                <input type="text" 
+                       class="minecraft-login-input" 
+                       placeholder="Ваш логин Minecraft"
+                       required>
+                <button type="submit" class="pay-button">Оплатить</button>
+            </form>
+        `;
+        card.appendChild(formContainer);
+
+        // Обработчик клика по карточке
+        card.addEventListener('click', function(e) {
+            if (e.target.closest('.minecraft-login-form')) {
+                return; // Игнорируем клики по форме
+            }
+
+            if (activeCard && activeCard !== card) {
+                activeCard.classList.remove('expanded');
+            }
+
+            card.classList.toggle('expanded');
+            activeCard = card.classList.contains('expanded') ? card : null;
+        });
+
+        // Обработчик отправки формы
+        card.querySelector('.minecraft-login-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const login = this.querySelector('.minecraft-login-input').value;
+            const price = card.querySelector('.price').textContent.replace('₽', '');
+            const title = card.querySelector('h4').textContent;
+
             showLoadingIndicator();
             
             try {
@@ -126,7 +161,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        minecraftLogin: document.getElementById('minecraft-login').value || '',
+                        minecraftLogin: login,
                         amount: parseInt(price),
                         description: `Тариф ${title}`
                     })
@@ -141,11 +176,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             } catch (error) {
                 console.error('Ошибка при создании платежа:', error);
-                alert('Пожалуйста, сначала введите ваш логин Minecraft в форме ниже');
+                alert('Произошла ошибка при создании платежа. Пожалуйста, попробуйте снова.');
             } finally {
                 hideLoadingIndicator();
             }
         });
+    });
+
+    // Закрытие активной карточки при клике вне её
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.pricing-card') && activeCard) {
+            activeCard.classList.remove('expanded');
+            activeCard = null;
+        }
     });
 });
 
