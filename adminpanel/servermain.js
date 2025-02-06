@@ -4,7 +4,7 @@ const pool = require('./maindb');
 import TochkaPaymentChecker from '../minecraft/payment-checker.js';
 
 const app = express();
-const port = 3000;
+const port = 3001;
 
 // Разрешаем запросы с обоих доменов
 const allowedOrigins = [
@@ -137,13 +137,15 @@ function extractMinecraftLogin(description) {
     return match ? match[1] : 'Неизвестно';
 }
 
-// Добавляем эндпоинт для получения баланса
+// Обновляем эндпоинт для получения баланса
 app.get('/api/balance', async (req, res) => {
     try {
         const paymentChecker = new TochkaPaymentChecker();
         const balanceData = await paymentChecker.getAccountBalance();
         
-        console.log('Полученные данные баланса:', balanceData); // Отладочный вывод
+        // Добавляем CORS заголовки
+        res.header('Access-Control-Allow-Origin', allowedOrigins);
+        res.header('Access-Control-Allow-Credentials', true);
         
         res.json({
             success: true,
