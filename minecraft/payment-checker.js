@@ -31,29 +31,33 @@ class TochkaPaymentChecker {
     // Получение баланса счета
     async getAccountBalance() {
         try {
-            const response = await fetch(`${this.baseUrl}/account/${this.accountId}/balance`, {
+            // Изменен URL в соответствии с документацией API Точка
+            const response = await fetch(`${this.baseUrl}/accounts/${this.accountId}`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${this.token}`,
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
                 }
             });
 
             if (!response.ok) {
                 console.error('Ошибка API:', response.status);
+                const errorText = await response.text();
+                console.error('Ответ API:', errorText);
                 throw new Error(`Ошибка API: ${response.status}`);
             }
 
             const data = await response.json();
             console.log('Ответ API баланса:', data); // Отладочный вывод
 
+            // Обработка структуры ответа API Точка
             return {
-                balance: data.balance || data.amount || 0,
+                balance: data.balance || data.amount || data.current_balance || 0,
                 currency: data.currency || 'RUB'
             };
         } catch (error) {
             console.error('Ошибка при получении баланса:', error);
-            // В случае ошибки возвращаем нулевой баланс
             return {
                 balance: 0,
                 currency: 'RUB'
@@ -61,34 +65,33 @@ class TochkaPaymentChecker {
         }
     }
 
-    // Получение списка платежей за последние 24 часа
+    // Получение списка платежей
     async getRecentPayments() {
         try {
             const oneDayAgo = new Date();
             oneDayAgo.setHours(oneDayAgo.getHours() - 24);
             
-            const response = await fetch(`${this.baseUrl}/statement`, {
-                method: 'POST',
+            // Изменен URL и параметры в соответствии с документацией API Точка
+            const response = await fetch(`${this.baseUrl}/accounts/${this.accountId}/transactions`, {
+                method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${this.token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    account_id: this.accountId,
-                    from: oneDayAgo.toISOString().split('T')[0],
-                    to: new Date().toISOString().split('T')[0]
-                })
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
             });
 
             if (!response.ok) {
                 console.error('Ошибка API платежей:', response.status);
+                const errorText = await response.text();
+                console.error('Ответ API платежей:', errorText);
                 throw new Error(`Ошибка API: ${response.status}`);
             }
 
             const data = await response.json();
             console.log('Ответ API платежей:', data); // Отладочный вывод
 
-            return data.operations || [];
+            return data.transactions || data.operations || [];
         } catch (error) {
             console.error('Ошибка при получении платежей:', error);
             return [];
@@ -98,13 +101,20 @@ class TochkaPaymentChecker {
     // Метод для проверки доступности API
     async testConnection() {
         try {
-            const response = await fetch(`${this.baseUrl}/account/${this.accountId}`, {
+            // Изменен тестовый URL
+            const response = await fetch(`${this.baseUrl}/accounts`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${this.token}`,
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
                 }
             });
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Ответ при тесте подключения:', errorText);
+            }
             
             console.log('Тест подключения:', response.status); // Отладочный вывод
             return response.ok;
@@ -162,31 +172,20 @@ class TochkaPaymentChecker {
     }
 }
 
-// Пример использования:
+// Тестовый код для отладки
+const checker = new TochkaPaymentChecker();
 
-const paymentChecker = new TochkaPaymentChecker();
+console.log('Конфигурация API:');
+console.log('Base URL:', config.baseUrl);
+console.log('Account ID:', config.accountId);
+console.log('Token present:', !!config.token);
 
-// Проверка платежа
-paymentChecker.checkPayment(1000, 'playerName')
-    .then(result => {
-        if (result.found) {
-            console.log('Платеж найден:', result.paymentDetails);
-        } else {
-            console.log('Платеж не найден');
-        }
-    })
-    .catch(error => {
-        console.error('Ошибка:', error);
-    });
+checker.testConnection().then(isConnected => {
+    console.log('Подключение к API:', isConnected ? 'успешно' : 'ошибка');
+});
 
-// Получение баланса
-paymentChecker.getAccountBalance()
-    .then(balance => {
-        console.log('Текущий баланс:', balance);
-    })
-    .catch(error => {
-        console.error('Ошибка при получении баланса:', error);
-    });
-
+checker.getAccountBalance().then(balance => {
+    console.log('Текущий баланс:', balance);
+});
 
 export default TochkaPaymentChecker; 
