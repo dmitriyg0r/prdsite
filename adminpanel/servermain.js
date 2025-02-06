@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const pool = require('./maindb');
+import TochkaPaymentChecker from '../minecraft/payment-checker.js';
 
 const app = express();
 const port = 3000;
@@ -135,6 +136,26 @@ function extractMinecraftLogin(description) {
     const match = description.match(/login:\s*(\w+)/i);
     return match ? match[1] : 'Неизвестно';
 }
+
+// Добавляем новый эндпоинт для получения баланса
+app.get('/api/balance', async (req, res) => {
+    try {
+        const paymentChecker = new TochkaPaymentChecker();
+        const balanceData = await paymentChecker.getAccountBalance();
+        
+        res.json({
+            success: true,
+            balance: balanceData.balance,
+            currency: balanceData.currency
+        });
+    } catch (error) {
+        console.error('Ошибка при получении баланса:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Ошибка при получении баланса' 
+        });
+    }
+});
 
 app.listen(port, () => {
     console.log(`Сервер запущен на порту ${port}`);

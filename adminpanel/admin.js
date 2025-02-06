@@ -1456,11 +1456,9 @@ async function renameFile(path) {
     }
 }
 
-async function loadPaymentsData() {
-    if (!checkAuth()) return;
-    
+async function loadBalanceData() {
     try {
-        const response = await fetch(`${API_URL}/api/payments`, {
+        const response = await fetch(`${API_URL}/api/balance`, {
             credentials: 'include',
             headers: {
                 'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
@@ -1475,12 +1473,51 @@ async function loadPaymentsData() {
         const data = await response.json();
         
         if (data.success) {
-            // Обновляем баланс
-            document.getElementById('accountBalance').textContent = 
-                new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB' })
-                    .format(data.balance);
+            const balanceElement = document.getElementById('accountBalance');
+            if (balanceElement) {
+                const formattedBalance = new Intl.NumberFormat('ru-RU', { 
+                    style: 'currency', 
+                    currency: data.currency || 'RUB',
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }).format(parseFloat(data.balance));
+                
+                balanceElement.textContent = formattedBalance;
+            }
+        } else {
+            console.error('Ошибка при получении баланса:', data.error);
+        }
+    } catch (error) {
+        console.error('Ошибка при загрузке баланса:', error);
+    }
+}
 
-            // Обновляем таблицу платежей
+// Обновляем функцию загрузки данных платежей
+async function loadPaymentsData() {
+    if (!checkAuth()) return;
+    
+    try {
+        showLoadingIndicator();
+        
+        // Загружаем баланс
+        await loadBalanceData();
+
+        // Загружаем платежи
+        const response = await fetch(`${API_URL}/api/payments`, {
+            credentials: 'include',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+            }
+        });
+
+        if (response.status === 401) {
+            handleUnauthorized();
+            return;
+        }
+
+        const data = await response.json();
+        
+        if (data.success && Array.isArray(data.payments)) {
             const tbody = document.getElementById('paymentsTableBody');
             tbody.innerHTML = '';
             
@@ -1488,38 +1525,64 @@ async function loadPaymentsData() {
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${new Date(payment.date).toLocaleString('ru-RU')}</td>
-                    <td>${payment.minecraftLogin}</td>
-                    <td>${new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB' })
-                        .format(payment.amount)}</td>
-                    <td><span class="payment-status status-${payment.status.toLowerCase()}">
-                        ${payment.status}</span></td>
+                    <td>${payment.minecraftLogin || 'Неизвестно'}</td>
+                    <td>${new Intl.NumberFormat('ru-RU', { 
+                        style: 'currency', 
+                        currency: 'RUB' 
+                    }).format(payment.amount)}</td>
+                    <td><span class="payment-status status-${payment.status?.toLowerCase() || 'pending'}">
+                        ${payment.status || 'В обработке'}</span></td>
                 `;
                 tbody.appendChild(row);
             });
         }
-    } catch (err) {
-        console.error('Ошибка при загрузке данных платежей:', err);
+    } catch (error) {
+        console.error('Ошибка при загрузке данных:', error);
+    } finally {
+        hideLoadingIndicator();
     }
 }
 
-// Добавляем вызов функции при инициализации
+// Добавляем автообновление баланса каждые 5 минут
+let balanceUpdateInterval;
+
+function startBalanceAutoUpdate() {
+    // Сразу загружаем баланс
+    loadBalanceData();
+    
+    // Устанавливаем интервал обновления
+    balanceUpdateInterval = setInterval(loadBalanceData, 5 * 60 * 1000);
+}
+
+function stopBalanceAutoUpdate() {
+    if (balanceUpdateInterval) {
+        clearInterval(balanceUpdateInterval);
+    }
+}
+
+// Обновляем обработчики событий
 document.addEventListener('DOMContentLoaded', () => {
     if (!checkAuth()) return;
     
     // ... existing initialization code ...
     
-    // Добавляем обработчик для вкладки платежей
+    // Запускаем автообновление при переходе на вкладку платежей
     document.querySelector('[data-section="payments"]').addEventListener('click', () => {
         loadPaymentsData();
+        startBalanceAutoUpdate();
     });
 });
 
 // Обновляем функцию переключения вкладок
 function switchSection(sectionName) {
-    // ... existing code ...
+    // Останавливаем автообновление при переходе на другую вкладку
+    stopBalanceAutoUpdate();
+    
+    // ... existing section switching code ...
     
     if (sectionName === 'payments') {
         loadPaymentsData();
+        startBalanceAutoUpdate();
     }
 }
 
