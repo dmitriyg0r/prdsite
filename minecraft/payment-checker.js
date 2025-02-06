@@ -12,8 +12,8 @@ dotenv.config({ path: join(__dirname, '..', '.env') });
 // Проверяем наличие переменных окружения и используем значения по умолчанию для разработки
 const config = {
     baseUrl: 'https://enter.tochka.com/uapi/open-banking/v1.0',
-    accountId: 'jVXGwr8gsqcAle2awNBPgUi2zsFAP8Am',
-    bankId: 'jVXGwr8gsqcAle2awNBPgUi2zsFAP8Am',
+    accountId: '40802810220000549839',
+    bankId: '044525104',
     token: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJqVlhHd3I4Z3NxY0FsZTJhd05CUGdVaTJ6c0ZBUDhBbSJ9.Uk-n6PHtKr79GIwEBijZFr4MhG3QK7dmOBKvD8gU68Ip8dAooHm9Xm3_Oa3HfZHBc0z8_CsHiR0XvR_HVPfKiNjgh9mKyUUg0xuEw6lCo0AXnf9nuzkhBjMWTniUvxaCFAMDZFszT2e1AjKq09O4PkVttjgayCJiT5IAiF27C00Mk38hQZo8ybTj8ZVeiCWCB_ba9kz1kYr_EaQ-K4DT1uggGKtoRrpRGJruF__g8OwPknU91xY0O5y57NdfGLD7O64Nvqecf6Vp_Lcf6eHtoEX3F4-1blU-cNJVdf1uIiKQZai2DGhMnuMHVobHCjMPnJ4lY_upKIimKtR5sfek1wTcecxa-hJy5MEG0MpjbS7S43HAIzoB_jOI3ZuyRD9ubGJS-ZcMEUACzyBahbSVIP7A-J0_Z8TgBcDL-FuUvCShzGzneceqRuiKpmQFDznsJEuJGy4DBr0s7e4sLKYEKUZ3syg-hgYtl0WkAo4GArasn6af5baefLgLy0j-ZARI' // Токен напрямую в конфиге
 };
 
