@@ -1,22 +1,22 @@
 const API_URL = (() => {
     switch(window.location.hostname) {
         case 'localhost':
-            return 'http://localhost:3000';
+            return 'http://localhost:3001';
         case 'space-point.ru':
-            return 'https://space-point.ru:3000';
+            return 'https://space-point.ru';
         default:
-            return 'https://space-point.ru:3000';
+            return 'https://space-point.ru';
     }
 })();
 
 const FILE_API_URL = (() => {
     switch(window.location.hostname) {
         case 'localhost':
-            return 'http://localhost:3000';
+            return 'http://localhost:3001';
         case 'space-point.ru':
-            return 'https://space-point.ru:3000';
+            return 'https://space-point.ru';
         default:
-            return 'https://space-point.ru:3000';
+            return 'https://space-point.ru';
     }
 })();
 
