@@ -60,10 +60,13 @@ class TochkaPaymentChecker {
             const data = await response.json();
             console.log('Ответ API баланса:', data);
 
-            const balanceInfo = data.Data?.Balance?.[0] || {};
+            // Исправленная обработка ответа API
+            const balances = data.Data?.Balance || [];
+            const currentBalance = balances.find(b => b.Type === 'Current') || balances[0] || {};
+            
             return {
-                balance: balanceInfo.Amount?.Amount || 0,
-                currency: balanceInfo.Amount?.Currency || 'RUB'
+                balance: parseFloat(currentBalance.Amount?.Amount || 0),
+                currency: currentBalance.Amount?.Currency || 'RUB'
             };
         } catch (error) {
             console.error('Ошибка при получении баланса:', error);
