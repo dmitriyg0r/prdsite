@@ -58,16 +58,22 @@ class TochkaPaymentChecker {
             }
 
             const data = await response.json();
-            console.log('Ответ API баланса:', data);
+            console.log('Ответ API баланса (полный):', JSON.stringify(data, null, 2));
 
-            // Исправленная обработка ответа API
             const balances = data.Data?.Balance || [];
+            console.log('Массив балансов:', JSON.stringify(balances, null, 2));
+
             const currentBalance = balances.find(b => b.Type === 'Current') || balances[0] || {};
+            console.log('Выбранный баланс:', JSON.stringify(currentBalance, null, 2));
+            console.log('Amount из баланса:', currentBalance.Amount);
             
-            return {
+            const result = {
                 balance: parseFloat(currentBalance.Amount?.Amount || 0),
                 currency: currentBalance.Amount?.Currency || 'RUB'
             };
+            console.log('Итоговый результат:', result);
+            
+            return result;
         } catch (error) {
             console.error('Ошибка при получении баланса:', error);
             return {
