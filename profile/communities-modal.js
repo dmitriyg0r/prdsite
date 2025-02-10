@@ -217,16 +217,25 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
+        // Показываем индикатор загрузки
+        if (resultsContainer) {
+            resultsContainer.innerHTML = '<div class="loading">Поиск...</div>';
+            resultsContainer.style.display = 'block';
+        }
+        
         // Устанавливаем новый таймаут
         searchTimeout = setTimeout(async () => {
             try {
                 const response = await fetch(`/api/communities/search?q=${encodeURIComponent(searchQuery)}`);
                 
                 if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Search error response:', errorText);
                     throw new Error(`Search failed: ${response.status}`);
                 }
                 
                 const data = await response.json();
+                console.log('Search results:', data);
                 
                 if (!data.success) {
                     throw new Error(data.error || 'Failed to search communities');
@@ -235,9 +244,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 displaySearchResults(data.communities);
             } catch (err) {
                 console.error('Error searching communities:', err);
-                showNotification('Ошибка при поиске сообществ', 'error');
+                if (resultsContainer) {
+                    resultsContainer.innerHTML = `
+                        <div class="search-error">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <p>Ошибка при поиске</p>
+                            <small>${err.message}</small>
+                        </div>
+                    `;
+                }
             }
-        }, 300); // Задержка 300мс
+        }, 300);
     }
 
     function displaySearchResults(communities) {
@@ -406,4 +423,35 @@ document.addEventListener('DOMContentLoaded', () => {
     if (currentUser?.id) {
         loadCommunities(currentUser.id);
     }
+
+    // Добавляем стили для состояний загрузки и ошибки
+    const additionalStyles = `
+        .loading {
+            padding: 1rem;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .search-error {
+            padding: 1rem;
+            text-align: center;
+            color: var(--error-color);
+        }
+
+        .search-error i {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .search-error small {
+            display: block;
+            margin-top: 0.5rem;
+            opacity: 0.8;
+        }
+    `;
+
+    // Добавляем новые стили
+    const styleElement = document.createElement('style');
+    styleElement.textContent = additionalStyles;
+    document.head.appendChild(styleElement);
 }); 
