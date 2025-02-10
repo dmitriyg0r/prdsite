@@ -30,12 +30,58 @@ const upload = multer({
     }
 });
 
+// Функция для создания таблиц, если они не существуют
+async function ensureTablesExist() {
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        // Создаем таблицу communities, если она не существует
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS communities (
+                id SERIAL PRIMARY KEY,
+                name VARCHAR(255) NOT NULL,
+                description TEXT,
+                type VARCHAR(50) DEFAULT 'public',
+                created_by INTEGER NOT NULL,
+                avatar_url TEXT,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // Создаем таблицу community_members, если она не существует
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS community_members (
+                id SERIAL PRIMARY KEY,
+                community_id INTEGER REFERENCES communities(id) ON DELETE CASCADE,
+                user_id INTEGER NOT NULL,
+                role VARCHAR(50) DEFAULT 'member',
+                joined_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(community_id, user_id)
+            );
+        `);
+
+        await client.query('COMMIT');
+        console.log('Tables created successfully');
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error('Error creating tables:', err);
+        throw err;
+    } finally {
+        client.release();
+    }
+}
+
 // Создание сообщества
 router.post('/create', upload.single('avatar'), async (req, res) => {
     console.log('POST /api/communities/create called');
     console.log('Request body:', req.body);
     
     try {
+        // Убедимся, что таблицы существуют
+        await ensureTablesExist();
+
         const { name, description, type = 'public' } = req.body;
         const createdBy = req.body.userId; // ID создателя сообщества
         
@@ -186,37 +232,26 @@ router.get('/search', async (req, res) => {
             });
         }
 
-        // Сначала проверим существование таблицы
-        const tableExists = await pool.query(`
-            SELECT EXISTS (
-                SELECT FROM information_schema.tables 
-                WHERE table_schema = 'public' 
-                AND table_name = 'communities'
-            );
-        `);
+        // Убедимся, что таблицы существуют
+        await ensureTablesExist();
 
-        if (!tableExists.rows[0].exists) {
-            console.log('Communities table does not exist');
-            return res.json({
-                success: true,
-                communities: []
-            });
-        }
-
-        // Выполняем поиск с более простым запросом
+        // Выполняем поиск
         const result = await pool.query(`
             SELECT 
                 c.*,
-                (
-                    SELECT COUNT(*) 
-                    FROM community_members 
-                    WHERE community_id = c.id
+                COALESCE(
+                    (SELECT COUNT(*) FROM community_members WHERE community_id = c.id),
+                    0
                 ) as members_count
             FROM communities c
             WHERE 
                 LOWER(c.name) LIKE LOWER($1)
                 OR LOWER(c.description) LIKE LOWER($1)
             ORDER BY 
+                CASE 
+                    WHEN LOWER(c.name) LIKE LOWER($1) THEN 0 
+                    ELSE 1 
+                END,
                 c.created_at DESC
             LIMIT 10
         `, [`%${q}%`]);
@@ -229,12 +264,10 @@ router.get('/search', async (req, res) => {
         });
     } catch (err) {
         console.error('Error searching communities:', err);
-        // Добавляем больше деталей об ошибке в ответ
         return res.status(500).json({
             success: false,
             error: 'Ошибка при поиске сообществ',
-            details: err.message,
-            query: req.query
+            details: err.message
         });
     }
 });
