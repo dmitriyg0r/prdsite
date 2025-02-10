@@ -368,7 +368,7 @@ async function deleteUser(id) {
     if (confirm('Вы уверены, что хотите удалить этого пользователя?')) {
         try {
             const adminId = getAdminId();
-            const response = await fetch(`${API_URL}/api/users/${id}?adminId=${adminId}`, {
+            const response = await fetch(`${API_URL}/api/users/:id`, {
                 method: 'DELETE',
                 credentials: 'include',
                 headers: {
