@@ -51,8 +51,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch(`/api/communities?userId=${userId}`);
             
             if (!response.ok) {
+                const errorText = await response.text();
                 console.error('Response status:', response.status);
-                console.error('Response text:', await response.text());
+                console.error('Response text:', errorText);
                 throw new Error(`Failed to load communities: ${response.status}`);
             }
             
@@ -63,26 +64,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(data.error || 'Failed to load communities');
             }
 
+            const container = document.querySelector('.communities-container');
+            if (!container) return;
+
             if (!data.communities || data.communities.length === 0) {
-                const container = document.querySelector('.communities-container');
-                if (container) {
-                    container.innerHTML = `
-                        <div class="no-communities">
-                            <p>Вы пока не состоите ни в одном сообществе</p>
+                container.innerHTML = `
+                    <div class="no-communities">
+                        <div class="no-communities-content">
+                            <i class="fas fa-users-slash"></i>
+                            <p>Сообществ пока нет</p>
                             <button class="create-community-btn">
                                 <i class="fas fa-plus"></i>
                                 Создать сообщество
                             </button>
                         </div>
-                    `;
-                    
-                    const createBtn = container.querySelector('.create-community-btn');
-                    if (createBtn) {
-                        createBtn.addEventListener('click', () => {
-                            const modal = document.getElementById('create-community-modal');
-                            if (modal) modal.style.display = 'block';
-                        });
-                    }
+                    </div>
+                `;
+                
+                const createBtn = container.querySelector('.create-community-btn');
+                if (createBtn) {
+                    createBtn.addEventListener('click', () => {
+                        const modal = document.getElementById('create-community-modal');
+                        if (modal) modal.style.display = 'block';
+                    });
                 }
                 return;
             }
@@ -90,7 +94,16 @@ document.addEventListener('DOMContentLoaded', () => {
             displayCommunities(data.communities);
         } catch (err) {
             console.error('Error loading communities:', err);
-            throw err;
+            const container = document.querySelector('.communities-container');
+            if (container) {
+                container.innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p>Не удалось загрузить сообщества</p>
+                        <small>${err.message}</small>
+                    </div>
+                `;
+            }
         }
     }
 
