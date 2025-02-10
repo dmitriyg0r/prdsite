@@ -64,46 +64,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(data.error || 'Failed to load communities');
             }
 
-            const container = document.querySelector('.communities-container');
-            if (!container) return;
-
-            if (!data.communities || data.communities.length === 0) {
-                container.innerHTML = `
-                    <div class="no-communities">
-                        <div class="no-communities-content">
-                            <i class="fas fa-users-slash"></i>
-                            <p>Сообществ пока нет</p>
-                            <button class="create-community-btn">
-                                <i class="fas fa-plus"></i>
-                                Создать сообщество
-                            </button>
-                        </div>
-                    </div>
-                `;
-                
-                const createBtn = container.querySelector('.create-community-btn');
-                if (createBtn) {
-                    createBtn.addEventListener('click', () => {
-                        const modal = document.getElementById('create-community-modal');
-                        if (modal) modal.style.display = 'block';
-                    });
-                }
-                return;
-            }
-
             displayCommunities(data.communities);
         } catch (err) {
             console.error('Error loading communities:', err);
-            const container = document.querySelector('.communities-container');
-            if (container) {
-                container.innerHTML = `
-                    <div class="error-message">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <p>Не удалось загрузить сообщества</p>
-                        <small>${err.message}</small>
-                    </div>
-                `;
-            }
+            showNotification('Ошибка при загрузке сообществ', 'error');
         }
     }
 
@@ -111,9 +75,35 @@ document.addEventListener('DOMContentLoaded', () => {
         const container = document.querySelector('.communities-container');
         if (!container) return;
 
-        const communitiesHTML = communities.map(community => `
+        if (!communities || communities.length === 0) {
+            container.innerHTML = `
+                <div class="no-communities">
+                    <div class="no-communities-content">
+                        <i class="fas fa-users-slash"></i>
+                        <p>У вас пока нет сообществ</p>
+                        <button class="create-community-btn">
+                            <i class="fas fa-plus"></i>
+                            Создать сообщество
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            const createBtn = container.querySelector('.create-community-btn');
+            if (createBtn) {
+                createBtn.addEventListener('click', () => {
+                    const modal = document.getElementById('create-community-modal');
+                    if (modal) modal.style.display = 'block';
+                });
+            }
+            return;
+        }
+
+        container.innerHTML = communities.map(community => `
             <div class="community-card">
-                <img src="${community.avatar_url || '/images/default-community.png'}" alt="${community.name}" class="community-avatar">
+                <img src="${community.avatar_url || '/images/default-community.png'}" 
+                     alt="${community.name}" 
+                     class="community-avatar">
                 <div class="community-info">
                     <h3>${community.name}</h3>
                     <p>${community.description || 'Нет описания'}</p>
@@ -121,24 +111,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         <span><i class="fas fa-users"></i> ${community.members_count || 0}</span>
                     </div>
                 </div>
-                <a href="/community/community.html?id=${community.id}" class="view-community-btn">
-                    Перейти
-                </a>
             </div>
         `).join('');
-
-        container.innerHTML = `
-            <div class="communities-header">
-                <h2>Мои сообщества</h2>
-                <button class="create-community-btn" onclick="document.getElementById('create-community-modal').style.display='block'">
-                    <i class="fas fa-plus"></i>
-                    Создать сообщество
-                </button>
-            </div>
-            <div class="communities-grid">
-                ${communitiesHTML}
-            </div>
-        `;
     }
 
     // Функция для создания сообщества
@@ -202,7 +176,6 @@ document.addEventListener('DOMContentLoaded', () => {
         
         document.body.appendChild(notification);
         
-        // Удаляем уведомление через 3 секунды
         setTimeout(() => {
             notification.remove();
         }, 3000);
@@ -468,6 +441,12 @@ document.addEventListener('DOMContentLoaded', () => {
 // Функция инициализации сообществ
 async function initCommunities() {
     try {
+        // Получаем текущего пользователя из localStorage
+        const currentUser = JSON.parse(localStorage.getItem('user'));
+        if (!currentUser) {
+            throw new Error('User not found');
+        }
+
         // Загружаем сообщества текущего пользователя
         await loadCommunities(currentUser.id);
         
@@ -477,17 +456,8 @@ async function initCommunities() {
             searchInput.addEventListener('input', debounce(async (e) => {
                 const query = e.target.value.trim();
                 if (query) {
-                    try {
-                        const response = await fetch(`/api/communities/search?q=${encodeURIComponent(query)}`);
-                        const data = await response.json();
-                        
-                        if (data.success) {
-                            displaySearchResults(data.communities);
-                        }
-                    } catch (err) {
-                        console.error('Search error:', err);
-                        showNotification('Ошибка при поиске сообществ', 'error');
-                    }
+                    const communities = await searchCommunities(query);
+                    displaySearchResults(communities);
                 } else {
                     const searchResults = document.querySelector('.search-results');
                     if (searchResults) {
@@ -495,6 +465,12 @@ async function initCommunities() {
                     }
                 }
             }, 300));
+        }
+
+        // Добавляем обработчик для формы создания сообщества
+        const createForm = document.getElementById('create-community-form');
+        if (createForm) {
+            createForm.addEventListener('submit', createCommunity);
         }
     } catch (err) {
         console.error('Error initializing communities:', err);
@@ -505,4 +481,33 @@ async function initCommunities() {
 // Инициализируем сообщества при загрузке страницы
 if (currentUser) {
     initCommunities();
+}
+
+// Функция debounce для поиска
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Функция для поиска сообществ
+async function searchCommunities(query) {
+    try {
+        const response = await fetch(`/api/communities/search?q=${encodeURIComponent(query)}`);
+        if (!response.ok) {
+            throw new Error(`Search failed: ${response.status}`);
+        }
+        const data = await response.json();
+        return data.communities;
+    } catch (err) {
+        console.error('Search error:', err);
+        showNotification('Ошибка при поиске сообществ', 'error');
+        return [];
+    }
 } 
