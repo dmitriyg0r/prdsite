@@ -13,6 +13,9 @@ const { Server } = require('socket.io');
 // Изменим импорт на более явный
 const maindb = require('../adminpanel/maindb.js');
 
+// В начале файла, где остальные импорты
+const communitiesRouter = require('./routes/communities');
+
 const app = express();
 const PORT = 5003;
 const STATUS_UPDATE_CACHE = new Map();
@@ -3307,7 +3310,7 @@ app.delete('/api/users/:id', checkAdmin, async (req, res) => {
     }
 });
 
-const communitiesRouter = require('./routes/communities');
+// Подключение роутера (добавьте это ПЕРЕД другими маршрутами)
 app.use('/api/communities', communitiesRouter);
 
 // Получение сообществ пользователя

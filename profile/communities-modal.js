@@ -48,29 +48,26 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadCommunities(userId) {
         try {
             console.log('Loading communities for user:', userId);
-            const response = await fetch(`https://space-point.ru/api/communities?userId=${userId}`, {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            });
+            const response = await fetch(`/api/communities?userId=${userId}`);
             
             if (!response.ok) {
+                console.error('Response status:', response.status);
+                console.error('Response text:', await response.text());
                 throw new Error(`Failed to load communities: ${response.status}`);
             }
             
             const data = await response.json();
+            console.log('Received data:', data);
             
             if (!data.success) {
                 throw new Error(data.error || 'Failed to load communities');
             }
 
-            // Обработка пустого списка сообществ
             if (!data.communities || data.communities.length === 0) {
                 const container = document.querySelector('.communities-container');
                 if (container) {
                     container.innerHTML = `
                         <div class="no-communities">
-                            <i class="fas fa-users-slash"></i>
                             <p>Вы пока не состоите ни в одном сообществе</p>
                             <button class="create-community-btn">
                                 <i class="fas fa-plus"></i>
@@ -79,7 +76,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     `;
                     
-                    // Добавляем обработчик для кнопки создания сообщества
                     const createBtn = container.querySelector('.create-community-btn');
                     if (createBtn) {
                         createBtn.addEventListener('click', () => {

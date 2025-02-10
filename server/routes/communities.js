@@ -185,7 +185,8 @@ router.get('/test', (req, res) => {
 });
 
 // Получение сообществ пользователя
-router.get('/', auth, async (req, res) => {
+router.get('/', async (req, res) => {
+    console.log('GET /api/communities route hit');
     try {
         const { userId } = req.query;
         
