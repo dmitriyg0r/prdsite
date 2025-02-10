@@ -179,4 +179,32 @@ router.get('/:id/members', auth, async (req, res) => {
     }
 });
 
+// Получение сообществ пользователя
+router.get('/', auth, async (req, res) => {
+    try {
+        const { userId } = req.query;
+
+        const result = await pool.query(`
+            SELECT 
+                c.*,
+                (SELECT COUNT(*) FROM community_members WHERE community_id = c.id) as members_count
+            FROM communities c
+            JOIN community_members cm ON c.id = cm.community_id
+            WHERE cm.user_id = $1
+            ORDER BY c.created_at DESC
+        `, [userId]);
+
+        res.json({
+            success: true,
+            communities: result.rows
+        });
+    } catch (err) {
+        console.error('Error getting user communities:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при получении списка сообществ'
+        });
+    }
+});
+
 module.exports = router; 
