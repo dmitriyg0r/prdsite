@@ -200,48 +200,179 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 3000);
     }
 
-    // Поиск сообществ
-    const searchInput = document.getElementById('community-search-input');
+    // Добавляем обработчик поиска с debounce
     let searchTimeout;
-
-    searchInput?.addEventListener('input', () => {
+    function handleSearch(event) {
+        const searchQuery = event.target.value.trim();
+        const resultsContainer = document.querySelector('.search-results');
+        
+        // Очищаем предыдущий таймаут
         clearTimeout(searchTimeout);
+        
+        // Если поле пустое, скрываем результаты
+        if (!searchQuery) {
+            if (resultsContainer) {
+                resultsContainer.style.display = 'none';
+            }
+            return;
+        }
+        
+        // Устанавливаем новый таймаут
         searchTimeout = setTimeout(async () => {
-            const query = searchInput.value.trim();
-            if (query.length < 2) return;
-
             try {
-                const response = await fetch(`https://space-point.ru/api/communities/search?q=${encodeURIComponent(query)}`);
+                const response = await fetch(`/api/communities/search?q=${encodeURIComponent(searchQuery)}`);
+                
+                if (!response.ok) {
+                    throw new Error(`Search failed: ${response.status}`);
+                }
+                
                 const data = await response.json();
+                
+                if (!data.success) {
+                    throw new Error(data.error || 'Failed to search communities');
+                }
+                
+                displaySearchResults(data.communities);
+            } catch (err) {
+                console.error('Error searching communities:', err);
+                showNotification('Ошибка при поиске сообществ', 'error');
+            }
+        }, 300); // Задержка 300мс
+    }
 
-                const searchResults = document.querySelector('.community-search-results');
-                if (searchResults) {
-                    searchResults.innerHTML = data.communities.map(community => `
-                        <div class="community-card">
-                            <img src="${community.avatar_url || '/uploads/avatars/default-community.png'}" 
+    function displaySearchResults(communities) {
+        const container = document.querySelector('.search-results');
+        if (!container) return;
+        
+        if (communities.length === 0) {
+            container.innerHTML = `
+                <div class="no-results">
+                    <p>Сообщества не найдены</p>
+                </div>
+            `;
+        } else {
+            container.innerHTML = `
+                <div class="search-results-list">
+                    ${communities.map(community => `
+                        <div class="search-result-item">
+                            <img src="${community.avatar_url || '/images/default-community.png'}" 
                                  alt="${community.name}" 
                                  class="community-avatar">
                             <div class="community-info">
-                                <div class="community-name">${community.name}</div>
-                                <div class="community-meta">${community.members_count} участников</div>
+                                <h4>${community.name}</h4>
+                                <p>${community.description || 'Нет описания'}</p>
+                                <span class="members-count">
+                                    <i class="fas fa-users"></i> ${community.members_count}
+                                </span>
                             </div>
-                            <div class="community-actions">
-                                ${!community.is_member 
-                                    ? `<button class="join-community-btn" data-community-id="${community.id}">
-                                         <i class="fas fa-plus"></i> Вступить
-                                       </button>`
-                                    : `<button class="leave-community-btn" data-community-id="${community.id}">
-                                         <i class="fas fa-sign-out-alt"></i> Покинуть
-                                       </button>`
-                                }
-                            </div>
+                            <button onclick="joinCommunity(${community.id})" class="join-btn">
+                                Присоединиться
+                            </button>
                         </div>
-                    `).join('');
-                }
-            } catch (err) {
-                console.error('Error searching communities:', err);
-            }
-        }, 300);
+                    `).join('')}
+                </div>
+            `;
+        }
+        
+        container.style.display = 'block';
+    }
+
+    // Добавляем стили для результатов поиска
+    const style = document.createElement('style');
+    style.textContent = `
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--surface-color);
+            border-radius: var(--radius-md);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-top: 0.5rem;
+            max-height: 400px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+
+        .search-result-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            gap: 1rem;
+        }
+
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+
+        .search-result-item .community-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .search-result-item .community-info {
+            flex: 1;
+        }
+
+        .search-result-item h4 {
+            margin: 0;
+            color: var(--text-primary);
+        }
+
+        .search-result-item p {
+            margin: 0.25rem 0;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .search-result-item .members-count {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .search-result-item .join-btn {
+            padding: 0.5rem 1rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .search-result-item .join-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .no-results {
+            padding: 1rem;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+    `;
+
+    document.head.appendChild(style);
+
+    // Добавляем обработчик для поискового поля
+    const searchInput = document.querySelector('.community-search input');
+    if (searchInput) {
+        searchInput.addEventListener('input', handleSearch);
+    }
+
+    // Закрываем результаты поиска при клике вне
+    document.addEventListener('click', (event) => {
+        const searchResults = document.querySelector('.search-results');
+        const searchInput = document.querySelector('.community-search input');
+        
+        if (searchResults && 
+            !searchResults.contains(event.target) && 
+            !searchInput.contains(event.target)) {
+            searchResults.style.display = 'none';
+        }
     });
 
     // Обработчики для кнопок вступления/выхода из сообщества

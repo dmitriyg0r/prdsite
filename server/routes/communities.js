@@ -172,4 +172,54 @@ router.get('/', async (req, res) => {
     }
 });
 
+// Поиск сообществ
+router.get('/search', async (req, res) => {
+    console.log('GET /api/communities/search called');
+    try {
+        const { q } = req.query; // q - поисковый запрос
+        
+        if (!q) {
+            return res.json({
+                success: true,
+                communities: []
+            });
+        }
+
+        const result = await pool.query(`
+            SELECT 
+                c.*,
+                COALESCE(
+                    (SELECT COUNT(*) FROM community_members WHERE community_id = c.id),
+                    0
+                ) as members_count
+            FROM communities c
+            WHERE 
+                c.name ILIKE $1 OR 
+                c.description ILIKE $1
+            ORDER BY 
+                CASE 
+                    WHEN c.name ILIKE $1 THEN 0
+                    ELSE 1
+                END,
+                c.members_count DESC,
+                c.created_at DESC
+            LIMIT 10
+        `, [`%${q}%`]);
+
+        console.log(`Found ${result.rows.length} communities matching "${q}"`);
+
+        return res.json({
+            success: true,
+            communities: result.rows
+        });
+    } catch (err) {
+        console.error('Error searching communities:', err);
+        return res.status(500).json({
+            success: false,
+            error: 'Ошибка при поиске сообществ',
+            details: err.message
+        });
+    }
+});
+
 module.exports = router;
