@@ -48,7 +48,11 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadCommunities(userId) {
         try {
             console.log('Loading communities for user:', userId);
-            const response = await fetch(`/api/communities?userId=${userId}`);
+            const response = await fetch(`https://space-point.ru/api/communities?userId=${userId}`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
             
             if (!response.ok) {
                 throw new Error(`Failed to load communities: ${response.status}`);
@@ -66,6 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (container) {
                     container.innerHTML = `
                         <div class="no-communities">
+                            <i class="fas fa-users-slash"></i>
                             <p>Вы пока не состоите ни в одном сообществе</p>
                             <button class="create-community-btn">
                                 <i class="fas fa-plus"></i>

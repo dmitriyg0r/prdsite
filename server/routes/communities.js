@@ -185,10 +185,7 @@ router.get('/test', (req, res) => {
 });
 
 // Получение сообществ пользователя
-router.get('/', async (req, res) => {
-    console.log('GET /api/communities called');
-    console.log('Query params:', req.query);
-    
+router.get('/', auth, async (req, res) => {
     try {
         const { userId } = req.query;
         
@@ -199,7 +196,6 @@ router.get('/', async (req, res) => {
             });
         }
 
-        // Временно убираем auth middleware для тестирования
         const result = await pool.query(`
             SELECT DISTINCT
                 c.*,
@@ -208,15 +204,16 @@ router.get('/', async (req, res) => {
                     0
                 ) as members_count,
                 CASE 
-                    WHEN cm.user_id IS NOT NULL THEN true 
-                    ELSE false 
+                    WHEN EXISTS (
+                        SELECT 1 FROM community_members 
+                        WHERE community_id = c.id AND user_id = $1
+                    ) THEN true
+                    ELSE false
                 END as is_member
             FROM communities c
             LEFT JOIN community_members cm ON c.id = cm.community_id AND cm.user_id = $1
             ORDER BY c.created_at DESC
         `, [userId]);
-
-        console.log('Query executed, found rows:', result.rows.length);
 
         return res.json({
             success: true,
