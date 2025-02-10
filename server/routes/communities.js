@@ -1,6 +1,100 @@
 const express = require('express');
 const router = express.Router();
 const { pool } = require('../db');
+const path = require('path');
+const multer = require('multer');
+
+// Настройка multer для загрузки аватаров
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, '/var/www/html/uploads/communities');
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, 'community-' + uniqueSuffix + path.extname(file.originalname));
+    }
+});
+
+const upload = multer({ 
+    storage: storage,
+    limits: {
+        fileSize: 5 * 1024 * 1024 // 5MB limit
+    },
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+        if (allowedTypes.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Invalid file type. Only JPEG, PNG and GIF are allowed.'));
+        }
+    }
+});
+
+// Создание сообщества
+router.post('/create', upload.single('avatar'), async (req, res) => {
+    console.log('POST /api/communities/create called');
+    console.log('Request body:', req.body);
+    
+    try {
+        const { name, description, type = 'public' } = req.body;
+        const createdBy = req.body.userId; // ID создателя сообщества
+        
+        // Проверка обязательных полей
+        if (!name || !createdBy) {
+            return res.status(400).json({
+                success: false,
+                error: 'Название сообщества и ID создателя обязательны'
+            });
+        }
+
+        // Начинаем транзакцию
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+
+            // Создаем запись в таблице communities
+            const communityResult = await client.query(`
+                INSERT INTO communities (name, description, type, created_by, avatar_url)
+                VALUES ($1, $2, $3, $4, $5)
+                RETURNING id
+            `, [
+                name, 
+                description || '', 
+                type, 
+                createdBy,
+                req.file ? `/uploads/communities/${req.file.filename}` : null
+            ]);
+
+            const communityId = communityResult.rows[0].id;
+
+            // Добавляем создателя как администратора сообщества
+            await client.query(`
+                INSERT INTO community_members (community_id, user_id, role)
+                VALUES ($1, $2, 'admin')
+            `, [communityId, createdBy]);
+
+            await client.query('COMMIT');
+
+            res.json({
+                success: true,
+                message: 'Сообщество успешно создано',
+                communityId: communityId
+            });
+        } catch (err) {
+            await client.query('ROLLBACK');
+            throw err;
+        } finally {
+            client.release();
+        }
+    } catch (err) {
+        console.error('Error creating community:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при создании сообщества',
+            details: err.message
+        });
+    }
+});
 
 // Получение сообществ пользователя
 router.get('/', async (req, res) => {
