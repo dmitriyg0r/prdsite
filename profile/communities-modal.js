@@ -144,28 +144,36 @@ document.addEventListener('DOMContentLoaded', () => {
     // Функция для создания сообщества
     async function createCommunity(event) {
         event.preventDefault();
+        console.log('Creating community...');
         
         const form = event.target;
         const formData = new FormData(form);
         
         // Добавляем ID текущего пользователя
-        formData.append('userId', currentUser.id);
+        formData.append('userId', currentUserId); // Убедитесь, что currentUserId определен
         
         try {
+            console.log('Form data:', Object.fromEntries(formData));
+            
             const response = await fetch('/api/communities/create', {
                 method: 'POST',
-                body: formData // FormData автоматически установит правильный Content-Type
+                body: formData
             });
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Ошибка при создании сообщества');
+            console.log('Response status:', response.status);
+            const responseText = await response.text();
+            console.log('Response text:', responseText);
+
+            let data;
+            try {
+                data = JSON.parse(responseText);
+            } catch (e) {
+                console.error('Error parsing response:', e);
+                throw new Error('Invalid server response');
             }
 
-            const data = await response.json();
-            
-            if (!data.success) {
-                throw new Error(data.error || 'Не удалось создать сообщество');
+            if (!response.ok || !data.success) {
+                throw new Error(data.error || 'Ошибка при создании сообщества');
             }
 
             // Закрываем модальное окно
@@ -176,7 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
             form.reset();
 
             // Перезагружаем список сообществ
-            await loadCommunities(currentUser.id);
+            await loadCommunities(currentUserId);
 
             // Показываем уведомление об успехе
             showNotification('Сообщество успешно создано', 'success');
@@ -421,7 +429,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Инициализация
     if (currentUser?.id) {
-        loadCommunities(currentUser.id);
+        currentUserId = currentUser.id;
+        initCommunities(currentUserId);
     }
 
     // Добавляем стили для состояний загрузки и ошибки

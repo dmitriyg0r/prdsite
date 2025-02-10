@@ -77,16 +77,17 @@ async function ensureTablesExist() {
 router.post('/create', upload.single('avatar'), async (req, res) => {
     console.log('POST /api/communities/create called');
     console.log('Request body:', req.body);
+    console.log('File:', req.file);
     
     try {
         // Убедимся, что таблицы существуют
         await ensureTablesExist();
 
-        const { name, description, type = 'public' } = req.body;
-        const createdBy = req.body.userId; // ID создателя сообщества
+        const { name, description, type = 'public', userId } = req.body;
         
         // Проверка обязательных полей
-        if (!name || !createdBy) {
+        if (!name || !userId) {
+            console.log('Missing required fields:', { name, userId });
             return res.status(400).json({
                 success: false,
                 error: 'Название сообщества и ID создателя обязательны'
@@ -102,32 +103,38 @@ router.post('/create', upload.single('avatar'), async (req, res) => {
             const communityResult = await client.query(`
                 INSERT INTO communities (name, description, type, created_by, avatar_url)
                 VALUES ($1, $2, $3, $4, $5)
-                RETURNING id
+                RETURNING *
             `, [
                 name, 
                 description || '', 
                 type, 
-                createdBy,
+                userId,
                 req.file ? `/uploads/communities/${req.file.filename}` : null
             ]);
+
+            console.log('Community created:', communityResult.rows[0]);
 
             const communityId = communityResult.rows[0].id;
 
             // Добавляем создателя как администратора сообщества
-            await client.query(`
+            const memberResult = await client.query(`
                 INSERT INTO community_members (community_id, user_id, role)
                 VALUES ($1, $2, 'admin')
-            `, [communityId, createdBy]);
+                RETURNING *
+            `, [communityId, userId]);
+
+            console.log('Member added:', memberResult.rows[0]);
 
             await client.query('COMMIT');
 
             res.json({
                 success: true,
                 message: 'Сообщество успешно создано',
-                communityId: communityId
+                community: communityResult.rows[0]
             });
         } catch (err) {
             await client.query('ROLLBACK');
+            console.error('Transaction error:', err);
             throw err;
         } finally {
             client.release();
