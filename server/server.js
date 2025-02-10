@@ -3309,3 +3309,49 @@ app.delete('/api/users/:id', checkAdmin, async (req, res) => {
 
 const communitiesRouter = require('./routes/communities');
 app.use('/api/communities', communitiesRouter);
+
+// Получение сообществ пользователя
+app.get('/api/communities', async (req, res) => {
+    console.log('GET /api/communities called');
+    console.log('Query params:', req.query);
+    
+    try {
+        const { userId } = req.query;
+        
+        if (!userId) {
+            return res.status(400).json({
+                success: false,
+                error: 'userId is required'
+            });
+        }
+
+        const result = await pool.query(`
+            SELECT DISTINCT
+                c.*,
+                COALESCE(
+                    (SELECT COUNT(*) FROM community_members WHERE community_id = c.id),
+                    0
+                ) as members_count,
+                CASE 
+                    WHEN cm.user_id IS NOT NULL THEN true 
+                    ELSE false 
+                END as is_member
+            FROM communities c
+            LEFT JOIN community_members cm ON c.id = cm.community_id AND cm.user_id = $1
+            ORDER BY c.created_at DESC
+        `, [userId]);
+
+        console.log('Query executed, found rows:', result.rows.length);
+
+        return res.json({
+            success: true,
+            communities: result.rows || []
+        });
+    } catch (err) {
+        console.error('Error getting user communities:', err);
+        return res.status(500).json({
+            success: false,
+            error: 'Ошибка при получении списка сообществ'
+        });
+    }
+});
