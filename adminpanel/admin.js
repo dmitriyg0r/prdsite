@@ -367,11 +367,12 @@ function updatePagination() {
 async function deleteUser(id) {
     if (confirm('Вы уверены, что хотите удалить этого пользователя?')) {
         try {
-            const adminId = getAdminId();
-            const response = await fetch(`${API_URL}/api/users/${id}`, {
+            const adminId = localStorage.getItem('adminId');
+            const response = await fetch(`${API_URL}/api/users/${id}?adminId=${adminId}`, {
                 method: 'DELETE',
                 credentials: 'include',
                 headers: {
+                    'Content-Type': 'application/json',
                     'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
                 }
             });
@@ -392,6 +393,7 @@ async function deleteUser(id) {
                 alert(data.error || 'Ошибка при удалении пользователя');
             }
         } catch (err) {
+            console.error('Ошибка при удалении пользователя:', err);
             alert('Ошибка при удалении пользователя');
         }
     }
