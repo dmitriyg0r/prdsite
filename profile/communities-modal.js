@@ -47,18 +47,23 @@ document.addEventListener('DOMContentLoaded', () => {
     // Функции для работы с сообществами
     async function loadCommunities(userId) {
         try {
-            const response = await fetch(`https://space-point.ru/api/communities?userId=${userId}`);
+            console.log('Loading communities for user:', userId); // Отладочный лог
+            const response = await fetch(`/api/communities?userId=${userId}`);
+            
             if (!response.ok) {
                 throw new Error(`Failed to load communities: ${response.status}`);
             }
+            
             const data = await response.json();
             
-            if (data.success) {
-                displayCommunities(data.communities);
-                updateCommunitiesCount(data.communities.length);
+            if (!data.success) {
+                throw new Error(data.error || 'Failed to load communities');
             }
+
+            displayCommunities(data.communities);
         } catch (err) {
             console.error('Error loading communities:', err);
+            throw err;
         }
     }
 

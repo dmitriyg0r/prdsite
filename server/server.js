@@ -38,6 +38,7 @@ const sslOptions = {
 };
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Test database connection on startup
 testConnection().then(connected => {

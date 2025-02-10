@@ -181,8 +181,18 @@ router.get('/:id/members', auth, async (req, res) => {
 
 // Получение сообществ пользователя
 router.get('/', auth, async (req, res) => {
+    console.log('GET /api/communities called');
+    console.log('Query params:', req.query);
+    
     try {
         const { userId } = req.query;
+        
+        if (!userId) {
+            return res.status(400).json({
+                success: false,
+                error: 'userId is required'
+            });
+        }
 
         const result = await pool.query(`
             SELECT 
@@ -193,6 +203,8 @@ router.get('/', auth, async (req, res) => {
             WHERE cm.user_id = $1
             ORDER BY c.created_at DESC
         `, [userId]);
+
+        console.log('Found communities:', result.rows.length);
 
         res.json({
             success: true,
