@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="../update/update.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="icon" type="image/x-icon" href="../flow.ico">
+    <link rel="stylesheet" href="communities.css">
 </head>
 <body>
     <!-- Обновленное боковое меню -->
@@ -134,6 +135,21 @@
                         <!-- Здесь будет список друзей -->
                     </div>
                 </div>
+
+                <!-- Новая секция сообществ -->
+                <div class="communities-section">
+                    <div class="communities-header-btn-wrapper">
+                        <button class="communities-header-btn">
+                            <span>Сообщества</span>
+                            <span class="communities-count">0</span>
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                        <div class="notification-dot" style="display: none;"></div>
+                    </div>
+                    <div class="communities-grid">
+                        <!-- Здесь будет список сообществ -->
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -222,6 +238,75 @@
                         </div>
                         <div class="search-results"></div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно сообществ -->
+    <div id="communities-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-tabs">
+                    <button class="tab-btn active" data-tab="all-communities">
+                        <i class="fas fa-users"></i> Мои сообщества
+                        <span class="community-count">0</span>
+                    </button>
+                    <button class="tab-btn" data-tab="search-communities">
+                        <i class="fas fa-search"></i> Поиск сообществ
+                    </button>
+                    <button class="tab-btn" data-tab="create-community">
+                        <i class="fas fa-plus"></i> Создать сообщество
+                    </button>
+                </div>
+                <button class="modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="tab-content active" id="all-communities">
+                    <div class="communities-list">
+                        <!-- Сообщества добавляются динамически -->
+                    </div>
+                </div>
+
+                <div class="tab-content" id="search-communities">
+                    <div class="search-container">
+                        <div class="search-input-wrapper">
+                            <input type="text" id="community-search-input" class="search-input" placeholder="Поиск сообществ...">
+                        </div>
+                        <div class="community-search-results"></div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="create-community">
+                    <form id="create-community-form" class="create-community-form">
+                        <div class="form-group">
+                            <label for="community-name">Название сообщества</label>
+                            <input type="text" id="community-name" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="community-description">Описание</label>
+                            <textarea id="community-description" class="form-input" rows="4"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="community-type">Тип сообщества</label>
+                            <select id="community-type" class="form-input">
+                                <option value="public">Публичное</option>
+                                <option value="private">Закрытое</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="community-avatar" class="avatar-upload-label">
+                                <i class="fas fa-camera"></i>
+                                <span>Загрузить аватар сообщества</span>
+                            </label>
+                            <input type="file" id="community-avatar" accept="image/*" style="display: none;">
+                            <div id="community-avatar-preview" class="avatar-preview"></div>
+                        </div>
+                        <button type="submit" class="submit-btn">Создать сообщество</button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -320,5 +405,6 @@
     <script src="../update/update.js"></script>
     <script src="friends-modal.js"></script>
     <script src="../sidebar.js"></script>
+    <script src="communities-modal.js"></script>
 </body>
 </html>

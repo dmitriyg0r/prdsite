@@ -1,0 +1,175 @@
+/* Стили для секции сообществ */
+.communities-section {
+    margin-top: var(--spacing-lg);
+    padding: var(--spacing-md);
+    background: var(--surface-color);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-light);
+}
+
+.communities-header-btn-wrapper {
+    position: relative;
+    margin-bottom: var(--spacing-md);
+}
+
+.communities-header-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.communities-header-btn:hover {
+    color: var(--primary-color);
+}
+
+.communities-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: var(--spacing-sm);
+}
+
+.community-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    gap: 8px;
+    padding: 8px;
+    border-radius: var(--radius-md);
+    transition: all 0.3s ease;
+}
+
+.community-item:hover {
+    background: var(--hover-color);
+    transform: translateY(-2px);
+}
+
+.community-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.community-name {
+    font-size: 12px;
+    color: var(--text-primary);
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+/* Стили для модального окна сообществ */
+.community-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: var(--surface-color);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-light);
+    transition: all 0.3s ease;
+}
+
+.community-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.community-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.community-meta {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.community-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.join-community-btn,
+.leave-community-btn {
+    padding: 6px 12px;
+    border-radius: var(--radius-md);
+    border: none;
+    background: var(--background-color);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.join-community-btn:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+.leave-community-btn:hover {
+    background: var(--error-color);
+    color: white;
+}
+
+/* Стили для формы создания сообщества */
+.create-community-form {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: var(--spacing-md);
+}
+
+.avatar-preview {
+    margin-top: var(--spacing-sm);
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    overflow: hidden;
+    display: none;
+}
+
+.avatar-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .communities-grid {
+        grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    }
+
+    .community-avatar {
+        width: 40px;
+        height: 40px;
+    }
+
+    .community-name {
+        font-size: 11px;
+    }
+
+    .community-card {
+        padding: 8px;
+    }
+
+    .join-community-btn,
+    .leave-community-btn {
+        padding: 4px 8px;
+        font-size: 12px;
+    }
+} 
