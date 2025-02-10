@@ -1195,18 +1195,19 @@ app.post('/api/admin/role', checkAdmin, async (req, res) => {
     }
 });
 
-// Настройка хранилища для файлов постов
+// Настройка хранилища для загрузки файлов постов
 const postStorage = multer.diskStorage({
     destination: function (req, file, cb) {
         const uploadDir = '/var/www/html/uploads/posts';
-        if (!fs.existsSync(uploadDir)){
+        // Создаем директорию, если она не существует
+        if (!fs.existsSync(uploadDir)) {
             fs.mkdirSync(uploadDir, { recursive: true });
         }
         cb(null, uploadDir);
     },
     filename: function (req, file, cb) {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, 'post-' + uniqueSuffix + path.extname(file.originalname));
+        cb(null, uniqueSuffix + path.extname(file.originalname));
     }
 });
 
@@ -1216,36 +1217,19 @@ const uploadPost = multer({
         fileSize: 10 * 1024 * 1024 // 10MB макс размер
     },
     fileFilter: (req, file, cb) => {
-        // Разрешенные тип файлов
+        // Разрешенные типы файлов
         const allowedTypes = {
-            // Изображения
             'image/jpeg': true,
             'image/png': true,
             'image/gif': true,
-            'image/webp': true,
-            // Документы
-            'application/pdf': true,
-            'application/msword': true,
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document': true,
-            'application/vnd.ms-excel': true,
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': true,
-            'application/vnd.oasis.opendocument.text': true,
-            'text/plain': true
+            'image/webp': true
         };
 
         if (allowedTypes[file.mimetype]) {
             return cb(null, true);
         }
 
-        // Проверка по расширению для документов
-        const ext = path.extname(file.originalname).toLowerCase();
-        const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.odt', '.txt'];
-        
-        if (allowedExtensions.includes(ext)) {
-            return cb(null, true);
-        }
-
-        cb(new Error('Неподдерживаемый тип файла. Разрешены: изображения, PDF, Word, Excel, ODT и текстовые файлы'));
+        cb(new Error('Неподдерживаемый тип файла. Разрешены только изображения (JPEG, PNG, GIF, WEBP)'));
     }
 });
 
@@ -1253,20 +1237,48 @@ const uploadPost = multer({
 app.post('/api/posts/create', uploadPost.single('image'), async (req, res) => {
     try {
         const { userId, content } = req.body;
+        
+        // Проверяем наличие файла
         const imageUrl = req.file ? `/uploads/posts/${req.file.filename}` : null;
 
+        // Проверяем обязательные поля
+        if (!userId) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'Отсутствует ID пользователя' 
+            });
+        }
+
         const result = await pool.query(
-            'INSERT INTO posts (user_id, type, content, image_url) VALUES ($1, $2, $3, $4) RETURNING *',
-            [userId, 'post', content, imageUrl]
+            'INSERT INTO posts (user_id, type, content, image_url, created_at) VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP) RETURNING *',
+            [userId, 'post', content || '', imageUrl]
         );
+
+        // Получаем дополнительную информацию о посте
+        const postWithDetails = await pool.query(`
+            SELECT 
+                p.*,
+                u.username as author_name,
+                u.avatar_url as author_avatar,
+                0 as likes_count,
+                0 as comments_count,
+                false as is_liked
+            FROM posts p
+            JOIN users u ON p.user_id = u.id
+            WHERE p.id = $1
+        `, [result.rows[0].id]);
 
         res.json({
             success: true,
-            post: result.rows[0]
+            post: postWithDetails.rows[0]
         });
     } catch (err) {
         console.error('Error creating post:', err);
-        res.status(500).json({ error: 'Ошибка при создании поста' });
+        res.status(500).json({ 
+            success: false, 
+            error: 'Ошибка при создании поста',
+            details: err.message 
+        });
     }
 });
 
