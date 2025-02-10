@@ -463,4 +463,46 @@ document.addEventListener('DOMContentLoaded', () => {
     const styleElement = document.createElement('style');
     styleElement.textContent = additionalStyles;
     document.head.appendChild(styleElement);
-}); 
+});
+
+// Функция инициализации сообществ
+async function initCommunities() {
+    try {
+        // Загружаем сообщества текущего пользователя
+        await loadCommunities(currentUser.id);
+        
+        // Добавляем обработчики событий для поиска
+        const searchInput = document.querySelector('.community-search input');
+        if (searchInput) {
+            searchInput.addEventListener('input', debounce(async (e) => {
+                const query = e.target.value.trim();
+                if (query) {
+                    try {
+                        const response = await fetch(`/api/communities/search?q=${encodeURIComponent(query)}`);
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            displaySearchResults(data.communities);
+                        }
+                    } catch (err) {
+                        console.error('Search error:', err);
+                        showNotification('Ошибка при поиске сообществ', 'error');
+                    }
+                } else {
+                    const searchResults = document.querySelector('.search-results');
+                    if (searchResults) {
+                        searchResults.style.display = 'none';
+                    }
+                }
+            }, 300));
+        }
+    } catch (err) {
+        console.error('Error initializing communities:', err);
+        showNotification('Ошибка при инициализации сообществ', 'error');
+    }
+}
+
+// Инициализируем сообщества при загрузке страницы
+if (currentUser) {
+    initCommunities();
+} 
