@@ -1,0 +1,33 @@
+.no-communities {
+    text-align: center;
+    padding: 2rem;
+    background: var(--surface-color);
+    border-radius: var(--radius-lg);
+    margin: 1rem 0;
+}
+
+.no-communities p {
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+.create-community-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.create-community-btn:hover {
+    background: var(--primary-dark);
+}
+
+.create-community-btn i {
+    font-size: 0.9em;
+} 

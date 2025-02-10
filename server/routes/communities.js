@@ -194,21 +194,29 @@ router.get('/', auth, async (req, res) => {
             });
         }
 
+        // Изменяем запрос на LEFT JOIN, чтобы получать все сообщества пользователя,
+        // даже если он не состоит ни в одном
         const result = await pool.query(`
-            SELECT 
+            SELECT DISTINCT
                 c.*,
-                (SELECT COUNT(*) FROM community_members WHERE community_id = c.id) as members_count
+                COALESCE(
+                    (SELECT COUNT(*) FROM community_members WHERE community_id = c.id),
+                    0
+                ) as members_count,
+                CASE 
+                    WHEN cm.user_id IS NOT NULL THEN true 
+                    ELSE false 
+                END as is_member
             FROM communities c
-            JOIN community_members cm ON c.id = cm.community_id
-            WHERE cm.user_id = $1
+            LEFT JOIN community_members cm ON c.id = cm.community_id AND cm.user_id = $1
             ORDER BY c.created_at DESC
         `, [userId]);
 
-        console.log('Found communities:', result.rows.length);
+        console.log('Query executed, found rows:', result.rows.length);
 
         res.json({
             success: true,
-            communities: result.rows
+            communities: result.rows || [] // Возвращаем пустой массив, если ничего не найдено
         });
     } catch (err) {
         console.error('Error getting user communities:', err);

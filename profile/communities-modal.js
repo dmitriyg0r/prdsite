@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Функции для работы с сообществами
     async function loadCommunities(userId) {
         try {
-            console.log('Loading communities for user:', userId); // Отладочный лог
+            console.log('Loading communities for user:', userId);
             const response = await fetch(`/api/communities?userId=${userId}`);
             
             if (!response.ok) {
@@ -60,6 +60,32 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(data.error || 'Failed to load communities');
             }
 
+            // Обработка пустого списка сообществ
+            if (!data.communities || data.communities.length === 0) {
+                const container = document.querySelector('.communities-container');
+                if (container) {
+                    container.innerHTML = `
+                        <div class="no-communities">
+                            <p>Вы пока не состоите ни в одном сообществе</p>
+                            <button class="create-community-btn">
+                                <i class="fas fa-plus"></i>
+                                Создать сообщество
+                            </button>
+                        </div>
+                    `;
+                    
+                    // Добавляем обработчик для кнопки создания сообщества
+                    const createBtn = container.querySelector('.create-community-btn');
+                    if (createBtn) {
+                        createBtn.addEventListener('click', () => {
+                            const modal = document.getElementById('create-community-modal');
+                            if (modal) modal.style.display = 'block';
+                        });
+                    }
+                }
+                return;
+            }
+
             displayCommunities(data.communities);
         } catch (err) {
             console.error('Error loading communities:', err);
@@ -68,49 +94,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function displayCommunities(communities) {
-        const communitiesGrid = document.querySelector('.communities-grid');
-        const maxCommunitiesInGrid = 4;
-        
-        if (communitiesGrid) {
-            communitiesGrid.innerHTML = communities.length > 0 
-                ? communities.slice(0, maxCommunitiesInGrid).map(community => `
-                    <a href="/community/community.html?id=${community.id}" class="community-item">
-                        <img src="${community.avatar_url || '/uploads/avatars/default-community.png'}" 
-                             alt="${community.name}"
-                             class="community-avatar">
-                        <span class="community-name">${community.name}</span>
-                    </a>
-                `).join('') + (communities.length > maxCommunitiesInGrid 
-                    ? `<button class="community-item more-communities" onclick="openCommunitiesModal()">
-                         <span>+${communities.length - maxCommunitiesInGrid}</span>
-                       </button>`
-                    : '')
-                : `<div class="community-placeholder">
-                     <img src="/uploads/avatars/default-community.png" alt="No communities" class="community-avatar">
-                     <span class="community-name">Нет сообществ</span>
-                   </div>`;
-        }
+        const container = document.querySelector('.communities-container');
+        if (!container) return;
 
-        // Обновляем полный список в модальном окне
-        const communitiesList = document.querySelector('.communities-list');
-        if (communitiesList) {
-            communitiesList.innerHTML = communities.map(community => `
-                <div class="community-card">
-                    <img src="${community.avatar_url || '/uploads/avatars/default-community.png'}" 
-                         alt="${community.name}" 
-                         class="community-avatar">
-                    <div class="community-info">
-                        <div class="community-name">${community.name}</div>
-                        <div class="community-meta">${community.members_count} участников</div>
-                    </div>
-                    <div class="community-actions">
-                        <button class="leave-community-btn" data-community-id="${community.id}">
-                            <i class="fas fa-sign-out-alt"></i> Покинуть
-                        </button>
+        const communitiesHTML = communities.map(community => `
+            <div class="community-card">
+                <img src="${community.avatar_url || '/images/default-community.png'}" alt="${community.name}" class="community-avatar">
+                <div class="community-info">
+                    <h3>${community.name}</h3>
+                    <p>${community.description || 'Нет описания'}</p>
+                    <div class="community-stats">
+                        <span><i class="fas fa-users"></i> ${community.members_count || 0}</span>
                     </div>
                 </div>
-            `).join('');
-        }
+                <a href="/community/community.html?id=${community.id}" class="view-community-btn">
+                    Перейти
+                </a>
+            </div>
+        `).join('');
+
+        container.innerHTML = `
+            <div class="communities-header">
+                <h2>Мои сообщества</h2>
+                <button class="create-community-btn" onclick="document.getElementById('create-community-modal').style.display='block'">
+                    <i class="fas fa-plus"></i>
+                    Создать сообщество
+                </button>
+            </div>
+            <div class="communities-grid">
+                ${communitiesHTML}
+            </div>
+        `;
     }
 
     // Функция для создания сообщества
