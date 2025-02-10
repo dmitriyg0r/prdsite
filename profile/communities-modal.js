@@ -108,39 +108,55 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Создание сообщества
-    const createCommunityForm = document.getElementById('create-community-form');
-    createCommunityForm?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const formData = new FormData();
-        formData.append('name', document.getElementById('community-name').value);
-        formData.append('description', document.getElementById('community-description').value);
-        formData.append('type', document.getElementById('community-type').value);
-        
-        const avatarInput = document.getElementById('community-avatar');
-        if (avatarInput.files[0]) {
-            formData.append('avatar', avatarInput.files[0]);
-        }
-
+    // Функция для создания сообщества
+    async function createCommunity(formData) {
         try {
             const response = await fetch('https://space-point.ru/api/communities/create', {
                 method: 'POST',
                 body: formData
             });
 
-            if (response.ok) {
-                const data = await response.json();
-                if (data.success) {
-                    loadCommunities(currentUser.id);
-                    createCommunityForm.reset();
-                    // Переключаемся на вкладку "Мои сообщества"
-                    document.querySelector('[data-tab="all-communities"]').click();
-                }
+            const data = await response.json();
+            
+            if (data.success) {
+                // Перезагружаем список сообществ
+                loadCommunities(currentUser.id);
+                // Очищаем форму
+                document.getElementById('create-community-form').reset();
+                // Показываем уведомление
+                alert('Сообщество успешно создано!');
+                // Переключаемся на вкладку "Мои сообщества"
+                document.querySelector('[data-tab="all-communities"]').click();
+                return data.community;
+            } else {
+                throw new Error(data.error || 'Ошибка при создании сообщества');
             }
         } catch (err) {
             console.error('Error creating community:', err);
-            alert('Ошибка при создании сообщества');
+            alert(err.message);
+            return null;
+        }
+    }
+
+    // Обработчик формы создания сообщества
+    document.getElementById('create-community-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const formData = new FormData();
+        formData.append('name', document.getElementById('community-name').value);
+        formData.append('description', document.getElementById('community-description').value);
+        formData.append('type', document.getElementById('community-type').value);
+        formData.append('creator_id', currentUser.id);
+        
+        const avatarInput = document.getElementById('community-avatar');
+        if (avatarInput.files[0]) {
+            formData.append('avatar', avatarInput.files[0]);
+        }
+
+        const community = await createCommunity(formData);
+        if (community) {
+            // Перенаправляем на страницу сообщества
+            window.location.href = `/community/community.html?id=${community.id}`;
         }
     });
 

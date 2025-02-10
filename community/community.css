@@ -1,0 +1,91 @@
+.community-layout {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+.community-sidebar {
+    position: sticky;
+    top: 24px;
+}
+
+.community-card {
+    background: var(--surface-color);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-light);
+    overflow: hidden;
+}
+
+.community-header {
+    padding: var(--spacing-lg);
+    text-align: center;
+}
+
+.community-avatar-wrapper {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin: 0 auto var(--spacing-md);
+}
+
+#community-avatar {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.community-stats {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-md);
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-secondary);
+}
+
+.community-info {
+    padding: var(--spacing-md);
+    border-top: 1px solid var(--border-light);
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: var(--spacing-sm) 0;
+}
+
+.description-text {
+    margin: var(--spacing-sm) 0;
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.community-actions {
+    padding: var(--spacing-md);
+    display: flex;
+    gap: var(--spacing-sm);
+    justify-content: center;
+    border-top: 1px solid var(--border-light);
+}
+
+/* Стили для постов и формы создания поста аналогичны стилям из profile.css */
+
+@media (max-width: 992px) {
+    .community-layout {
+        grid-template-columns: 1fr;
+    }
+    
+    .community-sidebar {
+        position: static;
+    }
+} 

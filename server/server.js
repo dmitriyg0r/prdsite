@@ -3305,3 +3305,6 @@ app.delete('/api/users/:id', checkAdmin, async (req, res) => {
         });
     }
 });
+
+const communitiesRouter = require('./routes/communities');
+app.use('/api/communities', communitiesRouter);
