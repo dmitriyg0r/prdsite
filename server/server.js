@@ -3225,3 +3225,83 @@ app.get('/api/charts', checkAdmin, async (req, res) => {
         });
     }
 });
+
+// Добавляем endpoint для удаления пользователя
+app.delete('/api/users/:id', checkAdmin, async (req, res) => {
+    try {
+        const userId = req.params.id;
+        
+        // Начинаем транзакцию
+        await pool.query('BEGIN');
+
+        try {
+            // 1. Получаем информацию о пользователе (включая avatar_url)
+            const userResult = await pool.query(
+                'SELECT avatar_url FROM users WHERE id = $1',
+                [userId]
+            );
+
+            if (userResult.rows.length === 0) {
+                await pool.query('ROLLBACK');
+                return res.status(404).json({
+                    success: false,
+                    error: 'Пользователь не найден'
+                });
+            }
+
+            // 2. Удаляем все сообщения пользователя
+            await pool.query(
+                'DELETE FROM messages WHERE sender_id = $1 OR receiver_id = $1',
+                [userId]
+            );
+
+            // 3. Удаляем все записи о дружбе
+            await pool.query(
+                'DELETE FROM friendships WHERE user_id = $1 OR friend_id = $1',
+                [userId]
+            );
+
+            // 4. Удаляем все отзывы пользователя
+            await pool.query(
+                'DELETE FROM reviews WHERE user_id = $1',
+                [userId]
+            );
+
+            // 5. Удаляем самого пользователя
+            await pool.query(
+                'DELETE FROM users WHERE id = $1',
+                [userId]
+            );
+
+            // 6. Удаляем файл аватара, если он существует и не является дефолтным
+            const avatarUrl = userResult.rows[0].avatar_url;
+            if (avatarUrl && !avatarUrl.includes('default.png')) {
+                const avatarPath = path.join('/var/www/html/uploads/avatars', path.basename(avatarUrl));
+                if (fs.existsSync(avatarPath)) {
+                    fs.unlinkSync(avatarPath);
+                }
+            }
+
+            // Подтверждаем транзакцию
+            await pool.query('COMMIT');
+
+            res.json({
+                success: true,
+                message: 'Пользователь успешно удален'
+            });
+
+        } catch (err) {
+            // В случае ошибки откатываем транзакцию
+            await pool.query('ROLLBACK');
+            throw err;
+        }
+
+    } catch (err) {
+        console.error('Error deleting user:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при удалении пользователя',
+            details: err.message
+        });
+    }
+});
