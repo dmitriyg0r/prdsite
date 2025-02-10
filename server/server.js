@@ -11,7 +11,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 
 // Изменим импорт на более явный
-const maindb = require('../adminpanel/maindb.js');
+import pool from '../adminpanel/maindb.js';
 
 const app = express();
 const PORT = 5003;
