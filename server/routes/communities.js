@@ -1,8 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../db');
-const upload = require('../middleware/upload');
-const auth = require('../middleware/auth');
 
 // Создание сообщества
 router.post('/create', auth, upload.single('avatar'), async (req, res) => {
@@ -215,6 +213,8 @@ router.get('/', async (req, res) => {
             LEFT JOIN community_members cm ON c.id = cm.community_id AND cm.user_id = $1
             ORDER BY c.created_at DESC
         `, [userId]);
+
+        console.log('Communities found:', result.rows.length);
 
         return res.json({
             success: true,
