@@ -15,24 +15,33 @@ router.get('/', async (req, res) => {
             });
         }
 
-        // Сначала проверим, существует ли таблица communities
-        const tableExists = await pool.query(`
-            SELECT EXISTS (
-                SELECT FROM information_schema.tables 
-                WHERE table_schema = 'public' 
-                AND table_name = 'communities'
-            );
+        // Проверяем существование обеих таблиц
+        const tablesExist = await pool.query(`
+            SELECT 
+                EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_schema = 'public' 
+                    AND table_name = 'communities'
+                ) as communities_exist,
+                EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_schema = 'public' 
+                    AND table_name = 'community_members'
+                ) as members_exist
         `);
 
-        if (!tableExists.rows[0].exists) {
-            // Если таблица не существует, возвращаем пустой массив
+        const { communities_exist, members_exist } = tablesExist.rows[0];
+
+        if (!communities_exist || !members_exist) {
+            // Если хотя бы одна из таблиц не существует, возвращаем пустой массив
+            console.log('Tables do not exist yet:', { communities_exist, members_exist });
             return res.json({
                 success: true,
                 communities: []
             });
         }
 
-        // Если таблица существует, выполняем основной запрос
+        // Если обе таблицы существуют, выполняем основной запрос
         const result = await pool.query(`
             SELECT DISTINCT
                 c.*,
