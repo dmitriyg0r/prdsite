@@ -494,10 +494,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!communities || communities.length === 0) {
             searchResults.innerHTML = '<div class="no-results">Сообщества не найдены</div>';
+            searchResults.style.display = 'block';
             return;
         }
 
-        const resultsHTML = communities.map(community => `
+        searchResults.innerHTML = communities.map(community => `
             <div class="community-search-item">
                 <img src="${community.avatar_url || '/uploads/communities/default.png'}" 
                      alt="${community.name}" 
@@ -505,76 +506,54 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="community-info">
                     <h3>${community.name}</h3>
                     <p>${community.description || 'Нет описания'}</p>
-                    <div class="community-meta">
-                        <span>${community.members_count || 0} участников</span>
-                        ${community.is_member 
-                            ? '<span class="member-badge">Вы участник</span>'
-                            : ''
-                        }
+                    <div class="community-stats">
+                        <span><i class="fas fa-users"></i> ${community.members_count || 0}</span>
                     </div>
                 </div>
-                <button class="join-btn" data-community-id="${community.id}">
-                    ${community.is_member ? 'Выйти' : 'Вступить'}
+                <button class="join-community-btn" 
+                        data-community-id="${community.id}"
+                        ${community.is_member ? 'disabled' : ''}>
+                    ${community.is_member ? 'Вы участник' : 'Вступить'}
                 </button>
             </div>
         `).join('');
-
-        searchResults.innerHTML = resultsHTML;
-
-        // Добавляем обработчики для кнопок
-        const joinButtons = searchResults.querySelectorAll('.join-btn');
-        joinButtons.forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                const communityId = e.target.dataset.communityId;
-                const isMember = e.target.textContent === 'Выйти';
-                
-                try {
-                    if (isMember) {
-                        await leaveCommunity(communityId);
-                        e.target.textContent = 'Вступить';
-                    } else {
-                        await joinCommunity(communityId);
-                        e.target.textContent = 'Выйти';
-                    }
-                } catch (err) {
-                    console.error('Error:', err);
-                    showNotification('error', err.message);
-                }
-            });
-        });
+        
+        searchResults.style.display = 'block';
     }
 
-    // Функция для обработки поиска
+    // Обновляем функцию handleSearch
     async function handleSearch(e) {
         const searchInput = e.target;
         const query = searchInput.value.trim();
+        const searchResults = document.querySelector('.search-results');
+
+        if (!searchResults) return;
 
         if (query.length < 2) {
-            const searchResults = document.querySelector('.search-results');
-            if (searchResults) {
-                searchResults.innerHTML = '';
-            }
+            searchResults.style.display = 'none';
             return;
         }
 
         showSearchLoading();
+        searchResults.style.display = 'block';
 
         try {
             const currentUser = JSON.parse(localStorage.getItem('user'));
-            const response = await fetch(`/api/communities/search?q=${encodeURIComponent(query)}&userId=${currentUser?.id || ''}`);
-            const data = await response.json();
-
-            if (!data.success) {
-                throw new Error(data.error || 'Ошибка при поиске сообществ');
+            const response = await fetch(`/api/communities/search?q=${encodeURIComponent(query)}&userId=${currentUser.id}`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
-
-            hideSearchLoading();
-            displaySearchResults(data.communities);
-
+            
+            const data = await response.json();
+            if (data.success) {
+                displaySearchResults(data.communities);
+            } else {
+                throw new Error(data.error || 'Ошибка при поиске');
+            }
         } catch (err) {
             console.error('Search error:', err);
-            hideSearchLoading();
-            showNotification('error', 'Ошибка при поиске сообществ');
+            searchResults.innerHTML = '<div class="search-error">Произошла ошибка при поиске</div>';
         }
     }
 
