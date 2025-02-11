@@ -460,50 +460,119 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.head.appendChild(searchStyle);
 
-    // Добавляем функцию handleSearch
-    function handleSearch(e) {
-        const searchInput = e.target;
+    // Функции для отображения состояния загрузки
+    function showSearchLoading() {
         const searchResults = document.querySelector('.search-results');
-        const query = searchInput.value.trim();
-
-        if (!searchResults) {
-            console.error('Search results container not found');
-            return;
+        if (searchResults) {
+            searchResults.innerHTML = '<div class="loading">Поиск...</div>';
         }
-
-        if (!query) {
-            searchResults.style.display = 'none';
-            return;
-        }
-
-        searchResults.style.display = 'block';
-        showSearchLoading();
-
-        // Используем уже существующую функцию debounce
-        debounce(async () => {
-            try {
-                const response = await fetch(`/api/communities/search?q=${encodeURIComponent(query)}`);
-                if (!response.ok) throw new Error('Ошибка поиска');
-                
-                const data = await response.json();
-                displaySearchResults(data.communities || []);
-            } catch (err) {
-                console.error('Search error:', err);
-                searchResults.innerHTML = `
-                    <div class="search-error">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <p>Ошибка при поиске сообществ</p>
-                        <small>Пожалуйста, попробуйте позже</small>
-                    </div>
-                `;
-            }
-        }, 300)();
     }
 
-    // Обновляем обработчик для поискового поля
+    function hideSearchLoading() {
+        const searchResults = document.querySelector('.search-results');
+        if (searchResults) {
+            const loading = searchResults.querySelector('.loading');
+            if (loading) {
+                loading.remove();
+            }
+        }
+    }
+
+    // Функция для отображения результатов поиска
+    function displaySearchResults(communities) {
+        const searchResults = document.querySelector('.search-results');
+        if (!searchResults) return;
+
+        if (!communities || communities.length === 0) {
+            searchResults.innerHTML = '<div class="no-results">Сообщества не найдены</div>';
+            return;
+        }
+
+        const resultsHTML = communities.map(community => `
+            <div class="community-search-item">
+                <img src="${community.avatar_url || '/uploads/communities/default.png'}" 
+                     alt="${community.name}" 
+                     class="community-avatar">
+                <div class="community-info">
+                    <h3>${community.name}</h3>
+                    <p>${community.description || 'Нет описания'}</p>
+                    <div class="community-meta">
+                        <span>${community.members_count || 0} участников</span>
+                        ${community.is_member 
+                            ? '<span class="member-badge">Вы участник</span>'
+                            : ''
+                        }
+                    </div>
+                </div>
+                <button class="join-btn" data-community-id="${community.id}">
+                    ${community.is_member ? 'Выйти' : 'Вступить'}
+                </button>
+            </div>
+        `).join('');
+
+        searchResults.innerHTML = resultsHTML;
+
+        // Добавляем обработчики для кнопок
+        const joinButtons = searchResults.querySelectorAll('.join-btn');
+        joinButtons.forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const communityId = e.target.dataset.communityId;
+                const isMember = e.target.textContent === 'Выйти';
+                
+                try {
+                    if (isMember) {
+                        await leaveCommunity(communityId);
+                        e.target.textContent = 'Вступить';
+                    } else {
+                        await joinCommunity(communityId);
+                        e.target.textContent = 'Выйти';
+                    }
+                } catch (err) {
+                    console.error('Error:', err);
+                    showNotification('error', err.message);
+                }
+            });
+        });
+    }
+
+    // Функция для обработки поиска
+    async function handleSearch(e) {
+        const searchInput = e.target;
+        const query = searchInput.value.trim();
+
+        if (query.length < 2) {
+            const searchResults = document.querySelector('.search-results');
+            if (searchResults) {
+                searchResults.innerHTML = '';
+            }
+            return;
+        }
+
+        showSearchLoading();
+
+        try {
+            const currentUser = JSON.parse(localStorage.getItem('user'));
+            const response = await fetch(`/api/communities/search?q=${encodeURIComponent(query)}&userId=${currentUser?.id || ''}`);
+            const data = await response.json();
+
+            if (!data.success) {
+                throw new Error(data.error || 'Ошибка при поиске сообществ');
+            }
+
+            hideSearchLoading();
+            displaySearchResults(data.communities);
+
+        } catch (err) {
+            console.error('Search error:', err);
+            hideSearchLoading();
+            showNotification('error', 'Ошибка при поиске сообществ');
+        }
+    }
+
+    // Добавляем обработчик поиска
     const searchInput = document.querySelector('.community-search input');
     if (searchInput) {
-        searchInput.addEventListener('input', handleSearch);
+        searchInput.addEventListener('input', debounce(handleSearch, 300));
     }
 
     // Закрываем результаты поиска при клике вне
