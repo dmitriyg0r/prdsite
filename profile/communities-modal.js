@@ -521,68 +521,95 @@ document.addEventListener('DOMContentLoaded', () => {
         searchResults.style.display = 'block';
     }
 
-    // Обновляем функцию handleSearch
+    // Обновленная функция поиска
     async function handleSearch(e) {
         const searchInput = e.target;
-        const query = searchInput.value.trim();
         const searchResults = document.querySelector('.search-results');
+        const query = searchInput.value.trim();
         
-        console.log('Search query:', query); // Отладочный вывод
-        console.log('Search results element:', searchResults); // Проверка элемента
+        console.log('Поисковый запрос:', query);
+        console.log('Элемент результатов поиска:', searchResults);
 
         if (!searchResults) {
-            console.error('Search results container not found!');
+            console.error('Контейнер для результатов поиска не найден');
             return;
         }
 
+        // Очищаем результаты при коротком запросе
         if (query.length < 2) {
             searchResults.style.display = 'none';
             return;
         }
 
-        showSearchLoading();
-        searchResults.style.display = 'block';
-
         try {
-            const currentUser = JSON.parse(localStorage.getItem('user'));
-            const url = `/api/communities/search?q=${encodeURIComponent(query)}&userId=${currentUser.id}`;
-            console.log('Making request to:', url); // Отладочный вывод
+            // Показываем индикатор загрузки
+            searchResults.innerHTML = '<div class="loading">Поиск...</div>';
+            searchResults.style.display = 'block';
 
-            const response = await fetch(url);
-            console.log('Response status:', response.status); // Проверка статуса ответа
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+            const currentUser = JSON.parse(localStorage.getItem('user'));
+            if (!currentUser || !currentUser.id) {
+                throw new Error('Пользователь не авторизован');
             }
-            
+
+            // Выполняем запрос
+            const response = await fetch(`/api/communities/search?q=${encodeURIComponent(query)}&userId=${currentUser.id}`);
+            console.log('Статус ответа:', response.status);
+
+            if (!response.ok) {
+                throw new Error(`Ошибка HTTP: ${response.status}`);
+            }
+
             const data = await response.json();
-            console.log('Search results:', data); // Проверка полученных данных
-            
-            if (data.success) {
-                displaySearchResults(data.communities);
+            console.log('Полученные данные:', data);
+
+            // Отображаем результаты
+            if (data.success && Array.isArray(data.communities)) {
+                if (data.communities.length === 0) {
+                    searchResults.innerHTML = '<div class="no-results">Сообщества не найдены</div>';
+                } else {
+                    searchResults.innerHTML = data.communities.map(community => `
+                        <div class="community-search-item">
+                            <img src="${community.avatar_url || '/uploads/communities/default.png'}" 
+                                 alt="${community.name}" 
+                                 class="community-avatar">
+                            <div class="community-info">
+                                <h3>${community.name}</h3>
+                                <p>${community.description || 'Нет описания'}</p>
+                                <div class="community-stats">
+                                    <span><i class="fas fa-users"></i> ${community.members_count || 0}</span>
+                                </div>
+                            </div>
+                            <button class="join-community-btn" 
+                                    data-community-id="${community.id}"
+                                    ${community.is_member ? 'disabled' : ''}>
+                                ${community.is_member ? 'Вы участник' : 'Вступить'}
+                            </button>
+                        </div>
+                    `).join('');
+                }
             } else {
-                throw new Error(data.error || 'Ошибка при поиске');
+                throw new Error(data.error || 'Неверный формат данных');
             }
         } catch (err) {
-            console.error('Search error:', err);
-            searchResults.innerHTML = '<div class="search-error">Произошла ошибка при поиске</div>';
+            console.error('Ошибка поиска:', err);
+            searchResults.innerHTML = `
+                <div class="search-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <p>Произошла ошибка при поиске</p>
+                    <small>${err.message}</small>
+                </div>
+            `;
         }
     }
 
-    // Добавляем обработчик поиска
-    if (document.querySelector('.search-input')) {
-        document.querySelector('.search-input').addEventListener('input', debounce(handleSearch, 300));
-    }
-
-    // Закрываем результаты поиска при клике вне
-    document.addEventListener('click', (event) => {
-        const searchResults = document.querySelector('.search-results');
-        const searchInput = document.querySelector('.community-search input');
-        
-        if (searchResults && 
-            !searchResults.contains(event.target) && 
-            !searchInput.contains(event.target)) {
-            searchResults.style.display = 'none';
+    // Инициализация обработчика поиска
+    document.addEventListener('DOMContentLoaded', () => {
+        const searchInput = document.getElementById('community-search-input');
+        if (searchInput) {
+            console.log('Найден элемент поиска, добавляем обработчик');
+            searchInput.addEventListener('input', debounce(handleSearch, 300));
+        } else {
+            console.error('Элемент поиска не найден');
         }
     });
 
