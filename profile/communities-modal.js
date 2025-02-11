@@ -717,18 +717,24 @@ document.addEventListener('DOMContentLoaded', () => {
                                class="search-input" 
                                placeholder="Поиск сообществ...">
                     </div>
-                    <div class="search-results"></div>
+                    <div class="search-results">
+                        <div class="search-hint">
+                            <i class="fas fa-search"></i>
+                            <p>Введите минимум 2 символа для поиска</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         `;
 
         showModal(modalHTML);
-        
-        // Добавляем обработчики событий
+
+        // Инициализация поиска
         const searchInput = document.querySelector('.search-input');
         let debounceTimer;
 
-        function handleSearch() {
+        // Определяем функцию handleSearch локально
+        const handleSearch = () => {
             const query = searchInput.value.trim();
             
             if (query.length < 2) {
@@ -742,17 +748,25 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             searchCommunities(query);
-        }
+        };
 
-        // Добавляем debounce для поиска
+        // Добавляем обработчики событий
         searchInput.addEventListener('input', () => {
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(handleSearch, 300);
         });
 
-        // Добавляем обработчик для кнопки закрытия
-        document.querySelector('.close-modal-btn').addEventListener('click', () => {
-            closeModal();
-        });
+        // Обработчик для кнопки закрытия
+        document.querySelector('.close-modal-btn').addEventListener('click', closeModal);
+
+        // Очистка обработчиков при закрытии модального окна
+        const cleanup = () => {
+            searchInput.removeEventListener('input', handleSearch);
+            document.querySelector('.close-modal-btn').removeEventListener('click', closeModal);
+        };
+
+        // Добавляем функцию очистки к модальному окну
+        const modalElement = document.querySelector('.modal-overlay');
+        modalElement.addEventListener('close', cleanup, { once: true });
     }
 }); 
