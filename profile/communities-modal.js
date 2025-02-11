@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Функция для показа уведомлений
-    function showNotification(message, type = 'info') {
+    function showNotification(type, message) {
         const notification = document.createElement('div');
         notification.className = `notification ${type}`;
         notification.textContent = message;
@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
             displayCommunities(data.communities);
         } catch (err) {
             console.error('Error loading communities:', err);
-            showNotification('Ошибка при загрузке сообществ', 'error');
+            showNotification('error', 'Ошибка при загрузке сообществ');
         }
     }
 
@@ -153,56 +153,83 @@ document.addEventListener('DOMContentLoaded', () => {
             return data.communities;
         } catch (err) {
             console.error('Search error:', err);
-            showNotification('Ошибка при поиске сообществ', 'error');
+            showNotification('error', 'Ошибка при поиске сообществ');
             return [];
         }
     }
 
     // Функция для создания сообщества
-    async function createCommunity(event) {
-        event.preventDefault();
-        console.log('Creating community...');
-        
-        const form = event.target;
-        const formData = new FormData(form);
+    async function createCommunity(e) {
+        e.preventDefault();
         
         try {
+            // Получаем текущего пользователя из localStorage
             const currentUser = JSON.parse(localStorage.getItem('user'));
-            if (!currentUser) {
-                throw new Error('User not found');
+            if (!currentUser || !currentUser.id) {
+                throw new Error('Необходима авторизация');
             }
-            
-            formData.append('userId', currentUser.id);
-            
+
+            const form = e.target;
+            const formData = new FormData(form);
+
+            // Добавляем ID создателя
+            formData.append('creatorId', currentUser.id);
+
+            // Проверяем обязательные поля
+            const name = formData.get('name')?.trim();
+            if (!name) {
+                throw new Error('Название сообщества обязательно');
+            }
+
+            // Добавляем логирование для отладки
+            console.log('Отправляемые данные:', {
+                name: formData.get('name'),
+                description: formData.get('description'),
+                type: formData.get('type'),
+                creatorId: formData.get('creatorId'),
+                avatar: formData.get('avatar')
+            });
+
             const response = await fetch('/api/communities/create', {
                 method: 'POST',
                 body: formData
             });
 
             if (!response.ok) {
-                throw new Error(`Failed to create community: ${response.status}`);
+                const errorData = await response.json();
+                throw new Error(errorData.error || `Failed to create community: ${response.status}`);
             }
 
             const data = await response.json();
             
             if (!data.success) {
-                throw new Error(data.error || 'Failed to create community');
+                throw new Error(data.error || 'Неизвестная ошибка при создании сообщества');
             }
 
+            // Показываем уведомление об успехе
+            showNotification('success', 'Сообщество успешно создано!');
+            
             // Закрываем модальное окно
-            const modal = document.getElementById('create-community-modal');
-            if (modal) modal.style.display = 'none';
+            const modal = document.querySelector('#createCommunityModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
 
             // Очищаем форму
             form.reset();
 
-            // Перезагружаем список сообществ
+            // Сбрасываем предпросмотр аватара
+            const avatarPreview = document.querySelector('#avatarPreview');
+            if (avatarPreview) {
+                avatarPreview.src = '/uploads/communities/default.png';
+            }
+
+            // Обновляем список сообществ
             await loadCommunities(currentUser.id);
 
-            showNotification('Сообщество успешно создано', 'success');
         } catch (err) {
             console.error('Error creating community:', err);
-            showNotification(err.message, 'error');
+            showNotification('error', err.message);
         }
     }
 
@@ -238,7 +265,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (err) {
             console.error('Error initializing communities:', err);
-            showNotification('Ошибка при инициализации сообществ', 'error');
+            showNotification('error', 'Ошибка при инициализации сообществ');
         }
     }
 
