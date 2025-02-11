@@ -6,6 +6,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const tabContents = communitiesModal.querySelectorAll('.tab-content');
     const communitiesHeaderBtn = document.querySelector('.communities-header-btn');
 
+    // Получаем элементы модального окна создания сообщества
+    const createModal = document.getElementById('createCommunityModal');
+    const createForm = document.getElementById('createCommunityForm');
+    const closeCreateModalBtn = createModal?.querySelector('.close');
+
     // Открытие модального окна при клике на заголовок "Сообщества"
     communitiesHeaderBtn?.addEventListener('click', (e) => {
         e.preventDefault();
@@ -92,8 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const createBtn = container.querySelector('.create-community-btn');
             if (createBtn) {
                 createBtn.addEventListener('click', () => {
-                    const modal = document.getElementById('create-community-modal');
-                    if (modal) modal.style.display = 'block';
+                    openCreateCommunityModal();
                 });
             }
             return;
@@ -158,20 +162,47 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Функция для создания сообщества
+    // Функция для открытия модального окна создания сообщества
+    function openCreateCommunityModal() {
+        if (createModal) {
+            createModal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    // Функция для закрытия модального окна создания сообщества
+    function closeCreateCommunityModal() {
+        if (createModal) {
+            createModal.style.display = 'none';
+            document.body.style.overflow = '';
+            if (createForm) createForm.reset();
+        }
+    }
+
+    // Обработчик создания сообщества
     async function createCommunity(e) {
         e.preventDefault();
-        
+        console.log('Create community form submitted');
+
         try {
             const currentUser = JSON.parse(localStorage.getItem('user'));
             if (!currentUser || !currentUser.id) {
                 throw new Error('Необходима авторизация');
             }
 
+            // Получаем значения полей формы
             const nameInput = document.getElementById('community-name-input');
             const descriptionInput = document.getElementById('community-description-input');
             const typeSelect = document.getElementById('community-type-select');
             const avatarInput = document.getElementById('communityAvatar');
+
+            // Отладочная информация
+            console.log('Form elements:', {
+                nameInput,
+                descriptionInput,
+                typeSelect,
+                avatarInput
+            });
 
             console.log('Form values:', {
                 name: nameInput?.value,
@@ -179,7 +210,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 type: typeSelect?.value
             });
 
-            if (!nameInput || !nameInput.value.trim()) {
+            // Проверяем наличие названия
+            if (!nameInput?.value?.trim()) {
                 throw new Error('Название сообщества обязательно');
             }
 
@@ -193,6 +225,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 formData.append('avatar', avatarInput.files[0]);
             }
 
+            // Отправляем запрос
             const response = await fetch('/api/communities/create', {
                 method: 'POST',
                 body: formData
@@ -210,13 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             showNotification('success', 'Сообщество успешно создано!');
-            const modal = document.querySelector('#createCommunityModal');
-            if (modal) {
-                modal.style.display = 'none';
-            }
-            form.reset();
-
-            // Обновляем список сообществ
+            closeCreateCommunityModal();
             await loadCommunities(currentUser.id);
 
         } catch (err) {
@@ -224,6 +251,29 @@ document.addEventListener('DOMContentLoaded', () => {
             showNotification('error', err.message);
         }
     }
+
+    // Добавляем обработчики событий
+    if (createForm) {
+        console.log('Adding submit handler to create form');
+        createForm.addEventListener('submit', createCommunity);
+    }
+
+    if (closeCreateModalBtn) {
+        closeCreateModalBtn.addEventListener('click', closeCreateCommunityModal);
+    }
+
+    // Обработчик клика по кнопке "Создать сообщество"
+    const createCommunityBtns = document.querySelectorAll('.create-community-btn');
+    createCommunityBtns.forEach(btn => {
+        btn.addEventListener('click', openCreateCommunityModal);
+    });
+
+    // Закрытие модального окна по клику вне его
+    window.addEventListener('click', (e) => {
+        if (e.target === createModal) {
+            closeCreateCommunityModal();
+        }
+    });
 
     // Функция инициализации сообществ
     async function initCommunities() {
