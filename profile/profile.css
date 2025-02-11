@@ -2397,3 +2397,23 @@ textarea:invalid {
 .modal-content .search-results::-webkit-scrollbar-thumb:hover {
     background: var(--text-tertiary);
 }
+
+/* Стили для вкладок в модальных окнах */
+.modal .tab-content {
+    display: none;
+    padding: var(--spacing-md);
+    background: var(--surface-color);
+}
+
+.modal .tab-content.active {
+    display: block;
+}
+
+/* Стили для вкладок в основном контенте (не в модальных окнах) */
+.main-content .tab-content {
+    display: none;
+}
+
+.main-content .tab-content.active {
+    display: block;
+}
