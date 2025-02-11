@@ -162,21 +162,10 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('Search input element:', searchInput);
     console.log('Search results element:', searchResults);
 
-    // Функция debounce для поиска
-    function debounce(func, wait) {
-        let timeout;
-        return function executedFunction(...args) {
-            const later = () => {
-                clearTimeout(timeout);
-                func(...args);
-            };
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-        };
-    }
-
     // Обработчик поиска
     async function handleSearch(query) {
+        console.log('Handling search for:', query);
+        
         if (query.length < 2) {
             console.log('Query too short');
             searchResults.style.display = 'block';
@@ -249,7 +238,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Привязываем обработчик к полю ввода с debounce
     if (searchInput) {
-        const debouncedSearch = debounce((e) => handleSearch(e.target.value.trim()), 300);
+        const debouncedSearch = debounce((e) => {
+            const query = e.target.value.trim();
+            console.log('Debounced search query:', query);
+            handleSearch(query);
+        }, 300);
+        
         searchInput.addEventListener('input', debouncedSearch);
     } else {
         console.error('Search input element not found!');
