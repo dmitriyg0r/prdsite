@@ -696,26 +696,82 @@ document.addEventListener('DOMContentLoaded', () => {
         modal.className = 'modal-overlay';
         
         modal.innerHTML = `
-            <div class="communities-modal">
-                <div class="modal-header">
+            <div class="communities-modal" style="
+                background: white;
+                border-radius: 8px;
+                width: 90%;
+                max-width: 600px;
+                max-height: 80vh;
+                display: flex;
+                flex-direction: column;
+                position: relative;
+                z-index: 1001;
+            ">
+                <div class="modal-header" style="
+                    padding: 16px;
+                    border-bottom: 1px solid #eee;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                ">
                     <h2>Поиск сообществ</h2>
-                    <button class="close-modal-btn">×</button>
+                    <button class="close-modal-btn" style="
+                        background: none;
+                        border: none;
+                        font-size: 24px;
+                        cursor: pointer;
+                        padding: 0 8px;
+                    ">×</button>
                 </div>
-                <div class="modal-content">
+                <div class="modal-content" style="
+                    padding: 16px;
+                    overflow-y: auto;
+                    flex: 1;
+                ">
                     <div class="search-container">
                         <input type="text" 
                                id="community-search-input"
                                class="search-input" 
-                               placeholder="Поиск сообществ...">
+                               placeholder="Поиск сообществ..."
+                               style="
+                                   width: 100%;
+                                   padding: 8px;
+                                   border: 1px solid #ddd;
+                                   border-radius: 4px;
+                                   margin-bottom: 16px;
+                               ">
                     </div>
-                    <div id="search-results" class="search-results">
-                        <div class="search-hint">
-                            <i class="fas fa-search"></i>
+                    <div id="search-results" class="search-results" style="
+                        min-height: 200px;
+                    ">
+                        <div class="search-hint" style="
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            justify-content: center;
+                            padding: 20px;
+                            color: #666;
+                        ">
+                            <i class="fas fa-search" style="font-size: 24px; margin-bottom: 10px;"></i>
                             <p>Введите текст для поиска сообществ</p>
                         </div>
                     </div>
                 </div>
             </div>
+        `;
+
+        // Добавляем стили для overlay
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
         `;
 
         // Добавляем модальное окно в DOM
@@ -733,9 +789,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Обработчик поиска
         async function handleSearch(query) {
+            console.log('Searching for:', query); // Отладочный вывод
+
             if (query.length < 2) {
                 searchResults.innerHTML = `
-                    <div class="search-hint">
+                    <div class="search-hint" style="text-align: center; padding: 20px;">
                         <i class="fas fa-search"></i>
                         <p>Введите минимум 2 символа для поиска</p>
                     </div>`;
@@ -743,7 +801,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             searchResults.innerHTML = `
-                <div class="search-loading">
+                <div class="search-loading" style="text-align: center; padding: 20px;">
                     <i class="fas fa-spinner fa-spin"></i>
                     <p>Поиск...</p>
                 </div>`;
@@ -753,13 +811,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 const response = await fetch(`/api/communities/search?q=${encodeURIComponent(query)}&userId=${currentUser.id}`);
                 const data = await response.json();
 
+                console.log('Search response:', data); // Отладочный вывод
+
                 if (!data.success) {
                     throw new Error('Ошибка при поиске');
                 }
 
                 if (data.communities.length === 0) {
                     searchResults.innerHTML = `
-                        <div class="no-results">
+                        <div class="no-results" style="text-align: center; padding: 20px;">
                             <i class="fas fa-search"></i>
                             <p>Сообщества не найдены</p>
                         </div>`;
@@ -767,20 +827,39 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 const communitiesHTML = data.communities.map(community => `
-                    <div class="community-search-item">
+                    <div class="community-search-item" style="
+                        display: flex;
+                        align-items: center;
+                        padding: 12px;
+                        border-bottom: 1px solid #eee;
+                    ">
                         <img src="${community.avatar_url || '/uploads/communities/default.png'}" 
                              alt="${community.name}" 
-                             class="community-avatar">
-                        <div class="community-info">
-                            <h3>${community.name}</h3>
-                            <p>${community.description || 'Нет описания'}</p>
-                            <div class="community-stats">
+                             class="community-avatar"
+                             style="
+                                 width: 50px;
+                                 height: 50px;
+                                 border-radius: 50%;
+                                 margin-right: 12px;
+                             ">
+                        <div class="community-info" style="flex: 1;">
+                            <h3 style="margin: 0 0 4px 0;">${community.name}</h3>
+                            <p style="margin: 0; color: #666;">${community.description || 'Нет описания'}</p>
+                            <div class="community-stats" style="margin-top: 4px;">
                                 <span><i class="fas fa-users"></i> ${community.members_count || 0}</span>
                             </div>
                         </div>
                         <button class="join-community-btn" 
                                 data-community-id="${community.id}"
-                                ${community.is_member ? 'disabled' : ''}>
+                                ${community.is_member ? 'disabled' : ''}
+                                style="
+                                    padding: 8px 16px;
+                                    border-radius: 4px;
+                                    border: none;
+                                    background: ${community.is_member ? '#eee' : '#4CAF50'};
+                                    color: ${community.is_member ? '#666' : 'white'};
+                                    cursor: ${community.is_member ? 'default' : 'pointer'};
+                                ">
                             ${community.is_member ? 'Вы участник' : 'Вступить'}
                         </button>
                     </div>
@@ -790,7 +869,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (error) {
                 console.error('Search error:', error);
                 searchResults.innerHTML = `
-                    <div class="search-error">
+                    <div class="search-error" style="text-align: center; padding: 20px; color: #dc3545;">
                         <i class="fas fa-exclamation-circle"></i>
                         <p>Произошла ошибка при поиске</p>
                     </div>`;
@@ -812,4 +891,19 @@ document.addEventListener('DOMContentLoaded', () => {
         // Фокусируемся на поле ввода
         searchInput.focus();
     }
+
+    // Инициализация поиска сообществ
+    document.addEventListener('DOMContentLoaded', () => {
+        // Находим кнопку поиска сообществ
+        const searchButton = document.querySelector('.search-communities-btn');
+        if (searchButton) {
+            searchButton.addEventListener('click', showCommunitiesModal);
+        }
+
+        // Также привяжем к полю поиска, если оно есть
+        const searchInput = document.querySelector('input[placeholder="Поиск сообществ"]');
+        if (searchInput) {
+            searchInput.addEventListener('click', showCommunitiesModal);
+        }
+    });
 }); 
