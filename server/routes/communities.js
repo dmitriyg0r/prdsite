@@ -60,10 +60,39 @@ async function ensureTablesExist() {
             CREATE TABLE IF NOT EXISTS community_members (
                 id SERIAL PRIMARY KEY,
                 community_id INTEGER REFERENCES communities(id) ON DELETE CASCADE,
-                user_id INTEGER NOT NULL,
-                role VARCHAR(50) DEFAULT 'member',
-                joined_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                role VARCHAR(20) NOT NULL DEFAULT 'member',
+                permissions JSONB NOT NULL DEFAULT '{"can_post": false, "can_moderate": false, "can_invite": false, "can_manage": false}',
+                joined_at TIMESTAMP NOT NULL DEFAULT NOW(),
                 UNIQUE(community_id, user_id)
+            );
+        `);
+
+        // Создаем таблицу community_settings, если она не существует
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS community_settings (
+                id SERIAL PRIMARY KEY,
+                community_id INTEGER REFERENCES communities(id) ON DELETE CASCADE,
+                post_permission VARCHAR(20) NOT NULL DEFAULT 'admin_only',
+                visibility VARCHAR(20) NOT NULL DEFAULT 'public',
+                created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+                updated_at TIMESTAMP,
+                UNIQUE(community_id)
+            );
+        `);
+
+        // Создаем таблицу community_posts, если она не существует
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS community_posts (
+                id SERIAL PRIMARY KEY,
+                community_id INTEGER REFERENCES communities(id) ON DELETE CASCADE,
+                author_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+                title VARCHAR(255) NOT NULL,
+                content TEXT NOT NULL,
+                created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+                updated_at TIMESTAMP,
+                likes_count INTEGER DEFAULT 0,
+                comments_count INTEGER DEFAULT 0
             );
         `);
 
@@ -80,6 +109,8 @@ async function ensureTablesExist() {
 
 // Создание сообщества
 router.post('/create', upload.single('avatar'), async (req, res) => {
+    const client = await pool.connect();
+    
     try {
         const { name, description, type, creatorId } = req.body;
         
@@ -96,38 +127,82 @@ router.post('/create', upload.single('avatar'), async (req, res) => {
             });
         }
 
+        // Начинаем транзакцию
+        await client.query('BEGIN');
+
         // Формируем путь к аватару
         const avatarUrl = req.file 
             ? `/uploads/communities/${req.file.filename}`
             : '/uploads/communities/default.png';
 
         // Создаем сообщество
-        const result = await pool.query(`
+        const communityResult = await client.query(`
             INSERT INTO communities 
             (name, description, type, creator_id, avatar_url, created_at)
             VALUES ($1, $2, $3, $4, $5, NOW())
             RETURNING *
         `, [name, description || '', type || 'public', creatorId, avatarUrl]);
 
+        const community = communityResult.rows[0];
+
         // Добавляем создателя как участника и администратора
-        await pool.query(`
+        await client.query(`
             INSERT INTO community_members 
-            (community_id, user_id, role, joined_at)
-            VALUES ($1, $2, 'admin', NOW())
-        `, [result.rows[0].id, creatorId]);
+            (community_id, user_id, role, permissions, joined_at)
+            VALUES ($1, $2, 'admin', $3, NOW())
+        `, [
+            community.id, 
+            creatorId, 
+            JSON.stringify({
+                can_post: true,
+                can_moderate: true,
+                can_invite: true,
+                can_manage: true
+            })
+        ]);
+
+        // Создаем запись в таблице настроек сообщества
+        await client.query(`
+            INSERT INTO community_settings 
+            (community_id, post_permission, visibility, created_at)
+            VALUES ($1, 'admin_only', $2, NOW())
+        `, [community.id, type || 'public']);
+
+        // Фиксируем транзакцию
+        await client.query('COMMIT');
+
+        // Получаем полную информацию о созданном сообществе
+        const fullCommunityResult = await client.query(`
+            SELECT 
+                c.*,
+                (SELECT COUNT(*) FROM community_members WHERE community_id = c.id) as members_count,
+                (
+                    SELECT json_build_object(
+                        'role', cm.role,
+                        'permissions', cm.permissions
+                    )
+                    FROM community_members cm
+                    WHERE cm.community_id = c.id AND cm.user_id = $1
+                ) as member_info
+            FROM communities c
+            WHERE c.id = $2
+        `, [creatorId, community.id]);
 
         res.json({
             success: true,
-            community: result.rows[0]
+            community: fullCommunityResult.rows[0]
         });
 
     } catch (err) {
+        await client.query('ROLLBACK');
         console.error('Error creating community:', err);
         res.status(500).json({
             success: false,
             error: 'Ошибка при создании сообщества',
             details: err.message
         });
+    } finally {
+        client.release();
     }
 });
 
@@ -256,6 +331,100 @@ router.get('/search', async (req, res) => {
         return res.status(500).json({
             success: false,
             error: 'Ошибка при поиске сообществ',
+            details: err.message
+        });
+    }
+});
+
+// Добавляем эндпоинт для создания поста в сообществе
+router.post('/:communityId/posts', async (req, res) => {
+    try {
+        const { communityId } = req.params;
+        const { userId, content, title } = req.body;
+
+        // Проверяем права пользователя
+        const memberCheck = await pool.query(`
+            SELECT role, permissions
+            FROM community_members
+            WHERE community_id = $1 AND user_id = $2
+        `, [communityId, userId]);
+
+        if (memberCheck.rows.length === 0) {
+            return res.status(403).json({
+                success: false,
+                error: 'Вы не являетесь участником сообщества'
+            });
+        }
+
+        const member = memberCheck.rows[0];
+        const permissions = member.permissions;
+
+        if (!permissions.can_post) {
+            return res.status(403).json({
+                success: false,
+                error: 'У вас нет прав для создания постов в этом сообществе'
+            });
+        }
+
+        // Создаем пост
+        const result = await pool.query(`
+            INSERT INTO community_posts 
+            (community_id, author_id, title, content, created_at)
+            VALUES ($1, $2, $3, $4, NOW())
+            RETURNING *
+        `, [communityId, userId, title, content]);
+
+        res.json({
+            success: true,
+            post: result.rows[0]
+        });
+
+    } catch (err) {
+        console.error('Error creating community post:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при создании поста',
+            details: err.message
+        });
+    }
+});
+
+// Добавляем эндпоинт для получения постов сообщества
+router.get('/:communityId/posts', async (req, res) => {
+    try {
+        const { communityId } = req.params;
+        const { page = 1, limit = 10 } = req.query;
+        const offset = (page - 1) * limit;
+
+        const posts = await pool.query(`
+            SELECT 
+                cp.*,
+                u.username as author_name,
+                u.avatar_url as author_avatar
+            FROM community_posts cp
+            JOIN users u ON cp.author_id = u.id
+            WHERE cp.community_id = $1
+            ORDER BY cp.created_at DESC
+            LIMIT $2 OFFSET $3
+        `, [communityId, limit, offset]);
+
+        const total = await pool.query(
+            'SELECT COUNT(*) FROM community_posts WHERE community_id = $1',
+            [communityId]
+        );
+
+        res.json({
+            success: true,
+            posts: posts.rows,
+            total: parseInt(total.rows[0].count),
+            pages: Math.ceil(total.rows[0].count / limit)
+        });
+
+    } catch (err) {
+        console.error('Error getting community posts:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при получении постов',
             details: err.message
         });
     }
