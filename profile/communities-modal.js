@@ -325,7 +325,47 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.head.appendChild(style);
 
-    // Добавляем обработчик для поискового поля
+    // Добавляем функцию handleSearch
+    function handleSearch(e) {
+        const searchInput = e.target;
+        const searchResults = document.querySelector('.search-results');
+        const query = searchInput.value.trim();
+
+        if (!searchResults) {
+            console.error('Search results container not found');
+            return;
+        }
+
+        if (!query) {
+            searchResults.style.display = 'none';
+            return;
+        }
+
+        searchResults.style.display = 'block';
+        showSearchLoading();
+
+        // Используем уже существующую функцию debounce
+        debounce(async () => {
+            try {
+                const response = await fetch(`/api/communities/search?q=${encodeURIComponent(query)}`);
+                if (!response.ok) throw new Error('Ошибка поиска');
+                
+                const data = await response.json();
+                displaySearchResults(data.communities || []);
+            } catch (err) {
+                console.error('Search error:', err);
+                searchResults.innerHTML = `
+                    <div class="search-error">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p>Ошибка при поиске сообществ</p>
+                        <small>Пожалуйста, попробуйте позже</small>
+                    </div>
+                `;
+            }
+        }, 300)();
+    }
+
+    // Обновляем обработчик для поискового поля
     const searchInput = document.querySelector('.community-search input');
     if (searchInput) {
         searchInput.addEventListener('input', handleSearch);
