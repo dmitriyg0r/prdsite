@@ -691,38 +691,48 @@ document.addEventListener('DOMContentLoaded', () => {
     modal.className = 'modal communities-modal';
 
     function showCommunitiesModal() {
-        const modalHTML = `
+        // Создаем модальное окно
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        
+        modal.innerHTML = `
             <div class="communities-modal">
                 <div class="modal-header">
                     <h2>Поиск сообществ</h2>
-                    <button class="close-modal-btn">
-                        <i class="fas fa-times"></i>
-                    </button>
+                    <button class="close-modal-btn">×</button>
                 </div>
                 <div class="modal-content">
                     <div class="search-container">
                         <input type="text" 
+                               id="community-search-input"
                                class="search-input" 
                                placeholder="Поиск сообществ...">
                     </div>
-                    <div class="search-results">
+                    <div id="search-results" class="search-results">
                         <div class="search-hint">
                             <i class="fas fa-search"></i>
-                            <p>Введите минимум 2 символа для поиска</p>
+                            <p>Введите текст для поиска сообществ</p>
                         </div>
                     </div>
                 </div>
             </div>
         `;
 
-        showModal(modalHTML);
+        // Добавляем модальное окно в DOM
+        document.body.appendChild(modal);
 
-        const searchInput = document.querySelector('.search-input');
-        const searchResults = document.querySelector('.search-results');
+        // Получаем элементы
+        const searchInput = document.getElementById('community-search-input');
+        const searchResults = document.getElementById('search-results');
+        const closeBtn = modal.querySelector('.close-modal-btn');
 
-        const handleSearch = debounce(async (e) => {
-            const query = e.target.value.trim();
-            
+        // Обработчик закрытия
+        function closeModal() {
+            document.body.removeChild(modal);
+        }
+
+        // Обработчик поиска
+        async function handleSearch(query) {
             if (query.length < 2) {
                 searchResults.innerHTML = `
                     <div class="search-hint">
@@ -732,16 +742,74 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Показываем состояние загрузки
             searchResults.innerHTML = `
                 <div class="search-loading">
                     <i class="fas fa-spinner fa-spin"></i>
                     <p>Поиск...</p>
                 </div>`;
 
-            await searchCommunities(query);
-        }, 300);
+            try {
+                const currentUser = JSON.parse(localStorage.getItem('user'));
+                const response = await fetch(`/api/communities/search?q=${encodeURIComponent(query)}&userId=${currentUser.id}`);
+                const data = await response.json();
 
-        searchInput.addEventListener('input', handleSearch);
+                if (!data.success) {
+                    throw new Error('Ошибка при поиске');
+                }
+
+                if (data.communities.length === 0) {
+                    searchResults.innerHTML = `
+                        <div class="no-results">
+                            <i class="fas fa-search"></i>
+                            <p>Сообщества не найдены</p>
+                        </div>`;
+                    return;
+                }
+
+                const communitiesHTML = data.communities.map(community => `
+                    <div class="community-search-item">
+                        <img src="${community.avatar_url || '/uploads/communities/default.png'}" 
+                             alt="${community.name}" 
+                             class="community-avatar">
+                        <div class="community-info">
+                            <h3>${community.name}</h3>
+                            <p>${community.description || 'Нет описания'}</p>
+                            <div class="community-stats">
+                                <span><i class="fas fa-users"></i> ${community.members_count || 0}</span>
+                            </div>
+                        </div>
+                        <button class="join-community-btn" 
+                                data-community-id="${community.id}"
+                                ${community.is_member ? 'disabled' : ''}>
+                            ${community.is_member ? 'Вы участник' : 'Вступить'}
+                        </button>
+                    </div>
+                `).join('');
+
+                searchResults.innerHTML = communitiesHTML;
+            } catch (error) {
+                console.error('Search error:', error);
+                searchResults.innerHTML = `
+                    <div class="search-error">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p>Произошла ошибка при поиске</p>
+                    </div>`;
+            }
+        }
+
+        // Добавляем обработчики событий
+        let searchTimeout;
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => handleSearch(e.target.value.trim()), 300);
+        });
+
+        closeBtn.addEventListener('click', closeModal);
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+
+        // Фокусируемся на поле ввода
+        searchInput.focus();
     }
 }); 
