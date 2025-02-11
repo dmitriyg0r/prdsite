@@ -157,16 +157,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Функция для поиска сообществ
     async function searchCommunities(query) {
+        const searchResults = document.querySelector('.search-results');
+        
         try {
-            const searchResults = document.querySelector('.search-results');
-            console.log('Before setting content - Container dimensions:', {
-                offsetHeight: searchResults.offsetHeight,
-                clientHeight: searchResults.clientHeight,
-                scrollHeight: searchResults.scrollHeight
-            });
-            
             const currentUser = JSON.parse(localStorage.getItem('user'));
-            const response = await fetch(`https://space-point.ru/api/communities/search?q=${encodeURIComponent(query)}&userId=${currentUser.id}`);
+            const response = await fetch(`/api/communities/search?q=${encodeURIComponent(query)}&userId=${currentUser.id}`);
             const data = await response.json();
 
             if (data.success) {
@@ -199,27 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 `).join('');
 
-                // Очищаем и добавляем новое содержимое напрямую
                 searchResults.innerHTML = html;
-
-                // Запускаем анимацию для каждого элемента
-                searchResults.querySelectorAll('.community-search-item').forEach((item, index) => {
-                    setTimeout(() => {
-                        item.style.opacity = '1';
-                        item.style.transform = 'translateY(0)';
-                    }, index * 100);
-                });
-
-                // Принудительный перерасчет размеров
-                searchResults.style.display = 'none';
-                searchResults.offsetHeight; // Trigger reflow
-                searchResults.style.display = 'block';
-                
-                console.log('After setting content - Container dimensions:', {
-                    offsetHeight: searchResults.offsetHeight,
-                    clientHeight: searchResults.clientHeight,
-                    scrollHeight: searchResults.scrollHeight
-                });
             } else {
                 searchResults.innerHTML = `
                     <div class="search-error">
@@ -229,12 +204,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (err) {
             console.error('Error searching communities:', err);
-            const searchResults = document.querySelector('.search-results');
             searchResults.innerHTML = `
                 <div class="search-error">
                     <i class="fas fa-exclamation-circle"></i>
                     <p>Ошибка при поиске сообществ</p>
-                    <small>${err.message}</small>
                 </div>`;
         }
     }
@@ -744,16 +717,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         showModal(modalHTML);
 
-        // Инициализация поиска
         const searchInput = document.querySelector('.search-input');
-        let debounceTimer;
+        const searchResults = document.querySelector('.search-results');
 
-        // Определяем функцию handleSearch локально
-        const handleSearch = () => {
-            const query = searchInput.value.trim();
+        const handleSearch = debounce(async (e) => {
+            const query = e.target.value.trim();
             
             if (query.length < 2) {
-                const searchResults = document.querySelector('.search-results');
                 searchResults.innerHTML = `
                     <div class="search-hint">
                         <i class="fas fa-search"></i>
@@ -762,26 +732,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            searchCommunities(query);
-        };
+            // Показываем состояние загрузки
+            searchResults.innerHTML = `
+                <div class="search-loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Поиск...</p>
+                </div>`;
 
-        // Добавляем обработчики событий
-        searchInput.addEventListener('input', () => {
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(handleSearch, 300);
-        });
+            await searchCommunities(query);
+        }, 300);
 
-        // Обработчик для кнопки закрытия
-        document.querySelector('.close-modal-btn').addEventListener('click', closeModal);
-
-        // Очистка обработчиков при закрытии модального окна
-        const cleanup = () => {
-            searchInput.removeEventListener('input', handleSearch);
-            document.querySelector('.close-modal-btn').removeEventListener('click', closeModal);
-        };
-
-        // Добавляем функцию очистки к модальному окну
-        const modalElement = document.querySelector('.modal-overlay');
-        modalElement.addEventListener('close', cleanup, { once: true });
+        searchInput.addEventListener('input', handleSearch);
     }
 }); 
