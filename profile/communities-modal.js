@@ -724,6 +724,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
         showModal(modalHTML);
         
-        // Остальной код инициализации...
+        // Добавляем обработчики событий
+        const searchInput = document.querySelector('.search-input');
+        let debounceTimer;
+
+        function handleSearch() {
+            const query = searchInput.value.trim();
+            
+            if (query.length < 2) {
+                const searchResults = document.querySelector('.search-results');
+                searchResults.innerHTML = `
+                    <div class="search-hint">
+                        <i class="fas fa-search"></i>
+                        <p>Введите минимум 2 символа для поиска</p>
+                    </div>`;
+                return;
+            }
+
+            searchCommunities(query);
+        }
+
+        // Добавляем debounce для поиска
+        searchInput.addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(handleSearch, 300);
+        });
+
+        // Добавляем обработчик для кнопки закрытия
+        document.querySelector('.close-modal-btn').addEventListener('click', () => {
+            closeModal();
+        });
     }
 }); 
