@@ -169,15 +169,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error('Необходима авторизация');
             }
 
-            // Получаем данные из формы напрямую через элементы
+            // Получаем данные из формы с правильными ID
             const nameInput = document.querySelector('#community-name-input');
             const descriptionInput = document.querySelector('#community-description-input');
             const typeSelect = document.querySelector('#community-type-select');
             const avatarInput = document.querySelector('#communityAvatar');
 
-            // Проверяем значение названия и выводим его в консоль для отладки
-            console.log('Название сообщества:', nameInput?.value);
-            
+            // Проверяем значение названия
             if (!nameInput || !nameInput.value.trim()) {
                 throw new Error('Название сообщества обязательно');
             }
