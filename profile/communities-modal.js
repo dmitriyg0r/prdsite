@@ -170,7 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        searchResults.style.display = 'block'; // Убедимся, что контейнер виден
+        searchResults.style.display = 'block';
 
         if (query.length < 2) {
             searchResults.innerHTML = `

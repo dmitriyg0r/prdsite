@@ -135,6 +135,7 @@
     max-height: 400px;
     overflow-y: auto;
     z-index: 1000;
+    display: block;
 }
 
 .community-search-item {
