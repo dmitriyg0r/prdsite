@@ -111,11 +111,6 @@ router.post('/create', upload.single('avatar'), async (req, res) => {
     const client = await pool.connect();
     
     try {
-        console.log('Получены данные:', {
-            body: req.body,
-            file: req.file
-        });
-
         const { name, description, type, creatorId } = req.body;
         
         // Проверяем обязательные поля
@@ -133,117 +128,55 @@ router.post('/create', upload.single('avatar'), async (req, res) => {
             });
         }
 
-        // Проверяем существование пользователя
-        const userExists = await client.query(
-            'SELECT id FROM users WHERE id = $1',
-            [creatorId]
-        );
-
-        if (userExists.rows.length === 0) {
-            return res.status(400).json({
-                success: false,
-                error: 'Пользователь не найден'
-            });
-        }
-
-        // Начинаем транзакцию
         await client.query('BEGIN');
 
-        try {
-            // Формируем путь к аватару
-            const avatarUrl = req.file 
-                ? `/uploads/communities/${req.file.filename}`
-                : '/uploads/communities/default.png';
+        // Создаем сообщество
+        const communityResult = await client.query(`
+            INSERT INTO communities 
+            (name, description, type, created_by, avatar_url, created_at)
+            VALUES ($1, $2, $3, $4, $5, NOW())
+            RETURNING *
+        `, [
+            name.trim(),
+            description?.trim() || '',
+            type || 'public',
+            creatorId,
+            req.file ? `/uploads/communities/${req.file.filename}` : '/uploads/communities/default.png'
+        ]);
 
-            console.log('Создание сообщества с параметрами:', {
-                name: name.trim(),
-                description: description?.trim() || '',
-                type: type || 'public',
-                creatorId,
-                avatarUrl
-            });
+        const community = communityResult.rows[0];
 
-            // Создаем сообщество (используем created_by вместо creator_id)
-            const communityResult = await client.query(`
-                INSERT INTO communities 
-                (name, description, type, created_by, avatar_url, created_at)
-                VALUES ($1, $2, $3, $4, $5, NOW())
-                RETURNING *
-            `, [
-                name.trim(),
-                description?.trim() || '',
-                type || 'public',
-                creatorId,
-                avatarUrl
-            ]);
+        // Добавляем создателя как администратора (без поля permissions)
+        await client.query(`
+            INSERT INTO community_members 
+            (community_id, user_id, role)
+            VALUES ($1, $2, 'admin')
+        `, [community.id, creatorId]);
 
-            const community = communityResult.rows[0];
+        await client.query('COMMIT');
 
-            console.log('Сообщество создано:', community);
+        // Получаем полную информацию о созданном сообществе
+        const fullCommunityResult = await client.query(`
+            SELECT 
+                c.*,
+                (SELECT COUNT(*) FROM community_members WHERE community_id = c.id) as members_count,
+                u.username as creator_name
+            FROM communities c
+            LEFT JOIN users u ON c.created_by = u.id
+            WHERE c.id = $1
+        `, [community.id]);
 
-            // Добавляем создателя как администратора (без поля permissions)
-            await client.query(`
-                INSERT INTO community_members 
-                (community_id, user_id, role, joined_at)
-                VALUES ($1, $2, 'admin', NOW())
-            `, [
-                community.id, 
-                creatorId
-            ]);
-
-            // Создаем запись в таблице настроек сообщества
-            await client.query(`
-                INSERT INTO community_settings 
-                (community_id, post_permission, visibility)
-                VALUES ($1, 'admin_only', $2)
-            `, [community.id, type || 'public']);
-
-            // Фиксируем транзакцию
-            await client.query('COMMIT');
-
-            // Получаем полную информацию о созданном сообществе
-            const fullCommunityResult = await client.query(`
-                SELECT 
-                    c.*,
-                    (SELECT COUNT(*) FROM community_members WHERE community_id = c.id) as members_count,
-                    u.username as creator_name
-                FROM communities c
-                LEFT JOIN users u ON c.created_by = u.id
-                WHERE c.id = $1
-            `, [community.id]);
-
-            res.json({
-                success: true,
-                community: fullCommunityResult.rows[0]
-            });
-
-        } catch (err) {
-            await client.query('ROLLBACK');
-            throw err;
-        }
-
-    } catch (err) {
-        console.error('Детальная ошибка создания сообщества:', {
-            message: err.message,
-            stack: err.stack,
-            code: err.code,
-            detail: err.detail,
-            table: err.table,
-            constraint: err.constraint
+        res.json({
+            success: true,
+            community: fullCommunityResult.rows[0]
         });
 
-        // Проверяем специфические ошибки PostgreSQL
-        if (err.code === '23505') { // unique_violation
-            return res.status(400).json({
-                success: false,
-                error: 'Сообщество с таким названием уже существует'
-            });
-        }
-
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error('Ошибка создания сообщества:', err);
         res.status(500).json({
             success: false,
-            error: 'Ошибка при создании сообщества',
-            details: process.env.NODE_ENV === 'development' ? err.message : undefined
+            error: 'Ошибка при создании сообщества'
         });
     } finally {
         client.release();
@@ -328,10 +261,9 @@ router.get('/', async (req, res) => {
 
 // Поиск сообществ
 router.get('/search', async (req, res) => {
-    console.log('GET /api/communities/search called');
+    const client = await pool.connect();
     try {
-        const { q } = req.query;
-        console.log('Search query:', q);
+        const { q, userId } = req.query;
         
         if (!q) {
             return res.json({
@@ -340,43 +272,54 @@ router.get('/search', async (req, res) => {
             });
         }
 
-        // Убедимся, что таблицы существуют
-        await ensureTablesExist();
-
-        // Выполняем поиск
-        const result = await pool.query(`
+        const searchQuery = `
             SELECT 
                 c.*,
-                COALESCE(
-                    (SELECT COUNT(*) FROM community_members WHERE community_id = c.id),
-                    0
-                ) as members_count
+                (SELECT COUNT(*) FROM community_members WHERE community_id = c.id) as members_count,
+                u.username as creator_name,
+                CASE 
+                    WHEN EXISTS (
+                        SELECT 1 
+                        FROM community_members 
+                        WHERE community_id = c.id AND user_id = $2
+                    ) THEN true
+                    ELSE false
+                END as is_member
             FROM communities c
+            LEFT JOIN users u ON c.created_by = u.id
             WHERE 
-                LOWER(c.name) LIKE LOWER($1)
-                OR LOWER(c.description) LIKE LOWER($1)
+                LOWER(c.name) LIKE LOWER($1) OR 
+                LOWER(c.description) LIKE LOWER($1)
             ORDER BY 
                 CASE 
-                    WHEN LOWER(c.name) LIKE LOWER($1) THEN 0 
-                    ELSE 1 
+                    WHEN LOWER(c.name) = LOWER($3) THEN 1
+                    WHEN LOWER(c.name) LIKE LOWER($3 || '%') THEN 2
+                    WHEN LOWER(c.name) LIKE '%' || LOWER($3) || '%' THEN 3
+                    ELSE 4
                 END,
                 c.created_at DESC
             LIMIT 10
-        `, [`%${q}%`]);
+        `;
 
-        console.log(`Found ${result.rows.length} communities matching "${q}"`);
+        const result = await client.query(searchQuery, [
+            `%${q}%`,
+            userId || null,
+            q
+        ]);
 
         return res.json({
             success: true,
-            communities: result.rows || []
+            communities: result.rows
         });
+
     } catch (err) {
-        console.error('Error searching communities:', err);
+        console.error('Ошибка поиска сообществ:', err);
         return res.status(500).json({
             success: false,
-            error: 'Ошибка при поиске сообществ',
-            details: err.message
+            error: 'Ошибка при поиске сообществ'
         });
+    } finally {
+        client.release();
     }
 });
 
