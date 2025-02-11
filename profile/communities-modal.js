@@ -220,7 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // Подсвечиваем поле с ошибкой
                 if (validationErrors[0].includes('название')) {
-                    const nameInput = document.getElementById('community-name-input');
+                    const nameInput = document.getElementById('community-name');
                     nameInput.classList.add('error');
                     nameInput.focus();
                 }
@@ -279,8 +279,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Добавляем обработчик для удаления класса ошибки при вводе
-    const nameInput = document.getElementById('community-name-input');
+    // Обновляем обработчик для удаления класса ошибки при вводе
+    const nameInput = document.getElementById('community-name');
     if (nameInput) {
         nameInput.addEventListener('input', () => {
             nameInput.classList.remove('error');
