@@ -157,7 +157,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Функция для поиска сообществ
     async function searchCommunities(query) {
-        console.log('Выполняется поиск:', query); // Отладочный лог
+        console.log('Выполняется поиск:', query);
+        const searchResults = document.querySelector('.search-results');
+        
+        if (!searchResults) {
+            console.error('Контейнер для результатов поиска не найден');
+            return;
+        }
 
         if (query.length < 2) {
             searchResults.style.display = 'none';
@@ -171,17 +177,17 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             searchResults.innerHTML = '<div class="loading">Поиск...</div>';
-            searchResults.style.display = 'block';
+            searchResults.style.display = 'block'; // Важно: показываем результаты
 
             const response = await fetch(`/api/communities/search?q=${encodeURIComponent(query)}&userId=${currentUser.id}`);
-            console.log('Ответ сервера:', response.status); // Отладочный лог
+            console.log('Ответ сервера:', response.status);
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
             const data = await response.json();
-            console.log('Полученные данные:', data); // Отладочный лог
+            console.log('Полученные данные:', data);
 
             if (data.success) {
                 if (data.communities.length === 0) {
@@ -207,6 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     `).join('');
                 }
+                searchResults.style.display = 'block'; // Убедимся, что результаты видны
             } else {
                 throw new Error(data.error || 'Ошибка при поиске');
             }
@@ -219,6 +226,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <small>${error.message}</small>
                 </div>
             `;
+            searchResults.style.display = 'block';
         }
     }
 
