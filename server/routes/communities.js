@@ -164,10 +164,10 @@ router.post('/create', upload.single('avatar'), async (req, res) => {
                 avatarUrl
             });
 
-            // Создаем сообщество
+            // Создаем сообщество (используем created_by вместо creator_id)
             const communityResult = await client.query(`
                 INSERT INTO communities 
-                (name, description, type, creator_id, avatar_url, created_at)
+                (name, description, type, created_by, avatar_url, created_at)
                 VALUES ($1, $2, $3, $4, $5, NOW())
                 RETURNING *
             `, [
@@ -215,7 +215,7 @@ router.post('/create', upload.single('avatar'), async (req, res) => {
                     (SELECT COUNT(*) FROM community_members WHERE community_id = c.id) as members_count,
                     u.username as creator_name
                 FROM communities c
-                LEFT JOIN users u ON c.creator_id = u.id
+                LEFT JOIN users u ON c.created_by = u.id
                 WHERE c.id = $1
             `, [community.id]);
 
