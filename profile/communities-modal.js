@@ -443,8 +443,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 searchInput.addEventListener('input', debounce(async (e) => {
                     const query = e.target.value.trim();
                     if (query) {
-                        const communities = await searchCommunities(query);
-                        displaySearchResults(communities);
+                        await handleSearch(query);
                     } else {
                         const searchResults = document.querySelector('.search-results');
                         if (searchResults) {
@@ -694,7 +693,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>`;
                 return;
             }
-            await searchCommunities(query);
+            await handleSearch(query);
         }, 300);
         
         searchInput.addEventListener('input', handleSearch);
