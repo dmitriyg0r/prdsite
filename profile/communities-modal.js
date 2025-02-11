@@ -166,14 +166,9 @@ document.addEventListener('DOMContentLoaded', () => {
             searchResults.innerHTML = '<div class="search-loading">Поиск...</div>';
 
             const response = await fetch(`https://space-point.ru/api/communities/search?q=${encodeURIComponent(query)}&userId=${currentUser.id}`);
-            console.log('Ответ сервера:', response.status);
-
             const data = await response.json();
-            console.log('Полученные данные:', data);
 
             if (data.success) {
-                console.log('Найдено сообществ:', data.communities.length);
-
                 if (data.communities.length === 0) {
                     searchResults.innerHTML = `
                         <div class="no-results">
@@ -190,7 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
                              class="community-avatar">
                         <div class="community-info">
                             <h3>${community.name}</h3>
-                            <p>${community.description || 'Описание отсутствует'}</p>
+                            <p>${community.description || 'Нет описания'}</p>
                             <div class="community-stats">
                                 <span><i class="fas fa-users"></i> ${community.members_count || 0}</span>
                             </div>
@@ -203,34 +198,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 `).join('');
 
-                console.log('Сгенерированный HTML:', html);
+                // Очищаем и добавляем новое содержимое напрямую
+                searchResults.innerHTML = html;
 
-                // Очищаем и добавляем новое содержимое
-                searchResults.innerHTML = '';
-                
-                // Создаем временный контейнер
-                const tempContainer = document.createElement('div');
-                tempContainer.innerHTML = html;
-                
-                // Добавляем элементы по одному
-                while (tempContainer.firstChild) {
-                    searchResults.appendChild(tempContainer.firstChild);
-                }
-
-                // Проверяем размеры после добавления содержимого
-                console.log('Видимость контейнера:', searchResults.style.display);
-                console.log('Размеры контейнера:', {
-                    offsetHeight: searchResults.offsetHeight,
-                    clientHeight: searchResults.clientHeight,
-                    scrollHeight: searchResults.scrollHeight
+                // Запускаем анимацию для каждого элемента
+                searchResults.querySelectorAll('.community-search-item').forEach((item, index) => {
+                    setTimeout(() => {
+                        item.style.opacity = '1';
+                        item.style.transform = 'translateY(0)';
+                    }, index * 100);
                 });
-
-                // Принудительно обновляем layout
-                searchResults.style.opacity = '0.99';
-                setTimeout(() => {
-                    searchResults.style.opacity = '1';
-                }, 0);
-
             } else {
                 searchResults.innerHTML = `
                     <div class="search-error">

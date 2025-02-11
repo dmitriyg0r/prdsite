@@ -190,13 +190,15 @@
 
 .communities-modal .search-results {
     flex: 1;
-    min-height: 200px;
+    min-height: 100px;
+    max-height: 400px;
     height: auto;
     overflow-y: auto;
     border: 1px solid var(--border-light);
     border-radius: var(--radius-md);
     background: var(--surface-color);
     position: relative;
+    margin-top: var(--spacing-md);
 }
 
 .communities-modal .community-search-item {
@@ -356,6 +358,7 @@
     }
 
     .communities-modal .search-results {
-        min-height: 150px;
+        min-height: 100px;
+        max-height: 300px;
     }
 } 
