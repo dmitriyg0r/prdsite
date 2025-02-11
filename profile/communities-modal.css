@@ -152,27 +152,31 @@
     color: var(--error-color);
 }
 
+.community-search-results {
+    margin-top: var(--spacing-md);
+}
+
 .community-search-item {
     display: flex;
     align-items: center;
-    padding: 1rem;
-    border-bottom: 1px solid var(--border-light);
-    transition: background-color 0.2s;
-}
-
-.community-search-item:last-child {
-    border-bottom: none;
+    padding: var(--spacing-md);
+    background: var(--surface-color);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-sm);
+    transition: all 0.3s ease;
 }
 
 .community-search-item:hover {
-    background-color: var(--hover-color);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
 }
 
 .community-search-item .community-avatar {
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    margin-right: 1rem;
+    margin-right: var(--spacing-md);
     object-fit: cover;
 }
 
@@ -181,32 +185,45 @@
 }
 
 .community-search-item h3 {
-    margin: 0 0 0.25rem 0;
-    font-size: 1rem;
+    margin: 0 0 4px 0;
+    font-size: 16px;
 }
 
 .community-search-item p {
     margin: 0;
     color: var(--text-secondary);
-    font-size: 0.875rem;
+    font-size: 14px;
 }
 
 .community-stats {
-    font-size: 0.875rem;
+    margin-top: 4px;
+    font-size: 12px;
     color: var(--text-secondary);
-    margin-top: 0.25rem;
+}
+
+.community-stats i {
+    margin-right: 4px;
 }
 
 .join-community-btn {
-    padding: 0.5rem 1rem;
-    background: var(--primary-color);
-    color: white;
+    padding: 8px 16px;
     border: none;
     border-radius: var(--radius-md);
+    background: var(--primary-color);
+    color: white;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: all 0.3s ease;
 }
 
-.join-community-btn:hover {
+.join-community-btn:hover:not(:disabled) {
     background: var(--primary-dark);
+}
+
+.join-community-btn.joined {
+    background: var(--success-color);
+}
+
+.join-community-btn:disabled {
+    opacity: 0.7;
+    cursor: default;
 } 

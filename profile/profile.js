@@ -1796,6 +1796,121 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }
     });
+
+    // Инициализация поиска сообществ
+    function initializeCommunitySearch() {
+        const searchInput = document.querySelector('#community-search-input');
+        if (!searchInput) return;
+
+        let searchResults = document.querySelector('.community-search-results');
+        if (!searchResults) {
+            searchResults = document.createElement('div');
+            searchResults.className = 'community-search-results';
+            searchInput.parentElement.after(searchResults);
+        }
+
+        const loadingIndicator = document.createElement('div');
+        loadingIndicator.className = 'search-loading-indicator';
+        loadingIndicator.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        searchInput.parentNode.appendChild(loadingIndicator);
+
+        const debouncedSearch = debounce(async (query) => {
+            if (query.length < 2) {
+                searchResults.innerHTML = '';
+                return;
+            }
+
+            loadingIndicator.classList.add('active');
+            
+            try {
+                const response = await fetch(`/api/communities/search?q=${encodeURIComponent(query)}&userId=${currentUser.id}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayCommunitySearchResults(data.communities);
+                }
+            } catch (err) {
+                console.error('Ошибка поиска:', err);
+                searchResults.innerHTML = '<div class="search-error">Произошла ошибка при поиске</div>';
+            } finally {
+                loadingIndicator.classList.remove('active');
+            }
+        }, 300);
+
+        searchInput.addEventListener('input', (e) => {
+            debouncedSearch(e.target.value);
+        });
+    }
+
+    function displayCommunitySearchResults(communities) {
+        const searchResults = document.querySelector('.community-search-results');
+        if (!searchResults) return;
+
+        if (!communities.length) {
+            searchResults.innerHTML = `
+                <div class="empty-search">
+                    <i class="fas fa-users-slash"></i>
+                    <p>Сообщества не найдены</p>
+                </div>
+            `;
+            return;
+        }
+
+        searchResults.innerHTML = communities.map(community => `
+            <div class="community-search-item">
+                <img src="${community.avatar_url || '/uploads/avatars/default-community.png'}" 
+                     alt="${community.name}" 
+                     class="community-avatar">
+                <div class="community-info">
+                    <h3>${community.name}</h3>
+                    <p>${community.description || 'Нет описания'}</p>
+                    <div class="community-stats">
+                        <span><i class="fas fa-users"></i> ${community.members_count || 0} участников</span>
+                    </div>
+                </div>
+                <button class="join-community-btn ${community.is_member ? 'joined' : ''}"
+                        data-community-id="${community.id}"
+                        ${community.is_member ? 'disabled' : ''}>
+                    <i class="fas ${community.is_member ? 'fa-check' : 'fa-user-plus'}"></i>
+                    ${community.is_member ? 'Вы участник' : 'Присоединиться'}
+                </button>
+            </div>
+        `).join('');
+
+        // Добавляем обработчики для кнопок
+        document.querySelectorAll('.join-community-btn:not(.joined)').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const communityId = btn.dataset.communityId;
+                try {
+                    const response = await fetch('/api/communities/join', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            userId: currentUser.id,
+                            communityId
+                        })
+                    });
+
+                    if (response.ok) {
+                        btn.classList.add('joined');
+                        btn.disabled = true;
+                        btn.innerHTML = '<i class="fas fa-check"></i> Вы участник';
+                    }
+                } catch (err) {
+                    console.error('Ошибка при вступлении в сообщество:', err);
+                    alert('Ошибка при вступлении в сообщество');
+                }
+            });
+        });
+    }
+
+    // Добавляем инициализацию поиска сообществ при загрузке страницы
+    document.addEventListener('DOMContentLoaded', () => {
+        // ... existing code ...
+        initializeCommunitySearch();
+    });
 });
 
 function initializePostHandlers() {
