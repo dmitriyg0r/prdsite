@@ -250,7 +250,6 @@
                 <div class="modal-tabs">
                     <button class="tab-btn active" data-tab="all-communities">
                         <i class="fas fa-users"></i> Мои сообщества
-                        <span class="community-count">0</span>
                     </button>
                     <button class="tab-btn" data-tab="search-communities">
                         <i class="fas fa-search"></i> Поиск сообществ
@@ -273,8 +272,14 @@
 
                 <div class="tab-content" id="search-communities">
                     <div class="community-search">
-                        <input type="text" placeholder="Поиск сообществ...">
-                        <div class="search-results"></div>
+                        <input 
+                            type="text" 
+                            placeholder="Поиск сообществ..." 
+                            class="search-input"
+                        >
+                        <div class="search-results">
+                            <!-- Результаты поиска будут добавлены здесь -->
+                        </div>
                     </div>
                 </div>
 

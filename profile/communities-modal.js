@@ -32,22 +32,31 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Переключение вкладок
-    tabButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            const tabName = button.dataset.tab;
-            
-            tabButtons.forEach(btn => btn.classList.remove('active'));
-            button.classList.add('active');
-            
-            tabContents.forEach(content => {
-                content.classList.remove('active');
-                if (content.id === tabName) {
-                    content.classList.add('active');
-                }
-            });
+    // Функция для переключения вкладок
+    function switchTab(tabId) {
+        // Убираем активный класс со всех вкладок
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.classList.remove('active');
         });
-    });
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+
+        // Активируем нужную вкладку
+        const selectedTab = document.getElementById(tabId);
+        const selectedBtn = document.querySelector(`[data-tab="${tabId}"]`);
+        
+        if (selectedTab) selectedTab.classList.add('active');
+        if (selectedBtn) selectedBtn.classList.add('active');
+
+        // Если это вкладка поиска, фокусируемся на поле ввода
+        if (tabId === 'search-communities') {
+            const searchInput = document.querySelector('.search-input');
+            if (searchInput) {
+                searchInput.focus();
+            }
+        }
+    }
 
     // Функция для показа уведомлений
     function showNotification(type, message) {
@@ -570,9 +579,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Добавляем обработчик поиска
-    const searchInput = document.querySelector('.community-search input');
-    if (searchInput) {
-        searchInput.addEventListener('input', debounce(handleSearch, 300));
+    if (document.querySelector('.search-input')) {
+        document.querySelector('.search-input').addEventListener('input', debounce(handleSearch, 300));
     }
 
     // Закрываем результаты поиска при клике вне
@@ -661,5 +669,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 reader.readAsDataURL(file);
             }
         });
+    }
+
+    // Обработчики для табов
+    document.querySelectorAll('.tab-btn').forEach(button => {
+        button.addEventListener('click', () => {
+            const tabId = button.getAttribute('data-tab');
+            switchTab(tabId);
+        });
+    });
+
+    // Обработчик поиска
+    if (document.querySelector('.search-input')) {
+        document.querySelector('.search-input').addEventListener('input', debounce(handleSearch, 300));
     }
 }); 
