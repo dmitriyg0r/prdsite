@@ -158,12 +158,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Функция для поиска сообществ
     async function searchCommunities(query) {
         console.log('Выполняется поиск:', query);
+        const searchTab = document.getElementById('search-communities');
         const searchResults = document.querySelector('.search-results');
         
-        // Проверяем наличие контейнера результатов
-        if (!searchResults) {
-            console.error('Контейнер .search-results не найден!');
-            return;
+        // Проверяем видимость вкладки поиска
+        if (searchTab && !searchTab.classList.contains('active')) {
+            console.log('Активируем вкладку поиска');
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            searchTab.classList.add('active');
         }
 
         if (query.length < 2) {
@@ -246,6 +248,16 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             searchResults.style.display = 'block';
         }
+
+        // После установки HTML добавим небольшую задержку и проверим размеры
+        setTimeout(() => {
+            console.log('Повторная проверка размеров:', {
+                offsetHeight: searchResults.offsetHeight,
+                clientHeight: searchResults.clientHeight,
+                scrollHeight: searchResults.scrollHeight,
+                display: window.getComputedStyle(searchResults).display
+            });
+        }, 100);
     }
 
     // Функция для открытия модального окна создания сообщества
