@@ -169,26 +169,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error('Необходима авторизация');
             }
 
-            const form = e.target;
-            const formData = new FormData(form);
+            // Получаем данные из формы напрямую через элементы
+            const nameInput = document.querySelector('#community-name-input');
+            const descriptionInput = document.querySelector('#community-description-input');
+            const typeSelect = document.querySelector('#community-type-select');
+            const avatarInput = document.querySelector('#communityAvatar');
 
-            // Добавляем ID создателя
-            formData.append('creatorId', currentUser.id);
-
-            // Проверяем обязательные поля
-            const name = formData.get('name')?.trim();
-            if (!name) {
+            // Проверяем значение названия и выводим его в консоль для отладки
+            console.log('Название сообщества:', nameInput?.value);
+            
+            if (!nameInput || !nameInput.value.trim()) {
                 throw new Error('Название сообщества обязательно');
             }
 
-            // Добавляем логирование для отладки
-            console.log('Отправляемые данные:', {
-                name: formData.get('name'),
-                description: formData.get('description'),
-                type: formData.get('type'),
-                creatorId: formData.get('creatorId'),
-                avatar: formData.get('avatar')
-            });
+            const formData = new FormData();
+            formData.append('name', nameInput.value.trim());
+            formData.append('description', descriptionInput?.value?.trim() || '');
+            formData.append('type', typeSelect?.value || 'public');
+            formData.append('creatorId', currentUser.id);
+
+            // Добавляем файл аватара, если он был выбран
+            if (avatarInput?.files?.[0]) {
+                formData.append('avatar', avatarInput.files[0]);
+            }
+
+            // Выводим все данные формы для отладки
+            for (let [key, value] of formData.entries()) {
+                console.log(`${key}:`, value);
+            }
 
             const response = await fetch('/api/communities/create', {
                 method: 'POST',
@@ -216,7 +224,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Очищаем форму
-            form.reset();
+            nameInput.value = '';
+            descriptionInput.value = '';
+            if (avatarInput) avatarInput.value = '';
 
             // Сбрасываем предпросмотр аватара
             const avatarPreview = document.querySelector('#avatarPreview');
