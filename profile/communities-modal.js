@@ -695,7 +695,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Обработчик поиска
     if (document.querySelector('.search-input')) {
-        document.querySelector('.search-input').addEventListener('input', debounce(handleSearch, 300));
+        const searchInput = document.querySelector('.search-input');
+        const handleSearch = debounce(async (e) => {
+            const query = e.target.value.trim();
+            if (query.length < 2) {
+                const searchResults = document.querySelector('.search-results');
+                searchResults.innerHTML = `
+                    <div class="search-hint">
+                        <i class="fas fa-search"></i>
+                        <p>Введите минимум 2 символа для поиска</p>
+                    </div>`;
+                return;
+            }
+            await searchCommunities(query);
+        }, 300);
+        
+        searchInput.addEventListener('input', handleSearch);
     }
 
     // При создании модального окна добавляем класс
