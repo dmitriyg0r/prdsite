@@ -2424,7 +2424,9 @@ textarea:invalid {
 }
 
 .community-search input {
-    width: 100%;
+    width: 517px;
+    transform: translate(-283px, 54px);
+    height: 16.9688px;
     padding: 10px;
     border: 1px solid var(--border-color);
     border-radius: 4px;
