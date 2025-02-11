@@ -201,28 +201,43 @@ document.addEventListener('DOMContentLoaded', () => {
     // Обновляем функцию createCommunity
     async function createCommunity(e) {
         e.preventDefault();
-        console.log('Create community form submitted');
-
+        
         try {
+            const form = e.target;
+            const formData = new FormData(form);
+            
+            // Отладочная информация
+            console.log('Form elements:', {
+                nameInput: document.getElementById('community-name-input'),
+                nameValue: document.getElementById('community-name-input')?.value,
+                formDataName: formData.get('name')
+            });
+            
             const currentUser = JSON.parse(localStorage.getItem('user'));
             if (!currentUser || !currentUser.id) {
                 throw new Error('Необходима авторизация');
             }
 
-            const form = e.target;
-            const formData = new FormData(form);
+            // Проверяем, что поле name присутствует в форме
+            if (!formData.has('name')) {
+                console.error('Name field not found in form data');
+                const allFormFields = Array.from(formData.entries());
+                console.log('Available form fields:', allFormFields);
+            }
             
             // Валидация формы
             const validationErrors = validateCommunityForm(formData);
             if (validationErrors.length > 0) {
-                // Показываем первую ошибку
                 showNotification('error', validationErrors[0]);
                 
-                // Подсвечиваем поле с ошибкой
                 if (validationErrors[0].includes('название')) {
-                    const nameInput = document.getElementById('community-name');
-                    nameInput.classList.add('error');
-                    nameInput.focus();
+                    const nameInput = document.getElementById('community-name-input');
+                    if (nameInput) {
+                        nameInput.classList.add('error');
+                        nameInput.focus();
+                    } else {
+                        console.error('Name input element not found');
+                    }
                 }
                 return;
             }
@@ -280,7 +295,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Обновляем обработчик для удаления класса ошибки при вводе
-    const nameInput = document.getElementById('community-name');
+    const nameInput = document.getElementById('community-name-input');
     if (nameInput) {
         nameInput.addEventListener('input', () => {
             nameInput.classList.remove('error');
