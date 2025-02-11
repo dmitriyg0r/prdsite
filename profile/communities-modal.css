@@ -140,8 +140,9 @@
     flex: 1;
     overflow-y: auto;
     padding: var(--spacing-md);
-    min-height: 200px;
-    position: relative;
+    min-height: 300px;
+    height: auto;
+    background: var(--background-color);
 }
 
 .modal-tabs {
@@ -168,6 +169,7 @@
 .search-container {
     position: relative;
     margin-bottom: var(--spacing-md);
+    width: 100%;
 }
 
 .search-input {
@@ -181,16 +183,21 @@
 .search-results {
     position: relative;
     min-height: 50px;
+    height: auto;
     max-height: 400px;
     overflow-y: auto;
     display: block;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    margin-top: var(--spacing-sm);
 }
 
 .community-search-item {
     display: flex;
     align-items: center;
-    padding: 1rem;
-    border-bottom: 1px solid var(--border-color);
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--border-light);
+    background: var(--surface-color);
     transition: background-color 0.2s;
 }
 
@@ -206,24 +213,31 @@
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    margin-right: 1rem;
+    margin-right: var(--spacing-md);
     object-fit: cover;
 }
 
 .community-info {
     flex: 1;
+    min-width: 0;
 }
 
 .community-info h3 {
     margin: 0 0 0.25rem 0;
     font-size: 1rem;
     color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .community-info p {
     margin: 0;
     font-size: 0.875rem;
     color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .community-stats {
@@ -241,6 +255,7 @@
     cursor: pointer;
     transition: background-color 0.2s;
     white-space: nowrap;
+    min-width: 120px;
 }
 
 .join-community-btn:hover:not(:disabled) {
@@ -250,6 +265,7 @@
 .join-community-btn:disabled {
     background: var(--success-color);
     cursor: default;
+    opacity: 0.8;
 }
 
 .loading, .no-results, .search-error {
@@ -275,6 +291,8 @@
 
 .tab-content.active {
     display: block;
+    height: auto;
+    min-height: 200px;
 }
 
 @keyframes fadeIn {
@@ -288,6 +306,21 @@
 
 .search-results > * {
     animation: fadeIn 0.2s ease-out;
+}
+
+.search-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: var(--spacing-md);
+    color: var(--text-secondary);
+}
+
+.no-results {
+    text-align: center;
+    padding: var(--spacing-lg);
+    color: var(--text-secondary);
+    background: var(--surface-color);
 }
 
 @media (max-width: 768px) {
