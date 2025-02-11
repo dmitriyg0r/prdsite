@@ -164,52 +164,56 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Обработчик поиска
     async function handleSearch(query) {
-        console.log('Handling search for:', query);
-        
+        const searchResults = document.querySelector('.search-results');
+        if (!searchResults) {
+            console.error('Search results container not found');
+            return;
+        }
+
+        searchResults.style.display = 'block'; // Убедимся, что контейнер виден
+
         if (query.length < 2) {
-            console.log('Query too short');
-            searchResults.style.display = 'block';
             searchResults.innerHTML = `
-                <div class="search-hint">
+                <div class="search-hint" style="text-align: center; padding: 20px;">
                     <i class="fas fa-search"></i>
                     <p>Введите минимум 2 символа для поиска</p>
                 </div>`;
             return;
         }
 
+        searchResults.innerHTML = `
+            <div class="search-loading" style="text-align: center; padding: 20px;">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Поиск...</p>
+            </div>`;
+
         try {
-            console.log('Starting search for:', query);
             const currentUser = JSON.parse(localStorage.getItem('user'));
             const response = await fetch(`/api/communities/search?q=${encodeURIComponent(query)}&userId=${currentUser.id}`);
             const data = await response.json();
-            console.log('Search response:', data);
-
-            // Показываем контейнер результатов
-            searchResults.style.display = 'block';
 
             if (!data.success) {
                 throw new Error('Ошибка при поиске');
             }
 
-            if (!data.communities || data.communities.length === 0) {
-                console.log('No communities found');
+            if (data.communities.length === 0) {
                 searchResults.innerHTML = `
-                    <div class="no-results">
+                    <div class="no-results" style="text-align: center; padding: 20px;">
                         <i class="fas fa-search"></i>
                         <p>Сообщества не найдены</p>
                     </div>`;
                 return;
             }
 
-            console.log('Rendering communities:', data.communities);
-            const html = data.communities.map(community => `
+            // Отображаем результаты
+            const communitiesHTML = data.communities.map(community => `
                 <div class="community-search-item">
                     <img src="${community.avatar_url || '/uploads/communities/default.png'}" 
                          alt="${community.name}" 
                          class="community-avatar">
                     <div class="community-info">
                         <h3>${community.name}</h3>
-                        <p>${community.description || 'Нет описания'}</p>
+                        <p>${community.description || ''}</p>
                         <div class="community-stats">
                             <span><i class="fas fa-users"></i> ${community.members_count || 0}</span>
                         </div>
@@ -217,21 +221,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     <button class="join-community-btn" 
                             data-community-id="${community.id}"
                             ${community.is_member ? 'disabled' : ''}>
-                        ${community.is_member ? 'Вы участник' : 'Вступить'}
+                        ${community.is_member ? 'Вы участник' : 'Присоединиться'}
                     </button>
                 </div>
             `).join('');
 
-            console.log('Generated HTML:', html);
-            searchResults.innerHTML = html;
-
-        } catch (error) {
-            console.error('Search error:', error);
-            searchResults.style.display = 'block';
+            searchResults.innerHTML = communitiesHTML;
+        } catch (err) {
+            console.error('Ошибка поиска:', err);
             searchResults.innerHTML = `
-                <div class="search-error">
+                <div class="search-error" style="text-align: center; padding: 20px;">
                     <i class="fas fa-exclamation-circle"></i>
-                    <p>Произошла ошибка при поиске: ${error.message}</p>
+                    <p>Произошла ошибка при поиске</p>
                 </div>`;
         }
     }
@@ -882,7 +883,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (error) {
                 console.error('Search error:', error);
                 searchResults.innerHTML = `
-                    <div class="search-error" style="text-align: center; padding: 20px; color: #dc3545;">
+                    <div class="search-error" style="text-align: center; padding: 20px;">
                         <i class="fas fa-exclamation-circle"></i>
                         <p>Произошла ошибка при поиске</p>
                     </div>`;
