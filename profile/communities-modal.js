@@ -160,8 +160,9 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Выполняется поиск:', query);
         const searchResults = document.querySelector('.search-results');
         
+        // Проверяем наличие контейнера результатов
         if (!searchResults) {
-            console.error('Контейнер для результатов поиска не найден');
+            console.error('Контейнер .search-results не найден!');
             return;
         }
 
@@ -176,8 +177,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error('Пользователь не авторизован');
             }
 
+            // Показываем индикатор загрузки
             searchResults.innerHTML = '<div class="loading">Поиск...</div>';
-            searchResults.style.display = 'block'; // Важно: показываем результаты
+            searchResults.style.display = 'block';
 
             const response = await fetch(`/api/communities/search?q=${encodeURIComponent(query)}&userId=${currentUser.id}`);
             console.log('Ответ сервера:', response.status);
@@ -189,11 +191,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             console.log('Полученные данные:', data);
 
-            if (data.success) {
+            // Проверяем данные перед отображением
+            if (data.success && Array.isArray(data.communities)) {
+                console.log('Найдено сообществ:', data.communities.length);
+
                 if (data.communities.length === 0) {
                     searchResults.innerHTML = '<div class="no-results">Сообщества не найдены</div>';
                 } else {
-                    searchResults.innerHTML = data.communities.map(community => `
+                    const html = data.communities.map(community => `
                         <div class="community-search-item">
                             <img src="${community.avatar_url || '/uploads/communities/default.png'}" 
                                  alt="${community.name}" 
@@ -212,10 +217,23 @@ document.addEventListener('DOMContentLoaded', () => {
                             </button>
                         </div>
                     `).join('');
+
+                    console.log('Сгенерированный HTML:', html); // Отладочный вывод
+                    searchResults.innerHTML = html;
                 }
-                searchResults.style.display = 'block'; // Убедимся, что результаты видны
+
+                // Явно показываем результаты
+                searchResults.style.display = 'block';
+                
+                // Проверяем видимость после рендеринга
+                console.log('Видимость контейнера:', searchResults.style.display);
+                console.log('Размеры контейнера:', {
+                    offsetHeight: searchResults.offsetHeight,
+                    clientHeight: searchResults.clientHeight,
+                    scrollHeight: searchResults.scrollHeight
+                });
             } else {
-                throw new Error(data.error || 'Ошибка при поиске');
+                throw new Error('Неверный формат данных');
             }
         } catch (error) {
             console.error('Ошибка при поиске:', error);
@@ -456,73 +474,32 @@ document.addEventListener('DOMContentLoaded', () => {
             top: 100%;
             left: 0;
             right: 0;
-            background: var(--surface-color);
-            border-radius: var(--radius-md);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-top: 0.5rem;
+            background: var(--surface-color, #fff);
+            border: 1px solid var(--border-color, #ddd);
+            border-radius: 8px;
+            margin-top: 8px;
             max-height: 400px;
             overflow-y: auto;
             z-index: 1000;
-            display: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
-        .search-result-item {
+        .community-search-item {
             display: flex;
             align-items: center;
-            padding: 1rem;
-            border-bottom: 1px solid var(--border-color);
-            gap: 1rem;
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color, #ddd);
+            background: var(--surface-color, #fff);
         }
 
-        .search-result-item:last-child {
+        .community-search-item:last-child {
             border-bottom: none;
         }
 
-        .search-result-item .community-avatar {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-
-        .search-result-item .community-info {
-            flex: 1;
-        }
-
-        .search-result-item h4 {
-            margin: 0;
-            color: var(--text-primary);
-        }
-
-        .search-result-item p {
-            margin: 0.25rem 0;
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-        }
-
-        .search-result-item .members-count {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-        }
-
-        .search-result-item .join-btn {
-            padding: 0.5rem 1rem;
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .search-result-item .join-btn:hover {
-            background: var(--primary-dark);
-        }
-
-        .no-results {
-            padding: 1rem;
+        .loading, .no-results, .search-error {
+            padding: 16px;
             text-align: center;
-            color: var(--text-secondary);
+            color: var(--text-secondary, #666);
         }
     `;
 
