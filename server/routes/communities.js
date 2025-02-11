@@ -3,11 +3,16 @@ const router = express.Router();
 const { pool } = require('../db');
 const path = require('path');
 const multer = require('multer');
+const fs = require('fs');
 
-// Настройка multer для загрузки аватаров
+// Настройка multer для загрузки аватаров сообществ
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, '/var/www/html/uploads/communities');
+        const uploadPath = '/var/www/html/uploads/communities';
+        if (!fs.existsSync(uploadPath)) {
+            fs.mkdirSync(uploadPath, { recursive: true });
+        }
+        cb(null, uploadPath);
     },
     filename: function (req, file, cb) {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -17,16 +22,16 @@ const storage = multer.diskStorage({
 
 const upload = multer({ 
     storage: storage,
-    limits: {
-        fileSize: 5 * 1024 * 1024 // 5MB limit
-    },
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
     fileFilter: (req, file, cb) => {
-        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
-        if (allowedTypes.includes(file.mimetype)) {
-            cb(null, true);
-        } else {
-            cb(new Error('Invalid file type. Only JPEG, PNG and GIF are allowed.'));
+        const allowedTypes = /jpeg|jpg|png|gif|webp/;
+        const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+        const mimetype = allowedTypes.test(file.mimetype);
+
+        if (extname && mimetype) {
+            return cb(null, true);
         }
+        cb(new Error('Разрешены только изображения!'));
     }
 });
 
@@ -75,70 +80,47 @@ async function ensureTablesExist() {
 
 // Создание сообщества
 router.post('/create', upload.single('avatar'), async (req, res) => {
-    console.log('POST /api/communities/create called');
-    console.log('Request body:', req.body);
-    console.log('File:', req.file);
-    
     try {
-        // Убедимся, что таблицы существуют
-        await ensureTablesExist();
-
-        const { name, description, type = 'public', userId } = req.body;
+        const { name, description, type, creatorId } = req.body;
         
-        // Проверка обязательных полей
-        if (!name || !userId) {
-            console.log('Missing required fields:', { name, userId });
+        console.log('Received community creation request:', {
+            body: req.body,
+            file: req.file
+        });
+
+        // Проверяем обязательные поля
+        if (!name?.trim() || !creatorId) {
             return res.status(400).json({
                 success: false,
                 error: 'Название сообщества и ID создателя обязательны'
             });
         }
 
-        // Начинаем транзакцию
-        const client = await pool.connect();
-        try {
-            await client.query('BEGIN');
+        // Формируем путь к аватару
+        const avatarUrl = req.file 
+            ? `/uploads/communities/${req.file.filename}`
+            : '/uploads/communities/default.png';
 
-            // Создаем запись в таблице communities
-            const communityResult = await client.query(`
-                INSERT INTO communities (name, description, type, created_by, avatar_url)
-                VALUES ($1, $2, $3, $4, $5)
-                RETURNING *
-            `, [
-                name, 
-                description || '', 
-                type, 
-                userId,
-                req.file ? `/uploads/communities/${req.file.filename}` : null
-            ]);
+        // Создаем сообщество
+        const result = await pool.query(`
+            INSERT INTO communities 
+            (name, description, type, creator_id, avatar_url, created_at)
+            VALUES ($1, $2, $3, $4, $5, NOW())
+            RETURNING *
+        `, [name, description || '', type || 'public', creatorId, avatarUrl]);
 
-            console.log('Community created:', communityResult.rows[0]);
+        // Добавляем создателя как участника и администратора
+        await pool.query(`
+            INSERT INTO community_members 
+            (community_id, user_id, role, joined_at)
+            VALUES ($1, $2, 'admin', NOW())
+        `, [result.rows[0].id, creatorId]);
 
-            const communityId = communityResult.rows[0].id;
+        res.json({
+            success: true,
+            community: result.rows[0]
+        });
 
-            // Добавляем создателя как администратора сообщества
-            const memberResult = await client.query(`
-                INSERT INTO community_members (community_id, user_id, role)
-                VALUES ($1, $2, 'admin')
-                RETURNING *
-            `, [communityId, userId]);
-
-            console.log('Member added:', memberResult.rows[0]);
-
-            await client.query('COMMIT');
-
-            res.json({
-                success: true,
-                message: 'Сообщество успешно создано',
-                community: communityResult.rows[0]
-            });
-        } catch (err) {
-            await client.query('ROLLBACK');
-            console.error('Transaction error:', err);
-            throw err;
-        } finally {
-            client.release();
-        }
     } catch (err) {
         console.error('Error creating community:', err);
         res.status(500).json({
