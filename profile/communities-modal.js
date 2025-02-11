@@ -163,19 +163,22 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         
         try {
-            // Получаем текущего пользователя из localStorage
             const currentUser = JSON.parse(localStorage.getItem('user'));
             if (!currentUser || !currentUser.id) {
                 throw new Error('Необходима авторизация');
             }
 
-            // Получаем данные из формы с правильными ID
-            const nameInput = document.querySelector('#community-name-input');
-            const descriptionInput = document.querySelector('#community-description-input');
-            const typeSelect = document.querySelector('#community-type-select');
-            const avatarInput = document.querySelector('#communityAvatar');
+            const nameInput = document.getElementById('community-name-input');
+            const descriptionInput = document.getElementById('community-description-input');
+            const typeSelect = document.getElementById('community-type-select');
+            const avatarInput = document.getElementById('communityAvatar');
 
-            // Проверяем значение названия
+            console.log('Form values:', {
+                name: nameInput?.value,
+                description: descriptionInput?.value,
+                type: typeSelect?.value
+            });
+
             if (!nameInput || !nameInput.value.trim()) {
                 throw new Error('Название сообщества обязательно');
             }
@@ -186,14 +189,8 @@ document.addEventListener('DOMContentLoaded', () => {
             formData.append('type', typeSelect?.value || 'public');
             formData.append('creatorId', currentUser.id);
 
-            // Добавляем файл аватара, если он был выбран
             if (avatarInput?.files?.[0]) {
                 formData.append('avatar', avatarInput.files[0]);
-            }
-
-            // Выводим все данные формы для отладки
-            for (let [key, value] of formData.entries()) {
-                console.log(`${key}:`, value);
             }
 
             const response = await fetch('/api/communities/create', {
@@ -212,25 +209,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(data.error || 'Неизвестная ошибка при создании сообщества');
             }
 
-            // Показываем уведомление об успехе
             showNotification('success', 'Сообщество успешно создано!');
-            
-            // Закрываем модальное окно
             const modal = document.querySelector('#createCommunityModal');
             if (modal) {
                 modal.style.display = 'none';
             }
-
-            // Очищаем форму
-            nameInput.value = '';
-            descriptionInput.value = '';
-            if (avatarInput) avatarInput.value = '';
-
-            // Сбрасываем предпросмотр аватара
-            const avatarPreview = document.querySelector('#avatarPreview');
-            if (avatarPreview) {
-                avatarPreview.src = '/uploads/communities/default.png';
-            }
+            form.reset();
 
             // Обновляем список сообществ
             await loadCommunities(currentUser.id);
@@ -267,9 +251,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 }, 300));
             }
 
-            const createForm = document.getElementById('create-community-form');
-            if (createForm) {
-                createForm.addEventListener('submit', createCommunity);
+            const form = document.getElementById('create-community-form');
+            if (form) {
+                form.addEventListener('submit', createCommunity);
             }
         } catch (err) {
             console.error('Error initializing communities:', err);
