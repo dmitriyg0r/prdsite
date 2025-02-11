@@ -526,8 +526,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const searchInput = e.target;
         const query = searchInput.value.trim();
         const searchResults = document.querySelector('.search-results');
+        
+        console.log('Search query:', query); // Отладочный вывод
+        console.log('Search results element:', searchResults); // Проверка элемента
 
-        if (!searchResults) return;
+        if (!searchResults) {
+            console.error('Search results container not found!');
+            return;
+        }
 
         if (query.length < 2) {
             searchResults.style.display = 'none';
@@ -539,13 +545,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const currentUser = JSON.parse(localStorage.getItem('user'));
-            const response = await fetch(`/api/communities/search?q=${encodeURIComponent(query)}&userId=${currentUser.id}`);
+            const url = `/api/communities/search?q=${encodeURIComponent(query)}&userId=${currentUser.id}`;
+            console.log('Making request to:', url); // Отладочный вывод
+
+            const response = await fetch(url);
+            console.log('Response status:', response.status); // Проверка статуса ответа
             
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             
             const data = await response.json();
+            console.log('Search results:', data); // Проверка полученных данных
+            
             if (data.success) {
                 displaySearchResults(data.communities);
             } else {
