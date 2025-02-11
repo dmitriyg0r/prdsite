@@ -114,11 +114,6 @@ router.post('/create', upload.single('avatar'), async (req, res) => {
     try {
         const { name, description, type, creatorId } = req.body;
         
-        console.log('Received community creation request:', {
-            body: req.body,
-            file: req.file
-        });
-
         // Проверяем обязательные поля
         if (!name?.trim() || !creatorId) {
             return res.status(400).json({
@@ -141,14 +136,20 @@ router.post('/create', upload.single('avatar'), async (req, res) => {
             (name, description, type, creator_id, avatar_url, created_at)
             VALUES ($1, $2, $3, $4, $5, NOW())
             RETURNING *
-        `, [name, description || '', type || 'public', creatorId, avatarUrl]);
+        `, [
+            name.trim(),
+            description?.trim() || '',
+            type || 'public',
+            creatorId,
+            avatarUrl
+        ]);
 
         const community = communityResult.rows[0];
 
-        // Добавляем создателя как участника и администратора
+        // Добавляем создателя как администратора
         await client.query(`
             INSERT INTO community_members 
-            (community_id, user_id, role, permissions, joined_at)
+            (community_id, user_id, role, permissions, created_at)
             VALUES ($1, $2, 'admin', $3, NOW())
         `, [
             community.id, 
@@ -183,8 +184,10 @@ router.post('/create', upload.single('avatar'), async (req, res) => {
                     )
                     FROM community_members cm
                     WHERE cm.community_id = c.id AND cm.user_id = $1
-                ) as member_info
+                ) as member_info,
+                u.username as creator_name
             FROM communities c
+            LEFT JOIN users u ON c.creator_id = u.id
             WHERE c.id = $2
         `, [creatorId, community.id]);
 
@@ -195,7 +198,12 @@ router.post('/create', upload.single('avatar'), async (req, res) => {
 
     } catch (err) {
         await client.query('ROLLBACK');
-        console.error('Error creating community:', err);
+        console.error('Детальная ошибка создания сообщества:', {
+            error: err.message,
+            stack: err.stack,
+            code: err.code,
+            detail: err.detail
+        });
         res.status(500).json({
             success: false,
             error: 'Ошибка при создании сообщества',
