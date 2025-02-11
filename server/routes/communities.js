@@ -62,7 +62,6 @@ async function ensureTablesExist() {
                 community_id INTEGER REFERENCES communities(id) ON DELETE CASCADE,
                 user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
                 role VARCHAR(20) NOT NULL DEFAULT 'member',
-                permissions JSONB NOT NULL DEFAULT '{"can_post": false, "can_moderate": false, "can_invite": false, "can_manage": false}',
                 joined_at TIMESTAMP NOT NULL DEFAULT NOW(),
                 UNIQUE(community_id, user_id)
             );
@@ -182,20 +181,14 @@ router.post('/create', upload.single('avatar'), async (req, res) => {
 
             console.log('Сообщество создано:', community);
 
-            // Добавляем создателя как администратора
+            // Добавляем создателя как администратора (без поля permissions)
             await client.query(`
                 INSERT INTO community_members 
-                (community_id, user_id, role, permissions, joined_at)
-                VALUES ($1, $2, 'admin', $3, NOW())
+                (community_id, user_id, role, joined_at)
+                VALUES ($1, $2, 'admin', NOW())
             `, [
                 community.id, 
-                creatorId, 
-                JSON.stringify({
-                    can_post: true,
-                    can_moderate: true,
-                    can_invite: true,
-                    can_manage: true
-                })
+                creatorId
             ]);
 
             // Создаем запись в таблице настроек сообщества
