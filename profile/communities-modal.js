@@ -190,45 +190,47 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error('Необходима авторизация');
             }
 
-            // Получаем значения полей формы
-            const nameInput = document.getElementById('community-name-input');
-            const descriptionInput = document.getElementById('community-description-input');
-            const typeSelect = document.getElementById('community-type-select');
-            const avatarInput = document.getElementById('communityAvatar');
+            // Получаем форму и значения полей
+            const form = e.target;
+            const formData = new FormData(form);
+
+            // Получаем значения полей
+            const name = formData.get('name');
+            const description = formData.get('description');
+            const type = formData.get('type');
+            const avatar = formData.get('avatar');
 
             // Отладочная информация
-            console.log('Form elements:', {
-                nameInput,
-                descriptionInput,
-                typeSelect,
-                avatarInput
-            });
-
-            console.log('Form values:', {
-                name: nameInput?.value,
-                description: descriptionInput?.value,
-                type: typeSelect?.value
+            console.log('Form data:', {
+                name,
+                description,
+                type,
+                hasAvatar: !!avatar
             });
 
             // Проверяем наличие названия
-            if (!nameInput?.value?.trim()) {
+            if (!name || !name.trim()) {
+                const nameInput = document.getElementById('community-name-input');
+                nameInput.focus(); // Фокусируемся на поле
+                nameInput.classList.add('error'); // Добавляем класс ошибки
                 throw new Error('Название сообщества обязательно');
             }
 
-            const formData = new FormData();
-            formData.append('name', nameInput.value.trim());
-            formData.append('description', descriptionInput?.value?.trim() || '');
-            formData.append('type', typeSelect?.value || 'public');
-            formData.append('creatorId', currentUser.id);
+            // Создаем новый FormData для отправки
+            const sendFormData = new FormData();
+            sendFormData.append('name', name.trim());
+            sendFormData.append('description', description?.trim() || '');
+            sendFormData.append('type', type || 'public');
+            sendFormData.append('creatorId', currentUser.id);
 
-            if (avatarInput?.files?.[0]) {
-                formData.append('avatar', avatarInput.files[0]);
+            if (avatar instanceof File) {
+                sendFormData.append('avatar', avatar);
             }
 
             // Отправляем запрос
             const response = await fetch('/api/communities/create', {
                 method: 'POST',
-                body: formData
+                body: sendFormData
             });
 
             if (!response.ok) {
@@ -252,10 +254,39 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Добавляем обработчики событий
+    // Добавляем обработчик для удаления класса ошибки при вводе
+    const nameInput = document.getElementById('community-name-input');
+    if (nameInput) {
+        nameInput.addEventListener('input', () => {
+            nameInput.classList.remove('error');
+        });
+    }
+
+    // Добавляем стили для поля с ошибкой
+    const errorStyle = document.createElement('style');
+    errorStyle.textContent = `
+        .form-group input.error {
+            border-color: var(--error-color, #ff4444);
+            background-color: var(--error-bg, rgba(255, 68, 68, 0.1));
+        }
+        
+        .form-group input.error:focus {
+            box-shadow: 0 0 0 2px var(--error-shadow, rgba(255, 68, 68, 0.2));
+        }
+    `;
+    document.head.appendChild(errorStyle);
+
+    // Обработчики событий формы
     if (createForm) {
         console.log('Adding submit handler to create form');
         createForm.addEventListener('submit', createCommunity);
+        
+        // Предотвращаем отправку формы при нажатии Enter
+        createForm.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
+                e.preventDefault();
+            }
+        });
     }
 
     if (closeCreateModalBtn) {
@@ -315,8 +346,8 @@ document.addEventListener('DOMContentLoaded', () => {
     initCommunities();
 
     // Добавляем стили для результатов поиска
-    const style = document.createElement('style');
-    style.textContent = `
+    const searchStyle = document.createElement('style');
+    searchStyle.textContent = `
         .search-results {
             position: absolute;
             top: 100%;
@@ -392,7 +423,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     `;
 
-    document.head.appendChild(style);
+    document.head.appendChild(searchStyle);
 
     // Добавляем функцию handleSearch
     function handleSearch(e) {
