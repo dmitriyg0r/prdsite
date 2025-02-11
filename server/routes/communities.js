@@ -261,11 +261,15 @@ router.get('/', async (req, res) => {
 
 // Поиск сообществ
 router.get('/search', async (req, res) => {
+    console.log('Search request received:', req.query);
     const client = await pool.connect();
     try {
         const { q, userId } = req.query;
         
+        console.log('Search params:', { q, userId });
+        
         if (!q) {
+            console.log('Empty query, returning empty result');
             return res.json({
                 success: true,
                 communities: []
@@ -307,6 +311,7 @@ router.get('/search', async (req, res) => {
             q
         ]);
 
+        console.log('Search results:', result.rows);
         return res.json({
             success: true,
             communities: result.rows
