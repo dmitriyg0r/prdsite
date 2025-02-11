@@ -179,7 +179,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Обработчик создания сообщества
+    // Функция валидации формы
+    function validateCommunityForm(formData) {
+        const errors = [];
+        const name = formData.get('name');
+        const description = formData.get('description');
+
+        if (!name || name.trim().length === 0) {
+            errors.push('Введите название сообщества');
+        } else if (name.trim().length < 3) {
+            errors.push('Название сообщества должно содержать минимум 3 символа');
+        }
+
+        if (description && description.trim().length > 500) {
+            errors.push('Описание не должно превышать 500 символов');
+        }
+
+        return errors;
+    }
+
+    // Обновляем функцию createCommunity
     async function createCommunity(e) {
         e.preventDefault();
         console.log('Create community form submitted');
@@ -190,9 +209,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error('Необходима авторизация');
             }
 
-            // Получаем форму и значения полей
             const form = e.target;
             const formData = new FormData(form);
+            
+            // Валидация формы
+            const validationErrors = validateCommunityForm(formData);
+            if (validationErrors.length > 0) {
+                // Показываем первую ошибку
+                showNotification('error', validationErrors[0]);
+                
+                // Подсвечиваем поле с ошибкой
+                if (validationErrors[0].includes('название')) {
+                    const nameInput = document.getElementById('community-name-input');
+                    nameInput.classList.add('error');
+                    nameInput.focus();
+                }
+                return;
+            }
 
             // Получаем значения полей
             const name = formData.get('name');
@@ -207,14 +240,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 type,
                 hasAvatar: !!avatar
             });
-
-            // Проверяем наличие названия
-            if (!name || !name.trim()) {
-                const nameInput = document.getElementById('community-name-input');
-                nameInput.focus(); // Фокусируемся на поле
-                nameInput.classList.add('error'); // Добавляем класс ошибки
-                throw new Error('Название сообщества обязательно');
-            }
 
             // Создаем новый FormData для отправки
             const sendFormData = new FormData();
@@ -265,13 +290,41 @@ document.addEventListener('DOMContentLoaded', () => {
     // Добавляем стили для поля с ошибкой
     const errorStyle = document.createElement('style');
     errorStyle.textContent = `
-        .form-group input.error {
+        .form-group input.error,
+        .form-group textarea.error {
             border-color: var(--error-color, #ff4444);
             background-color: var(--error-bg, rgba(255, 68, 68, 0.1));
         }
         
-        .form-group input.error:focus {
+        .form-group input.error:focus,
+        .form-group textarea.error:focus {
             box-shadow: 0 0 0 2px var(--error-shadow, rgba(255, 68, 68, 0.2));
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 4px;
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .notification.error {
+            background-color: var(--error-color, #ff4444);
+            color: white;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
     `;
     document.head.appendChild(errorStyle);
