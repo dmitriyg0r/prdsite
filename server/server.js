@@ -3358,3 +3358,57 @@ app.get('/api/communities', async (req, res) => {
         });
     }
 });
+
+// Создание сообщества
+app.post('/api/communities/create', upload.single('avatar'), async (req, res) => {
+    try {
+        const { name, description, type, creatorId } = req.body;
+        
+        // Проверяем обязательные поля
+        if (!name || !creatorId) {
+            return res.status(400).json({
+                success: false,
+                error: 'Необходимо указать название сообщества и ID создателя'
+            });
+        }
+
+        // Создаем сообщество
+        const result = await pool.query(`
+            INSERT INTO communities (name, description, type, creator_id, created_at)
+            VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)
+            RETURNING id, name, description, type, creator_id, created_at
+        `, [name, description || '', type || 'public', creatorId]);
+
+        const community = result.rows[0];
+
+        // Если загружен аватар, сохраняем его
+        if (req.file) {
+            const avatarPath = `/uploads/communities/${community.id}/${req.file.filename}`;
+            await pool.query(`
+                UPDATE communities 
+                SET avatar_url = $1 
+                WHERE id = $2
+            `, [avatarPath, community.id]);
+            community.avatar_url = avatarPath;
+        }
+
+        // Автоматически добавляем создателя как участника
+        await pool.query(`
+            INSERT INTO community_members (community_id, user_id, joined_at)
+            VALUES ($1, $2, CURRENT_TIMESTAMP)
+        `, [community.id, creatorId]);
+
+        res.json({
+            success: true,
+            community: community
+        });
+
+    } catch (err) {
+        console.error('Error creating community:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при создании сообщества',
+            details: err.message
+        });
+    }
+});
