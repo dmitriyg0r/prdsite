@@ -157,107 +157,97 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Функция для поиска сообществ
     async function searchCommunities(query) {
-        console.log('Выполняется поиск:', query);
-        const searchTab = document.getElementById('search-communities');
-        const searchResults = document.querySelector('.search-results');
-        
-        // Проверяем видимость вкладки поиска
-        if (searchTab && !searchTab.classList.contains('active')) {
-            console.log('Активируем вкладку поиска');
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-            searchTab.classList.add('active');
-        }
-
-        if (query.length < 2) {
-            searchResults.style.display = 'none';
-            return;
-        }
-
         try {
             const currentUser = JSON.parse(localStorage.getItem('user'));
-            if (!currentUser || !currentUser.id) {
-                throw new Error('Пользователь не авторизован');
-            }
-
-            // Показываем индикатор загрузки
-            searchResults.innerHTML = '<div class="loading">Поиск...</div>';
+            const searchResults = document.querySelector('.search-results');
+            
+            // Показываем контейнер результатов перед запросом
             searchResults.style.display = 'block';
+            searchResults.innerHTML = '<div class="search-loading">Поиск...</div>';
 
-            const response = await fetch(`/api/communities/search?q=${encodeURIComponent(query)}&userId=${currentUser.id}`);
+            const response = await fetch(`https://space-point.ru/api/communities/search?q=${encodeURIComponent(query)}&userId=${currentUser.id}`);
             console.log('Ответ сервера:', response.status);
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
 
             const data = await response.json();
             console.log('Полученные данные:', data);
 
-            // Проверяем данные перед отображением
-            if (data.success && Array.isArray(data.communities)) {
+            if (data.success) {
                 console.log('Найдено сообществ:', data.communities.length);
 
                 if (data.communities.length === 0) {
-                    searchResults.innerHTML = '<div class="no-results">Сообщества не найдены</div>';
-                } else {
-                    const html = data.communities.map(community => `
-                        <div class="community-search-item">
-                            <img src="${community.avatar_url || '/uploads/communities/default.png'}" 
-                                 alt="${community.name}" 
-                                 class="community-avatar">
-                            <div class="community-info">
-                                <h3>${community.name}</h3>
-                                <p>${community.description || 'Нет описания'}</p>
-                                <div class="community-stats">
-                                    <span><i class="fas fa-users"></i> ${community.members_count || 0}</span>
-                                </div>
-                            </div>
-                            <button class="join-community-btn" 
-                                    data-community-id="${community.id}"
-                                    ${community.is_member ? 'disabled' : ''}>
-                                ${community.is_member ? 'Вы участник' : 'Вступить'}
-                            </button>
-                        </div>
-                    `).join('');
-
-                    console.log('Сгенерированный HTML:', html); // Отладочный вывод
-                    searchResults.innerHTML = html;
+                    searchResults.innerHTML = `
+                        <div class="no-results">
+                            <i class="fas fa-search"></i>
+                            <p>Сообщества не найдены</p>
+                        </div>`;
+                    return;
                 }
 
-                // Явно показываем результаты
-                searchResults.style.display = 'block';
+                const html = data.communities.map(community => `
+                    <div class="community-search-item">
+                        <img src="${community.avatar_url || '/uploads/communities/default.png'}" 
+                             alt="${community.name}" 
+                             class="community-avatar">
+                        <div class="community-info">
+                            <h3>${community.name}</h3>
+                            <p>${community.description || 'Описание отсутствует'}</p>
+                            <div class="community-stats">
+                                <span><i class="fas fa-users"></i> ${community.members_count || 0}</span>
+                            </div>
+                        </div>
+                        <button class="join-community-btn" 
+                                data-community-id="${community.id}"
+                                ${community.is_member ? 'disabled' : ''}>
+                            ${community.is_member ? 'Вы участник' : 'Вступить'}
+                        </button>
+                    </div>
+                `).join('');
+
+                console.log('Сгенерированный HTML:', html);
+
+                // Очищаем и добавляем новое содержимое
+                searchResults.innerHTML = '';
                 
-                // Проверяем видимость после рендеринга
+                // Создаем временный контейнер
+                const tempContainer = document.createElement('div');
+                tempContainer.innerHTML = html;
+                
+                // Добавляем элементы по одному
+                while (tempContainer.firstChild) {
+                    searchResults.appendChild(tempContainer.firstChild);
+                }
+
+                // Проверяем размеры после добавления содержимого
                 console.log('Видимость контейнера:', searchResults.style.display);
                 console.log('Размеры контейнера:', {
                     offsetHeight: searchResults.offsetHeight,
                     clientHeight: searchResults.clientHeight,
                     scrollHeight: searchResults.scrollHeight
                 });
+
+                // Принудительно обновляем layout
+                searchResults.style.opacity = '0.99';
+                setTimeout(() => {
+                    searchResults.style.opacity = '1';
+                }, 0);
+
             } else {
-                throw new Error('Неверный формат данных');
+                searchResults.innerHTML = `
+                    <div class="search-error">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p>Ошибка при поиске сообществ</p>
+                    </div>`;
             }
-        } catch (error) {
-            console.error('Ошибка при поиске:', error);
+        } catch (err) {
+            console.error('Error searching communities:', err);
+            const searchResults = document.querySelector('.search-results');
             searchResults.innerHTML = `
                 <div class="search-error">
                     <i class="fas fa-exclamation-circle"></i>
-                    <p>Произошла ошибка при поиске</p>
-                    <small>${error.message}</small>
-                </div>
-            `;
-            searchResults.style.display = 'block';
+                    <p>Ошибка при поиске сообществ</p>
+                    <small>${err.message}</small>
+                </div>`;
         }
-
-        // После установки HTML добавим небольшую задержку и проверим размеры
-        setTimeout(() => {
-            console.log('Повторная проверка размеров:', {
-                offsetHeight: searchResults.offsetHeight,
-                clientHeight: searchResults.clientHeight,
-                scrollHeight: searchResults.scrollHeight,
-                display: window.getComputedStyle(searchResults).display
-            });
-        }, 100);
     }
 
     // Функция для открытия модального окна создания сообщества
