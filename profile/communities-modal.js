@@ -203,90 +203,57 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         
         try {
-            const form = e.target;
-            const formData = new FormData(form);
-            
-            // Отладочная информация
-            console.log('Form elements:', {
-                nameInput: document.getElementById('community-name-input'),
-                nameValue: document.getElementById('community-name-input')?.value,
-                formDataName: formData.get('name')
-            });
-            
+            // Получаем текущего пользователя
             const currentUser = JSON.parse(localStorage.getItem('user'));
             if (!currentUser || !currentUser.id) {
                 throw new Error('Необходима авторизация');
             }
 
-            // Проверяем, что поле name присутствует в форме
-            if (!formData.has('name')) {
-                console.error('Name field not found in form data');
-                const allFormFields = Array.from(formData.entries());
-                console.log('Available form fields:', allFormFields);
-            }
+            const form = e.target;
+            const formData = new FormData(form);
             
-            // Валидация формы
-            const validationErrors = validateCommunityForm(formData);
-            if (validationErrors.length > 0) {
-                showNotification('error', validationErrors[0]);
-                
-                if (validationErrors[0].includes('название')) {
-                    const nameInput = document.getElementById('community-name-input');
-                    if (nameInput) {
-                        nameInput.classList.add('error');
-                        nameInput.focus();
-                    } else {
-                        console.error('Name input element not found');
-                    }
-                }
-                return;
-            }
-
-            // Получаем значения полей
-            const name = formData.get('name');
-            const description = formData.get('description');
-            const type = formData.get('type');
-            const avatar = formData.get('avatar');
+            // Добавляем ID создателя в FormData
+            formData.append('creatorId', currentUser.id);
 
             // Отладочная информация
-            console.log('Form data:', {
-                name,
-                description,
-                type,
-                hasAvatar: !!avatar
+            console.log('Отправка данных:', {
+                name: formData.get('name'),
+                description: formData.get('description'),
+                type: formData.get('type'),
+                creatorId: formData.get('creatorId'),
+                avatar: formData.get('avatar')
             });
 
-            // Создаем новый FormData для отправки
-            const sendFormData = new FormData();
-            sendFormData.append('name', name.trim());
-            sendFormData.append('description', description?.trim() || '');
-            sendFormData.append('type', type || 'public');
-            sendFormData.append('creatorId', currentUser.id);
-
-            if (avatar instanceof File) {
-                sendFormData.append('avatar', avatar);
-            }
-
-            // Отправляем запрос
             const response = await fetch('/api/communities/create', {
                 method: 'POST',
-                body: sendFormData
+                body: formData // FormData автоматически установит правильный Content-Type
             });
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.error || `Failed to create community: ${response.status}`);
+                throw new Error(errorData.error || 'Ошибка при создании сообщества');
             }
 
             const data = await response.json();
             
             if (!data.success) {
-                throw new Error(data.error || 'Неизвестная ошибка при создании сообщества');
+                throw new Error(data.error || 'Ошибка при создании сообщества');
             }
 
-            showNotification('success', 'Сообщество успешно создано!');
-            closeCreateCommunityModal();
+            // Показываем уведомление об успехе
+            showNotification('success', 'Сообщество успешно создано');
+
+            // Очищаем форму
+            form.reset();
+
+            // Обновляем список сообществ
             await loadCommunities(currentUser.id);
+
+            // Переключаемся на вкладку "Мои сообщества"
+            const allCommunitiesTab = document.querySelector('[data-tab="all-communities"]');
+            if (allCommunitiesTab) {
+                allCommunitiesTab.click();
+            }
 
         } catch (err) {
             console.error('Error creating community:', err);
@@ -608,4 +575,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const styleElement = document.createElement('style');
     styleElement.textContent = additionalStyles;
     document.head.appendChild(styleElement);
+
+    // Предпросмотр аватара
+    const avatarInput = document.getElementById('communityAvatar');
+    const avatarPreview = document.getElementById('avatarPreview');
+    
+    if (avatarInput && avatarPreview) {
+        avatarInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    avatarPreview.src = e.target.result;
+                    avatarPreview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
 }); 
