@@ -158,13 +158,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Функция для поиска сообществ
     async function searchCommunities(query) {
         try {
-            const currentUser = JSON.parse(localStorage.getItem('user'));
             const searchResults = document.querySelector('.search-results');
+            console.log('Before setting content - Container dimensions:', {
+                offsetHeight: searchResults.offsetHeight,
+                clientHeight: searchResults.clientHeight,
+                scrollHeight: searchResults.scrollHeight
+            });
             
-            // Показываем контейнер результатов перед запросом
-            searchResults.style.display = 'block';
-            searchResults.innerHTML = '<div class="search-loading">Поиск...</div>';
-
+            const currentUser = JSON.parse(localStorage.getItem('user'));
             const response = await fetch(`https://space-point.ru/api/communities/search?q=${encodeURIComponent(query)}&userId=${currentUser.id}`);
             const data = await response.json();
 
@@ -207,6 +208,17 @@ document.addEventListener('DOMContentLoaded', () => {
                         item.style.opacity = '1';
                         item.style.transform = 'translateY(0)';
                     }, index * 100);
+                });
+
+                // Принудительный перерасчет размеров
+                searchResults.style.display = 'none';
+                searchResults.offsetHeight; // Trigger reflow
+                searchResults.style.display = 'block';
+                
+                console.log('After setting content - Container dimensions:', {
+                    offsetHeight: searchResults.offsetHeight,
+                    clientHeight: searchResults.clientHeight,
+                    scrollHeight: searchResults.scrollHeight
                 });
             } else {
                 searchResults.innerHTML = `
@@ -689,4 +701,29 @@ document.addEventListener('DOMContentLoaded', () => {
     // При создании модального окна добавляем класс
     const modal = document.createElement('div');
     modal.className = 'modal communities-modal';
+
+    function showCommunitiesModal() {
+        const modalHTML = `
+            <div class="communities-modal">
+                <div class="modal-header">
+                    <h2>Поиск сообществ</h2>
+                    <button class="close-modal-btn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-content">
+                    <div class="search-container">
+                        <input type="text" 
+                               class="search-input" 
+                               placeholder="Поиск сообществ...">
+                    </div>
+                    <div class="search-results"></div>
+                </div>
+            </div>
+        `;
+
+        showModal(modalHTML);
+        
+        // Остальной код инициализации...
+    }
 }); 
