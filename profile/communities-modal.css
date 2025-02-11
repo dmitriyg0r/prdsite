@@ -99,7 +99,7 @@
     }
 }
 
-.modal {
+.communities-modal.modal {
     position: fixed;
     top: 0;
     left: 0;
@@ -112,23 +112,25 @@
     z-index: 1000;
 }
 
-.modal.active {
+.communities-modal.modal.active {
     display: flex;
 }
 
-.modal-content {
+.communities-modal .modal-content {
     background: var(--surface-color);
     border-radius: var(--radius-lg);
     width: 90%;
     max-width: 800px;
-    max-height: 90vh;
+    height: auto;
+    min-height: 400px;
     display: flex;
     flex-direction: column;
     position: relative;
     box-shadow: var(--shadow-lg);
+    margin: 20px;
 }
 
-.modal-header {
+.communities-modal .modal-header {
     padding: var(--spacing-md);
     border-bottom: 1px solid var(--border-light);
     display: flex;
@@ -136,22 +138,22 @@
     align-items: center;
 }
 
-.modal-body {
+.communities-modal .modal-body {
     flex: 1;
-    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
     padding: var(--spacing-md);
-    min-height: 300px;
-    height: auto;
     background: var(--background-color);
 }
 
-.modal-tabs {
+.communities-modal .modal-tabs {
     display: flex;
     gap: 1rem;
     margin-bottom: 1rem;
 }
 
-.tab-btn {
+.communities-modal .tab-btn {
     padding: 0.75rem 1.5rem;
     border: none;
     background: none;
@@ -161,18 +163,24 @@
     transition: all 0.3s ease;
 }
 
-.tab-btn.active {
+.communities-modal .tab-btn.active {
     background: var(--primary-color);
     color: white;
 }
 
-.search-container {
-    position: relative;
-    margin-bottom: var(--spacing-md);
-    width: 100%;
+.communities-modal .community-search {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 200px;
 }
 
-.search-input {
+.communities-modal .search-container {
+    flex-shrink: 0;
+    margin-bottom: var(--spacing-md);
+}
+
+.communities-modal .search-input {
     width: 100%;
     padding: var(--spacing-sm) var(--spacing-md);
     border: 1px solid var(--border-light);
@@ -180,36 +188,39 @@
     font-size: 1rem;
 }
 
-.search-results {
-    position: relative;
-    min-height: 50px;
+.communities-modal .search-results {
+    flex: 1;
+    min-height: 200px;
     height: auto;
-    max-height: 400px;
     overflow-y: auto;
-    display: block;
     border: 1px solid var(--border-light);
     border-radius: var(--radius-md);
-    margin-top: var(--spacing-sm);
+    background: var(--surface-color);
+    position: relative;
 }
 
-.community-search-item {
+.communities-modal .community-search-item {
+    position: relative;
     display: flex;
     align-items: center;
+    gap: var(--spacing-md);
     padding: var(--spacing-md);
     border-bottom: 1px solid var(--border-light);
     background: var(--surface-color);
-    transition: background-color 0.2s;
+    animation: slideIn 0.2s ease-out forwards;
+    opacity: 0;
+    transform: translateY(10px);
 }
 
-.community-search-item:last-child {
+.communities-modal .community-search-item:last-child {
     border-bottom: none;
 }
 
-.community-search-item:hover {
+.communities-modal .community-search-item:hover {
     background-color: var(--hover-color);
 }
 
-.community-avatar {
+.communities-modal .community-avatar {
     width: 48px;
     height: 48px;
     border-radius: 50%;
@@ -217,12 +228,12 @@
     object-fit: cover;
 }
 
-.community-info {
+.communities-modal .community-info {
     flex: 1;
     min-width: 0;
 }
 
-.community-info h3 {
+.communities-modal .community-info h3 {
     margin: 0 0 0.25rem 0;
     font-size: 1rem;
     color: var(--text-primary);
@@ -231,7 +242,7 @@
     text-overflow: ellipsis;
 }
 
-.community-info p {
+.communities-modal .community-info p {
     margin: 0;
     font-size: 0.875rem;
     color: var(--text-secondary);
@@ -240,13 +251,13 @@
     text-overflow: ellipsis;
 }
 
-.community-stats {
+.communities-modal .community-stats {
     margin-top: 0.25rem;
     font-size: 0.75rem;
     color: var(--text-secondary);
 }
 
-.join-community-btn {
+.communities-modal .join-community-btn {
     padding: 0.5rem 1rem;
     border: none;
     border-radius: var(--radius-md);
@@ -258,41 +269,48 @@
     min-width: 120px;
 }
 
-.join-community-btn:hover:not(:disabled) {
+.communities-modal .join-community-btn:hover:not(:disabled) {
     background: var(--primary-dark);
 }
 
-.join-community-btn:disabled {
+.communities-modal .join-community-btn:disabled {
     background: var(--success-color);
     cursor: default;
     opacity: 0.8;
 }
 
-.loading, .no-results, .search-error {
-    padding: var(--spacing-md);
-    text-align: center;
-    color: var(--text-secondary);
-    margin: var(--spacing-md) 0;
+.communities-modal .search-loading,
+.communities-modal .no-results,
+.communities-modal .search-error {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-lg);
     background: var(--surface-color);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--border-light);
 }
 
-.search-error {
+.communities-modal .search-error {
     color: var(--error-color);
     background: var(--error-bg);
     border-color: var(--error-color);
 }
 
-.tab-content {
+.communities-modal .tab-content {
     display: none;
     padding: var(--spacing-md) 0;
 }
 
-.tab-content.active {
-    display: block;
-    height: auto;
-    min-height: 200px;
+.communities-modal .tab-content.active {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 300px;
 }
 
 @keyframes fadeIn {
@@ -300,15 +318,15 @@
     to { opacity: 1; }
 }
 
-.modal.active .modal-content {
+.communities-modal.active .modal-content {
     animation: fadeIn 0.3s ease-out;
 }
 
-.search-results > * {
+.communities-modal .search-results > * {
     animation: fadeIn 0.2s ease-out;
 }
 
-.search-loading {
+.communities-modal .search-loading {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -316,20 +334,28 @@
     color: var(--text-secondary);
 }
 
-.no-results {
+.communities-modal .no-results {
     text-align: center;
     padding: var(--spacing-lg);
     color: var(--text-secondary);
     background: var(--surface-color);
 }
 
+@keyframes slideIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 @media (max-width: 768px) {
-    .modal-content {
+    .communities-modal .modal-content {
         width: 95%;
-        max-height: 95vh;
+        margin: 10px;
+        min-height: 300px;
     }
 
-    .search-results {
-        max-height: 300px;
+    .communities-modal .search-results {
+        min-height: 150px;
     }
 } 

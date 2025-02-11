@@ -708,4 +708,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.querySelector('.search-input')) {
         document.querySelector('.search-input').addEventListener('input', debounce(handleSearch, 300));
     }
+
+    // При создании модального окна добавляем класс
+    const modal = document.createElement('div');
+    modal.className = 'modal communities-modal';
 }); 
