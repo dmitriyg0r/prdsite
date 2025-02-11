@@ -112,102 +112,145 @@ router.post('/create', upload.single('avatar'), async (req, res) => {
     const client = await pool.connect();
     
     try {
+        console.log('Получены данные:', {
+            body: req.body,
+            file: req.file
+        });
+
         const { name, description, type, creatorId } = req.body;
         
         // Проверяем обязательные поля
-        if (!name?.trim() || !creatorId) {
+        if (!name?.trim()) {
             return res.status(400).json({
                 success: false,
-                error: 'Название сообщества и ID создателя обязательны'
+                error: 'Название сообщества обязательно'
+            });
+        }
+
+        if (!creatorId) {
+            return res.status(400).json({
+                success: false,
+                error: 'ID создателя обязателен'
+            });
+        }
+
+        // Проверяем существование пользователя
+        const userExists = await client.query(
+            'SELECT id FROM users WHERE id = $1',
+            [creatorId]
+        );
+
+        if (userExists.rows.length === 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'Пользователь не найден'
             });
         }
 
         // Начинаем транзакцию
         await client.query('BEGIN');
 
-        // Формируем путь к аватару
-        const avatarUrl = req.file 
-            ? `/uploads/communities/${req.file.filename}`
-            : '/uploads/communities/default.png';
+        try {
+            // Формируем путь к аватару
+            const avatarUrl = req.file 
+                ? `/uploads/communities/${req.file.filename}`
+                : '/uploads/communities/default.png';
 
-        // Создаем сообщество
-        const communityResult = await client.query(`
-            INSERT INTO communities 
-            (name, description, type, creator_id, avatar_url, created_at)
-            VALUES ($1, $2, $3, $4, $5, NOW())
-            RETURNING *
-        `, [
-            name.trim(),
-            description?.trim() || '',
-            type || 'public',
-            creatorId,
-            avatarUrl
-        ]);
+            console.log('Создание сообщества с параметрами:', {
+                name: name.trim(),
+                description: description?.trim() || '',
+                type: type || 'public',
+                creatorId,
+                avatarUrl
+            });
 
-        const community = communityResult.rows[0];
+            // Создаем сообщество
+            const communityResult = await client.query(`
+                INSERT INTO communities 
+                (name, description, type, creator_id, avatar_url, created_at)
+                VALUES ($1, $2, $3, $4, $5, NOW())
+                RETURNING *
+            `, [
+                name.trim(),
+                description?.trim() || '',
+                type || 'public',
+                creatorId,
+                avatarUrl
+            ]);
 
-        // Добавляем создателя как администратора
-        await client.query(`
-            INSERT INTO community_members 
-            (community_id, user_id, role, permissions, created_at)
-            VALUES ($1, $2, 'admin', $3, NOW())
-        `, [
-            community.id, 
-            creatorId, 
-            JSON.stringify({
-                can_post: true,
-                can_moderate: true,
-                can_invite: true,
-                can_manage: true
-            })
-        ]);
+            const community = communityResult.rows[0];
 
-        // Создаем запись в таблице настроек сообщества
-        await client.query(`
-            INSERT INTO community_settings 
-            (community_id, post_permission, visibility, created_at)
-            VALUES ($1, 'admin_only', $2, NOW())
-        `, [community.id, type || 'public']);
+            console.log('Сообщество создано:', community);
 
-        // Фиксируем транзакцию
-        await client.query('COMMIT');
+            // Добавляем создателя как администратора
+            await client.query(`
+                INSERT INTO community_members 
+                (community_id, user_id, role, permissions, joined_at)
+                VALUES ($1, $2, 'admin', $3, NOW())
+            `, [
+                community.id, 
+                creatorId, 
+                JSON.stringify({
+                    can_post: true,
+                    can_moderate: true,
+                    can_invite: true,
+                    can_manage: true
+                })
+            ]);
 
-        // Получаем полную информацию о созданном сообществе
-        const fullCommunityResult = await client.query(`
-            SELECT 
-                c.*,
-                (SELECT COUNT(*) FROM community_members WHERE community_id = c.id) as members_count,
-                (
-                    SELECT json_build_object(
-                        'role', cm.role,
-                        'permissions', cm.permissions
-                    )
-                    FROM community_members cm
-                    WHERE cm.community_id = c.id AND cm.user_id = $1
-                ) as member_info,
-                u.username as creator_name
-            FROM communities c
-            LEFT JOIN users u ON c.creator_id = u.id
-            WHERE c.id = $2
-        `, [creatorId, community.id]);
+            // Создаем запись в таблице настроек сообщества
+            await client.query(`
+                INSERT INTO community_settings 
+                (community_id, post_permission, visibility)
+                VALUES ($1, 'admin_only', $2)
+            `, [community.id, type || 'public']);
 
-        res.json({
-            success: true,
-            community: fullCommunityResult.rows[0]
-        });
+            // Фиксируем транзакцию
+            await client.query('COMMIT');
+
+            // Получаем полную информацию о созданном сообществе
+            const fullCommunityResult = await client.query(`
+                SELECT 
+                    c.*,
+                    (SELECT COUNT(*) FROM community_members WHERE community_id = c.id) as members_count,
+                    u.username as creator_name
+                FROM communities c
+                LEFT JOIN users u ON c.creator_id = u.id
+                WHERE c.id = $1
+            `, [community.id]);
+
+            res.json({
+                success: true,
+                community: fullCommunityResult.rows[0]
+            });
+
+        } catch (err) {
+            await client.query('ROLLBACK');
+            throw err;
+        }
 
     } catch (err) {
-        await client.query('ROLLBACK');
         console.error('Детальная ошибка создания сообщества:', {
-            error: err.message,
+            message: err.message,
             stack: err.stack,
             code: err.code,
-            detail: err.detail
+            detail: err.detail,
+            table: err.table,
+            constraint: err.constraint
         });
+
+        // Проверяем специфические ошибки PostgreSQL
+        if (err.code === '23505') { // unique_violation
+            return res.status(400).json({
+                success: false,
+                error: 'Сообщество с таким названием уже существует'
+            });
+        }
+
         res.status(500).json({
             success: false,
             error: 'Ошибка при создании сообщества',
-            details: err.message
+            details: process.env.NODE_ENV === 'development' ? err.message : undefined
         });
     } finally {
         client.release();
