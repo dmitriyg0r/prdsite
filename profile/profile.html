@@ -265,59 +265,67 @@
             
             <div class="modal-body">
                 <div class="tab-content active" id="all-communities">
-                    <div class="communities-container">
-                        <!-- Сюда будут добавляться сообщества -->
+                    <div class="communities-list">
+                        <!-- Сообщества добавляются динамически -->
                     </div>
                 </div>
 
                 <div class="tab-content" id="search-communities">
                     <div class="search-container">
                         <input type="text" 
-                               class="search-input" 
+                               id="community-search-input" 
+                               class="search-input"
                                placeholder="Поиск сообществ...">
                     </div>
-                    <div class="search-results">
-                        <!-- Результаты поиска будут здесь -->
-                    </div>
+                    <div class="search-results"></div>
                 </div>
 
                 <div class="tab-content" id="create-community">
-                    <form id="createCommunityForm" class="create-community-form">
+                    <form id="createCommunityForm" enctype="multipart/form-data">
                         <div class="form-group">
-                            <label for="community-name">Название сообщества*</label>
-                            <input type="text" 
-                                   id="community-name" 
-                                   name="name" 
-                                   required>
+                            <label for="community-name-input">Название сообщества*</label>
+                            <input 
+                                type="text" 
+                                id="community-name-input" 
+                                name="name" 
+                                required 
+                                minlength="3"
+                                maxlength="50"
+                                placeholder="Введите название сообщества"
+                            >
                         </div>
                         
                         <div class="form-group">
-                            <label for="community-description">Описание</label>
-                            <textarea id="community-description" 
-                                      name="description" 
-                                      rows="3"></textarea>
+                            <label for="community-description-input">Описание</label>
+                            <textarea 
+                                id="community-description-input" 
+                                name="description" 
+                                rows="3"
+                                maxlength="500"
+                                placeholder="Опишите ваше сообщество"
+                            ></textarea>
                         </div>
                         
                         <div class="form-group">
-                            <label for="community-type">Тип сообщества</label>
-                            <select id="community-type" name="type">
+                            <label for="community-type-select">Тип сообщества</label>
+                            <select id="community-type-select" name="type">
                                 <option value="public">Публичное</option>
                                 <option value="private">Закрытое</option>
                             </select>
                         </div>
                         
                         <div class="form-group">
-                            <label for="community-avatar">Аватар сообщества</label>
-                            <input type="file" 
-                                   id="community-avatar" 
-                                   name="avatar" 
-                                   accept="image/*">
-                            <img id="avatar-preview" src="" alt="" style="display: none;">
+                            <label for="communityAvatar">Аватар сообщества</label>
+                            <input 
+                                type="file" 
+                                id="communityAvatar" 
+                                name="avatar" 
+                                accept="image/*"
+                            >
+                            <img id="avatarPreview" src="/uploads/communities/default.png" style="display: none;">
                         </div>
                         
-                        <button type="submit" class="submit-btn">
-                            <i class="fas fa-plus"></i> Создать сообщество
-                        </button>
+                        <button type="submit" class="submit-btn">Создать сообщество</button>
                     </form>
                 </div>
             </div>
