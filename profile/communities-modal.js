@@ -84,9 +84,23 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // Обновленная функция для отображения сообществ
+    // Добавляем контейнер для сообществ, если его нет
+    function ensureCommunitiesContainer() {
+        let container = document.querySelector('.communities-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.className = 'communities-container';
+            const tabContent = document.getElementById('all-communities');
+            if (tabContent) {
+                tabContent.appendChild(container);
+            }
+        }
+        return container;
+    }
+
+    // Обновляем функцию displayCommunities
     function displayCommunities(communities) {
-        const container = document.querySelector('.communities-container');
+        const container = ensureCommunitiesContainer();
         if (!container) {
             console.error('Container for communities not found');
             return;
