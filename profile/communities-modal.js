@@ -165,7 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadCommunities(userId) {
         try {
             console.log('Loading communities for user:', userId);
-            const response = await fetch(`/api/communities/user/${userId}`);
+            const response = await fetch(`/api/communities?userId=${userId}`);
             
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -251,22 +251,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Отображаем результаты
             const communitiesHTML = data.communities.map(community => `
-                <div class="community-search-item">
+                <div class="community-search-item" style="
+                    display: flex;
+                    align-items: center;
+                    padding: 12px;
+                    border-bottom: 1px solid #eee;
+                ">
                     <img src="${community.avatar_url || '/uploads/communities/default.png'}" 
-                         alt="${community.name}" 
-                         class="community-avatar">
+                         alt="${community.name}"
+                         style="width: 48px; height: 48px; border-radius: 50%; margin-right: 12px;">
                     <div class="community-info">
                         <h3>${community.name}</h3>
-                        <p>${community.description || ''}</p>
-                        <div class="community-stats">
-                            <span><i class="fas fa-users"></i> ${community.members_count || 0}</span>
-                        </div>
+                        <p>${community.description || 'Нет описания'}</p>
                     </div>
-                    <button class="join-community-btn" 
-                            data-community-id="${community.id}"
-                            ${community.is_member ? 'disabled' : ''}>
-                        ${community.is_member ? 'Вы участник' : 'Присоединиться'}
-                    </button>
                 </div>
             `).join('');
 
@@ -913,8 +910,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 `).join('');
 
                 searchResults.innerHTML = communitiesHTML;
-            } catch (error) {
-                console.error('Search error:', error);
+            } catch (err) {
+                console.error('Ошибка поиска:', err);
                 searchResults.innerHTML = `
                     <div class="search-error" style="text-align: center; padding: 20px;">
                         <i class="fas fa-exclamation-circle"></i>
@@ -922,35 +919,5 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>`;
             }
         }
-
-        // Добавляем обработчики событий
-        let searchTimeout;
-        searchInput.addEventListener('input', (e) => {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => handleSearch(e.target.value.trim()), 300);
-        });
-
-        closeBtn.addEventListener('click', closeModal);
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) closeModal();
-        });
-
-        // Фокусируемся на поле ввода
-        searchInput.focus();
     }
-
-    // Инициализация поиска сообществ
-    document.addEventListener('DOMContentLoaded', () => {
-        // Находим кнопку поиска сообществ
-        const searchButton = document.querySelector('.search-communities-btn');
-        if (searchButton) {
-            searchButton.addEventListener('click', showCommunitiesModal);
-        }
-
-        // Также привяжем к полю поиска, если оно есть
-        const searchInput = document.querySelector('input[placeholder="Поиск сообществ"]');
-        if (searchInput) {
-            searchInput.addEventListener('click', showCommunitiesModal);
-        }
-    });
-}); 
+});
