@@ -123,26 +123,51 @@
 }
 
 .search-container {
+    position: relative;
+    padding: var(--spacing-md);
+    background: var(--surface-color);
+    border-radius: var(--radius-md);
     margin-bottom: var(--spacing-md);
+    border: 1px solid var(--border-light);
+}
+
+.search-input {
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    background: var(--background-color);
+    color: var(--text-primary);
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.1);
 }
 
 .search-results {
-    position: relative;
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    margin-top: 8px;
+    background: var(--surface-color);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    min-height: 100px;
     max-height: 400px;
     overflow-y: auto;
-    z-index: 1000;
-    display: block;
 }
 
 .community-search-item {
     display: flex;
     align-items: center;
-    padding: 12px;
-    border-bottom: 1px solid #eee;
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--border-light);
+    background: var(--surface-color);
+    transition: background-color 0.3s ease;
+}
+
+.community-search-item:hover {
+    background: var(--hover-color);
 }
 
 .community-search-item:last-child {
@@ -181,7 +206,7 @@
 
 .loading,
 .search-error {
-    padding: 1rem;
+    padding: var(--spacing-lg);
     text-align: center;
 }
 
@@ -191,6 +216,13 @@
 
 .search-error {
     color: var(--error-color);
+}
+
+.search-error i,
+.no-results i {
+    font-size: 1.5rem;
+    margin-bottom: var(--spacing-sm);
+    display: block;
 }
 
 .communities-modal .modal-tabs {
@@ -219,14 +251,6 @@
     flex-direction: column;
     height: 100%;
     min-height: 200px;
-}
-
-.communities-modal .search-input {
-    width: 100%;
-    padding: var(--spacing-sm) var(--spacing-md);
-    border: 1px solid var(--border-light);
-    border-radius: var(--radius-md);
-    font-size: 1rem;
 }
 
 .communities-modal .search-results > * {
