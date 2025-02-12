@@ -485,36 +485,116 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchStyle = document.createElement('style');
     searchStyle.textContent = `
         .search-results {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: var(--surface-color, #fff);
-            border: 1px solid var(--border-color, #ddd);
-            border-radius: 8px;
-            margin-top: 8px;
-            max-height: 400px;
-            overflow-y: auto;
-            z-index: 1000;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-top: 16px;
+            background: var(--surface-color);
+            border-radius: 12px;
+            overflow: hidden;
         }
 
         .community-search-item {
-            display: flex;
-            align-items: center;
-            padding: 12px;
-            border-bottom: 1px solid var(--border-color, #ddd);
-            background: var(--surface-color, #fff);
+            padding: 16px;
+            border-bottom: 1px solid var(--border-light);
+            transition: background 0.3s ease;
         }
 
         .community-search-item:last-child {
             border-bottom: none;
         }
 
-        .loading, .no-results, .search-error {
-            padding: 16px;
+        .community-search-item:hover {
+            background: var(--background-color);
+        }
+
+        .community-search-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+
+        .community-avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 12px;
+            object-fit: cover;
+        }
+
+        .community-info {
+            flex: 1;
+        }
+
+        .community-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0 0 4px 0;
+        }
+
+        .community-meta {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .community-description {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+
+        .join-community-btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            background: var(--primary-color);
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .join-community-btn:hover:not(:disabled) {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .join-community-btn.joined {
+            background: var(--surface-color);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-light);
+            cursor: default;
+        }
+
+        .empty-search {
+            padding: 32px;
             text-align: center;
-            color: var(--text-secondary, #666);
+            color: var(--text-secondary);
+        }
+
+        .empty-search i {
+            font-size: 32px;
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            font-size: 16px;
+            background: var(--background-color);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
         }
     `;
 
@@ -538,38 +618,46 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Функция для отображения результатов поиска
+    // Обновляем функцию displaySearchResults
     function displaySearchResults(communities) {
         const searchResults = document.querySelector('.search-results');
         if (!searchResults) return;
 
         if (!communities || communities.length === 0) {
-            searchResults.innerHTML = '<div class="no-results">Сообщества не найдены</div>';
-            searchResults.style.display = 'block';
+            searchResults.innerHTML = `
+                <div class="empty-search">
+                    <i class="fas fa-users-slash"></i>
+                    <p>Сообщества не найдены</p>
+                </div>`;
             return;
         }
 
         searchResults.innerHTML = communities.map(community => `
             <div class="community-search-item">
-                <img src="${community.avatar_url || '/uploads/communities/default.png'}" 
-                     alt="${community.name}" 
-                     class="community-avatar">
-                <div class="community-info">
-                    <h3>${community.name}</h3>
-                    <p>${community.description || 'Нет описания'}</p>
-                    <div class="community-stats">
-                        <span><i class="fas fa-users"></i> ${community.members_count || 0}</span>
+                <div class="community-search-header">
+                    <img src="${community.avatar_url || '/uploads/communities/default.png'}" 
+                         alt="${community.name}" 
+                         class="community-avatar">
+                    <div class="community-info">
+                        <h3 class="community-name">${community.name}</h3>
+                        <div class="community-meta">
+                            <span class="members-count">
+                                <i class="fas fa-users"></i> ${community.members_count || 0} участников
+                            </span>
+                        </div>
                     </div>
                 </div>
-                <button class="join-community-btn" 
+                <div class="community-description">
+                    ${community.description || 'Нет описания'}
+                </div>
+                <button class="join-community-btn ${community.is_member ? 'joined' : ''}" 
                         data-community-id="${community.id}"
                         ${community.is_member ? 'disabled' : ''}>
-                    ${community.is_member ? 'Вы участник' : 'Вступить'}
+                    <i class="fas ${community.is_member ? 'fa-check' : 'fa-user-plus'}"></i>
+                    ${community.is_member ? 'Вы участник' : 'Присоединиться'}
                 </button>
             </div>
         `).join('');
-        
-        searchResults.style.display = 'block';
     }
 
     // Добавляем обработчик для закрытия результатов по клику вне
@@ -853,7 +941,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="community-info" style="flex: 1;">
                             <h3 style="margin: 0 0 4px 0;">${community.name}</h3>
                             <p style="margin: 0; color: #666;">${community.description || 'Нет описания'}</p>
-                            <div class="community-stats" style="margin-top: 4px;">
+                            <div class="community-stats">
                                 <span><i class="fas fa-users"></i> ${community.members_count || 0}</span>
                             </div>
                         </div>
