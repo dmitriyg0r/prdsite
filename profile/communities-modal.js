@@ -84,10 +84,16 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // Функция для отображения сообществ
+    // Обновленная функция для отображения сообществ
     function displayCommunities(communities) {
         const container = document.querySelector('.communities-container');
-        if (!container) return;
+        if (!container) {
+            console.error('Container for communities not found');
+            return;
+        }
+
+        // Очищаем контейнер перед добавлением нового содержимого
+        container.innerHTML = '';
 
         if (!communities || communities.length === 0) {
             container.innerHTML = `
@@ -103,46 +109,70 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
             
+            // Добавляем обработчик для кнопки создания
             const createBtn = container.querySelector('.create-community-btn');
             if (createBtn) {
-                createBtn.addEventListener('click', () => {
-                    openCreateCommunityModal();
-                });
+                createBtn.addEventListener('click', openCreateCommunityModal);
             }
             return;
         }
 
-        container.innerHTML = communities.map(community => `
-            <div class="community-card">
-                <img src="${community.avatar_url || '/images/default-community.png'}" 
-                     alt="${community.name}" 
-                     class="community-avatar">
-                <div class="community-info">
-                    <h3>${community.name}</h3>
-                    <p>${community.description || 'Нет описания'}</p>
+        // Создаем контейнер для карточек сообществ
+        const communitiesGrid = document.createElement('div');
+        communitiesGrid.className = 'communities-grid';
+
+        // Добавляем карточки сообществ
+        communities.forEach(community => {
+            const communityCard = document.createElement('div');
+            communityCard.className = 'community-card';
+            communityCard.innerHTML = `
+                <div class="community-header">
+                    <img src="${community.avatar_url || '/images/default-community.png'}" 
+                         alt="${community.name}" 
+                         class="community-avatar">
+                    <h3 class="community-name">${community.name}</h3>
+                </div>
+                <div class="community-body">
+                    <p class="community-description">${community.description || 'Нет описания'}</p>
                     <div class="community-stats">
-                        <span><i class="fas fa-users"></i> ${community.members_count || 0}</span>
+                        <span class="members-count">
+                            <i class="fas fa-users"></i> ${community.members_count || 0}
+                        </span>
                     </div>
                 </div>
-            </div>
-        `).join('');
+                <div class="community-footer">
+                    <button class="visit-community-btn" data-community-id="${community.id}">
+                        Перейти в сообщество
+                    </button>
+                </div>
+            `;
+            communitiesGrid.appendChild(communityCard);
+        });
+
+        // Добавляем сетку с сообществами в контейнер
+        container.appendChild(communitiesGrid);
+
+        // Обновляем счетчик сообществ
+        const countElements = document.querySelectorAll('.communities-count');
+        countElements.forEach(el => {
+            el.textContent = communities.length;
+        });
+
+        console.log('Communities displayed:', communities.length);
     }
 
-    // Функция для загрузки сообществ
+    // Обновленная функция загрузки сообществ
     async function loadCommunities(userId) {
         try {
             console.log('Loading communities for user:', userId);
-            const response = await fetch(`/api/communities?userId=${userId}`);
+            const response = await fetch(`/api/communities/user/${userId}`);
             
             if (!response.ok) {
-                const errorText = await response.text();
-                console.error('Response status:', response.status);
-                console.error('Response text:', errorText);
-                throw new Error(`Failed to load communities: ${response.status}`);
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
             
             const data = await response.json();
-            console.log('Received data:', data);
+            console.log('Received communities data:', data);
             
             if (!data.success) {
                 throw new Error(data.error || 'Failed to load communities');
@@ -151,7 +181,21 @@ document.addEventListener('DOMContentLoaded', () => {
             displayCommunities(data.communities);
         } catch (err) {
             console.error('Error loading communities:', err);
-            showNotification('error', 'Ошибка при загрузке сообществ');
+            const container = document.querySelector('.communities-container');
+            if (container) {
+                container.innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p>Ошибка при загрузке сообществ</p>
+                        <button class="retry-btn">Повторить попытку</button>
+                    </div>
+                `;
+                
+                const retryBtn = container.querySelector('.retry-btn');
+                if (retryBtn) {
+                    retryBtn.addEventListener('click', () => loadCommunities(userId));
+                }
+            }
         }
     }
 

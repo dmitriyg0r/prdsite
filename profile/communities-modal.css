@@ -275,4 +275,125 @@
         min-height: 100px;
         max-height: 300px;
     }
+}
+
+/* Стили для сетки сообществ */
+.communities-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+}
+
+/* Стили для карточки сообщества */
+.community-card {
+    background: var(--surface-color);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.community-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.community-header {
+    padding: var(--spacing-md);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    border-bottom: 1px solid var(--border-light);
+}
+
+.community-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.community-name {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+}
+
+.community-body {
+    padding: var(--spacing-md);
+}
+
+.community-description {
+    margin: 0 0 var(--spacing-sm);
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.community-stats {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.community-footer {
+    padding: var(--spacing-md);
+    border-top: 1px solid var(--border-light);
+}
+
+.visit-community-btn {
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.visit-community-btn:hover {
+    background: var(--primary-dark);
+}
+
+/* Стили для состояния отсутствия сообществ */
+.no-communities {
+    padding: var(--spacing-xl);
+    text-align: center;
+}
+
+.no-communities-content {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.no-communities i {
+    font-size: 3rem;
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-md);
+}
+
+/* Стили для сообщения об ошибке */
+.error-message {
+    text-align: center;
+    padding: var(--spacing-xl);
+    color: var(--error-color);
+}
+
+.error-message i {
+    font-size: 2rem;
+    margin-bottom: var(--spacing-sm);
+}
+
+.retry-btn {
+    margin-top: var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
 } 
