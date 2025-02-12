@@ -237,17 +237,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Привязываем обработчик к полю ввода с debounce
-    if (searchInput) {
-        const debouncedSearch = debounce((e) => {
+    // Объединяем дублирующиеся обработчики поиска
+    if (document.querySelector('.search-input')) {
+        const searchInput = document.querySelector('.search-input');
+        const debouncedSearch = debounce(async (e) => {
             const query = e.target.value.trim();
-            console.log('Debounced search query:', query);
-            handleSearch(query);
+            if (query.length < 2) {
+                const searchResults = document.querySelector('.search-results');
+                if (searchResults) {
+                    searchResults.innerHTML = `
+                        <div class="search-hint">
+                            <i class="fas fa-search"></i>
+                            <p>Введите минимум 2 символа для поиска</p>
+                        </div>`;
+                }
+                return;
+            }
+            await handleSearch(query);
         }, 300);
         
         searchInput.addEventListener('input', debouncedSearch);
-    } else {
-        console.error('Search input element not found!');
     }
 
     // Функция для открытия модального окна создания сообщества
@@ -679,26 +688,6 @@ document.addEventListener('DOMContentLoaded', () => {
             switchTab(tabId);
         });
     });
-
-    // Обработчик поиска
-    if (document.querySelector('.search-input')) {
-        const searchInput = document.querySelector('.search-input');
-        const handleSearch = debounce(async (e) => {
-            const query = e.target.value.trim();
-            if (query.length < 2) {
-                const searchResults = document.querySelector('.search-results');
-                searchResults.innerHTML = `
-                    <div class="search-hint">
-                        <i class="fas fa-search"></i>
-                        <p>Введите минимум 2 символа для поиска</p>
-                    </div>`;
-                return;
-            }
-            await handleSearch(query);
-        }, 300);
-        
-        searchInput.addEventListener('input', handleSearch);
-    }
 
     // При создании модального окна добавляем класс
     const modal = document.createElement('div');

@@ -176,11 +176,21 @@
 .search-error {
     padding: 20px;
     text-align: center;
-    color: #666;
+    color: var(--text-secondary);
+}
+
+.loading,
+.search-error {
+    padding: 1rem;
+    text-align: center;
+}
+
+.loading {
+    color: var(--text-secondary);
 }
 
 .search-error {
-    color: #dc3545;
+    color: var(--error-color);
 }
 
 .communities-modal .modal-tabs {
