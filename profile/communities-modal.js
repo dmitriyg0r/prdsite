@@ -14,8 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Открытие модального окна при клике на заголовок "Сообщества"
     communitiesHeaderBtn?.addEventListener('click', (e) => {
         e.preventDefault();
-        communitiesModal.classList.add('active');
-        document.body.style.overflow = 'hidden';
+        showCommunitiesModal();
     });
 
     // Закрытие модального окна
@@ -786,190 +785,141 @@ document.addEventListener('DOMContentLoaded', () => {
     const modal = document.createElement('div');
     modal.className = 'modal communities-modal';
 
+    // Обновляем функцию showCommunitiesModal
     function showCommunitiesModal() {
-        // Создаем модальное окно
-        const modal = document.createElement('div');
-        modal.className = 'modal-overlay';
-        
-        modal.innerHTML = `
-            <div class="communities-modal" style="
-                background: white;
-                border-radius: 8px;
-                width: 90%;
-                max-width: 600px;
-                max-height: 80vh;
-                display: flex;
-                flex-direction: column;
-                position: relative;
-                z-index: 1001;
-            ">
-                <div class="modal-header" style="
-                    padding: 16px;
-                    border-bottom: 1px solid #eee;
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                ">
-                    <h2>Поиск сообществ</h2>
-                    <button class="close-modal-btn" style="
-                        background: none;
-                        border: none;
-                        font-size: 24px;
-                        cursor: pointer;
-                        padding: 0 8px;
-                    ">×</button>
-                </div>
-                <div class="modal-content" style="
-                    padding: 16px;
-                    overflow-y: auto;
-                    flex: 1;
-                ">
-                    <div class="search-container">
-                        <input type="text" 
-                               id="community-search-input"
-                               class="search-input" 
-                               placeholder="Поиск сообществ..."
-                               style="
-                                   width: 100%;
-                                   padding: 8px;
-                                   border: 1px solid #ddd;
-                                   border-radius: 4px;
-                                   margin-bottom: 16px;
-                               ">
+        const modalHTML = `
+            <div class="modal-overlay">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Сообщества</h2>
+                        <button class="modal-close">×</button>
                     </div>
-                    <div id="search-results" class="search-results" style="
-                        min-height: 200px;
-                    ">
-                        <div class="search-hint" style="
-                            display: flex;
-                            flex-direction: column;
-                            align-items: center;
-                            justify-content: center;
-                            padding: 20px;
-                            color: #666;
-                        ">
-                            <i class="fas fa-search" style="font-size: 24px; margin-bottom: 10px;"></i>
-                            <p>Введите текст для поиска сообществ</p>
+                    <div class="modal-body">
+                        <div class="search-container">
+                            <input type="text" 
+                                   class="search-input" 
+                                   placeholder="Поиск сообществ...">
                         </div>
+                        <div class="search-results"></div>
                     </div>
                 </div>
             </div>
         `;
 
-        // Добавляем стили для overlay
-        modal.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
+        // Добавляем стили для модального окна
+        const modalStyle = document.createElement('style');
+        modalStyle.textContent = `
+            .modal-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 1000;
+            }
+
+            .modal-content {
+                background: var(--surface-color);
+                width: 90%;
+                max-width: 600px;
+                border-radius: 12px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            }
+
+            .modal-header {
+                padding: 20px;
+                border-bottom: 1px solid var(--border-light);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .modal-header h2 {
+                margin: 0;
+                font-size: 20px;
+                color: var(--text-primary);
+            }
+
+            .modal-close {
+                background: none;
+                border: none;
+                font-size: 24px;
+                cursor: pointer;
+                color: var(--text-secondary);
+                padding: 0;
+                width: 32px;
+                height: 32px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+                transition: all 0.3s ease;
+            }
+
+            .modal-close:hover {
+                background: var(--background-color);
+                color: var(--text-primary);
+            }
+
+            .modal-body {
+                padding: 20px;
+                max-height: 70vh;
+                overflow-y: auto;
+            }
+
+            .search-container {
+                margin-bottom: 20px;
+            }
+
+            .search-input {
+                width: 100%;
+                padding: 12px 16px;
+                border: 1px solid var(--border-light);
+                border-radius: 8px;
+                font-size: 16px;
+                background: var(--background-color);
+                color: var(--text-primary);
+                transition: all 0.3s ease;
+            }
+
+            .search-input:focus {
+                outline: none;
+                border-color: var(--primary-color);
+                box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+            }
         `;
 
-        // Добавляем модальное окно в DOM
-        document.body.appendChild(modal);
+        document.head.appendChild(modalStyle);
+
+        // Создаем и добавляем модальное окно
+        const modalContainer = document.createElement('div');
+        modalContainer.innerHTML = modalHTML;
+        document.body.appendChild(modalContainer);
 
         // Получаем элементы
-        const searchInput = document.getElementById('community-search-input');
-        const searchResults = document.getElementById('search-results');
-        const closeBtn = modal.querySelector('.close-modal-btn');
+        const modal = modalContainer.querySelector('.modal-overlay');
+        const closeBtn = modal.querySelector('.modal-close');
+        const searchInput = modal.querySelector('.search-input');
 
-        // Обработчик закрытия
-        function closeModal() {
-            document.body.removeChild(modal);
-        }
+        // Обработчики
+        closeBtn.addEventListener('click', () => {
+            document.body.removeChild(modalContainer);
+        });
 
-        // Обработчик поиска
-        async function handleSearch(query) {
-            console.log('Searching for:', query); // Отладочный вывод
-
-            if (query.length < 2) {
-                searchResults.innerHTML = `
-                    <div class="search-hint" style="text-align: center; padding: 20px;">
-                        <i class="fas fa-search"></i>
-                        <p>Введите минимум 2 символа для поиска</p>
-                    </div>`;
-                return;
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                document.body.removeChild(modalContainer);
             }
+        });
 
-            searchResults.innerHTML = `
-                <div class="search-loading" style="text-align: center; padding: 20px;">
-                    <i class="fas fa-spinner fa-spin"></i>
-                    <p>Поиск...</p>
-                </div>`;
-
-            try {
-                const currentUser = JSON.parse(localStorage.getItem('user'));
-                const response = await fetch(`/api/communities/search?q=${encodeURIComponent(query)}&userId=${currentUser.id}`);
-                const data = await response.json();
-
-                console.log('Search response:', data); // Отладочный вывод
-
-                if (!data.success) {
-                    throw new Error('Ошибка при поиске');
-                }
-
-                if (data.communities.length === 0) {
-                    searchResults.innerHTML = `
-                        <div class="no-results" style="text-align: center; padding: 20px;">
-                            <i class="fas fa-search"></i>
-                            <p>Сообщества не найдены</p>
-                        </div>`;
-                    return;
-                }
-
-                const communitiesHTML = data.communities.map(community => `
-                    <div class="community-search-item" style="
-                        display: flex;
-                        align-items: center;
-                        padding: 12px;
-                        border-bottom: 1px solid #eee;
-                    ">
-                        <img src="${community.avatar_url || '/uploads/communities/default.png'}" 
-                             alt="${community.name}" 
-                             class="community-avatar"
-                             style="
-                                 width: 50px;
-                                 height: 50px;
-                                 border-radius: 50%;
-                                 margin-right: 12px;
-                             ">
-                        <div class="community-info" style="flex: 1;">
-                            <h3 style="margin: 0 0 4px 0;">${community.name}</h3>
-                            <p style="margin: 0; color: #666;">${community.description || 'Нет описания'}</p>
-                            <div class="community-stats">
-                                <span><i class="fas fa-users"></i> ${community.members_count || 0}</span>
-                            </div>
-                        </div>
-                        <button class="join-community-btn" 
-                                data-community-id="${community.id}"
-                                ${community.is_member ? 'disabled' : ''}
-                                style="
-                                    padding: 8px 16px;
-                                    border-radius: 4px;
-                                    border: none;
-                                    background: ${community.is_member ? '#eee' : '#4CAF50'};
-                                    color: ${community.is_member ? '#666' : 'white'};
-                                    cursor: ${community.is_member ? 'default' : 'pointer'};
-                                ">
-                            ${community.is_member ? 'Вы участник' : 'Вступить'}
-                        </button>
-                    </div>
-                `).join('');
-
-                searchResults.innerHTML = communitiesHTML;
-            } catch (err) {
-                console.error('Ошибка поиска:', err);
-                searchResults.innerHTML = `
-                    <div class="search-error" style="text-align: center; padding: 20px;">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <p>Произошла ошибка при поиске</p>
-                    </div>`;
-            }
+        // Инициализируем поиск
+        if (searchInput) {
+            searchInput.addEventListener('input', debounce((e) => handleSearch(e.target.value.trim()), 300));
+            searchInput.focus();
         }
     }
 });
