@@ -220,7 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('Search input element:', searchInput);
     console.log('Search results element:', searchResults);
 
-    // Обработчик поиска
+    // Удаляем дублирующуюся функцию handleSearch и оставляем одну версию
     async function handleSearch(query) {
         const searchResults = document.querySelector('.search-results');
         if (!searchResults) {
@@ -228,91 +228,41 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        searchResults.style.display = 'block';
-
         if (query.length < 2) {
             searchResults.innerHTML = `
-                <div class="search-hint" style="text-align: center; padding: 20px;">
+                <div class="search-hint">
                     <i class="fas fa-search"></i>
                     <p>Введите минимум 2 символа для поиска</p>
                 </div>`;
             return;
         }
 
-        searchResults.innerHTML = `
-            <div class="search-loading" style="text-align: center; padding: 20px;">
-                <i class="fas fa-spinner fa-spin"></i>
-                <p>Поиск...</p>
-            </div>`;
-
         try {
             const currentUser = JSON.parse(localStorage.getItem('user'));
-            const response = await fetch(`/api/communities/search?q=${encodeURIComponent(query)}&userId=${currentUser.id}`);
+            const response = await fetch(`https://space-point.ru/api/communities/search?q=${encodeURIComponent(query)}`);
             const data = await response.json();
 
             if (!data.success) {
-                throw new Error('Ошибка при поиске');
+                throw new Error(data.error || 'Ошибка при поиске');
             }
 
-            if (data.communities.length === 0) {
-                searchResults.innerHTML = `
-                    <div class="no-results" style="text-align: center; padding: 20px;">
-                        <i class="fas fa-search"></i>
-                        <p>Сообщества не найдены</p>
-                    </div>`;
-                return;
-            }
-
-            // Отображаем результаты
-            const communitiesHTML = data.communities.map(community => `
-                <div class="community-search-item" style="
-                    display: flex;
-                    align-items: center;
-                    padding: 12px;
-                    border-bottom: 1px solid #eee;
-                ">
-                    <img src="${community.avatar_url || '/uploads/communities/default.png'}" 
-                         alt="${community.name}"
-                         style="width: 48px; height: 48px; border-radius: 50%; margin-right: 12px;">
-                    <div class="community-info">
-                        <h3>${community.name}</h3>
-                        <p>${community.description || 'Нет описания'}</p>
-                    </div>
-                </div>
-            `).join('');
-
-            searchResults.innerHTML = communitiesHTML;
+            displaySearchResults(data.communities);
         } catch (err) {
             console.error('Ошибка поиска:', err);
             searchResults.innerHTML = `
-                <div class="search-error" style="text-align: center; padding: 20px;">
+                <div class="search-error">
                     <i class="fas fa-exclamation-circle"></i>
                     <p>Произошла ошибка при поиске</p>
                 </div>`;
         }
     }
 
-    // Объединяем дублирующиеся обработчики поиска
-    if (document.querySelector('.search-input')) {
-        const searchInput = document.querySelector('.search-input');
-        const debouncedSearch = debounce(async (e) => {
-            const query = e.target.value.trim();
-            if (query.length < 2) {
-                const searchResults = document.querySelector('.search-results');
-                if (searchResults) {
-                    searchResults.innerHTML = `
-                        <div class="search-hint">
-                            <i class="fas fa-search"></i>
-                            <p>Введите минимум 2 символа для поиска</p>
-                        </div>`;
-                }
-                return;
-            }
-            await handleSearch(query);
-        }, 300);
-        
-        searchInput.addEventListener('input', debouncedSearch);
-    }
+    // Обновляем обработчик ввода для поиска
+    document.querySelectorAll('.community-search input, .search-input').forEach(input => {
+        if (input) {
+            input.addEventListener('input', debounce((e) => handleSearch(e.target.value.trim()), 300));
+        }
+    });
 
     // Функция для открытия модального окна создания сообщества
     function openCreateCommunityModal() {
