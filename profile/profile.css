@@ -554,8 +554,6 @@ body {
     width: 100%;
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--border-light);
-    display: flex;
-    gap: 8px;
 }
 
 .search-input-wrapper {
@@ -581,18 +579,6 @@ body {
 }
 
 .search-results {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: var(--surface-color);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    margin-top: 8px;
-    max-height: 400px;
-    overflow-y: auto;
-    z-index: 1000;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
     gap: var(--spacing-sm);
@@ -704,135 +690,857 @@ body {
     display: block;
 }
 
-/* Стилизация скроллбара для результатов поиска */
-.modal-content .search-results::-webkit-scrollbar {
-    width: 6px;
+/* Специальные стили для модального окна */
+.modal-content .search-container {
+    height: 473px;
+    margin: -16px -16px 0 -16px;
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    border: none;
+    border-bottom: 1px solid var(--border-light);
+    box-shadow: none;
 }
 
-.modal-content .search-results::-webkit-scrollbar-track {
-    background: var(--background-color);
-    border-radius: 3px;
-}
-
-.modal-content .search-results::-webkit-scrollbar-thumb {
-    background: var(--border-medium);
-    border-radius: 3px;
-}
-
-.modal-content .search-results::-webkit-scrollbar-thumb:hover {
-    background: var(--text-tertiary);
-}
-
-/* Стили для вкладок в модальных окнах */
-.modal .tab-content {
-    display: none;
+.modal-content .search-results {
+    height: 409px;
+    position: relative;
+    left: -1px;
+    top: 28px;
+    max-height: 400px;
+    overflow-y: auto;
     padding: var(--spacing-md);
+}
+
+.modal-content .search-result-item {
     background: var(--surface-color);
 }
 
-.modal .tab-content.active {
-    display: block;
+/* Адаптивность */
+@media (max-width: 768px) {
+    .search-form {
+        flex-direction: column;
+    }
+    
+    .search-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .user-card {
+        padding: 12px;
+    }
+    
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .user-name {
+        font-size: 14px;
+    }
+    
+    .user-meta {
+        font-size: 12px;
+    }
+    
+    .add-friend-btn {
+        padding: 6px 12px;
+        font-size: 13px;
+    }
 }
 
-/* Стили для вкладок в основном контенте (не в модальных окнах) */
-.main-content .tab-content {
-    display: none;
+/* Стили для секции заявок в друзья */
+.requests-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: var(--spacing-md);
 }
 
-.main-content .tab-content.active {
-    display: block;
+.friend-request-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: var(--surface-color);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-light);
+    transition: all 0.3s ease;
 }
 
-/* Стили для поиска сообществ */
-.community-search {
-    margin-bottom: 20px;
+.friend-request-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.community-search input {
-    width: 517px;
-    transform: translate(-283px, 54px);
-    height: 16.9688px;
-    padding: 10px;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    margin-bottom: 10px;
+.request-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
 }
 
-.search-results {
-    max-height: 400px;
+.request-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.request-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.request-meta {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.request-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.accept-btn,
+.reject-btn {
+    padding: 8px 16px;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.accept-btn {
+    background: var(--primary-color);
+    color: white;
+}
+
+.accept-btn:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+}
+
+.reject-btn {
+    background: var(--error-color);
+    color: white;
+}
+
+.reject-btn:hover {
+    background: var(--error-dark);
+    transform: translateY(-1px);
+}
+
+/* Анимация для появления карточек */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.friend-request-card {
+    animation: slideIn 0.3s ease forwards;
+}
+
+/* Стили для пустого состояния */
+.empty-requests {
+    position: relative;
+    left: 181px;
+    top: 89px;
+    height: 174px;
+    transition: none;
+    text-align: center;
+    padding: var(--spacing-xl);
+    color: var(--text-secondary);
+}
+
+.empty-requests i {
+    font-size: 48px;
+    margin-bottom: var(--spacing-md);
+    opacity: 0.5;
+}
+
+.empty-requests p {
+    font-size: 16px;
+    margin: 0;
+}
+
+/* Стили для модальных окон */
+.modal, .image-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(128, 128, 128, 0.5) !important; /* Серый полупрозрачный фон */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.modal.active, .image-modal.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Остальное содержимое использует переменные темы */
+.modal .modal-content,
+.image-modal .modal-content {
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    background: var(--surface-color);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.modal-flex-container {
+    display: flex;
+    height: 90vh;
+}
+
+.modal-image-side {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+
+.modal-image-side img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.modal-info-side {
+    width: 350px;
+    padding: 20px;
+    border-left: 1px solid var(--border-color);
+    background: var(--surface-color);
     overflow-y: auto;
 }
 
-.community-search-item {
+.modal-author-info {
     display: flex;
     align-items: center;
-    padding: 10px;
-    border-bottom: 1px solid var(--border-color);
+    gap: 12px;
+    margin-bottom: 16px;
 }
 
-.community-search-item:last-child {
-    border-bottom: none;
-}
-
-.community-avatar {
-    width: 50px;
-    height: 50px;
+.modal-author-avatar {
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
-    margin-right: 15px;
+    object-fit: cover;
 }
 
-.community-info {
+.modal-author-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-author-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.modal-post-date {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.modal-post-content {
+    color: var(--text-primary);
+    height: 63.9844px;
+    width: 334px;
+    position: relative;
+    transition: none;
+    line-height: 1.5;
+    margin-top: 16px;
+    white-space: pre-wrap;
+}
+
+.modal .modal-close,
+.image-modal .close-modal {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.5);
+    border: none;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 1001;
+}
+
+.modal .modal-close:hover,
+.image-modal .close-modal:hover {
+    background: rgba(0, 0, 0, 0.7);
+    transform: scale(1.1);
+}
+
+/* Медиа-запросы для адаптивности */
+@media (max-width: 768px) {
+    .image-modal .modal-flex-container {
+        flex-direction: column;
+        height: auto;
+    }
+
+    .image-modal .modal-info-side {
+        width: 100%;
+        max-height: 30vh;
+        border-left: none;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .image-modal .modal-image-side img {
+        max-height: 60vh;
+        width: 362px;
+        height: 356px;
+        transform: translate(0px, -172px);
+        position: relative;
+        left: 6px;
+        top: 147px;
+        transition: none;
+        cursor: move;
+    }
+}
+
+/* Стили для аватарок в постах */
+.post-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.post-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0; /* Предотвращает сжатие аватарки */
+}
+
+.post-info {
     flex: 1;
 }
 
-.community-info h3 {
-    margin: 0 0 5px 0;
+.post-author {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 15px;
 }
 
-.community-info p {
-    margin: 0;
+.post-date {
     color: var(--text-secondary);
-    font-size: 0.9em;
+    font-size: 13px;
 }
 
-.community-meta {
-    font-size: 0.8em;
+/* Стили для аватарок в мини-списке друзей */
+.friend-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* Стили для аватарок в модальном окне друзей */
+.friends-list .friend-avatar,
+.requests-list .friend-avatar,
+.search-results .friend-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* Стили для модального окна друзей */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(128, 128, 128, 0.5) !important; /* Серый полупрозрачный фон */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.modal.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal .modal-content {
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    background: #fff;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+    padding: 16px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--surface-color);
+}
+
+.modal-tabs {
+    display: flex;
+    gap: 8px;
+}
+
+.tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: none;
+    border: none;
     color: var(--text-secondary);
-    margin-top: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: var(--radius-md);
+    transition: all 0.3s ease;
 }
 
-.member-badge {
+.tab-btn:hover {
+    background: var(--hover-color);
+    color: var(--text-primary);
+}
+
+.tab-btn.active {
     background: var(--primary-color);
     color: white;
+}
+
+.count-badge {
+    background: var(--hover-color);
+    color: var(--text-secondary);
     padding: 2px 6px;
     border-radius: 10px;
-    margin-left: 10px;
-    font-size: 0.8em;
+    font-size: 12px;
+    min-width: 20px;
+    text-align: center;
 }
 
-.join-btn {
-    padding: 5px 15px;
+.tab-btn.active .count-badge {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.modal-body {
+    height: 480.25px;
+    padding: var(--spacing-md);
+    overflow-y: auto;
+    max-height: calc(90vh - 100px);
+    background: var(--surface-color);
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.friends-list,
+.requests-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: var(--spacing-md);
+    background: var(--surface-color);
+}
+
+.friend-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: var(--surface-color);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+}
+
+.friend-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.friend-name {
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.friend-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.accept-btn,
+.reject-btn,
+.remove-friend-btn {
+    padding: 4px 12px;
+    border-radius: var(--radius-md);
     border: none;
-    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 12px;
+}
+
+.accept-btn {
     background: var(--primary-color);
     color: white;
+}
+
+.reject-btn,
+.remove-friend-btn {
+    background: var(--error-color);
+    color: white;
+}
+
+.search-container {
+    display: flex;
+    gap: 8px;
+    margin-bottom: var(--spacing-md);
+    background: var(--surface-color);
+}
+
+.search-input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background: var(--surface-color);
+    color: var(--text-primary);
+}
+
+.search-btn {
+    padding: 8px 16px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
     cursor: pointer;
+    transition: all 0.3s ease;
 }
 
-.join-btn:hover {
-    background: var(--primary-color-dark);
+.search-btn:hover {
+    background: var(--primary-dark);
 }
 
-.loading {
-    text-align: center;
-    padding: 20px;
+.modal-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.5);
+    border: none;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.modal-close:hover {
+    background: rgba(0, 0, 0, 0.7);
+    transform: scale(1.1);
+}
+
+/* Стили для действий с постом (лайки и комментарии) */
+.post-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 8px 0;
+    margin-top: 8px;
+    border-top: 1px solid var(--border-light);
+}
+
+.post-action {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: var(--text-secondary);
+    background: none;
+    border: none;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.post-action:hover {
+    background: var(--background-color);
+    color: var(--primary-color);
+    transform: translateY(-2px);
+}
+
+.like-action {
+    position: relative;
+    overflow: hidden;
+}
+
+.like-action.liked {
+    color: #FF4B6E !important;
+}
+
+.like-action.liked i {
+    color: #FF4B6E !important;
+    animation: likeAnimation 0.5s cubic-bezier(0.17, 0.89, 0.32, 1.49);
+}
+
+.like-action:hover {
+    background: rgba(255, 75, 110, 0.1);
+}
+
+.like-action.liked:hover {
+    background: rgba(255, 75, 110, 0.15);
+}
+
+@keyframes likeAnimation {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.4); }
+    100% { transform: scale(1); }
+}
+
+.post-action i {
+    font-size: 20px;
+    transition: transform 0.3s ease;
+}
+
+.likes-count {
+    transition: color 0.3s ease;
+}
+
+.like-action.liked .likes-count {
+    color: #FF4B6E !important;
+}
+
+/* Стили для кнопки лайка */
+.like-action {
     color: var(--text-secondary);
 }
 
-.no-results {
-    text-align: center;
-    padding: 20px;
+.like-action.liked {
+    color: var(--error-color);
+}
+
+.like-action.liked i {
+    color: var(--error-color);
+}
+
+.like-action:hover {
+    background: var(--hover-color);
+}
+
+.like-action.liked:hover {
+    background: rgba(var(--error-rgb), 0.1);
+}
+
+.likes-count {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* Анимация для лайка */
+@keyframes likeAnimation {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+.like-action.liked i {
+    animation: likeAnimation 0.3s ease;
+}
+
+/* Стили для overlay аватарки профиля */
+.profile-avatar-wrapper {
+    position: relative;
+}
+
+.profile-avatar-wrapper .avatar-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.profile-avatar-wrapper:hover .avatar-overlay {
+    opacity: 1;
+}
+
+/* Стили для статуса онлайн */
+.online-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    margin-top: 4px;
+}
+
+.online-status i {
+    font-size: 10px;
+}
+
+.online-status.online {
+    color: #44b700;
+}
+
+.online-status.online i {
+    color: #44b700;
+}
+
+.online-status.offline {
+    color: #bdbdbd;
+}
+
+.online-status.offline i {
+    color: #bdbdbd;
+}
+
+.online-status.away {
+    color: #FFA500;
+}
+
+.online-status.away i {
+    color: #FFA500;
+}
+
+/* Стили для кнопки удаления поста */
+.delete-post-btn {
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
     color: var(--text-secondary);
+    opacity: 0.7;
+    transition: all 0.3s ease;
+    margin-left: auto;
+    border-radius: var(--radius-sm);
+}
+
+.delete-post-btn:hover {
+    color: var(--error-color);
+    opacity: 1;
+    background: rgba(var(--error-rgb), 0.1);
+}
+
+.delete-post-btn i {
+    font-size: 16px;
+}
+
+/* Показываем кнопку удаления только при наведении на пост */
+.post:not(:hover) .delete-post-btn {
+    opacity: 0;
+}
+
+.post:hover .delete-post-btn {
+    opacity: 0.7;
+}
+
+/* Стили для всех списков в модальном окне друзей */
+.friends-list,
+.requests-list,
+.search-results {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: var(--spacing-md);
+    background: var(--surface-color);
+}
+
+/* Общие стили для карточек во всех разделах */
+.friend-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: var(--surface-color);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+}
+
+/* Стили для поиска */
+.search-container {
+    display: flex;
+    gap: 8px;
+    margin-bottom: var(--spacing-md);
+    background: var(--surface-color);
+}
+
+/* Стили для вкладок и их содержимого */
+.tab-content {
+    display: none;
+    background: var(--surface-color);
+}
+
+.tab-content.active {
+    display: block;
+    background: var(--surface-color);
+}
+
+/* Стили для результатов поиска */
+.search-results {
+    margin-top: var(--spacing-md);
+    background: var(--surface-color);
+}
+
+/* Общие стили для всего содержимого одального окна */
+.modal-body {
+    background: var(--surface-color);
+}
+
+.modal-body > div {
+    background: var(--surface-color);
 }
 
 /* Мобильное меню */
@@ -1532,8 +2240,6 @@ textarea:invalid {
     width: 100%;
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--border-light);
-    display: flex;
-    gap: 8px;
 }
 
 .search-input-wrapper {
@@ -1562,18 +2268,6 @@ textarea:invalid {
 }
 
 .search-results {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: var(--surface-color);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    margin-top: 8px;
-    max-height: 400px;
-    overflow-y: auto;
-    z-index: 1000;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
     gap: var(--spacing-sm);
