@@ -133,9 +133,9 @@
 
 .search-input {
     width: 100%;
-    padding: var(--spacing-sm) var(--spacing-md);
+    padding: 10px;
     border: 1px solid var(--border-light);
-    border-radius: var(--radius-md);
+    border-radius: 10px;
     font-size: 1rem;
     background: var(--background-color);
     color: var(--text-primary);
