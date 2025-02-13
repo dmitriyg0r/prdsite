@@ -580,17 +580,6 @@ document.addEventListener('DOMContentLoaded', () => {
             opacity: 0.5;
         }
 
-        .search-input {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1px solid var(--border-light);
-            border-radius: 8px;
-            font-size: 16px;
-            background: var(--background-color);
-            color: var(--text-primary);
-            transition: all 0.3s ease;
-        }
-
         .search-input:focus {
             outline: none;
             border-color: var(--primary-color);
