@@ -681,7 +681,6 @@ body {
 
 /* Специальные стили для модального окна */
 .modal-content .search-container {
-    height: 473px;
     margin: -16px -16px 0 -16px;
     border-radius: var(--radius-md) var(--radius-md) 0 0;
     border: none;
@@ -2209,17 +2208,6 @@ textarea:invalid {
 
 .post-file.archive-file .file-icon {
     color: #FFC107;
-}
-
-/* Стили для поиска друзей */
-.search-container {
-    padding: var(--spacing-md);
-    background: var(--surface-color);
-    border-radius: var(--radius-md);
-    margin-bottom: var(--spacing-md);
-    width: 100%;
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--border-light);
 }
 
 .search-input-wrapper {
