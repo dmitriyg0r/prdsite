@@ -331,9 +331,10 @@ router.post('/:communityId/posts', async (req, res) => {
 
         // Проверяем права пользователя
         const memberCheck = await pool.query(`
-            SELECT role, permissions
-            FROM community_members
-            WHERE community_id = $1 AND user_id = $2
+            SELECT cm.role, cs.post_permission
+            FROM community_members cm
+            JOIN community_settings cs ON cm.community_id = cs.community_id
+            WHERE cm.community_id = $1 AND cm.user_id = $2
         `, [communityId, userId]);
 
         if (memberCheck.rows.length === 0) {
@@ -344,9 +345,10 @@ router.post('/:communityId/posts', async (req, res) => {
         }
 
         const member = memberCheck.rows[0];
-        const permissions = member.permissions;
+        const canPost = member.role === 'admin' || 
+                       (member.role === 'member' && member.post_permission === 'all_members');
 
-        if (!permissions.can_post) {
+        if (!canPost) {
             return res.status(403).json({
                 success: false,
                 error: 'У вас нет прав для создания постов в этом сообществе'
