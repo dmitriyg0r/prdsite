@@ -35,132 +35,111 @@
 }
 
 @media (max-width: 768px) {
+    /* Сброс базовых стилей для мобильной версии */
     .games-layout {
+        display: block;
         padding: 16px;
-        margin-bottom: 70px;
+        margin: 0 0 70px 0;
+        width: 100%;
     }
     
+    /* Исправление сетки игр */
     .games-grid {
+        display: grid;
         grid-template-columns: 1fr;
+        gap: 16px;
+        padding: 0;
+        width: 100%;
     }
     
+    /* Корректировка карточек */
     .game-card {
-        margin-bottom: 16px;
+        margin: 0;
+        width: 100%;
+        height: auto;
     }
     
-    .game-info {
-        padding: 16px;
+    /* Исправление пропорций изображения */
+    .game-image {
+        position: relative;
+        width: 100%;
+        padding-top: 56.25%; /* Соотношение 16:9 */
     }
-
-    .game-title {
-        font-size: 16px;
-        margin-bottom: 12px;
+    
+    .game-image img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    /* Корректировка информации об игре */
+    .game-info {
+        padding: 12px;
     }
     
     .game-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         flex-wrap: wrap;
         gap: 8px;
     }
     
-    .game-category {
-        font-size: 12px;
-        padding: 4px 12px;
-    }
-    
-    .game-stats {
-        font-size: 12px;
-        padding-top: 8px;
-    }
-    
-    /* Мобильные фильтры */
-    .games-sidebar {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        z-index: 1000;
-        background: var(--background-color);
-        padding: 20px;
-        border-radius: 20px 20px 0 0;
-        box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
-        transform: translateY(100%);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        visibility: hidden;
-        opacity: 0;
-        max-height: 80vh;
-        overflow-y: auto;
-    }
-    
-    .games-sidebar.active {
-        transform: translateY(0);
-        visibility: visible;
-        opacity: 1;
-    }
-    
-    .filter-card {
-        border-radius: 16px;
-        padding: 16px;
-        margin-bottom: 0;
-        box-shadow: none;
-        border: none;
-    }
-    
-    .filter-header {
+    /* Исправление заголовка секции */
+    .games-header {
         margin-bottom: 16px;
+        padding-bottom: 8px;
     }
     
-    .filter-header h3 {
-        font-size: 16px;
+    .games-header h2 {
+        font-size: 20px;
+        margin: 0;
     }
     
-    .search-input {
-        padding: 12px 16px;
+    /* Корректировка фильтров */
+    .mobile-filters-toggle {
+        bottom: 75px; /* Подняли немного выше мобильной навигации */
+    }
+    
+    /* Сброс конфликтующих стилей */
+    body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        overflow-x: hidden;
+    }
+    
+    main {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+    }
+    
+    /* Исправление отступов для мобильного меню */
+    .mobile-nav {
+        padding-bottom: env(safe-area-inset-bottom); /* Для iPhone с нижней панелью */
+    }
+}
+
+/* Дополнительные исправления для очень маленьких экранов */
+@media (max-width: 360px) {
+    .games-layout {
+        padding: 12px;
+    }
+    
+    .game-title {
         font-size: 14px;
     }
     
-    .category-item {
-        padding: 10px;
+    .game-category {
+        font-size: 11px;
+        padding: 3px 8px;
     }
     
-    .category-item .count {
-        display: none;
-    }
-    
-    /* Кнопка фильтров */
-    .mobile-filters-toggle {
-        position: fixed;
-        bottom: 80px;
-        right: 16px;
-        width: 56px;
-        height: 56px;
-        border-radius: 50%;
-        background: var(--primary-color);
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: none;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        z-index: 1001;
-        cursor: pointer;
-        transition: transform 0.3s ease;
-    }
-    
-    .mobile-filters-toggle:active {
-        transform: scale(0.95);
-    }
-    
-    /* Кнопка закрытия фильтров */
-    .mobile-filters-close {
-        position: absolute;
-        top: 16px;
-        right: 16px;
-        background: none;
-        border: none;
-        color: var(--text-primary);
-        font-size: 24px;
-        cursor: pointer;
-        padding: 8px;
-        z-index: 1002;
+    .game-stats {
+        font-size: 11px;
     }
 } 
