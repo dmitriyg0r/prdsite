@@ -244,9 +244,11 @@
     background: var(--surface-color);
     border-radius: 16px;
     overflow: hidden;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateY(0);
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--border-light);
+    will-change: transform;
 }
 
 .game-card:hover {
@@ -567,7 +569,7 @@
     justify-content: center;
     align-items: center;
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
 .game-card:hover .game-overlay {
@@ -586,12 +588,11 @@
     font-weight: 600;
     letter-spacing: 0.5px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
 .play-btn:hover {
-    transform: scale(1.05);
-    background: var(--primary-dark);
+    transform: scale(1);
 }
 
 .play-btn i {
