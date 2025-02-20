@@ -82,42 +82,32 @@
                         <span class="info-value">{{ community.created_at|date }}</span>
                     </div>
                     
-                    {% if not is_member %}
-                    <button class="btn btn-primary btn-full">Подписаться</button>
-                    {% else %}
-                    <button class="btn btn-secondary btn-full">Отписаться</button>
-                    {% endif %}
+                    <!-- Добавляем кнопку присоединения/выхода -->
+                    <div class="community-actions">
+                        <button id="join-leave-btn" class="btn btn-primary btn-full">
+                            <i class="fas fa-user-plus"></i>
+                            <span>Вступить</span>
+                        </button>
+                        {% if is_admin %}
+                        <button id="edit-community-btn" class="btn btn-secondary" style="display: none;">
+                            <i class="fas fa-edit"></i>
+                            <span>Редактировать</span>
+                        </button>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </aside>
 
         <!-- Основной контент с постами -->
-        <main class="posts-container">
-            {% for post in posts %}
-            <article class="post-card">
-                <div class="post-header">
-                    <div class="post-meta">
-                        <img src="{{ post.author.avatar }}" alt="Author avatar" class="post-author-avatar">
-                        <div class="post-info">
-                            <span class="post-author">{{ post.author.name }}</span>
-                            <span class="post-date">{{ post.created_at|date }}</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="post-content">
-                    <p>{{ post.content }}</p>
-                    {% if post.image %}
-                    <img src="{{ post.image }}" alt="Post image" class="post-image">
-                    {% endif %}
-                </div>
-                <div class="post-actions">
-                    <button class="btn-icon"><i class="icon-like"></i> {{ post.likes_count }}</button>
-                    <button class="btn-icon"><i class="icon-comment"></i> {{ post.comments_count }}</button>
-                    <button class="btn-icon"><i class="icon-share"></i></button>
-                </div>
-            </article>
-            {% endfor %}
+        <main class="posts-container" id="posts-container">
+            <!-- Посты будут добавлены через JavaScript -->
         </main>
+
+        <!-- Добавляем контейнер для участников -->
+        <div id="community-members" class="members-container">
+            <!-- Участники будут добавлены через JavaScript -->
+        </div>
     </div>
 
     <script src="community.js"></script>

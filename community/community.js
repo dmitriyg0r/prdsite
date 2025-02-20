@@ -30,35 +30,47 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Обновление UI сообщества
     function updateCommunityUI(data) {
-        // Проверяем наличие элементов перед обновлением
+        // Проверяем, что data.community существует
+        const community = data.community || data;
+
         const nameElement = document.querySelector('.community-name');
         const descriptionElement = document.querySelector('.community-description');
         const avatarElement = document.querySelector('.community-avatar');
         const followersCountElement = document.querySelector('.info-value[data-type="followers"]');
         const postsCountElement = document.querySelector('.info-value[data-type="posts"]');
 
-        if (nameElement) nameElement.textContent = data.name;
-        if (descriptionElement) descriptionElement.textContent = data.description;
-        if (avatarElement) avatarElement.src = data.avatar || '/default-community-avatar.png';
-        if (followersCountElement) followersCountElement.textContent = data.followers_count;
-        if (postsCountElement) postsCountElement.textContent = data.posts_count;
+        if (nameElement) nameElement.textContent = community.name;
+        if (descriptionElement) descriptionElement.textContent = community.description;
+        if (avatarElement) avatarElement.src = community.avatar_url || '/default-community-avatar.png';
+        if (followersCountElement) followersCountElement.textContent = community.members_count || 0;
+        if (postsCountElement) postsCountElement.textContent = community.posts_count || 0;
 
-        // Настройка ссылки на профиль создателя
+        // Проверяем существование элементов перед обновлением
         const creatorLink = document.getElementById('creator-link');
-        creatorLink.href = `/profile/profile.html?id=${data.creator_id}`;
-        creatorLink.textContent = data.creator_name;
+        const editButton = document.getElementById('edit-community-btn');
+        const avatarOverlay = document.querySelector('.avatar-overlay');
 
-        // Показываем кнопку редактирования только создателю
-        if (currentUser.id === data.creator_id) {
-            document.getElementById('edit-community-btn').style.display = 'block';
-            document.querySelector('.avatar-overlay').style.display = 'flex';
+        if (creatorLink) {
+            creatorLink.href = `/profile/profile.html?id=${community.created_by}`;
+            creatorLink.textContent = community.creator_name;
+        }
+
+        // Проверяем права на редактирование
+        if (editButton && currentUser.id === community.created_by) {
+            editButton.style.display = 'block';
+        }
+
+        if (avatarOverlay && currentUser.id === community.created_by) {
+            avatarOverlay.style.display = 'flex';
         }
     }
 
-    // Проверка статуса участия
-    async function checkMembershipStatus(community) {
+    // Обновляем функцию проверки членства
+    function checkMembershipStatus(community) {
         const joinLeaveBtn = document.getElementById('join-leave-btn');
-        const isMember = community.members?.includes(currentUser.id);
+        if (!joinLeaveBtn) return;
+
+        const isMember = community.is_member;
         
         joinLeaveBtn.innerHTML = isMember 
             ? '<i class="fas fa-sign-out-alt"></i><span>Покинуть</span>'
