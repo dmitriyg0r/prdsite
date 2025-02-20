@@ -143,27 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
         communities.forEach(community => {
             const communityCard = document.createElement('div');
             communityCard.className = 'community-card';
-            communityCard.innerHTML = `
-                <div class="community-header">
-                    <img src="${community.avatar_url || '/images/default-community.png'}" 
-                         alt="${community.name}" 
-                         class="community-avatar">
-                    <h3 class="community-name">${community.name}</h3>
-                </div>
-                <div class="community-body">
-                    <p class="community-description">${community.description || 'Нет описания'}</p>
-                    <div class="community-stats">
-                        <span class="members-count">
-                            <i class="fas fa-users"></i> ${community.members_count || 0}
-                        </span>
-                    </div>
-                </div>
-                <div class="community-footer">
-                    <button class="visit-community-btn" data-community-id="${community.id}">
-                        Перейти в сообщество
-                    </button>
-                </div>
-            `;
+            communityCard.innerHTML = createCommunityCard(community);
             communitiesGrid.appendChild(communityCard);
         });
 
@@ -370,8 +350,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         ${community.is_member ? 'Вы участник' : 'Вступить'}
                     </button>
                     <button type="button" 
-                            class="visit-community-btn"
-                            data-community-id="${community.id}">
+                            onclick="visitCommunity(${community.id})"
+                            class="visit-community-btn">
                         Перейти в сообщество
                     </button>
                 </div>
@@ -1145,49 +1125,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Добавляем стили
     const styles = `
-        .community-link {
-            display: flex;
-            align-items: center;
-            text-decoration: none;
-            color: inherit;
-            padding: 10px;
-        }
-
-        .community-link:hover {
-            background-color: var(--hover-color);
-        }
-
-        .community-actions {
-            display: flex;
-            gap: 10px;
-            padding: 10px;
-            justify-content: flex-end;
-            align-items: center;
-        }
-
-        .visit-community-btn {
-            padding: 8px 16px;
-            background-color: var(--secondary-color);
-            color: white;
-            text-decoration: none;
-            border-radius: 4px;
-            transition: background-color 0.3s;
-        }
-
-        .visit-community-btn:hover {
-            background-color: var(--secondary-color-dark);
-        }
-
         .community-card {
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--border-color, #ddd);
             border-radius: 8px;
             margin-bottom: 10px;
-            background-color: var(--surface-color);
+            padding: 15px;
+            background: var(--surface-color, #fff);
         }
 
         .community-header {
             display: flex;
             align-items: center;
+            margin-bottom: 15px;
         }
 
         .community-avatar {
@@ -1209,14 +1158,53 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         .community-description {
-            color: var(--text-secondary);
+            color: var(--text-secondary, #666);
             font-size: 0.9em;
             margin-bottom: 5px;
         }
 
         .community-meta {
             font-size: 0.8em;
-            color: var(--text-secondary);
+            color: var(--text-secondary, #666);
+        }
+
+        .community-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .community-action-btn,
+        .visit-community-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .community-action-btn.join {
+            background-color: var(--primary-color, #007bff);
+            color: white;
+        }
+
+        .visit-community-btn {
+            background-color: var(--secondary-color, #6c757d);
+            color: white;
+        }
+
+        .visit-community-btn:hover {
+            background-color: var(--secondary-color-dark, #5a6268);
+        }
+
+        .community-action-btn.join:hover {
+            background-color: var(--primary-color-dark, #0056b3);
+        }
+
+        .community-action-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
         }
     `;
 
@@ -1229,4 +1217,33 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('Скрипт communities-modal.js загружен');
     console.log('DOM загружен');
     console.log('Контейнер результатов поиска:', searchResultsContainer);
+
+    // Добавляем глобальную функцию для перехода в сообщество
+    window.visitCommunity = function(communityId) {
+        console.log('Переход в сообщество:', communityId);
+        window.location.href = `/community/community.html?id=${communityId}`;
+    };
+
+    // Добавляем обработчик для всего модального окна сообществ
+    document.getElementById('communities-modal').addEventListener('click', function(e) {
+        // Обработка кнопки "Вступить"
+        if (e.target.classList.contains('join')) {
+            const communityId = e.target.dataset.communityId;
+            if (communityId) {
+                joinCommunity(communityId, e.target);
+            }
+        }
+        
+        // Обработка кнопки "Перейти в сообщество"
+        if (e.target.classList.contains('visit-community-btn')) {
+            const communityCard = e.target.closest('.community-card');
+            if (communityCard) {
+                const communityId = communityCard.dataset.id;
+                if (communityId) {
+                    console.log('Клик по кнопке перехода, ID:', communityId);
+                    visitCommunity(communityId);
+                }
+            }
+        }
+    });
 });
