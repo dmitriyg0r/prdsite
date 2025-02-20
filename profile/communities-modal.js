@@ -220,7 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('Search input element:', searchInput);
     console.log('Search results element:', searchResults);
 
-    // Удаляем дублирующуюся функцию handleSearch и оставляем одну версию
+    // Обновляем функцию handleSearch
     async function handleSearch(query) {
         console.log('Searching for:', query);
         const searchResults = document.querySelector('.search-results');
@@ -239,7 +239,11 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        showSearchLoading();
+        searchResults.innerHTML = `
+            <div class="search-loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Поиск...</p>
+            </div>`;
 
         try {
             const currentUser = JSON.parse(localStorage.getItem('user'));
@@ -250,21 +254,54 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(data.error || 'Failed to search communities');
             }
 
-            hideSearchLoading();
-            displaySearchResults(data.communities);
+            if (!data.communities || data.communities.length === 0) {
+                searchResults.innerHTML = `
+                    <div class="no-results">
+                        <i class="fas fa-users-slash"></i>
+                        <p>Сообщества не найдены</p>
+                    </div>`;
+                return;
+            }
+
+            const communitiesHTML = data.communities.map(community => `
+                <div class="community-search-item">
+                    <img src="${community.avatar_url || '/uploads/communities/default.png'}" 
+                         alt="${community.name}" 
+                         class="community-avatar">
+                    <div class="community-info">
+                        <h3>${community.name}</h3>
+                        <p>${community.description || 'Нет описания'}</p>
+                        <div class="community-meta">
+                            <span><i class="fas fa-users"></i> ${community.members_count || 0} участников</span>
+                        </div>
+                    </div>
+                    <button class="visit-community-btn" data-community-id="${community.id}">
+                        ${community.is_member ? 'Перейти' : 'Присоединиться'}
+                    </button>
+                </div>
+            `).join('');
+
+            searchResults.innerHTML = communitiesHTML;
+
+            // Добавляем обработчики для кнопок
+            document.querySelectorAll('.visit-community-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const communityId = btn.dataset.communityId;
+                    window.location.href = `/community/community.html?id=${communityId}`;
+                });
+            });
         } catch (err) {
             console.error('Error searching communities:', err);
-            hideSearchLoading();
             searchResults.innerHTML = `
                 <div class="search-error">
                     <i class="fas fa-exclamation-circle"></i>
-                    <p>Ошибка при поиске сообществ</p>
+                    <p>Произошла ошибка при поиске</p>
                 </div>`;
         }
     }
 
     // Обновляем обработчик ввода для поиска
-    document.querySelectorAll('.community-search input, .search-input').forEach(input => {
+    document.querySelectorAll('.community-search input').forEach(input => {
         if (input) {
             input.addEventListener('input', debounce(async (e) => {
                 const query = e.target.value.trim();
@@ -614,47 +651,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 loading.remove();
             }
         }
-    }
-
-    // Обновляем функцию displaySearchResults
-    function displaySearchResults(communities) {
-        const searchResults = document.querySelector('.search-results');
-        if (!searchResults) return;
-
-        if (!communities || communities.length === 0) {
-            searchResults.innerHTML = `
-                <div class="no-results">
-                    <i class="fas fa-users-slash"></i>
-                    <p>Сообщества не найдены</p>
-                </div>`;
-            return;
-        }
-
-        searchResults.innerHTML = communities.map(community => `
-            <div class="community-search-item">
-                <img src="${community.avatar_url || '/uploads/communities/default.png'}" 
-                     alt="${community.name}" 
-                     class="community-avatar">
-                <div class="community-info">
-                    <h3>${community.name}</h3>
-                    <p>${community.description || 'Нет описания'}</p>
-                    <div class="community-meta">
-                        <span><i class="fas fa-users"></i> ${community.members_count || 0} участников</span>
-                    </div>
-                </div>
-                <button class="visit-community-btn" data-community-id="${community.id}">
-                    ${community.is_member ? 'Перейти' : 'Присоединиться'}
-                </button>
-            </div>
-        `).join('');
-
-        // Добавляем обработчики для кнопок
-        document.querySelectorAll('.visit-community-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const communityId = btn.dataset.communityId;
-                window.location.href = `/community/community.html?id=${communityId}`;
-            });
-        });
     }
 
     // Добавляем обработчик для закрытия результатов по клику вне

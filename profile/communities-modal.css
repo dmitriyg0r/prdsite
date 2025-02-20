@@ -145,12 +145,24 @@
 }
 
 .search-results {
-    background: var(--surface-color);
-    border-radius: var(--radius-md);
-    overflow: hidden;
-    min-height: 100px;
+    display: block;
     max-height: 400px;
     overflow-y: auto;
+    background: var(--surface-color);
+    border-radius: var(--radius-lg);
+    margin-top: var(--spacing-md);
+}
+
+.search-loading {
+    text-align: center;
+    padding: var(--spacing-lg);
+    color: var(--text-secondary);
+}
+
+.search-hint {
+    text-align: center;
+    padding: var(--spacing-lg);
+    color: var(--text-secondary);
 }
 
 .community-search-item {
