@@ -222,7 +222,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Удаляем дублирующуюся функцию handleSearch и оставляем одну версию
     async function handleSearch(query) {
+        console.log('Searching for:', query);
         const searchResults = document.querySelector('.search-results');
+        
         if (!searchResults) {
             console.error('Search results container not found');
             return;
@@ -237,22 +239,26 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        showSearchLoading();
+
         try {
             const currentUser = JSON.parse(localStorage.getItem('user'));
-            const response = await fetch(`https://space-point.ru/api/communities/search?q=${encodeURIComponent(query)}`);
+            const response = await fetch(`/api/communities/search?q=${encodeURIComponent(query)}&userId=${currentUser.id}`);
             const data = await response.json();
 
             if (!data.success) {
-                throw new Error(data.error || 'Ошибка при поиске');
+                throw new Error(data.error || 'Failed to search communities');
             }
 
+            hideSearchLoading();
             displaySearchResults(data.communities);
         } catch (err) {
-            console.error('Ошибка поиска:', err);
+            console.error('Error searching communities:', err);
+            hideSearchLoading();
             searchResults.innerHTML = `
                 <div class="search-error">
                     <i class="fas fa-exclamation-circle"></i>
-                    <p>Произошла ошибка при поиске</p>
+                    <p>Ошибка при поиске сообществ</p>
                 </div>`;
         }
     }
@@ -260,7 +266,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Обновляем обработчик ввода для поиска
     document.querySelectorAll('.community-search input, .search-input').forEach(input => {
         if (input) {
-            input.addEventListener('input', debounce((e) => handleSearch(e.target.value.trim()), 300));
+            input.addEventListener('input', debounce(async (e) => {
+                const query = e.target.value.trim();
+                await handleSearch(query);
+            }, 300));
         }
     });
 
@@ -614,7 +623,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!communities || communities.length === 0) {
             searchResults.innerHTML = `
-                <div class="empty-search">
+                <div class="no-results">
                     <i class="fas fa-users-slash"></i>
                     <p>Сообщества не найдены</p>
                 </div>`;
@@ -623,30 +632,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
         searchResults.innerHTML = communities.map(community => `
             <div class="community-search-item">
-                <div class="community-search-header">
-                    <img src="${community.avatar_url || '/uploads/communities/default.png'}" 
-                         alt="${community.name}" 
-                         class="community-avatar">
-                    <div class="community-info">
-                        <h3 class="community-name">${community.name}</h3>
-                        <div class="community-meta">
-                            <span class="members-count">
-                                <i class="fas fa-users"></i> ${community.members_count || 0} участников
-                            </span>
-                        </div>
+                <img src="${community.avatar_url || '/uploads/communities/default.png'}" 
+                     alt="${community.name}" 
+                     class="community-avatar">
+                <div class="community-info">
+                    <h3>${community.name}</h3>
+                    <p>${community.description || 'Нет описания'}</p>
+                    <div class="community-meta">
+                        <span><i class="fas fa-users"></i> ${community.members_count || 0} участников</span>
                     </div>
                 </div>
-                <div class="community-description">
-                    ${community.description || 'Нет описания'}
-                </div>
-                <button class="join-community-btn ${community.is_member ? 'joined' : ''}" 
-                        data-community-id="${community.id}"
-                        ${community.is_member ? 'disabled' : ''}>
-                    <i class="fas ${community.is_member ? 'fa-check' : 'fa-user-plus'}"></i>
-                    ${community.is_member ? 'Вы участник' : 'Присоединиться'}
+                <button class="visit-community-btn" data-community-id="${community.id}">
+                    ${community.is_member ? 'Перейти' : 'Присоединиться'}
                 </button>
             </div>
         `).join('');
+
+        // Добавляем обработчики для кнопок
+        document.querySelectorAll('.visit-community-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const communityId = btn.dataset.communityId;
+                window.location.href = `/community/community.html?id=${communityId}`;
+            });
+        });
     }
 
     // Добавляем обработчик для закрытия результатов по клику вне
