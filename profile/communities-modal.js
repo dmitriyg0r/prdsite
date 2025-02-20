@@ -214,19 +214,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Находим элементы управления модальным окном
-    const searchInput = document.getElementById('community-search-input');
-    const searchResults = document.querySelector('.search-results');
+    const searchInput = document.querySelector('#community-search-input');
+    const searchResults = document.querySelector('#search-communities .search-results');
     
     console.log('Search input element:', searchInput);
     console.log('Search results element:', searchResults);
 
     // Обновляем функцию handleSearch
     async function handleSearch(query) {
-        console.log('Searching for:', query);
-        const searchResults = document.querySelector('.search-results');
+        console.log('Начало поиска:', query);
+        const searchResults = document.querySelector('#search-communities .search-results');
         
         if (!searchResults) {
-            console.error('Search results container not found');
+            console.error('Контейнер для результатов поиска не найден!');
             return;
         }
 
@@ -247,11 +247,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const currentUser = JSON.parse(localStorage.getItem('user'));
+            if (!currentUser || !currentUser.id) {
+                console.error('Пользователь не найден в localStorage');
+                return;
+            }
+
+            console.log('Отправка запроса на сервер:', `/api/communities/search?q=${query}&userId=${currentUser.id}`);
+            
             const response = await fetch(`/api/communities/search?q=${encodeURIComponent(query)}&userId=${currentUser.id}`);
             const data = await response.json();
+            
+            console.log('Получены данные от сервера:', data);
 
             if (!data.success) {
-                throw new Error(data.error || 'Failed to search communities');
+                throw new Error(data.error || 'Ошибка поиска сообществ');
             }
 
             if (!data.communities || data.communities.length === 0) {
@@ -291,7 +300,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             });
         } catch (err) {
-            console.error('Error searching communities:', err);
+            console.error('Ошибка при поиске:', err);
             searchResults.innerHTML = `
                 <div class="search-error">
                     <i class="fas fa-exclamation-circle"></i>
@@ -305,6 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (input) {
             input.addEventListener('input', debounce(async (e) => {
                 const query = e.target.value.trim();
+                console.log('Поисковый запрос:', query);
                 await handleSearch(query);
             }, 300));
         }
