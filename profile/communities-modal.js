@@ -320,10 +320,13 @@ document.addEventListener('DOMContentLoaded', () => {
         return titles[(number % 100 > 4 && number % 100 < 20) ? 2 : cases[(number % 10 < 5) ? number % 10 : 5]];
     }
 
-    // Функция для обработки вступления в сообщество
+    // Обновляем функцию для вступления в сообщество
     async function joinCommunity(communityId, button) {
         try {
+            console.log('Попытка вступления в сообщество:', communityId); // Отладка
             button.disabled = true;
+
+            const currentUser = JSON.parse(localStorage.getItem('user'));
             
             const response = await fetch(`/api/communities/${communityId}/join`, {
                 method: 'POST',
@@ -331,11 +334,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    userId: currentUserId
+                    userId: currentUser.id
                 })
             });
 
+            console.log('Ответ сервера:', response); // Отладка
+
             const data = await response.json();
+            console.log('Данные ответа:', data); // Отладка
             
             if (data.success) {
                 // Меняем вид кнопки
@@ -343,17 +349,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 button.classList.remove('join');
                 button.classList.add('leave');
                 
-                // Показываем уведомление об успехе
+                // Обновляем счетчик участников в карточке сообщества
+                const communityCard = button.closest('.community-card');
+                const membersCount = communityCard.querySelector('.community-meta');
+                if (membersCount) {
+                    const count = parseInt(membersCount.textContent) + 1;
+                    membersCount.textContent = `${count} ${declOfNum(count, ['участник', 'участника', 'участников'])}`;
+                }
+
                 showNotification('success', 'Вы успешно вступили в сообщество');
-                
-                // Обновляем счетчик сообществ
-                updateCommunitiesCount();
             } else {
-                showNotification('error', data.error || 'Ошибка при вступлении в сообщество');
+                throw new Error(data.error || 'Ошибка при вступлении в сообщество');
             }
         } catch (err) {
-            console.error('Error joining community:', err);
-            showNotification('error', 'Ошибка при вступлении в сообщество');
+            console.error('Ошибка при вступлении в сообщество:', err);
+            showNotification('error', 'Не удалось вступить в сообщество');
         } finally {
             button.disabled = false;
         }
@@ -750,9 +760,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const button = e.target.closest('.community-action-btn');
         if (!button) return;
 
+        console.log('Клик по кнопке:', button); // Отладка
+
         const communityId = button.dataset.communityId;
+        console.log('ID сообщества:', communityId); // Отладка
         
         if (button.classList.contains('join')) {
+            e.preventDefault(); // Предотвращаем стандартное поведение
             joinCommunity(communityId, button);
         } else if (button.classList.contains('leave')) {
             // Можно добавить функционал выхода из сообщества здесь
@@ -1025,7 +1039,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Добавляем функцию для вступления в сообщество
     async function joinCommunity(communityId, button) {
         try {
+            console.log('Попытка вступления в сообщество:', communityId); // Отладка
             button.disabled = true;
+
+            const currentUser = JSON.parse(localStorage.getItem('user'));
             
             const response = await fetch(`/api/communities/${communityId}/join`, {
                 method: 'POST',
@@ -1033,11 +1050,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    userId: currentUserId
+                    userId: currentUser.id
                 })
             });
 
+            console.log('Ответ сервера:', response); // Отладка
+
             const data = await response.json();
+            console.log('Данные ответа:', data); // Отладка
             
             if (data.success) {
                 // Меняем вид кнопки
@@ -1045,17 +1065,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 button.classList.remove('join');
                 button.classList.add('leave');
                 
-                // Показываем уведомление об успехе
+                // Обновляем счетчик участников в карточке сообщества
+                const communityCard = button.closest('.community-card');
+                const membersCount = communityCard.querySelector('.community-meta');
+                if (membersCount) {
+                    const count = parseInt(membersCount.textContent) + 1;
+                    membersCount.textContent = `${count} ${declOfNum(count, ['участник', 'участника', 'участников'])}`;
+                }
+
                 showNotification('success', 'Вы успешно вступили в сообщество');
-                
-                // Обновляем счетчик сообществ
-                updateCommunitiesCount();
             } else {
-                showNotification('error', data.error || 'Ошибка при вступлении в сообщество');
+                throw new Error(data.error || 'Ошибка при вступлении в сообщество');
             }
         } catch (err) {
-            console.error('Error joining community:', err);
-            showNotification('error', 'Ошибка при вступлении в сообщество');
+            console.error('Ошибка при вступлении в сообщество:', err);
+            showNotification('error', 'Не удалось вступить в сообщество');
         } finally {
             button.disabled = false;
         }
@@ -1066,13 +1090,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const button = e.target.closest('.community-action-btn');
         if (!button) return;
 
+        console.log('Клик по кнопке:', button); // Отладка
+
         const communityId = button.dataset.communityId;
+        console.log('ID сообщества:', communityId); // Отладка
         
         if (button.classList.contains('join')) {
+            e.preventDefault(); // Предотвращаем стандартное поведение
             joinCommunity(communityId, button);
-        } else if (button.classList.contains('leave')) {
-            // Можно добавить функционал выхода из сообщества здесь
-            console.log('Выход из сообщества');
         }
     });
 });
