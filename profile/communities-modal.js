@@ -689,7 +689,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Добавляем обработчик для закрытия результатов по клику вне
     document.addEventListener('click', (e) => {
-        if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+        const searchInput = document.querySelector('#community-search-input');
+        const searchResults = document.querySelector('.search-results');
+        
+        if (searchInput && searchResults && 
+            !searchInput.contains(e.target) && 
+            !searchResults.contains(e.target)) {
             searchResults.style.display = 'none';
         }
     });
