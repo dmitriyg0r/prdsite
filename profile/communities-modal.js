@@ -245,17 +245,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Обновляем функцию handleSearch
     async function handleSearch(query, userId) {
-        const searchResults = document.querySelector('.search-results');
-        console.log('Поиск начат:', query, 'для пользователя:', userId);
-        
+        // Важно: убедимся, что мы ищем результаты в правильном контейнере
+        const searchResults = document.querySelector('#search-communities .search-results');
+        console.log('Контейнер для результатов:', searchResults); // Отладка
+
         if (!query) {
-            searchResults.innerHTML = '';
+            if (searchResults) searchResults.innerHTML = '';
             return;
         }
 
         if (!userId) {
             console.error('ID пользователя не найден');
-            searchResults.innerHTML = '<div class="error-message">Ошибка: пользователь не авторизован</div>';
+            if (searchResults) {
+                searchResults.innerHTML = '<div class="error-message">Ошибка: пользователь не авторизован</div>';
+            }
             return;
         }
 
@@ -267,6 +270,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             console.log('Получены данные:', data);
 
+            if (!searchResults) {
+                console.error('Контейнер для результатов поиска не найден');
+                return;
+            }
+
             if (data.success) {
                 if (data.communities.length === 0) {
                     searchResults.innerHTML = '<div class="no-results">Сообществ не найдено</div>';
@@ -275,7 +283,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const html = data.communities.map(community => `
                     <div class="community-card">
-                        <img src="${community.avatar_url || '/images/default-community.png'}" 
+                        <img src="${community.avatar_url || '/uploads/communities/default.png'}" 
                              alt="${community.name}" 
                              class="community-avatar"
                              onerror="this.src='/images/default-community.png'">
@@ -293,21 +301,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 `).join('');
 
-                console.log('Сгенерированный HTML:', html); // Отладка
+                console.log('Сгенерированный HTML:', html);
                 searchResults.innerHTML = html;
-
-                // Добавляем обработчики для кнопок
-                document.querySelectorAll('.community-action-btn').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        const communityId = btn.dataset.communityId;
-                        const isJoining = btn.classList.contains('join');
-                        handleCommunityAction(communityId, isJoining);
-                    });
-                });
+                searchResults.style.display = 'block'; // Убедимся, что контейнер видим
             }
         } catch (err) {
             console.error('Ошибка при поиске сообществ:', err);
-            searchResults.innerHTML = '<div class="error-message">Произошла ошибка при поиске</div>';
+            if (searchResults) {
+                searchResults.innerHTML = '<div class="error-message">Произошла ошибка при поиске</div>';
+            }
         }
     }
 
