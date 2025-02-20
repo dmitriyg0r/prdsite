@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('community-type').textContent = 
             community.type === 'public' ? 'Публичное сообщество' : 'Закрытое сообщество';
         document.getElementById('community-avatar').src = 
-            community.avatar_url || '/uploads/avatars/default-community.png';
+            community.avatar_url || '/uploads/communities/default.png';
         document.getElementById('community-description').textContent = 
             community.description || 'Описание отсутствует';
         document.getElementById('created-at').textContent = 
@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             postsContainer.innerHTML = data.posts.map(post => `
                 <div class="post-card">
                     <div class="post-header">
-                        <img src="${post.author_avatar || '/uploads/avatars/default.png'}" 
+                        <img src="${post.author_avatar || '/uploads/communities/default.png'}" 
                              alt="${post.author_name}" 
                              class="post-author-avatar">
                         <div class="post-meta">

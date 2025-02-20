@@ -36,7 +36,7 @@ const upload = multer({
 });
 
 // Добавляем константу для пути аватара по умолчанию
-const DEFAULT_COMMUNITY_AVATAR = '/uploads/avatars/default-community.png';
+const DEFAULT_COMMUNITY_AVATAR = '/uploads/communities/default.png';
 
 // Функция для создания таблиц, если они не существуют
 async function ensureTablesExist() {
