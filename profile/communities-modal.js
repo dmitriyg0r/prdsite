@@ -32,9 +32,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Функция для переключения вкладок
+    // Переключение вкладок
     function switchTab(tabId) {
-        // Убираем активный класс со всех вкладок
+        // Деактивируем все вкладки
         document.querySelectorAll('.tab-content').forEach(tab => {
             tab.classList.remove('active');
         });
@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Если это вкладка поиска, фокусируемся на поле ввода
         if (tabId === 'search-communities') {
-            const searchInput = document.querySelector('.search-input');
+            const searchInput = document.querySelector('#community-search-input');
             if (searchInput) {
                 searchInput.focus();
             }
@@ -779,7 +779,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Обработчики для табов
-    document.querySelectorAll('.tab-btn').forEach(button => {
+    tabButtons.forEach(button => {
         button.addEventListener('click', () => {
             const tabId = button.getAttribute('data-tab');
             switchTab(tabId);

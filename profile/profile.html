@@ -244,25 +244,29 @@
     </div>
 
     <!-- Модальное окно сообществ -->
-    <div id="communities-modal" class="modal">
+    <div id="communities-modal" class="modal communities-modal">
         <div class="modal-content">
             <div class="modal-header">
                 <div class="modal-tabs">
                     <button class="tab-btn active" data-tab="all-communities">
-                        <i class="fas fa-users"></i> Мои сообщества
+                        <i class="fas fa-users"></i>
+                        Мои сообщества
+                        <span class="count-badge communities-count">0</span>
                     </button>
                     <button class="tab-btn" data-tab="search-communities">
-                        <i class="fas fa-search"></i> Поиск сообществ
+                        <i class="fas fa-search"></i>
+                        Поиск
                     </button>
                     <button class="tab-btn" data-tab="create-community">
-                        <i class="fas fa-plus"></i> Создать сообщество
+                        <i class="fas fa-plus"></i>
+                        Создать
                     </button>
                 </div>
                 <button class="modal-close">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            
+
             <div class="modal-body">
                 <div class="tab-content active" id="all-communities">
                     <div class="communities-list">
@@ -281,7 +285,7 @@
                 </div>
 
                 <div class="tab-content" id="create-community">
-                    <form id="createCommunityForm" enctype="multipart/form-data">
+                    <form id="createCommunityForm" class="create-community-form">
                         <div class="form-group">
                             <label for="community-name-input">Название сообщества*</label>
                             <input 
