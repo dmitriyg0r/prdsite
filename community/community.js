@@ -110,6 +110,83 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    // Обновляем функцию загрузки постов сообщества
+    async function loadCommunityPosts() {
+        try {
+            const response = await fetch(`/api/communities/${communityId}/posts`);
+            const data = await response.json();
+
+            if (!data.success) throw new Error(data.error);
+
+            const postsContainer = document.getElementById('posts-container');
+            if (data.posts.length === 0) {
+                postsContainer.innerHTML = '<p class="no-posts">В этом сообществе пока нет постов</p>';
+                return;
+            }
+
+            postsContainer.innerHTML = data.posts.map(post => `
+                <div class="post-card">
+                    <div class="post-header">
+                        <img src="${post.author_avatar || '/uploads/avatars/default.png'}" 
+                             alt="${post.author_name}" 
+                             class="post-author-avatar">
+                        <div class="post-meta">
+                            <div class="post-author">${post.author_name}</div>
+                            <div class="post-date">${new Date(post.created_at).toLocaleString()}</div>
+                        </div>
+                    </div>
+                    <div class="post-content">${post.content}</div>
+                    <div class="post-actions">
+                        <button class="action-btn like-btn" data-post-id="${post.id}">
+                            <i class="far fa-heart"></i>
+                            <span>${post.likes_count || 0}</span>
+                        </button>
+                        <button class="action-btn comment-btn" data-post-id="${post.id}">
+                            <i class="far fa-comment"></i>
+                            <span>${post.comments_count || 0}</span>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        } catch (err) {
+            console.error('Error loading posts:', err);
+            document.getElementById('posts-container').innerHTML = 
+                '<p class="error">Ошибка при загрузке постов</p>';
+        }
+    }
+
+    // Добавляем обработчик для создания постов
+    document.getElementById('publish-post-btn')?.addEventListener('click', async () => {
+        const content = document.getElementById('post-content').value.trim();
+        if (!content) {
+            alert('Введите текст поста');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/communities/${communityId}/posts`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    userId: currentUser.id,
+                    content,
+                    title: 'Post' // если требуется заголовок
+                })
+            });
+
+            const data = await response.json();
+            if (!data.success) throw new Error(data.error);
+
+            document.getElementById('post-content').value = '';
+            loadCommunityPosts(); // Перезагружаем посты
+        } catch (err) {
+            console.error('Error creating post:', err);
+            alert('Ошибка при создании поста');
+        }
+    });
+
     // Инициализация
     loadCommunityData();
 }); 

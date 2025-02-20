@@ -71,13 +71,11 @@
 
 /* Стили для модального окна сообществ */
 .community-card {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px;
-    background: var(--surface-color);
-    border-radius: var(--radius-md);
+    position: relative;
     border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--surface-color);
     transition: all 0.3s ease;
 }
 
@@ -86,13 +84,44 @@
     box-shadow: var(--shadow-sm);
 }
 
+.community-header-link {
+    display: block;
+    padding: var(--spacing-md);
+    text-decoration: none;
+    color: inherit;
+}
+
+.community-header-link:hover {
+    background: var(--hover-color);
+}
+
+.community-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: var(--spacing-sm);
+}
+
 .community-info {
-    flex: 1;
-    min-width: 0;
+    margin-left: var(--spacing-md);
+}
+
+.community-name {
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: var(--spacing-xs);
+    color: var(--text-primary);
+}
+
+.community-description {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-xs);
 }
 
 .community-meta {
-    font-size: 13px;
+    font-size: 0.8rem;
     color: var(--text-secondary);
 }
 
@@ -176,14 +205,15 @@
 
 /* Стили для кнопок действий с сообществами */
 .community-action-btn {
-    padding: 6px 12px;
+    position: absolute;
+    right: var(--spacing-md);
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 8px 16px;
     border-radius: var(--radius-md);
     border: none;
-    font-size: 14px;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    font-weight: 500;
     transition: all 0.3s ease;
 }
 
@@ -193,26 +223,12 @@
 }
 
 .community-action-btn.join:hover {
-    background: var(--primary-dark);
-    transform: translateY(-1px);
-}
-
-.community-action-btn.leave {
-    background: var(--background-color);
-    color: var(--text-secondary);
-    border: 1px solid var(--border-light);
-}
-
-.community-action-btn.leave:hover {
-    background: var(--error-color);
-    color: white;
-    border-color: var(--error-color);
+    background: var(--primary-color-dark);
 }
 
 .community-action-btn:disabled {
     opacity: 0.7;
     cursor: not-allowed;
-    transform: none;
 }
 
 /* Анимация для иконки */

@@ -359,17 +359,19 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Создание карточки для сообщества:', community);
         return `
             <div class="community-card" data-id="${community.id}">
-                <img src="${community.avatar_url || '/uploads/communities/default.png'}" 
-                     alt="${community.name}" 
-                     class="community-avatar"
-                     onerror="this.src='/images/default-community.png'">
-                <div class="community-info">
-                    <div class="community-name">${community.name}</div>
-                    <div class="community-description">${community.description || 'Нет описания'}</div>
-                    <div class="community-meta">
-                        ${community.members_count || 0} ${getPluralForm(community.members_count || 0, ['участник', 'участника', 'участников'])}
+                <a href="/community/community.html?id=${community.id}" class="community-header-link">
+                    <img src="${community.avatar_url || '/uploads/communities/default.png'}" 
+                         alt="${community.name}" 
+                         class="community-avatar"
+                         onerror="this.src='/images/default-community.png'">
+                    <div class="community-info">
+                        <div class="community-name">${community.name}</div>
+                        <div class="community-description">${community.description || 'Нет описания'}</div>
+                        <div class="community-meta">
+                            ${community.members_count || 0} ${getPluralForm(community.members_count || 0, ['участник', 'участника', 'участников'])}
+                        </div>
                     </div>
-                </div>
+                </a>
                 <button type="button" 
                         class="community-action-btn join" 
                         data-community-id="${community.id}"
