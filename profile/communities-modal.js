@@ -318,38 +318,28 @@ document.addEventListener('DOMContentLoaded', () => {
     // Находим контейнер результатов поиска
     const searchResultsContainer = document.querySelector('#search-communities .search-results');
 
-    // Добавляем прямой обработчик на контейнер результатов поиска
+    // Добавляем обработчик для кнопок в контейнере результатов поиска
     searchResultsContainer.addEventListener('click', async (e) => {
         console.log('Клик в контейнере результатов поиска');
-        const button = e.target.closest('.community-action-btn');
-        if (!button) {
-            console.log('Кнопка не найдена');
-            return;
+        
+        // Обработка кнопки "Вступить"
+        const joinButton = e.target.closest('.community-action-btn.join');
+        if (joinButton && !joinButton.disabled) {
+            console.log('Клик по кнопке вступления');
+            const communityId = joinButton.dataset.communityId;
+            if (communityId) {
+                await joinCommunity(communityId, joinButton);
+            }
         }
 
-        console.log('Найдена кнопка:', button);
-        console.log('Классы кнопки:', button.classList.toString());
-
-        if (button.disabled) {
-            console.log('Кнопка отключена');
-            return;
-        }
-
-        const communityId = button.dataset.communityId;
-        console.log('ID сообщества:', communityId);
-
-        if (!communityId) {
-            console.error('ID сообщества не найден');
-            return;
-        }
-
-        if (button.classList.contains('join')) {
-            console.log('Начинаем процесс вступления в сообщество');
-            e.preventDefault();
-            try {
-                await joinCommunity(communityId, button);
-            } catch (err) {
-                console.error('Ошибка при вступлении в сообщество:', err);
+        // Обработка кнопки "Перейти в сообщество"
+        const visitButton = e.target.closest('.visit-community-btn');
+        if (visitButton) {
+            console.log('Клик по кнопке перехода в сообщество');
+            const communityId = visitButton.dataset.communityId;
+            if (communityId) {
+                console.log('Переход в сообщество:', communityId);
+                window.location.href = `/community/community.html?id=${communityId}`;
             }
         }
     });
@@ -360,19 +350,17 @@ document.addEventListener('DOMContentLoaded', () => {
         return `
             <div class="community-card" data-id="${community.id}">
                 <div class="community-header">
-                    <a href="/community/community.html?id=${community.id}" class="community-link">
-                        <img src="${community.avatar_url || '/uploads/communities/default.png'}" 
-                             alt="${community.name}" 
-                             class="community-avatar"
-                             onerror="this.src='/images/default-community.png'">
-                        <div class="community-info">
-                            <div class="community-name">${community.name}</div>
-                            <div class="community-description">${community.description || 'Нет описания'}</div>
-                            <div class="community-meta">
-                                ${community.members_count || 0} ${getPluralForm(community.members_count || 0, ['участник', 'участника', 'участников'])}
-                            </div>
+                    <img src="${community.avatar_url || '/uploads/communities/default.png'}" 
+                         alt="${community.name}" 
+                         class="community-avatar"
+                         onerror="this.src='/images/default-community.png'">
+                    <div class="community-info">
+                        <div class="community-name">${community.name}</div>
+                        <div class="community-description">${community.description || 'Нет описания'}</div>
+                        <div class="community-meta">
+                            ${community.members_count || 0} ${getPluralForm(community.members_count || 0, ['участник', 'участника', 'участников'])}
                         </div>
-                    </a>
+                    </div>
                 </div>
                 <div class="community-actions">
                     <button type="button" 
@@ -381,10 +369,11 @@ document.addEventListener('DOMContentLoaded', () => {
                             ${community.is_member ? 'disabled' : ''}>
                         ${community.is_member ? 'Вы участник' : 'Вступить'}
                     </button>
-                    <a href="/community/community.html?id=${community.id}" 
-                       class="community-action-btn visit-link">
+                    <button type="button" 
+                            class="visit-community-btn"
+                            data-community-id="${community.id}">
                         Перейти в сообщество
-                    </a>
+                    </button>
                 </div>
             </div>
         `;
@@ -1176,8 +1165,7 @@ document.addEventListener('DOMContentLoaded', () => {
             align-items: center;
         }
 
-        .visit-link {
-            display: inline-block;
+        .visit-community-btn {
             padding: 8px 16px;
             background-color: var(--secondary-color);
             color: white;
@@ -1186,7 +1174,7 @@ document.addEventListener('DOMContentLoaded', () => {
             transition: background-color 0.3s;
         }
 
-        .visit-link:hover {
+        .visit-community-btn:hover {
             background-color: var(--secondary-color-dark);
         }
 
@@ -1236,4 +1224,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const styleSheet = document.createElement("style");
     styleSheet.textContent = styles;
     document.head.appendChild(styleSheet);
+
+    // Добавляем отладочную информацию
+    console.log('Скрипт communities-modal.js загружен');
+    console.log('DOM загружен');
+    console.log('Контейнер результатов поиска:', searchResultsContainer);
 });
