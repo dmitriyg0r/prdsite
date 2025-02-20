@@ -765,31 +765,95 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Добавляем делегирование событий на родительский элемент
-    document.querySelector('#communities-modal').addEventListener('click', async (e) => {
-        console.log('Click event triggered');
+    // Обновляем обработчик событий для кнопок действий с сообществами
+    document.addEventListener('click', async (e) => {
         const button = e.target.closest('.community-action-btn');
-        console.log('Found button:', button);
-        
-        if (!button || button.disabled) {
-            console.log('Button not found or disabled');
-            return;
-        }
+        if (!button) return;
 
-        const communityId = button.dataset.communityId;
-        console.log('Community ID:', communityId);
+        console.log('Клик по кнопке сообщества:', button);
         
+        const communityId = button.dataset.communityId;
         if (!communityId) {
-            console.log('No community ID found');
+            console.error('Не найден ID сообщества');
             return;
         }
 
         if (button.classList.contains('join')) {
-            console.log('Join button clicked for community:', communityId);
+            console.log('Попытка вступить в сообщество:', communityId);
             e.preventDefault();
             await joinCommunity(communityId, button);
         }
     });
+
+    // Функция для создания карточки сообщества
+    function createCommunityCard(community) {
+        return `
+            <div class="community-card">
+                <img src="${community.avatar_url || '/uploads/communities/default.png'}" 
+                     alt="${community.name}" 
+                     class="community-avatar"
+                     onerror="this.src='/images/default-community.png'">
+                <div class="community-info">
+                    <div class="community-name">${community.name}</div>
+                    <div class="community-description">${community.description || 'Нет описания'}</div>
+                    <div class="community-meta">
+                        ${community.members_count || 0} ${getPluralForm(community.members_count || 0, ['участник', 'участника', 'участников'])}
+                    </div>
+                </div>
+                <button class="community-action-btn ${community.is_member ? 'leave' : 'join'}"
+                        data-community-id="${community.id}"
+                        ${community.is_member ? 'disabled' : ''}>
+                    ${community.is_member ? 'Вы участник' : 'Вступить'}
+                </button>
+            </div>
+        `;
+    }
+
+    // Вспомогательная функция для склонения слов
+    function getPluralForm(number, forms) {
+        const cases = [2, 0, 1, 1, 1, 2];
+        return forms[(number % 100 > 4 && number % 100 < 20) ? 2 : cases[(number % 10 < 5) ? number % 10 : 5]];
+    }
+
+    // Обновляем функцию поиска сообществ
+    async function searchCommunities(query) {
+        try {
+            const currentUser = JSON.parse(localStorage.getItem('user'));
+            const response = await fetch(`/api/communities/search?q=${encodeURIComponent(query)}&userId=${currentUser.id}`);
+            const data = await response.json();
+
+            const searchResults = document.querySelector('#search-communities .search-results');
+            if (data.success && data.communities.length > 0) {
+                searchResults.innerHTML = data.communities.map(createCommunityCard).join('');
+            } else {
+                searchResults.innerHTML = '<p class="no-results">Сообщества не найдены</p>';
+            }
+        } catch (err) {
+            console.error('Ошибка при поиске сообществ:', err);
+            showNotification('error', 'Ошибка при поиске сообществ');
+        }
+    }
+
+    // Добавляем обработчик ввода для поиска
+    document.querySelector('#community-search-input').addEventListener('input', debounce((e) => {
+        const query = e.target.value.trim();
+        if (query.length >= 2) {
+            searchCommunities(query);
+        }
+    }, 300));
+
+    // Функция debounce для предотвращения частых запросов
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
 
     // Функции для обновления счетчиков
     function updateCommunitiesCount(count) {
@@ -1052,158 +1116,4 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
-
-    // Добавляем функцию для вступления в сообщество
-    async function joinCommunity(communityId, button) {
-        try {
-            console.log('Attempting to join community:', communityId);
-            button.disabled = true;
-
-            const currentUser = JSON.parse(localStorage.getItem('user'));
-            console.log('Current user:', currentUser);
-            
-            if (!currentUser || !currentUser.id) {
-                throw new Error('Необходима авторизация');
-            }
-
-            const response = await fetch(`/api/communities/${communityId}/join`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    userId: currentUser.id
-                })
-            });
-
-            console.log('Join response:', response);
-            const data = await response.json();
-            console.log('Join data:', data);
-            
-            if (!response.ok) {
-                throw new Error(data.error || 'Ошибка при вступлении в сообщество');
-            }
-
-            if (data.success) {
-                // Обновляем внешний вид кнопки
-                button.textContent = 'Вы участник';
-                button.classList.remove('join');
-                button.classList.add('leave');
-                button.disabled = true;
-
-                // Обновляем счетчик участников, если он есть
-                const communityCard = button.closest('.community-card');
-                const membersCountEl = communityCard?.querySelector('.members-count');
-                if (membersCountEl) {
-                    const currentCount = parseInt(membersCountEl.textContent.match(/\d+/)[0]);
-                    membersCountEl.innerHTML = `<i class="fas fa-users"></i> ${currentCount + 1}`;
-                }
-
-                showNotification('success', 'Вы успешно вступили в сообщество');
-            } else {
-                throw new Error(data.error || 'Ошибка при вступлении в сообщество');
-            }
-        } catch (err) {
-            console.error('Error joining community:', err);
-            showNotification('error', err.message || 'Не удалось вступить в сообщество');
-            button.disabled = false;
-        }
-    }
-
-    // Добавляем обработчики для кнопок действий с сообществами
-    document.addEventListener('click', async (e) => {
-        const button = e.target.closest('.community-action-btn');
-        if (!button || button.disabled) return;
-
-        console.log('Клик по кнопке:', button); // Отладка
-
-        const communityId = button.dataset.communityId;
-        console.log('ID сообщества:', communityId); // Отладка
-        
-        if (button.classList.contains('join')) {
-            e.preventDefault(); // Предотвращаем стандартное поведение
-            await joinCommunity(communityId, button);
-        }
-    });
-
-    // Функция для создания карточки сообщества
-    function createCommunityCard(community) {
-        return `
-            <div class="community-card" data-id="${community.id}">
-                <img src="${community.avatar_url || '/uploads/communities/default.png'}" alt="${community.name}" class="community-avatar">
-                <div class="community-info">
-                    <h3>${community.name}</h3>
-                    <p>${community.description || 'Нет описания'}</p>
-                    <span class="members-count"><i class="fas fa-users"></i> ${community.members_count || 0}</span>
-                </div>
-                <button 
-                    class="community-action-btn ${community.is_member ? 'leave' : 'join'}" 
-                    data-community-id="${community.id}"
-                    ${community.is_member ? 'disabled' : ''}
-                >
-                    ${community.is_member ? 'Вы участник' : 'Вступить'}
-                </button>
-            </div>
-        `;
-    }
-
-    // Обновляем функцию поиска сообществ
-    async function searchCommunities(query) {
-        try {
-            const currentUser = JSON.parse(localStorage.getItem('user'));
-            const response = await fetch(`/api/communities/search?q=${encodeURIComponent(query)}&userId=${currentUser.id}`);
-            const data = await response.json();
-
-            const searchResults = document.querySelector('#search-communities .search-results');
-            if (data.success && data.communities.length > 0) {
-                searchResults.innerHTML = data.communities.map(createCommunityCard).join('');
-            } else {
-                searchResults.innerHTML = '<p class="no-results">Сообщества не найдены</p>';
-            }
-        } catch (err) {
-            console.error('Ошибка при поиске сообществ:', err);
-            showNotification('error', 'Ошибка при поиске сообществ');
-        }
-    }
-
-    // Добавляем обработчик ввода для поиска
-    document.querySelector('#community-search-input').addEventListener('input', debounce((e) => {
-        const query = e.target.value.trim();
-        if (query.length >= 2) {
-            searchCommunities(query);
-        }
-    }, 300));
-
-    // Функция debounce для предотвращения частых запросов
-    function debounce(func, wait) {
-        let timeout;
-        return function executedFunction(...args) {
-            const later = () => {
-                clearTimeout(timeout);
-                func(...args);
-            };
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-        };
-    }
-
-    // Обработчик кликов по кнопкам действий
-    document.querySelector('#communities-modal').addEventListener('click', async (e) => {
-        console.log('Click event on communities modal');
-        const button = e.target.closest('.community-action-btn');
-        console.log('Found button:', button);
-        
-        if (!button || button.disabled) return;
-
-        const communityId = button.dataset.communityId;
-        console.log('Community ID:', communityId);
-        
-        if (!communityId) return;
-
-        if (button.classList.contains('join')) {
-            console.log('Join button clicked');
-            e.preventDefault();
-            await joinCommunity(communityId, button);
-        }
-    });
 });
