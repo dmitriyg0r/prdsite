@@ -350,8 +350,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         ${community.is_member ? 'Вы участник' : 'Вступить'}
                     </button>
                     <button type="button" 
-                            onclick="visitCommunity(${community.id})"
-                            class="visit-community-btn">
+                            class="visit-community-btn"
+                            data-community-id="${community.id}"
+                            onclick="visitCommunity(${community.id})">
                         Перейти в сообщество
                     </button>
                 </div>
@@ -1218,7 +1219,7 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM загружен');
     console.log('Контейнер результатов поиска:', searchResultsContainer);
 
-    // Добавляем глобальную функцию для перехода в сообщество
+    // Глобальная функция для перехода в сообщество
     window.visitCommunity = function(communityId) {
         console.log('Переход в сообщество:', communityId);
         window.location.href = `/community/community.html?id=${communityId}`;
