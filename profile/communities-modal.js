@@ -349,11 +349,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             ${community.is_member ? 'disabled' : ''}>
                         ${community.is_member ? 'Вы участник' : 'Вступить'}
                     </button>
-                    <button type="button" 
-                            class="visit-community-btn"
-                            data-community-id="${community.id}">
+                    <a href="/community/community.html?id=${community.id}" 
+                       class="visit-community-link">
                         Перейти в сообщество
-                    </button>
+                    </a>
                 </div>
             </div>
         `;
@@ -1171,11 +1170,13 @@ document.addEventListener('DOMContentLoaded', () => {
         .community-actions {
             display: flex;
             gap: 10px;
+            padding: 10px;
             justify-content: flex-end;
+            align-items: center;
         }
 
         .community-action-btn,
-        .visit-community-btn {
+        .visit-community-link {
             padding: 8px 16px;
             border: none;
             border-radius: 4px;
@@ -1189,17 +1190,21 @@ document.addEventListener('DOMContentLoaded', () => {
             color: white;
         }
 
-        .visit-community-btn {
+        .visit-community-link {
+            display: inline-block;
+            padding: 8px 16px;
             background-color: var(--secondary-color, #6c757d);
             color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
         }
 
-        .visit-community-btn:hover {
+        .visit-community-link:hover {
             background-color: var(--secondary-color-dark, #5a6268);
-        }
-
-        .community-action-btn.join:hover {
-            background-color: var(--primary-color-dark, #0056b3);
+            text-decoration: none;
+            color: white;
         }
 
         .community-action-btn:disabled {
@@ -1235,7 +1240,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         // Обработка кнопки "Перейти в сообщество"
-        if (e.target.classList.contains('visit-community-btn')) {
+        if (e.target.classList.contains('visit-community-link')) {
             const communityCard = e.target.closest('.community-card');
             if (communityCard) {
                 const communityId = communityCard.dataset.id;
