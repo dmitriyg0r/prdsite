@@ -1,6 +1,8 @@
 console.log('Скрипт communities-modal.js загружен');
 
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM loaded, setting up community handlers');
+    
     const communitiesModal = document.getElementById('communities-modal');
     const communitiesCount = document.querySelector('.communities-count');
     const modalClose = communitiesModal.querySelector('.modal-close');
@@ -323,10 +325,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Обновляем функцию для вступления в сообщество
     async function joinCommunity(communityId, button) {
         try {
-            console.log('Попытка вступления в сообщество:', communityId);
+            console.log('Attempting to join community:', communityId);
             button.disabled = true;
 
             const currentUser = JSON.parse(localStorage.getItem('user'));
+            console.log('Current user:', currentUser);
+            
             if (!currentUser || !currentUser.id) {
                 throw new Error('Необходима авторизация');
             }
@@ -341,7 +345,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 })
             });
 
+            console.log('Join response:', response);
             const data = await response.json();
+            console.log('Join data:', data);
             
             if (!response.ok) {
                 throw new Error(data.error || 'Ошибка при вступлении в сообщество');
@@ -367,7 +373,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(data.error || 'Ошибка при вступлении в сообщество');
             }
         } catch (err) {
-            console.error('Ошибка при вступлении в сообщество:', err);
+            console.error('Error joining community:', err);
             showNotification('error', err.message || 'Не удалось вступить в сообщество');
             button.disabled = false;
         }
@@ -761,15 +767,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Добавляем делегирование событий на родительский элемент
     document.querySelector('#communities-modal').addEventListener('click', async (e) => {
+        console.log('Click event triggered');
         const button = e.target.closest('.community-action-btn');
-        if (!button || button.disabled) return;
-
-        console.log('Клик по кнопке:', button); // Отладка
-        console.log('ID сообщества:', button.dataset.communityId); // Отладка
+        console.log('Found button:', button);
         
+        if (!button || button.disabled) {
+            console.log('Button not found or disabled');
+            return;
+        }
+
+        const communityId = button.dataset.communityId;
+        console.log('Community ID:', communityId);
+        
+        if (!communityId) {
+            console.log('No community ID found');
+            return;
+        }
+
         if (button.classList.contains('join')) {
+            console.log('Join button clicked for community:', communityId);
             e.preventDefault();
-            const communityId = button.dataset.communityId;
             await joinCommunity(communityId, button);
         }
     });
@@ -1039,10 +1056,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Добавляем функцию для вступления в сообщество
     async function joinCommunity(communityId, button) {
         try {
-            console.log('Попытка вступления в сообщество:', communityId);
+            console.log('Attempting to join community:', communityId);
             button.disabled = true;
 
             const currentUser = JSON.parse(localStorage.getItem('user'));
+            console.log('Current user:', currentUser);
+            
             if (!currentUser || !currentUser.id) {
                 throw new Error('Необходима авторизация');
             }
@@ -1057,7 +1076,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 })
             });
 
+            console.log('Join response:', response);
             const data = await response.json();
+            console.log('Join data:', data);
             
             if (!response.ok) {
                 throw new Error(data.error || 'Ошибка при вступлении в сообщество');
@@ -1083,7 +1104,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(data.error || 'Ошибка при вступлении в сообщество');
             }
         } catch (err) {
-            console.error('Ошибка при вступлении в сообщество:', err);
+            console.error('Error joining community:', err);
             showNotification('error', err.message || 'Не удалось вступить в сообщество');
             button.disabled = false;
         }
