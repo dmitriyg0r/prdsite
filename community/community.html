@@ -52,102 +52,72 @@
 
     <!-- Основной контент -->
     <div class="community-layout">
-        <div class="community-sidebar">
+        <!-- Сайдбар с информацией о сообществе -->
+        <aside class="community-sidebar">
             <div class="community-card">
                 <div class="community-header">
                     <div class="community-avatar-wrapper">
-                        <img id="community-avatar" src="/uploads/communities/default.png" alt="Аватар сообщества">
-                        <div class="avatar-overlay" style="display: none;">
-                            <label for="avatar-upload" class="avatar-upload-label">
-                                <i class="fas fa-camera"></i>
-                                <span>Обновить фото</span>
-                            </label>
-                            <input type="file" id="avatar-upload" accept="image/*" style="display: none;">
+                        <img src="{{ community.avatar }}" alt="Community avatar" class="community-avatar">
+                        {% if is_admin %}
+                        <div class="avatar-overlay">
+                            <i class="icon-camera"></i>
                         </div>
+                        {% endif %}
                     </div>
-                    <h1 id="community-name"></h1>
-                    <span id="community-type"></span>
-                    <div class="community-stats">
-                        <div class="stat-item">
-                            <i class="fas fa-users"></i>
-                            <span id="members-count">0</span> участников
-                        </div>
-                        <div class="stat-item">
-                            <i class="fas fa-newspaper"></i>
-                            <span id="posts-count">0</span> записей
-                        </div>
-                    </div>
+                    <h1 class="community-name">{{ community.name }}</h1>
+                    <p class="community-description">{{ community.description }}</p>
                 </div>
 
                 <div class="community-info">
                     <div class="info-row">
-                        <span class="info-label">Создатель:</span>
-                        <a id="creator-link" href="#" class="creator-name"></a>
+                        <span class="info-label">Подписчики</span>
+                        <span class="info-value">{{ community.followers_count }}</span>
                     </div>
                     <div class="info-row">
-                        <span class="info-label">Дата создания:</span>
-                        <span id="created-at"></span>
+                        <span class="info-label">Публикации</span>
+                        <span class="info-value">{{ community.posts_count }}</span>
                     </div>
                     <div class="info-row">
-                        <span class="info-label">Описание:</span>
-                        <p id="community-description" class="description-text"></p>
+                        <span class="info-label">Создано</span>
+                        <span class="info-value">{{ community.created_at|date }}</span>
+                    </div>
+                    
+                    {% if not is_member %}
+                    <button class="btn btn-primary btn-full">Подписаться</button>
+                    {% else %}
+                    <button class="btn btn-secondary btn-full">Отписаться</button>
+                    {% endif %}
+                </div>
+            </div>
+        </aside>
+
+        <!-- Основной контент с постами -->
+        <main class="posts-container">
+            {% for post in posts %}
+            <article class="post-card">
+                <div class="post-header">
+                    <div class="post-meta">
+                        <img src="{{ post.author.avatar }}" alt="Author avatar" class="post-author-avatar">
+                        <div class="post-info">
+                            <span class="post-author">{{ post.author.name }}</span>
+                            <span class="post-date">{{ post.created_at|date }}</span>
+                        </div>
                     </div>
                 </div>
-
-                <div class="community-actions">
-                    <button id="join-leave-btn" class="action-btn">
-                        <i class="fas fa-user-plus"></i>
-                        <span>Вступить</span>
-                    </button>
-                    <button id="edit-community-btn" class="action-btn" style="display: none;">
-                        <i class="fas fa-edit"></i>
-                        <span>Редактировать</span>
-                    </button>
+                <div class="post-content">
+                    <p>{{ post.content }}</p>
+                    {% if post.image %}
+                    <img src="{{ post.image }}" alt="Post image" class="post-image">
+                    {% endif %}
                 </div>
-            </div>
-
-            <!-- Блок участников -->
-            <div class="members-section">
-                <div class="members-header">
-                    <h3>Участники</h3>
-                    <span class="members-count">0</span>
+                <div class="post-actions">
+                    <button class="btn-icon"><i class="icon-like"></i> {{ post.likes_count }}</button>
+                    <button class="btn-icon"><i class="icon-comment"></i> {{ post.comments_count }}</button>
+                    <button class="btn-icon"><i class="icon-share"></i></button>
                 </div>
-                <div class="members-grid">
-                    <!-- Участники добавляются динамически -->
-                </div>
-            </div>
-        </div>
-
-        <div class="community-content">
-            <!-- Форма создания поста -->
-            <div id="post-form" class="post-form">
-                <textarea 
-                    id="post-content" 
-                    placeholder="Что нового в сообществе?" 
-                    maxlength="250"
-                ></textarea>
-                <div class="post-form-actions">
-                    <div class="post-attachments">
-                        <label for="post-image" class="attachment-btn">
-                            <i class="fas fa-image"></i>
-                            <span>Добавить фото</span>
-                        </label>
-                        <input type="file" id="post-image" accept="image/*" style="display: none;">
-                    </div>
-                    <button id="publish-post-btn" class="action-btn">
-                        <i class="fas fa-paper-plane"></i>
-                        <span>Опубликовать</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Контейнер для постов -->
-            <div id="posts-container" class="posts-container">
-                <!-- Посты добавляются динамически -->
-            </div>
-
-            <div id="community-members" class="members-container"></div>
-        </div>
+            </article>
+            {% endfor %}
+        </main>
     </div>
 
     <script src="community.js"></script>
