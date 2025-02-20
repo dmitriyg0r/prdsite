@@ -360,17 +360,19 @@ document.addEventListener('DOMContentLoaded', () => {
         return `
             <div class="community-card" data-id="${community.id}">
                 <div class="community-header">
-                    <img src="${community.avatar_url || '/uploads/communities/default.png'}" 
-                         alt="${community.name}" 
-                         class="community-avatar"
-                         onerror="this.src='/images/default-community.png'">
-                    <div class="community-info">
-                        <div class="community-name">${community.name}</div>
-                        <div class="community-description">${community.description || 'Нет описания'}</div>
-                        <div class="community-meta">
-                            ${community.members_count || 0} ${getPluralForm(community.members_count || 0, ['участник', 'участника', 'участников'])}
+                    <a href="/community/community.html?id=${community.id}" class="community-link">
+                        <img src="${community.avatar_url || '/uploads/communities/default.png'}" 
+                             alt="${community.name}" 
+                             class="community-avatar"
+                             onerror="this.src='/images/default-community.png'">
+                        <div class="community-info">
+                            <div class="community-name">${community.name}</div>
+                            <div class="community-description">${community.description || 'Нет описания'}</div>
+                            <div class="community-meta">
+                                ${community.members_count || 0} ${getPluralForm(community.members_count || 0, ['участник', 'участника', 'участников'])}
+                            </div>
                         </div>
-                    </div>
+                    </a>
                 </div>
                 <div class="community-actions">
                     <button type="button" 
@@ -379,11 +381,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             ${community.is_member ? 'disabled' : ''}>
                         ${community.is_member ? 'Вы участник' : 'Вступить'}
                     </button>
-                    <button type="button"
-                            class="community-action-btn visit"
-                            onclick="window.location.href='../community/community.html?id=${community.id}'">
+                    <a href="/community/community.html?id=${community.id}" 
+                       class="community-action-btn visit-link">
                         Перейти в сообщество
-                    </button>
+                    </a>
                 </div>
             </div>
         `;
@@ -1153,27 +1154,81 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Обновляем стили для кнопок
+    // Добавляем стили
     const styles = `
+        .community-link {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: inherit;
+            padding: 10px;
+        }
+
+        .community-link:hover {
+            background-color: var(--hover-color);
+        }
+
         .community-actions {
             display: flex;
             gap: 10px;
             padding: 10px;
             justify-content: flex-end;
+            align-items: center;
         }
 
-        .community-action-btn.visit {
+        .visit-link {
+            display: inline-block;
+            padding: 8px 16px;
             background-color: var(--secondary-color);
             color: white;
-            padding: 8px 16px;
+            text-decoration: none;
             border-radius: 4px;
-            border: none;
-            cursor: pointer;
             transition: background-color 0.3s;
         }
 
-        .community-action-btn.visit:hover {
+        .visit-link:hover {
             background-color: var(--secondary-color-dark);
+        }
+
+        .community-card {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            background-color: var(--surface-color);
+        }
+
+        .community-header {
+            display: flex;
+            align-items: center;
+        }
+
+        .community-avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            margin-right: 15px;
+            object-fit: cover;
+        }
+
+        .community-info {
+            flex-grow: 1;
+        }
+
+        .community-name {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+
+        .community-description {
+            color: var(--text-secondary);
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .community-meta {
+            font-size: 0.8em;
+            color: var(--text-secondary);
         }
     `;
 
