@@ -70,16 +70,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Функция для показа уведомлений
     function showNotification(type, message) {
-        const notification = document.createElement('div');
-        notification.className = `notification ${type}`;
-        notification.textContent = message;
-        
-        document.body.appendChild(notification);
-        
-        // Удаляем уведомление через 3 секунды
-        setTimeout(() => {
-            notification.remove();
-        }, 3000);
+        console.log(`Уведомление (${type}):`, message);
+        // Здесь должен быть код для отображения уведомлений
+        alert(message); // Временное решение, если нет системы уведомлений
     }
 
     // Функция debounce для поиска
@@ -324,16 +317,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Обновляем функцию для вступления в сообщество
     async function joinCommunity(communityId, button) {
+        console.log('Вызвана функция joinCommunity');
         try {
-            console.log('Attempting to join community:', communityId);
             button.disabled = true;
+            console.log('Кнопка отключена');
 
             const currentUser = JSON.parse(localStorage.getItem('user'));
-            console.log('Current user:', currentUser);
-            
             if (!currentUser || !currentUser.id) {
                 throw new Error('Необходима авторизация');
             }
+            console.log('Данные пользователя получены:', currentUser);
 
             const response = await fetch(`/api/communities/${communityId}/join`, {
                 method: 'POST',
@@ -344,28 +337,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     userId: currentUser.id
                 })
             });
+            console.log('Ответ сервера:', response);
 
-            console.log('Join response:', response);
             const data = await response.json();
-            console.log('Join data:', data);
-            
-            if (!response.ok) {
-                throw new Error(data.error || 'Ошибка при вступлении в сообщество');
-            }
+            console.log('Данные ответа:', data);
 
             if (data.success) {
-                // Обновляем внешний вид кнопки
                 button.textContent = 'Вы участник';
                 button.classList.remove('join');
                 button.classList.add('leave');
-                button.disabled = true;
-
-                // Обновляем счетчик участников, если он есть
+                
+                // Обновляем счетчик участников
                 const communityCard = button.closest('.community-card');
-                const membersCountEl = communityCard?.querySelector('.members-count');
-                if (membersCountEl) {
-                    const currentCount = parseInt(membersCountEl.textContent.match(/\d+/)[0]);
-                    membersCountEl.innerHTML = `<i class="fas fa-users"></i> ${currentCount + 1}`;
+                const metaDiv = communityCard.querySelector('.community-meta');
+                if (metaDiv) {
+                    const currentCount = parseInt(metaDiv.textContent) || 0;
+                    metaDiv.textContent = `${currentCount + 1} ${getPluralForm(currentCount + 1, ['участник', 'участника', 'участников'])}`;
                 }
 
                 showNotification('success', 'Вы успешно вступили в сообщество');
@@ -373,7 +360,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(data.error || 'Ошибка при вступлении в сообщество');
             }
         } catch (err) {
-            console.error('Error joining community:', err);
+            console.error('Ошибка:', err);
             showNotification('error', err.message || 'Не удалось вступить в сообщество');
             button.disabled = false;
         }
@@ -779,9 +766,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (button.classList.contains('join')) {
-            console.log('Попытка вступить в сообщество:', communityId);
+            console.log('Начинаем процесс вступления в сообщество');
             e.preventDefault();
-            await joinCommunity(communityId, button);
+            try {
+                await joinCommunity(communityId, button);
+            } catch (err) {
+                console.error('Ошибка при вступлении в сообщество:', err);
+            }
         }
     });
 
@@ -834,26 +825,35 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Добавляем обработчик ввода для поиска
-    document.querySelector('#community-search-input').addEventListener('input', debounce((e) => {
+    // Обновляем обработчик ввода для поиска
+    const searchInput = document.querySelector('#community-search-input');
+    const searchResults = document.querySelector('#search-communities .search-results');
+
+    searchInput.addEventListener('input', debounce(async (e) => {
         const query = e.target.value.trim();
+        console.log('Поисковый запрос:', query);
+        
         if (query.length >= 2) {
-            searchCommunities(query);
+            try {
+                const currentUser = JSON.parse(localStorage.getItem('user'));
+                console.log('Текущий пользователь:', currentUser);
+                
+                const response = await fetch(`/api/communities/search?q=${encodeURIComponent(query)}&userId=${currentUser.id}`);
+                const data = await response.json();
+                console.log('Результаты поиска:', data);
+
+                if (data.success && data.communities.length > 0) {
+                    searchResults.innerHTML = data.communities.map(createCommunityCard).join('');
+                    console.log('Обновлен HTML результатов поиска');
+                } else {
+                    searchResults.innerHTML = '<p class="no-results">Сообщества не найдены</p>';
+                }
+            } catch (err) {
+                console.error('Ошибка при поиске:', err);
+                searchResults.innerHTML = '<p class="error">Произошла ошибка при поиске</p>';
+            }
         }
     }, 300));
-
-    // Функция debounce для предотвращения частых запросов
-    function debounce(func, wait) {
-        let timeout;
-        return function executedFunction(...args) {
-            const later = () => {
-                clearTimeout(timeout);
-                func(...args);
-            };
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-        };
-    }
 
     // Функции для обновления счетчиков
     function updateCommunitiesCount(count) {
