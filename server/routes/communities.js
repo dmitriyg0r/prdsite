@@ -459,4 +459,51 @@ router.post('/:communityId/join', async (req, res) => {
     }
 });
 
+// Получение информации об отдельном сообществе
+router.get('/:communityId', async (req, res) => {
+    try {
+        const { communityId } = req.params;
+        const { userId } = req.query;
+
+        const result = await pool.query(`
+            SELECT 
+                c.*,
+                u.username as creator_name,
+                (SELECT COUNT(*) FROM community_members WHERE community_id = c.id) as members_count,
+                (SELECT COUNT(*) FROM community_posts WHERE community_id = c.id) as posts_count,
+                (SELECT ARRAY_AGG(user_id) FROM community_members WHERE community_id = c.id) as members,
+                CASE 
+                    WHEN EXISTS (
+                        SELECT 1 
+                        FROM community_members 
+                        WHERE community_id = c.id AND user_id = $2
+                    ) THEN true
+                    ELSE false
+                END as is_member
+            FROM communities c
+            LEFT JOIN users u ON c.created_by = u.id
+            WHERE c.id = $1
+        `, [communityId, userId]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'Сообщество не найдено'
+            });
+        }
+
+        res.json({
+            success: true,
+            community: result.rows[0]
+        });
+
+    } catch (err) {
+        console.error('Ошибка получения данных сообщества:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при получении данных сообщества'
+        });
+    }
+});
+
 module.exports = router;

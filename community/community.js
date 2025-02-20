@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Загрузка данных сообщества
     async function loadCommunityData() {
         try {
-            const response = await fetch(`https://space-point.ru/api/communities/${communityId}`);
+            const response = await fetch(`/api/communities/${communityId}?userId=${currentUser.id}`);
             if (!response.ok) throw new Error('Ошибка загрузки данных сообщества');
             
             const data = await response.json();
