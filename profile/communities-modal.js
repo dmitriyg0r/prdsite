@@ -216,7 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Находим элементы управления модальным окном
-    const searchInput = document.querySelector('#community-search-input');
+    const searchInput = document.querySelector('#community-search-input, input[type="text"].search-input');
     const searchResults = document.querySelector('#search-communities .search-results');
     
     console.log('Search input element:', searchInput);
@@ -326,14 +326,17 @@ document.addEventListener('DOMContentLoaded', () => {
         currentUserId = document.body.dataset.userId;
         console.log('ID текущего пользователя:', currentUserId); // Отладка
 
-        const searchInput = document.querySelector('#community-search-input');
+        // Исправляем селектор в соответствии с HTML
+        const searchInput = document.querySelector('#community-search-input, input[type="text"].search-input');
+        console.log('Инициализация поиска');
+
         if (searchInput) {
             // Получаем ID пользователя
             currentUserId = document.body.dataset.userId;
             console.log('Инициализация поиска, ID пользователя:', currentUserId);
 
             // Находим поле поиска
-            const searchInput = document.querySelector('#community-search-input');
+            const searchInput = document.querySelector('#community-search-input, input[type="text"].search-input');
             console.log('Найден элемент поиска:', !!searchInput);
 
             if (searchInput) {
@@ -341,19 +344,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.log('Ввод в поле поиска:', e.target.value);
                     const query = e.target.value.trim();
                     
-                    // Очищаем предыдущий таймер
                     if (window.searchTimeout) {
                         clearTimeout(window.searchTimeout);
                     }
 
-                    // Устанавливаем новый таймер
                     window.searchTimeout = setTimeout(() => {
                         console.log('Выполняется поиск для:', query);
                         handleSearch(query);
                     }, 300);
                 });
             } else {
-                console.error('Элемент поиска не найден на странице');
+                console.error('Элемент поиска не найден. Проверьте ID элемента в HTML');
             }
         }
     });
