@@ -739,7 +739,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (joinButton && !joinButton.disabled) {
             const communityId = joinButton.dataset.communityId;
-            await joinCommunity(communityId);
+            await joinCommunity(communityId, joinButton);
         } else if (leaveButton && !leaveButton.disabled) {
             const communityId = leaveButton.dataset.communityId;
             await leaveCommunity(communityId);
@@ -1007,4 +1007,54 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
+
+    // Добавляем функцию для вступления в сообщество
+    async function joinCommunity(communityId, button) {
+        try {
+            const response = await fetch(`/api/communities/${communityId}/join`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    userId: currentUserId
+                })
+            });
+
+            const data = await response.json();
+            
+            if (data.success) {
+                // Меняем вид кнопки
+                button.textContent = 'Выйти';
+                button.classList.remove('join');
+                button.classList.add('leave');
+                
+                // Показываем уведомление
+                showNotification('success', 'Вы успешно вступили в сообщество');
+            } else {
+                throw new Error(data.error || 'Ошибка при вступлении в сообщество');
+            }
+        } catch (err) {
+            console.error('Ошибка при вступлении в сообщество:', err);
+            showNotification('error', 'Не удалось вступить в сообщество');
+        }
+    }
+
+    // Добавляем обработчик клика на кнопки в результатах поиска
+    document.addEventListener('click', async (e) => {
+        const button = e.target.closest('.community-action-btn');
+        if (!button) return;
+
+        const communityId = button.dataset.communityId;
+        
+        if (button.classList.contains('join')) {
+            // Блокируем кнопку на время выполнения запроса
+            button.disabled = true;
+            await joinCommunity(communityId, button);
+            button.disabled = false;
+        } else if (button.classList.contains('leave')) {
+            // Можно добавить функционал выхода из сообщества здесь
+            console.log('Выход из сообщества');
+        }
+    });
 });
