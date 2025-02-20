@@ -326,14 +326,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const searchInput = document.querySelector('#community-search-input');
         if (searchInput) {
-            // Используем debounce для предотвращения частых запросов
-            let timeoutId;
-            searchInput.addEventListener('input', (e) => {
-                clearTimeout(timeoutId);
-                timeoutId = setTimeout(() => {
-                    handleSearch(e.target.value.trim());
-                }, 300);
-            });
+            // Получаем ID пользователя
+            currentUserId = document.body.dataset.userId;
+            console.log('Инициализация поиска, ID пользователя:', currentUserId);
+
+            // Находим поле поиска
+            const searchInput = document.querySelector('#community-search-input');
+            console.log('Найден элемент поиска:', !!searchInput);
+
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    console.log('Ввод в поле поиска:', e.target.value);
+                    const query = e.target.value.trim();
+                    
+                    // Очищаем предыдущий таймер
+                    if (window.searchTimeout) {
+                        clearTimeout(window.searchTimeout);
+                    }
+
+                    // Устанавливаем новый таймер
+                    window.searchTimeout = setTimeout(() => {
+                        console.log('Выполняется поиск для:', query);
+                        handleSearch(query);
+                    }, 300);
+                });
+            } else {
+                console.error('Элемент поиска не найден на странице');
+            }
         }
     });
 
