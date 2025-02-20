@@ -246,7 +246,8 @@ function createMessageElement(message) {
     if (message.sender_id !== currentUser.id) {
         const senderInfo = document.createElement('div');
         senderInfo.className = 'message-sender';
-        senderInfo.textContent = message.sender_name || 'Пользователь';
+        // Используем имя текущего собеседника, если это его сообщение
+        senderInfo.textContent = currentChatPartner?.username || message.sender_name || 'Пользователь';
         messageElement.appendChild(senderInfo);
     }
 
