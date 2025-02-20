@@ -13,7 +13,41 @@
 <body>
     <!-- Боковое меню -->
     <nav class="sidebar">
-        <!-- ... существующий код бокового меню ... -->
+        <button class="sidebar-toggle">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+        <div class="sidebar-logo">
+            <img src="../flow.ico" alt="Logo" class="sidebar-icon">
+        </div>
+        <div class="sidebar-nav">
+            <a href="../profile/profile.html" class="sidebar-link">
+                <i class="fas fa-user"></i>
+                <span>Профиль</span>
+            </a>
+            <a href="../lenta/lenta.html" class="sidebar-link">
+                <i class="fas fa-stream"></i>
+                <span>Лента</span>
+            </a>
+            <a href="../games/games.html" class="sidebar-link">
+                <i class="fas fa-gamepad"></i>
+                <span>Игры</span>
+            </a>
+            <a href="../about/about.html" class="sidebar-link">
+                <i class="fas fa-info-circle"></i>
+                <span>О нас</span>
+            </a>
+        </div>
+        <div class="theme-switch-wrapper">
+            <div class="theme-toggle-container">
+                <input type="checkbox" class="theme-checkbox" id="theme-toggle" hidden>
+                <label class="theme-label" for="theme-toggle">
+                    <div class="theme-icons">
+                        <i class="fas fa-sun theme-icon sun-icon"></i>
+                        <i class="fas fa-moon theme-icon moon-icon"></i>
+                    </div>
+                </label>
+            </div>
+        </div>
     </nav>
 
     <!-- Основной контент -->
