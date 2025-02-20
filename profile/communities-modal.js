@@ -13,6 +13,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const createForm = document.getElementById('createCommunityForm');
     const closeCreateModalBtn = createModal?.querySelector('.close');
 
+    // Получаем ID пользователя при инициализации
+    const currentUser = JSON.parse(localStorage.getItem('user'));
+    const currentUserId = currentUser?.id;
+
+    console.log('Текущий пользователь:', currentUserId);
+
     // Открытие модального окна при клике на заголовок "Сообщества"
     communitiesHeaderBtn?.addEventListener('click', (e) => {
         e.preventDefault();
@@ -232,28 +238,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
             window.communitySearchTimeout = setTimeout(() => {
                 console.log('Выполняется поиск сообществ для:', query);
-                handleSearch(query);
+                handleSearch(query, currentUserId);
             }, 300);
         });
     }
 
-    // Функция для обработки поиска сообществ
-    async function handleSearch(query) {
+    // Обновляем функцию handleSearch
+    async function handleSearch(query, userId) {
         const searchResults = document.querySelector('.search-results');
-        console.log('Поиск начат:', query); // Отладка
+        console.log('Поиск начат:', query, 'для пользователя:', userId);
         
         if (!query) {
             searchResults.innerHTML = '';
             return;
         }
 
+        if (!userId) {
+            console.error('ID пользователя не найден');
+            searchResults.innerHTML = '<div class="error-message">Ошибка: пользователь не авторизован</div>';
+            return;
+        }
+
         try {
-            const url = `/api/communities/search?q=${encodeURIComponent(query)}&userId=${currentUserId}`;
-            console.log('URL запроса:', url); // Отладка
+            const url = `/api/communities/search?q=${encodeURIComponent(query)}&userId=${userId}`;
+            console.log('URL запроса:', url);
 
             const response = await fetch(url);
             const data = await response.json();
-            console.log('Получены данные:', data); // Отладка
+            console.log('Получены данные:', data);
 
             if (data.success) {
                 if (data.communities.length === 0) {
@@ -331,48 +343,6 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Ошибка при выполнении действия:', err);
         }
     }
-
-    // Добавляем глобальную переменную для ID текущего пользователя
-    let currentUserId;
-
-    // Инициализация при загрузке страницы
-    document.addEventListener('DOMContentLoaded', () => {
-        // Получаем ID пользователя из data-атрибута на странице
-        currentUserId = document.body.dataset.userId;
-        console.log('ID текущего пользователя:', currentUserId); // Отладка
-
-        // Находим поле поиска
-        const searchInput = document.querySelector('#community-search-input, input[type="text"].search-input');
-        console.log('Инициализация поиска');
-
-        if (searchInput) {
-            // Получаем ID пользователя
-            currentUserId = document.body.dataset.userId;
-            console.log('Инициализация поиска, ID пользователя:', currentUserId);
-
-            // Находим поле поиска
-            const searchInput = document.querySelector('#community-search-input, input[type="text"].search-input');
-            console.log('Найден элемент поиска:', !!searchInput);
-
-            if (searchInput) {
-                searchInput.addEventListener('input', (e) => {
-                    console.log('Ввод в поле поиска:', e.target.value);
-                    const query = e.target.value.trim();
-                    
-                    if (window.searchTimeout) {
-                        clearTimeout(window.searchTimeout);
-                    }
-
-                    window.searchTimeout = setTimeout(() => {
-                        console.log('Выполняется поиск для:', query);
-                        handleSearch(query);
-                    }, 300);
-                });
-            } else {
-                console.error('Элемент поиска не найден. Проверьте ID элемента в HTML');
-            }
-        }
-    });
 
     // Функция для открытия модального окна создания сообщества
     function openCreateCommunityModal() {
@@ -568,7 +538,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 searchInput.addEventListener('input', debounce(async (e) => {
                     const query = e.target.value.trim();
                     if (query) {
-                        await handleSearch(query);
+                        await handleSearch(query, currentUserId);
                     } else {
                         const searchResults = document.querySelector('.search-results');
                         if (searchResults) {
