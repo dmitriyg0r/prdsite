@@ -410,4 +410,53 @@ router.get('/:communityId/posts', async (req, res) => {
     }
 });
 
+// Добавляем эндпоинт для вступления в сообщество
+router.post('/:communityId/join', async (req, res) => {
+    const client = await pool.connect();
+    try {
+        const { communityId } = req.params;
+        const { userId } = req.body;
+
+        if (!userId || !communityId) {
+            return res.status(400).json({
+                success: false,
+                error: 'Необходимы userId и communityId'
+            });
+        }
+
+        // Проверяем, не является ли пользователь уже участником
+        const memberCheck = await client.query(
+            'SELECT * FROM community_members WHERE community_id = $1 AND user_id = $2',
+            [communityId, userId]
+        );
+
+        if (memberCheck.rows.length > 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'Вы уже являетесь участником этого сообщества'
+            });
+        }
+
+        // Добавляем пользователя в сообщество
+        await client.query(
+            'INSERT INTO community_members (community_id, user_id, role) VALUES ($1, $2, $3)',
+            [communityId, userId, 'member']
+        );
+
+        res.json({
+            success: true,
+            message: 'Вы успешно вступили в сообщество'
+        });
+
+    } catch (err) {
+        console.error('Ошибка при вступлении в сообщество:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при вступлении в сообщество'
+        });
+    } finally {
+        client.release();
+    }
+});
+
 module.exports = router;
