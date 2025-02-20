@@ -35,6 +35,9 @@ const upload = multer({
     }
 });
 
+// Добавляем константу для пути аватара по умолчанию
+const DEFAULT_COMMUNITY_AVATAR = '/uploads/avatars/default-community.png';
+
 // Функция для создания таблиц, если они не существуют
 async function ensureTablesExist() {
     const client = await pool.connect();
@@ -141,7 +144,7 @@ router.post('/create', upload.single('avatar'), async (req, res) => {
             description?.trim() || '',
             type || 'public',
             creatorId,
-            req.file ? `/uploads/communities/${req.file.filename}` : '/uploads/communities/default.png'
+            req.file ? `/uploads/communities/${req.file.filename}` : DEFAULT_COMMUNITY_AVATAR
         ]);
 
         const community = communityResult.rows[0];

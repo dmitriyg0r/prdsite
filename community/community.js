@@ -12,10 +12,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function loadCommunityData() {
         try {
             const response = await fetch(`/api/communities/${communityId}?userId=${currentUser.id}`);
-            if (!response.ok) throw new Error('Ошибка загрузки данных сообщества');
+            if (!response.ok) {
+                throw new Error('Ошибка загрузки данных сообщества');
+            }
             
             const data = await response.json();
-            if (!data.success) throw new Error(data.error);
+            if (!data.success) {
+                throw new Error(data.error || 'Ошибка загрузки данных сообщества');
+            }
 
             updateCommunityUI(data.community);
             checkMembershipStatus(data.community);
@@ -23,7 +27,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             loadCommunityMembers();
         } catch (err) {
             console.error('Error:', err);
-            alert('Ошибка при загрузке сообщества');
+            showError('Ошибка при загрузке сообщества: ' + err.message);
         }
     }
 
@@ -186,6 +190,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             alert('Ошибка при создании поста');
         }
     });
+
+    // Добавим функцию для отображения ошибок
+    function showError(message) {
+        const errorElement = document.getElementById('error-message');
+        if (errorElement) {
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        } else {
+            alert(message);
+        }
+    }
 
     // Инициализация
     loadCommunityData();
