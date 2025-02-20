@@ -1,3 +1,5 @@
+console.log('Скрипт communities-modal.js загружен');
+
 document.addEventListener('DOMContentLoaded', () => {
     const communitiesModal = document.getElementById('communities-modal');
     const communitiesCount = document.querySelector('.communities-count');
