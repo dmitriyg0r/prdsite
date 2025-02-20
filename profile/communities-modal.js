@@ -359,7 +359,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Создание карточки для сообщества:', community);
         return `
             <div class="community-card" data-id="${community.id}">
-                <a href="/community/community.html?id=${community.id}" class="community-header-link">
+                <div class="community-header">
                     <img src="${community.avatar_url || '/uploads/communities/default.png'}" 
                          alt="${community.name}" 
                          class="community-avatar"
@@ -371,13 +371,20 @@ document.addEventListener('DOMContentLoaded', () => {
                             ${community.members_count || 0} ${getPluralForm(community.members_count || 0, ['участник', 'участника', 'участников'])}
                         </div>
                     </div>
-                </a>
-                <button type="button" 
-                        class="community-action-btn join" 
-                        data-community-id="${community.id}"
-                        ${community.is_member ? 'disabled' : ''}>
-                    ${community.is_member ? 'Вы участник' : 'Вступить'}
-                </button>
+                </div>
+                <div class="community-actions">
+                    <button type="button" 
+                            class="community-action-btn join" 
+                            data-community-id="${community.id}"
+                            ${community.is_member ? 'disabled' : ''}>
+                        ${community.is_member ? 'Вы участник' : 'Вступить'}
+                    </button>
+                    <button type="button"
+                            class="community-action-btn visit"
+                            onclick="window.location.href='../community/community.html?id=${community.id}'">
+                        Перейти в сообщество
+                    </button>
+                </div>
             </div>
         `;
     }
@@ -1132,4 +1139,46 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
+
+    // Добавляем обработчик для перехода в сообщество
+    document.querySelector('#communities-modal').addEventListener('click', (e) => {
+        const visitButton = e.target.closest('.community-action-btn.visit');
+        if (visitButton) {
+            const communityCard = visitButton.closest('.community-card');
+            const communityId = communityCard.dataset.id;
+            if (communityId) {
+                console.log('Переход в сообщество:', communityId);
+                window.location.href = `/community/community.html?id=${communityId}`;
+            }
+        }
+    });
+
+    // Обновляем стили для кнопок
+    const styles = `
+        .community-actions {
+            display: flex;
+            gap: 10px;
+            padding: 10px;
+            justify-content: flex-end;
+        }
+
+        .community-action-btn.visit {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .community-action-btn.visit:hover {
+            background-color: var(--secondary-color-dark);
+        }
+    `;
+
+    // Добавляем стили на страницу
+    const styleSheet = document.createElement("style");
+    styleSheet.textContent = styles;
+    document.head.appendChild(styleSheet);
 });
