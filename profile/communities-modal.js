@@ -215,12 +215,27 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Находим элементы управления модальным окном
-    const searchInput = document.querySelector('#community-search-input, input[type="text"].search-input');
-    const searchResults = document.querySelector('#search-communities .search-results');
-    
-    console.log('Search input element:', searchInput);
-    console.log('Search results element:', searchResults);
+    // Находим элементы для поиска сообществ
+    const communitySearchInput = document.querySelector('#community-search-input');
+    const communitySearchResults = document.querySelector('.search-results');
+
+    console.log('Community search input found:', !!communitySearchInput);
+
+    if (communitySearchInput) {
+        communitySearchInput.addEventListener('input', (e) => {
+            console.log('Поиск сообществ:', e.target.value);
+            const query = e.target.value.trim();
+            
+            if (window.communitySearchTimeout) {
+                clearTimeout(window.communitySearchTimeout);
+            }
+
+            window.communitySearchTimeout = setTimeout(() => {
+                console.log('Выполняется поиск сообществ для:', query);
+                handleSearch(query);
+            }, 300);
+        });
+    }
 
     // Функция для обработки поиска сообществ
     async function handleSearch(query) {
@@ -326,7 +341,7 @@ document.addEventListener('DOMContentLoaded', () => {
         currentUserId = document.body.dataset.userId;
         console.log('ID текущего пользователя:', currentUserId); // Отладка
 
-        // Исправляем селектор в соответствии с HTML
+        // Находим поле поиска
         const searchInput = document.querySelector('#community-search-input, input[type="text"].search-input');
         console.log('Инициализация поиска');
 
