@@ -223,6 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Функция для обработки поиска сообществ
     async function handleSearch(query) {
         const searchResults = document.querySelector('.search-results');
+        console.log('Поиск начат:', query); // Отладка
         
         if (!query) {
             searchResults.innerHTML = '';
@@ -230,8 +231,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const response = await fetch(`/api/communities/search?q=${encodeURIComponent(query)}&userId=${currentUserId}`);
+            const url = `/api/communities/search?q=${encodeURIComponent(query)}&userId=${currentUserId}`;
+            console.log('URL запроса:', url); // Отладка
+
+            const response = await fetch(url);
             const data = await response.json();
+            console.log('Получены данные:', data); // Отладка
 
             if (data.success) {
                 if (data.communities.length === 0) {
@@ -239,11 +244,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
 
-                searchResults.innerHTML = data.communities.map(community => `
+                const html = data.communities.map(community => `
                     <div class="community-card">
                         <img src="${community.avatar_url || '/images/default-community.png'}" 
                              alt="${community.name}" 
-                             class="community-avatar">
+                             class="community-avatar"
+                             onerror="this.src='/images/default-community.png'">
                         <div class="community-info">
                             <div class="community-name">${community.name}</div>
                             <div class="community-description">${community.description || ''}</div>
@@ -252,12 +258,23 @@ document.addEventListener('DOMContentLoaded', () => {
                             </div>
                         </div>
                         <button class="community-action-btn ${community.is_member ? 'leave' : 'join'}"
-                                data-community-id="${community.id}"
-                                onclick="handleCommunityAction(${community.id}, ${!community.is_member})">
+                                data-community-id="${community.id}">
                             ${community.is_member ? 'Выйти' : 'Вступить'}
                         </button>
                     </div>
                 `).join('');
+
+                console.log('Сгенерированный HTML:', html); // Отладка
+                searchResults.innerHTML = html;
+
+                // Добавляем обработчики для кнопок
+                document.querySelectorAll('.community-action-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const communityId = btn.dataset.communityId;
+                        const isJoining = btn.classList.contains('join');
+                        handleCommunityAction(communityId, isJoining);
+                    });
+                });
             }
         } catch (err) {
             console.error('Ошибка при поиске сообществ:', err);
@@ -298,14 +315,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Обновляем обработчик ввода для поиска
-    document.querySelectorAll('.community-search input').forEach(input => {
-        if (input) {
-            input.addEventListener('input', debounce(async (e) => {
-                const query = e.target.value.trim();
-                console.log('Поисковый запрос:', query);
-                await handleSearch(query);
-            }, 300));
+    // Добавляем глобальную переменную для ID текущего пользователя
+    let currentUserId;
+
+    // Инициализация при загрузке страницы
+    document.addEventListener('DOMContentLoaded', () => {
+        // Получаем ID пользователя из data-атрибута на странице
+        currentUserId = document.body.dataset.userId;
+        console.log('ID текущего пользователя:', currentUserId); // Отладка
+
+        const searchInput = document.querySelector('#community-search-input');
+        if (searchInput) {
+            // Используем debounce для предотвращения частых запросов
+            let timeoutId;
+            searchInput.addEventListener('input', (e) => {
+                clearTimeout(timeoutId);
+                timeoutId = setTimeout(() => {
+                    handleSearch(e.target.value.trim());
+                }, 300);
+            });
         }
     });
 

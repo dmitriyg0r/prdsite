@@ -12,7 +12,7 @@
     <link rel="icon" type="image/x-icon" href="../flow.ico">
     <link rel="stylesheet" href="communities.css">
 </head>
-<body>
+<body data-user-id="<%= currentUser.id %>">
     <!-- Обновленное боковое меню -->
     <nav class="sidebar">
         <button class="sidebar-toggle">
@@ -281,7 +281,9 @@
                                class="search-input"
                                placeholder="Поиск сообществ...">
                     </div>
-                    <div class="search-results"></div>
+                    <div class="search-results">
+                        <!-- Результаты поиска будут добавлены сюда -->
+                    </div>
                 </div>
 
                 <div class="tab-content" id="create-community">
