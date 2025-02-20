@@ -201,7 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="error-message">
                         <i class="fas fa-exclamation-circle"></i>
                         <p>Ошибка при загрузке сообществ</p>
-                        <button class="retry-btn">Повторить попытку</button>
+                        <button class="retry-btn" type="button">Повторить попытку</button>
                     </div>
                 `;
                 
@@ -687,15 +687,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Обработчики для кнопок вступления/выхода из сообщества
+    // Объединяем обработчики для кнопок вступления/выхода из сообщества
     document.addEventListener('click', async (e) => {
-        if (e.target.closest('.join-community-btn')) {
-            const btn = e.target.closest('.join-community-btn');
-            const communityId = btn.dataset.communityId;
+        const joinButton = e.target.closest('.join-community-btn');
+        const leaveButton = e.target.closest('.leave-community-btn');
+        
+        if (joinButton && !joinButton.disabled) {
+            const communityId = joinButton.dataset.communityId;
             await joinCommunity(communityId);
-        } else if (e.target.closest('.leave-community-btn')) {
-            const btn = e.target.closest('.leave-community-btn');
-            const communityId = btn.dataset.communityId;
+        } else if (leaveButton && !leaveButton.disabled) {
+            const communityId = leaveButton.dataset.communityId;
             await leaveCommunity(communityId);
         }
     });

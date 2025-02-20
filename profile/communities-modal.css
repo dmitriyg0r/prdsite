@@ -1,6 +1,6 @@
 .no-communities {
     text-align: center;
-    padding: 3rem;
+    padding: var(--spacing-xl);
     background: var(--surface-color);
     border-radius: var(--radius-lg);
     margin: 1rem 0;
@@ -11,31 +11,27 @@
     flex-direction: column;
     align-items: center;
     gap: 1rem;
+    max-width: 400px;
+    margin: 0 auto;
 }
 
-.no-communities i.fa-users-slash {
+.no-communities i {
     font-size: 3rem;
     color: var(--text-secondary);
-    margin-bottom: 1rem;
-}
-
-.no-communities p {
-    color: var(--text-secondary);
-    margin-bottom: 1.5rem;
+    margin-bottom: var(--spacing-md);
 }
 
 .error-message {
     text-align: center;
-    padding: 2rem;
+    padding: var(--spacing-xl);
     background: var(--error-bg);
     border-radius: var(--radius-lg);
-    margin: 1rem 0;
-    color: var(--error-text);
+    color: var(--error-color);
 }
 
 .error-message i {
     font-size: 2rem;
-    margin-bottom: 1rem;
+    margin-bottom: var(--spacing-sm);
 }
 
 .error-message small {
@@ -359,35 +355,6 @@
     background: var(--primary-dark);
 }
 
-/* Стили для состояния отсутствия сообществ */
-.no-communities {
-    padding: var(--spacing-xl);
-    text-align: center;
-}
-
-.no-communities-content {
-    max-width: 400px;
-    margin: 0 auto;
-}
-
-.no-communities i {
-    font-size: 3rem;
-    color: var(--text-secondary);
-    margin-bottom: var(--spacing-md);
-}
-
-/* Стили для сообщения об ошибке */
-.error-message {
-    text-align: center;
-    padding: var(--spacing-xl);
-    color: var(--error-color);
-}
-
-.error-message i {
-    font-size: 2rem;
-    margin-bottom: var(--spacing-sm);
-}
-
 .retry-btn {
     margin-top: var(--spacing-md);
     padding: var(--spacing-sm) var(--spacing-md);
@@ -396,4 +363,9 @@
     border: none;
     border-radius: var(--radius-sm);
     cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.retry-btn:hover {
+    background: var(--primary-dark);
 } 
