@@ -755,22 +755,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Объединяем обработчики для кнопок вступления/выхода из сообщества
-    document.addEventListener('click', (e) => {
+    // Добавляем делегирование событий на родительский элемент
+    document.querySelector('#communities-modal').addEventListener('click', (e) => {
         const button = e.target.closest('.community-action-btn');
         if (!button) return;
 
         console.log('Клик по кнопке:', button); // Отладка
-
-        const communityId = button.dataset.communityId;
-        console.log('ID сообщества:', communityId); // Отладка
+        console.log('ID сообщества:', button.dataset.communityId); // Отладка
         
         if (button.classList.contains('join')) {
-            e.preventDefault(); // Предотвращаем стандартное поведение
+            e.preventDefault();
+            const communityId = button.dataset.communityId;
             joinCommunity(communityId, button);
-        } else if (button.classList.contains('leave')) {
-            // Можно добавить функционал выхода из сообщества здесь
-            console.log('Выход из сообщества');
         }
     });
 
