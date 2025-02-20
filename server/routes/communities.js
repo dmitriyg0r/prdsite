@@ -196,7 +196,7 @@ router.get('/', async (req, res) => {
             });
         }
 
-        // Проверяем существование обеих таблиц
+        // Проверяем существование таблиц
         const tablesExist = await pool.query(`
             SELECT 
                 EXISTS (
@@ -214,7 +214,6 @@ router.get('/', async (req, res) => {
         const { communities_exist, members_exist } = tablesExist.rows[0];
 
         if (!communities_exist || !members_exist) {
-            // Если хотя бы одна из таблиц не существует, возвращаем пустой массив
             console.log('Tables do not exist yet:', { communities_exist, members_exist });
             return res.json({
                 success: true,
@@ -222,27 +221,20 @@ router.get('/', async (req, res) => {
             });
         }
 
-        // Если обе таблицы существуют, выполняем основной запрос
+        // Изменённый запрос - получаем только сообщества, где пользователь является участником
         const result = await pool.query(`
-            SELECT DISTINCT
+            SELECT 
                 c.*,
-                COALESCE(
-                    (SELECT COUNT(*) FROM community_members WHERE community_id = c.id),
-                    0
-                ) as members_count,
-                CASE 
-                    WHEN EXISTS (
-                        SELECT 1 FROM community_members 
-                        WHERE community_id = c.id AND user_id = $1
-                    ) THEN true
-                    ELSE false
-                END as is_member
+                (SELECT COUNT(*) FROM community_members WHERE community_id = c.id) as members_count,
+                cm.role as user_role,
+                true as is_member
             FROM communities c
-            LEFT JOIN community_members cm ON c.id = cm.community_id AND cm.user_id = $1
+            INNER JOIN community_members cm ON c.id = cm.community_id
+            WHERE cm.user_id = $1
             ORDER BY c.created_at DESC
         `, [userId]);
 
-        console.log('Communities found:', result.rows.length);
+        console.log('User communities found:', result.rows.length);
 
         return res.json({
             success: true,
@@ -250,7 +242,6 @@ router.get('/', async (req, res) => {
         });
     } catch (err) {
         console.error('Error getting user communities:', err);
-        // Добавляем детали ошибки в ответ для отладки
         return res.status(500).json({
             success: false,
             error: 'Ошибка при получении списка сообществ',
