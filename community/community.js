@@ -11,49 +11,45 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Загрузка данных сообщества
     async function loadCommunityData() {
         try {
-            const response = await fetch(`/api/communities/${communityId}?userId=${currentUser.id}`);
+            const response = await fetch(`/api/communities/${communityId}`);
+            const data = await response.json();
+            
             if (!response.ok) {
-                throw new Error('Ошибка загрузки данных сообщества');
+                throw new Error(data.message || 'Ошибка загрузки данных сообщества');
             }
             
-            const data = await response.json();
-            if (!data.success) {
-                throw new Error(data.error || 'Ошибка загрузки данных сообщества');
-            }
-
-            updateCommunityUI(data.community);
+            updateCommunityUI(data);
             checkMembershipStatus(data.community);
             loadCommunityPosts();
             loadCommunityMembers();
-        } catch (err) {
-            console.error('Error:', err);
-            showError('Ошибка при загрузке сообщества: ' + err.message);
+        } catch (error) {
+            console.error('Ошибка:', error);
+            // Показать сообщение об ошибке пользователю
         }
     }
 
     // Обновление UI сообщества
-    function updateCommunityUI(community) {
-        document.getElementById('community-name').textContent = community.name;
-        document.getElementById('community-type').textContent = 
-            community.type === 'public' ? 'Публичное сообщество' : 'Закрытое сообщество';
-        document.getElementById('community-avatar').src = 
-            community.avatar_url || '/uploads/communities/default.png';
-        document.getElementById('community-description').textContent = 
-            community.description || 'Описание отсутствует';
-        document.getElementById('created-at').textContent = 
-            new Date(community.created_at).toLocaleDateString();
-        document.getElementById('members-count').textContent = 
-            community.members_count || 0;
-        document.getElementById('posts-count').textContent = 
-            community.posts_count || 0;
+    function updateCommunityUI(data) {
+        // Проверяем наличие элементов перед обновлением
+        const nameElement = document.querySelector('.community-name');
+        const descriptionElement = document.querySelector('.community-description');
+        const avatarElement = document.querySelector('.community-avatar');
+        const followersCountElement = document.querySelector('.info-value[data-type="followers"]');
+        const postsCountElement = document.querySelector('.info-value[data-type="posts"]');
+
+        if (nameElement) nameElement.textContent = data.name;
+        if (descriptionElement) descriptionElement.textContent = data.description;
+        if (avatarElement) avatarElement.src = data.avatar || '/default-community-avatar.png';
+        if (followersCountElement) followersCountElement.textContent = data.followers_count;
+        if (postsCountElement) postsCountElement.textContent = data.posts_count;
 
         // Настройка ссылки на профиль создателя
         const creatorLink = document.getElementById('creator-link');
-        creatorLink.href = `/profile/profile.html?id=${community.creator_id}`;
-        creatorLink.textContent = community.creator_name;
+        creatorLink.href = `/profile/profile.html?id=${data.creator_id}`;
+        creatorLink.textContent = data.creator_name;
 
         // Показываем кнопку редактирования только создателю
-        if (currentUser.id === community.creator_id) {
+        if (currentUser.id === data.creator_id) {
             document.getElementById('edit-community-btn').style.display = 'block';
             document.querySelector('.avatar-overlay').style.display = 'flex';
         }
