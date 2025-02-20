@@ -202,6 +202,52 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    async function loadCommunityMembers() {
+        try {
+            const response = await fetch(`/api/communities/${communityId}/members`);
+            if (!response.ok) {
+                throw new Error('Ошибка загрузки участников сообщества');
+            }
+            
+            const data = await response.json();
+            if (!data.success) {
+                throw new Error(data.error || 'Ошибка загрузки участников сообщества');
+            }
+
+            updateMembersUI(data.members);
+        } catch (err) {
+            console.error('Error loading members:', err);
+            showError('Ошибка при загрузке участников сообщества');
+        }
+    }
+
+    function updateMembersUI(members) {
+        const membersContainer = document.getElementById('community-members');
+        if (!membersContainer) return;
+
+        membersContainer.innerHTML = '';
+        
+        if (!members.length) {
+            membersContainer.innerHTML = '<p>В сообществе пока нет участников</p>';
+            return;
+        }
+
+        members.forEach(member => {
+            const memberElement = document.createElement('div');
+            memberElement.className = 'member-item';
+            memberElement.innerHTML = `
+                <img src="${member.avatar_url || '/uploads/avatars/default-avatar.png'}" 
+                     alt="${member.username}" 
+                     class="member-avatar">
+                <div class="member-info">
+                    <div class="member-name">${member.username}</div>
+                    <div class="member-role">${member.role}</div>
+                </div>
+            `;
+            membersContainer.appendChild(memberElement);
+        });
+    }
+
     // Инициализация
     loadCommunityData();
 }); 

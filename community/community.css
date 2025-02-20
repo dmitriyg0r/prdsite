@@ -117,4 +117,35 @@
         width: 80px;
         height: 80px;
     }
+}
+
+.members-container {
+    margin-top: 20px;
+}
+
+.member-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.member-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.member-info {
+    flex: 1;
+}
+
+.member-name {
+    font-weight: bold;
+}
+
+.member-role {
+    font-size: 0.9em;
+    color: #666;
 } 

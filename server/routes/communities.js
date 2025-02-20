@@ -509,4 +509,42 @@ router.get('/:communityId', async (req, res) => {
     }
 });
 
+// Получение списка участников сообщества
+router.get('/:communityId/members', async (req, res) => {
+    try {
+        const { communityId } = req.params;
+
+        const result = await pool.query(`
+            SELECT 
+                u.id,
+                u.username,
+                u.avatar_url,
+                cm.role,
+                cm.joined_at
+            FROM community_members cm
+            JOIN users u ON cm.user_id = u.id
+            WHERE cm.community_id = $1
+            ORDER BY 
+                CASE 
+                    WHEN cm.role = 'admin' THEN 1
+                    WHEN cm.role = 'moderator' THEN 2
+                    ELSE 3
+                END,
+                cm.joined_at ASC
+        `, [communityId]);
+
+        res.json({
+            success: true,
+            members: result.rows
+        });
+
+    } catch (err) {
+        console.error('Ошибка получения списка участников:', err);
+        res.status(500).json({
+            success: false,
+            error: 'Ошибка при получении списка участников'
+        });
+    }
+});
+
 module.exports = router;
