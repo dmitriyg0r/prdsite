@@ -1125,4 +1125,85 @@ document.addEventListener('DOMContentLoaded', () => {
             await joinCommunity(communityId, button);
         }
     });
+
+    // Функция для создания карточки сообщества
+    function createCommunityCard(community) {
+        return `
+            <div class="community-card" data-id="${community.id}">
+                <img src="${community.avatar_url || '/uploads/communities/default.png'}" alt="${community.name}" class="community-avatar">
+                <div class="community-info">
+                    <h3>${community.name}</h3>
+                    <p>${community.description || 'Нет описания'}</p>
+                    <span class="members-count"><i class="fas fa-users"></i> ${community.members_count || 0}</span>
+                </div>
+                <button 
+                    class="community-action-btn ${community.is_member ? 'leave' : 'join'}" 
+                    data-community-id="${community.id}"
+                    ${community.is_member ? 'disabled' : ''}
+                >
+                    ${community.is_member ? 'Вы участник' : 'Вступить'}
+                </button>
+            </div>
+        `;
+    }
+
+    // Обновляем функцию поиска сообществ
+    async function searchCommunities(query) {
+        try {
+            const currentUser = JSON.parse(localStorage.getItem('user'));
+            const response = await fetch(`/api/communities/search?q=${encodeURIComponent(query)}&userId=${currentUser.id}`);
+            const data = await response.json();
+
+            const searchResults = document.querySelector('#search-communities .search-results');
+            if (data.success && data.communities.length > 0) {
+                searchResults.innerHTML = data.communities.map(createCommunityCard).join('');
+            } else {
+                searchResults.innerHTML = '<p class="no-results">Сообщества не найдены</p>';
+            }
+        } catch (err) {
+            console.error('Ошибка при поиске сообществ:', err);
+            showNotification('error', 'Ошибка при поиске сообществ');
+        }
+    }
+
+    // Добавляем обработчик ввода для поиска
+    document.querySelector('#community-search-input').addEventListener('input', debounce((e) => {
+        const query = e.target.value.trim();
+        if (query.length >= 2) {
+            searchCommunities(query);
+        }
+    }, 300));
+
+    // Функция debounce для предотвращения частых запросов
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
+    // Обработчик кликов по кнопкам действий
+    document.querySelector('#communities-modal').addEventListener('click', async (e) => {
+        console.log('Click event on communities modal');
+        const button = e.target.closest('.community-action-btn');
+        console.log('Found button:', button);
+        
+        if (!button || button.disabled) return;
+
+        const communityId = button.dataset.communityId;
+        console.log('Community ID:', communityId);
+        
+        if (!communityId) return;
+
+        if (button.classList.contains('join')) {
+            console.log('Join button clicked');
+            e.preventDefault();
+            await joinCommunity(communityId, button);
+        }
+    });
 });
