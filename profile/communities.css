@@ -172,4 +172,54 @@
         padding: 4px 8px;
         font-size: 12px;
     }
+}
+
+/* Стили для кнопок действий с сообществами */
+.community-action-btn {
+    padding: 6px 12px;
+    border-radius: var(--radius-md);
+    border: none;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.community-action-btn.join {
+    background: var(--primary-color);
+    color: white;
+}
+
+.community-action-btn.join:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+}
+
+.community-action-btn.leave {
+    background: var(--background-color);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-light);
+}
+
+.community-action-btn.leave:hover {
+    background: var(--error-color);
+    color: white;
+    border-color: var(--error-color);
+}
+
+.community-action-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Анимация для иконки */
+.community-action-btn i {
+    transition: transform 0.3s ease;
+}
+
+.community-action-btn:hover i {
+    transform: scale(1.1);
 } 

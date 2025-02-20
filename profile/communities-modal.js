@@ -74,6 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         document.body.appendChild(notification);
         
+        // Удаляем уведомление через 3 секунды
         setTimeout(() => {
             notification.remove();
         }, 3000);
@@ -319,30 +320,42 @@ document.addEventListener('DOMContentLoaded', () => {
         return titles[(number % 100 > 4 && number % 100 < 20) ? 2 : cases[(number % 10 < 5) ? number % 10 : 5]];
     }
 
-    // Функция для обработки вступления/выхода из сообщества
-    async function handleCommunityAction(communityId, isJoining) {
+    // Функция для обработки вступления в сообщество
+    async function joinCommunity(communityId, button) {
         try {
-            const response = await fetch(`/api/communities/${communityId}/${isJoining ? 'join' : 'leave'}`, {
+            button.disabled = true;
+            
+            const response = await fetch(`/api/communities/${communityId}/join`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ userId: currentUserId })
+                body: JSON.stringify({
+                    userId: currentUserId
+                })
             });
 
             const data = await response.json();
+            
             if (data.success) {
-                // Обновляем кнопку
-                const button = document.querySelector(`[data-community-id="${communityId}"]`);
-                if (button) {
-                    button.textContent = isJoining ? 'Выйти' : 'Вступить';
-                    button.classList.toggle('join');
-                    button.classList.toggle('leave');
-                    button.onclick = () => handleCommunityAction(communityId, !isJoining);
-                }
+                // Меняем вид кнопки
+                button.textContent = 'Выйти';
+                button.classList.remove('join');
+                button.classList.add('leave');
+                
+                // Показываем уведомление об успехе
+                showNotification('success', 'Вы успешно вступили в сообщество');
+                
+                // Обновляем счетчик сообществ
+                updateCommunitiesCount();
+            } else {
+                showNotification('error', data.error || 'Ошибка при вступлении в сообщество');
             }
         } catch (err) {
-            console.error('Ошибка при выполнении действия:', err);
+            console.error('Error joining community:', err);
+            showNotification('error', 'Ошибка при вступлении в сообщество');
+        } finally {
+            button.disabled = false;
         }
     }
 
@@ -733,16 +746,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Объединяем обработчики для кнопок вступления/выхода из сообщества
-    document.addEventListener('click', async (e) => {
-        const joinButton = e.target.closest('.join-community-btn');
-        const leaveButton = e.target.closest('.leave-community-btn');
+    document.addEventListener('click', (e) => {
+        const button = e.target.closest('.community-action-btn');
+        if (!button) return;
+
+        const communityId = button.dataset.communityId;
         
-        if (joinButton && !joinButton.disabled) {
-            const communityId = joinButton.dataset.communityId;
-            await joinCommunity(communityId, joinButton);
-        } else if (leaveButton && !leaveButton.disabled) {
-            const communityId = leaveButton.dataset.communityId;
-            await leaveCommunity(communityId);
+        if (button.classList.contains('join')) {
+            joinCommunity(communityId, button);
+        } else if (button.classList.contains('leave')) {
+            // Можно добавить функционал выхода из сообщества здесь
+            console.log('Выход из сообщества');
         }
     });
 
@@ -1011,6 +1025,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Добавляем функцию для вступления в сообщество
     async function joinCommunity(communityId, button) {
         try {
+            button.disabled = true;
+            
             const response = await fetch(`/api/communities/${communityId}/join`, {
                 method: 'POST',
                 headers: {
@@ -1029,29 +1045,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 button.classList.remove('join');
                 button.classList.add('leave');
                 
-                // Показываем уведомление
+                // Показываем уведомление об успехе
                 showNotification('success', 'Вы успешно вступили в сообщество');
+                
+                // Обновляем счетчик сообществ
+                updateCommunitiesCount();
             } else {
-                throw new Error(data.error || 'Ошибка при вступлении в сообщество');
+                showNotification('error', data.error || 'Ошибка при вступлении в сообщество');
             }
         } catch (err) {
-            console.error('Ошибка при вступлении в сообщество:', err);
-            showNotification('error', 'Не удалось вступить в сообщество');
+            console.error('Error joining community:', err);
+            showNotification('error', 'Ошибка при вступлении в сообщество');
+        } finally {
+            button.disabled = false;
         }
     }
 
-    // Добавляем обработчик клика на кнопки в результатах поиска
-    document.addEventListener('click', async (e) => {
+    // Добавляем обработчики для кнопок действий с сообществами
+    document.addEventListener('click', (e) => {
         const button = e.target.closest('.community-action-btn');
         if (!button) return;
 
         const communityId = button.dataset.communityId;
         
         if (button.classList.contains('join')) {
-            // Блокируем кнопку на время выполнения запроса
-            button.disabled = true;
-            await joinCommunity(communityId, button);
-            button.disabled = false;
+            joinCommunity(communityId, button);
         } else if (button.classList.contains('leave')) {
             // Можно добавить функционал выхода из сообщества здесь
             console.log('Выход из сообщества');
