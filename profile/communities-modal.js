@@ -351,8 +351,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </button>
                     <button type="button" 
                             class="visit-community-btn"
-                            data-community-id="${community.id}"
-                            onclick="visitCommunity(${community.id})">
+                            data-community-id="${community.id}">
                         Перейти в сообщество
                     </button>
                 </div>
