@@ -220,92 +220,81 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('Search input element:', searchInput);
     console.log('Search results element:', searchResults);
 
-    // Обновляем функцию handleSearch
+    // Функция для обработки поиска сообществ
     async function handleSearch(query) {
-        console.log('Начало поиска:', query);
-        const searchResults = document.querySelector('#search-communities .search-results');
+        const searchResults = document.querySelector('.search-results');
         
-        if (!searchResults) {
-            console.error('Контейнер для результатов поиска не найден!');
+        if (!query) {
+            searchResults.innerHTML = '';
             return;
         }
-
-        if (query.length < 2) {
-            searchResults.innerHTML = `
-                <div class="search-hint">
-                    <i class="fas fa-search"></i>
-                    <p>Введите минимум 2 символа для поиска</p>
-                </div>`;
-            return;
-        }
-
-        searchResults.innerHTML = `
-            <div class="search-loading">
-                <i class="fas fa-spinner fa-spin"></i>
-                <p>Поиск...</p>
-            </div>`;
 
         try {
-            const currentUser = JSON.parse(localStorage.getItem('user'));
-            if (!currentUser || !currentUser.id) {
-                console.error('Пользователь не найден в localStorage');
-                return;
-            }
-
-            console.log('Отправка запроса на сервер:', `/api/communities/search?q=${query}&userId=${currentUser.id}`);
-            
-            const response = await fetch(`/api/communities/search?q=${encodeURIComponent(query)}&userId=${currentUser.id}`);
+            const response = await fetch(`/api/communities/search?q=${encodeURIComponent(query)}&userId=${currentUserId}`);
             const data = await response.json();
-            
-            console.log('Получены данные от сервера:', data);
 
-            if (!data.success) {
-                throw new Error(data.error || 'Ошибка поиска сообществ');
-            }
+            if (data.success) {
+                if (data.communities.length === 0) {
+                    searchResults.innerHTML = '<div class="no-results">Сообществ не найдено</div>';
+                    return;
+                }
 
-            if (!data.communities || data.communities.length === 0) {
-                searchResults.innerHTML = `
-                    <div class="no-results">
-                        <i class="fas fa-users-slash"></i>
-                        <p>Сообщества не найдены</p>
-                    </div>`;
-                return;
-            }
-
-            const communitiesHTML = data.communities.map(community => `
-                <div class="community-search-item">
-                    <img src="${community.avatar_url || '/uploads/communities/default.png'}" 
-                         alt="${community.name}" 
-                         class="community-avatar">
-                    <div class="community-info">
-                        <h3>${community.name}</h3>
-                        <p>${community.description || 'Нет описания'}</p>
-                        <div class="community-meta">
-                            <span><i class="fas fa-users"></i> ${community.members_count || 0} участников</span>
+                searchResults.innerHTML = data.communities.map(community => `
+                    <div class="community-card">
+                        <img src="${community.avatar_url || '/images/default-community.png'}" 
+                             alt="${community.name}" 
+                             class="community-avatar">
+                        <div class="community-info">
+                            <div class="community-name">${community.name}</div>
+                            <div class="community-description">${community.description || ''}</div>
+                            <div class="community-meta">
+                                ${community.members_count} ${declOfNum(community.members_count, ['участник', 'участника', 'участников'])}
+                            </div>
                         </div>
+                        <button class="community-action-btn ${community.is_member ? 'leave' : 'join'}"
+                                data-community-id="${community.id}"
+                                onclick="handleCommunityAction(${community.id}, ${!community.is_member})">
+                            ${community.is_member ? 'Выйти' : 'Вступить'}
+                        </button>
                     </div>
-                    <button class="visit-community-btn" data-community-id="${community.id}">
-                        ${community.is_member ? 'Перейти' : 'Присоединиться'}
-                    </button>
-                </div>
-            `).join('');
-
-            searchResults.innerHTML = communitiesHTML;
-
-            // Добавляем обработчики для кнопок
-            document.querySelectorAll('.visit-community-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const communityId = btn.dataset.communityId;
-                    window.location.href = `/community/community.html?id=${communityId}`;
-                });
-            });
+                `).join('');
+            }
         } catch (err) {
-            console.error('Ошибка при поиске:', err);
-            searchResults.innerHTML = `
-                <div class="search-error">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <p>Произошла ошибка при поиске</p>
-                </div>`;
+            console.error('Ошибка при поиске сообществ:', err);
+            searchResults.innerHTML = '<div class="error-message">Произошла ошибка при поиске</div>';
+        }
+    }
+
+    // Вспомогательная функция для склонения числительных
+    function declOfNum(number, titles) {
+        const cases = [2, 0, 1, 1, 1, 2];
+        return titles[(number % 100 > 4 && number % 100 < 20) ? 2 : cases[(number % 10 < 5) ? number % 10 : 5]];
+    }
+
+    // Функция для обработки вступления/выхода из сообщества
+    async function handleCommunityAction(communityId, isJoining) {
+        try {
+            const response = await fetch(`/api/communities/${communityId}/${isJoining ? 'join' : 'leave'}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ userId: currentUserId })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                // Обновляем кнопку
+                const button = document.querySelector(`[data-community-id="${communityId}"]`);
+                if (button) {
+                    button.textContent = isJoining ? 'Выйти' : 'Вступить';
+                    button.classList.toggle('join');
+                    button.classList.toggle('leave');
+                    button.onclick = () => handleCommunityAction(communityId, !isJoining);
+                }
+            }
+        } catch (err) {
+            console.error('Ошибка при выполнении действия:', err);
         }
     }
 
