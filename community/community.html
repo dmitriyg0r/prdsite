@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="community.css">
     <link rel="stylesheet" href="../sidebar.css">
+    <link rel="stylesheet" herf="../profile/profile.css"
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="icon" type="image/x-icon" href="../flow.ico">
 </head>
@@ -58,11 +59,9 @@
                 <div class="community-header">
                     <div class="community-avatar-wrapper">
                         <img src="{{ community.avatar }}" alt="Community avatar" class="community-avatar">
-                        {% if is_admin %}
                         <div class="avatar-overlay">
                             <i class="icon-camera"></i>
                         </div>
-                        {% endif %}
                     </div>
                     <h1 class="community-name">{{ community.name }}</h1>
                     <p class="community-description">{{ community.description }}</p>
@@ -88,12 +87,10 @@
                             <i class="fas fa-user-plus"></i>
                             <span>Вступить</span>
                         </button>
-                        {% if is_admin %}
                         <button id="edit-community-btn" class="btn btn-secondary" style="display: none;">
                             <i class="fas fa-edit"></i>
                             <span>Редактировать</span>
                         </button>
-                        {% endif %}
                     </div>
                 </div>
             </div>

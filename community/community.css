@@ -107,8 +107,7 @@
     justify-content: center;
     border-top: 1px solid var(--border-light);
 }
-
-/* Стили для постов и формы создания поста аналогичны стилям из profile.css */
+ 
 
 .posts-container {
     display: flex;
