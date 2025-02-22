@@ -4,17 +4,10 @@
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Unity Web Player | space-star</title>
-    <link rel="shortcut icon" href="TemplateData/favicon.ico"s>
+    <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
-    <link rel="stylesheet" href="space-star.css">
   </head>
   <body>
-    <div class="game-wrapper">
-      <!-- Кнопка возврата -->
-      <a href="../games.html" class="back-button">
-          <i class="fas fa-arrow-left"></i>
-          Вернуться к играм
-      </a>
     <div id="unity-container" class="unity-desktop">
       <canvas id="unity-canvas" width=960 height=600 tabindex="-1"></canvas>
       <div id="unity-loading-bar">
@@ -59,16 +52,16 @@
       }
 
       var buildUrl = "Build";
-      var loaderUrl = buildUrl + "/build1.loader.js";
+      var loaderUrl = buildUrl + "/build2.loader.js";
       var config = {
         arguments: [],
-        dataUrl: buildUrl + "/build1.data.br",
-        frameworkUrl: buildUrl + "/build1.framework.js.br",
-        codeUrl: buildUrl + "/build1.wasm.br",
+        dataUrl: buildUrl + "/build2.data.gz",
+        frameworkUrl: buildUrl + "/build2.framework.js.gz",
+        codeUrl: buildUrl + "/build2.wasm.gz",
         streamingAssetsUrl: "StreamingAssets",
         companyName: "DefaultCompany",
         productName: "space-star",
-        productVersion: "1.0",
+        productVersion: "0.0.2",
         showBanner: unityShowBanner,
       };
 
