@@ -1,5 +1,9 @@
 /* From Uiverse.io by zjssun */ 
-button {
+back-button {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
     padding: 10px 20px;
     text-transform: uppercase;
     border-radius: 8px;
@@ -15,8 +19,8 @@ button {
     user-select: none;
   }
   
-  #btn:hover,
-  :focus {
+  back-button:hover,
+  back-button:focus {
     color: #ffffff;
     background: #008cff;
     border: 1px solid #008cff;
