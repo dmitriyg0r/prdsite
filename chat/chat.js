@@ -246,45 +246,60 @@ function createMessageElement(message) {
     if (message.sender_id !== currentUser.id) {
         const senderInfo = document.createElement('div');
         senderInfo.className = 'message-sender';
-        senderInfo.textContent = message.sender_name || 'Пользователь';
+        senderInfo.textContent = message.sender_username || 'Пользователь';
         messageElement.appendChild(senderInfo);
     }
     
     // Если есть цитируемое сообщение, добавляем его
-    if (message.reply_to) {
+    if (message.reply_to_message) {
         const quotedMessage = document.createElement('div');
         quotedMessage.className = 'quoted-message';
         quotedMessage.innerHTML = `
-            <div class="reply-author">${message.reply_author || 'Пользователь'}</div>
-            <div class="reply-content">${message.reply_content || ''}</div>
+            <div class="reply-author">${message.reply_to_message.sender_username || 'Пользователь'}</div>
+            <div class="reply-content">${message.reply_to_message.message || ''}</div>
         `;
         messageElement.appendChild(quotedMessage);
     }
     
     // Добавляем текст сообщения, если он есть
-    if (message.content) {
+    if (message.message) {
         const messageText = document.createElement('div');
         messageText.className = 'message-text';
-        messageText.innerHTML = DOMPurify.sanitize(marked.parse(message.content));
+        messageText.textContent = message.message;
         messageElement.appendChild(messageText);
     }
     
     // Добавляем изображение, если оно есть
-    if (message.image_url) {
+    if (message.attachment_url) {
         const imageContainer = document.createElement('div');
         imageContainer.className = 'message-attachment';
         
-        const image = document.createElement('img');
-        image.src = message.image_url;
-        image.alt = 'Изображение';
-        image.loading = 'lazy';
+        // Проверяем, является ли вложение изображением
+        const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(message.attachment_url);
         
-        // Добавляем обработчик для открытия изображения в модальном окне
-        image.addEventListener('click', () => {
-            openImageModal(message.image_url);
-        });
+        if (isImage) {
+            const image = document.createElement('img');
+            image.src = message.attachment_url;
+            image.alt = 'Изображение';
+            image.loading = 'lazy';
+            
+            // Добавляем обработчик для открытия изображения в модальном окне
+            image.addEventListener('click', () => {
+                openImageModal(message.attachment_url);
+            });
+            
+            imageContainer.appendChild(image);
+        } else {
+            // Если это не изображение, показываем ссылку для скачивания
+            const fileLink = document.createElement('a');
+            fileLink.href = `/api/download/messages/${message.attachment_url.split('/').pop()}`;
+            fileLink.className = 'file-attachment';
+            fileLink.innerHTML = `<i class="fas fa-file"></i> Скачать файл`;
+            fileLink.target = '_blank';
+            
+            imageContainer.appendChild(fileLink);
+        }
         
-        imageContainer.appendChild(image);
         messageElement.appendChild(imageContainer);
     }
     
@@ -299,28 +314,36 @@ function createMessageElement(message) {
 
 // Функция для открытия изображения в модальном окне
 function openImageModal(imageUrl) {
-    const modal = document.querySelector('.image-modal');
-    const modalImage = document.getElementById('modalImage');
-    
-    if (modal && modalImage) {
-        modalImage.src = imageUrl;
-        modal.style.display = 'flex';
+    // Создаем модальное окно, если его еще нет
+    let modal = document.querySelector('.image-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.className = 'image-modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <span class="close-modal">&times;</span>
+                <img id="modalImage" src="" alt="Увеличенное изображение">
+            </div>
+        `;
+        document.body.appendChild(modal);
         
         // Закрытие модального окна при клике на крестик
         const closeButton = modal.querySelector('.close-modal');
-        if (closeButton) {
-            closeButton.addEventListener('click', () => {
-                modal.style.display = 'none';
-            });
-        }
+        closeButton.onclick = () => {
+            modal.style.display = 'none';
+        };
         
         // Закрытие модального окна при клике вне изображения
-        modal.addEventListener('click', (e) => {
+        modal.onclick = (e) => {
             if (e.target === modal) {
                 modal.style.display = 'none';
             }
-        });
+        };
     }
+    
+    const modalImage = modal.querySelector('#modalImage');
+    modalImage.src = imageUrl;
+    modal.style.display = 'flex';
 }
 
 // Вспомогательная функция для форматирования времени
@@ -413,7 +436,7 @@ async function sendMessage() {
         // Если есть файл, отправляем через FormData
         if (hasFile) {
             const formData = new FormData();
-            formData.append('image', fileInput.files[0]);
+            formData.append('file', fileInput.files[0]);
             formData.append('senderId', currentUser.id);
             formData.append('receiverId', currentChatPartner.id);
             
@@ -430,7 +453,7 @@ async function sendMessage() {
             if (filePreview) filePreview.innerHTML = '';
             fileInput.value = '';
             
-            const response = await fetch('https://space-point.ru/api/messages/image', {
+            const response = await fetch('https://space-point.ru/api/messages/send-with-file', {
                 method: 'POST',
                 body: formData
             });
@@ -454,7 +477,7 @@ async function sendMessage() {
                 }
             }
         } else {
-            // Обычная отправка текстового сообщения (существующий код)
+            // Обычная отправка текстового сообщения
             const response = await fetch('https://space-point.ru/api/messages/send', {
                 method: 'POST',
                 headers: {
