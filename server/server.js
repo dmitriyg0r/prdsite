@@ -12,9 +12,11 @@ const { Server } = require('socket.io');
 
 // Изменим импорт на более явный
 const maindb = require('../adminpanel/maindb.js');
+app.use('/api/messages', chatRoutes);
 
 // В начале файла, где остальные импорты
 const communitiesRouter = require('./routes/communities');
+const chatRoutes = require('./routes/chatRoutes');
 
 const app = express();
 const PORT = 5003;
@@ -3412,3 +3414,10 @@ app.post('/api/communities/create', upload.single('avatar'), async (req, res) =>
         });
     }
 });
+
+// Добавляем маршруты чата
+app.use('/api/messages', chatRoutes);
+
+// Передаем объекты io и activeConnections в приложение
+app.set('io', io);
+app.set('activeConnections', activeConnections);

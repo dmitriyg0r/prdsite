@@ -453,7 +453,8 @@ async function sendMessage() {
             if (filePreview) filePreview.innerHTML = '';
             fileInput.value = '';
             
-            const response = await fetch('https://space-point.ru/api/messages/send-with-file', {
+            // Используем правильный эндпоинт, который точно есть на сервере
+            const response = await fetch('https://space-point.ru/api/messages/upload', {
                 method: 'POST',
                 body: formData
             });
