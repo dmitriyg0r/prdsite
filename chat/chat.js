@@ -438,7 +438,7 @@ async function sendMessage() {
             const formData = new FormData();
             formData.append('file', fileInput.files[0]);
             formData.append('senderId', currentUser.id);
-            formData.append('receiverId', currentChatPartner.id);
+            formData.append('receiverId', currentChatPartner.id); 
             
             if (messageText) {
                 formData.append('message', messageText);
