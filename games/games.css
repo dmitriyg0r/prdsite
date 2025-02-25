@@ -576,12 +576,7 @@
 .game-card:hover .game-overlay {
     opacity: 1;
 }
-.img{
-    left: 100px;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
+
 
 .play-btn {
     display: flex;
