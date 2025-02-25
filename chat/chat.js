@@ -469,12 +469,25 @@ async function sendMessage() {
                     cancelReply();
                 }
                 
-                const messageElement = createMessageElement(responseData.message);
+                // Создаем объект сообщения для отображения
+                const messageObj = {
+                    id: responseData.message.id || Date.now(),
+                    sender_id: currentUser.id,
+                    receiver_id: currentChatPartner.id,
+                    message: messageText || '',
+                    attachment_url: responseData.message.attachment_url || '',
+                    created_at: new Date().toISOString(),
+                    sender_username: currentUser.username
+                };
+                
+                const messageElement = createMessageElement(messageObj);
                 const messagesContainer = document.getElementById('messages');
                 if (messagesContainer) {
                     messagesContainer.appendChild(messageElement);
                     scrollToBottom();
                 }
+                
+                console.log('Сообщение с файлом отправлено:', responseData);
             }
         } else {
             // Обычная отправка текстового сообщения
@@ -502,12 +515,24 @@ async function sendMessage() {
                     cancelReply();
                 }
                 
-                const messageElement = createMessageElement(responseData.message);
+                // Создаем объект сообщения для отображения
+                const messageObj = {
+                    id: responseData.message.id || Date.now(),
+                    sender_id: currentUser.id,
+                    receiver_id: currentChatPartner.id,
+                    message: messageText,
+                    created_at: new Date().toISOString(),
+                    sender_username: currentUser.username
+                };
+                
+                const messageElement = createMessageElement(messageObj);
                 const messagesContainer = document.getElementById('messages');
                 if (messagesContainer) {
                     messagesContainer.appendChild(messageElement);
                     scrollToBottom();
                 }
+                
+                console.log('Текстовое сообщение отправлено:', responseData);
             }
         }
     } catch (error) {
@@ -787,74 +812,86 @@ if(closeModalBtn){
 
 // Добавляем обработчики для прикрепления файлов
 function setupAttachmentHandlers() {
-    const attachButton = document.querySelector('.attach-button');
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.accept = 'image/*';
-    fileInput.style.display = 'none';
-    fileInput.id = 'fileInput';
-    document.body.appendChild(fileInput);
-
-    // Обработчик клика по кнопке прикрепления
-    if (attachButton) {
+    const attachButton = document.getElementById('attachButton');
+    const fileInput = document.getElementById('fileInput');
+    
+    if (attachButton && fileInput) {
         attachButton.addEventListener('click', () => {
             fileInput.click();
         });
-    }
-
-    // Обработчик выбора файла
-    fileInput.addEventListener('change', handleFileSelect);
-}
-
-// Обработка выбора файла
-function handleFileSelect(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    // Проверка типа файла
-    if (!file.type.startsWith('image/')) {
-        alert('Пожалуйста, выберите изображение');
-        return;
-    }
-
-    // Проверка размера файла (максимум 5 МБ)
-    if (file.size > 5 * 1024 * 1024) {
-        alert('Размер файла не должен превышать 5 МБ');
-        return;
-    }
-
-    // Создаем превью изображения
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const filePreviewContainer = document.getElementById('filePreview') || createFilePreviewContainer();
-        filePreviewContainer.innerHTML = `
-            <div class="file-preview">
-                <img src="${e.target.result}" class="file-preview-image" alt="Превью">
-                <div class="file-preview-info">
-                    <span>${file.name}</span>
-                    <button class="remove-file" id="removeFile">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            </div>
-        `;
         
-        // Добавляем обработчик для удаления превью
-        document.getElementById('removeFile').addEventListener('click', () => {
-            filePreviewContainer.innerHTML = '';
-            document.getElementById('fileInput').value = '';
+        fileInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            // Проверка размера файла (максимум 5 МБ)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('Размер файла не должен превышать 5 МБ');
+                fileInput.value = '';
+                return;
+            }
+            
+            // Создаем превью файла
+            const filePreview = document.getElementById('filePreview') || createFilePreviewContainer();
+            
+            if (file.type.startsWith('image/')) {
+                // Если это изображение, показываем превью
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    filePreview.innerHTML = `
+                        <div class="file-preview">
+                            <img src="${e.target.result}" class="file-preview-image" alt="Превью">
+                            <div class="file-preview-info">
+                                <span>${file.name}</span>
+                                <button class="remove-file" id="removeFile">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Добавляем обработчик для удаления файла
+                    document.getElementById('removeFile').addEventListener('click', () => {
+                        filePreview.innerHTML = '';
+                        fileInput.value = '';
+                    });
+                };
+                reader.readAsDataURL(file);
+            } else {
+                // Если это другой тип файла, показываем информацию о файле
+                filePreview.innerHTML = `
+                    <div class="file-preview">
+                        <div class="file-preview-info">
+                            <i class="fas fa-file file-icon"></i>
+                            <span>${file.name}</span>
+                            <button class="remove-file" id="removeFile">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                // Добавляем обработчик для удаления файла
+                document.getElementById('removeFile').addEventListener('click', () => {
+                    filePreview.innerHTML = '';
+                    fileInput.value = '';
+                });
+            }
         });
-    };
-    reader.readAsDataURL(file);
+    }
 }
 
-// Создание контейнера для превью файла
+// Функция для создания контейнера превью файла, если его нет
 function createFilePreviewContainer() {
+    const container = document.createElement('div');
+    container.id = 'filePreview';
+    
     const inputArea = document.querySelector('.input-area');
-    const filePreviewContainer = document.createElement('div');
-    filePreviewContainer.id = 'filePreview';
-    inputArea.insertBefore(filePreviewContainer, inputArea.firstChild);
-    return filePreviewContainer;
+    if (inputArea) {
+        inputArea.insertBefore(container, inputArea.firstChild);
+    }
+    
+    return container;
 }
 
 // Функция удаления сообщения
