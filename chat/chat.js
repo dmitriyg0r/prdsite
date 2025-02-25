@@ -241,155 +241,86 @@ function createMessageElement(message) {
     const messageElement = document.createElement('div');
     messageElement.className = `message message-${message.sender_id === currentUser.id ? 'sent' : 'received'}`;
     messageElement.dataset.messageId = message.id;
-
+    
     // Добавляем информацию об отправителе для полученных сообщений
     if (message.sender_id !== currentUser.id) {
         const senderInfo = document.createElement('div');
         senderInfo.className = 'message-sender';
-        // Используем имя текущего собеседника, если это его сообщение
-        senderInfo.textContent = currentChatPartner?.username || message.sender_name || 'Пользователь';
+        senderInfo.textContent = message.sender_name || 'Пользователь';
         messageElement.appendChild(senderInfo);
     }
-
-    if (message.message_type === 'voice') {
-        // Создаем голосовое сообщение
-        const voiceContainer = document.createElement('div');
-        voiceContainer.className = 'voice-message';
-        
-        const playButton = document.createElement('button');
-        playButton.className = 'voice-message-play';
-        playButton.innerHTML = '<i class="fas fa-play"></i>';
-
-        const waveform = document.createElement('div');
-        waveform.className = 'voice-message-waveform';
-        
-        const progress = document.createElement('div');
-        progress.className = 'voice-message-progress';
-        waveform.appendChild(progress);
-
-        const timeSpan = document.createElement('span');
-        timeSpan.className = 'voice-message-time';
-        timeSpan.textContent = '00:00';
-
-        voiceContainer.appendChild(playButton);
-        voiceContainer.appendChild(waveform);
-        voiceContainer.appendChild(timeSpan);
-        messageElement.appendChild(voiceContainer);
-
-        // Обработчик воспроизведения
-        let audio = null;
-        playButton.addEventListener('click', async () => {
-            try {
-                if (audio && !audio.paused) {
-                    audio.pause();
-                    playButton.innerHTML = '<i class="fas fa-play"></i>';
-                    return;
-                }
-
-                playButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-                
-                const response = await fetch(`https://space-point.ru/api/messages/voice/${message.id}`);
-                if (!response.ok) throw new Error('Ошибка загрузки аудио');
-                
-                const blob = await response.blob();
-                audio = new Audio(URL.createObjectURL(blob));
-                
-                audio.onplay = () => {
-                    playButton.innerHTML = '<i class="fas fa-pause"></i>';
-                };
-                
-                audio.onpause = () => {
-                    playButton.innerHTML = '<i class="fas fa-play"></i>';
-                };
-                
-                audio.onended = () => {
-                    playButton.innerHTML = '<i class="fas fa-play"></i>';
-                    progress.style.width = '0%';
-                };
-
-                audio.ontimeupdate = () => {
-                    const percent = (audio.currentTime / audio.duration) * 100;
-                    progress.style.width = `${percent}%`;
-                    timeSpan.textContent = formatTime(audio.currentTime);
-                };
-
-                audio.onloadedmetadata = () => {
-                    timeSpan.textContent = formatTime(audio.duration);
-                };
-
-                await audio.play();
-
-            } catch (error) {
-                console.error('Ошибка воспроизведения:', error);
-                playButton.innerHTML = '<i class="fas fa-play"></i>';
-                alert('Не удалось воспроизвести сообщение');
-            }
-        });
-
-        // Добавляем контекстное меню для голосовых сообщений
-        if (message.sender_id === currentUser.id) {
-            voiceContainer.addEventListener('contextmenu', (e) => {
-                e.preventDefault();
-                showContextMenu(e, [
-                    {
-                        text: 'Удалить сообщение',
-                        onClick: async () => {
-                            try {
-                                const response = await fetch(`https://space-point.ru/api/messages/${message.id}`, {
-                                    method: 'DELETE'
-                                });
-
-                                if (response.ok) {
-                                    messageElement.remove();
-                                } else {
-                                    throw new Error('Ошибка при удалении сообщения');
-                                }
-                            } catch (error) {
-                                console.error('Ошибка:', error);
-                                alert('Не удалось удалить сообщение');
-                            }
-                        }
-                    }
-                ]);
-            });
-        }
-    } else {
-        // Обработка текстовых сообщений
-        const messageContent = document.createElement('div');
-        messageContent.className = 'message-content';
-
-        // Добавляем ответ на сообщение, если есть
-        if (message.reply_to_message_id) {
-            const replyContent = document.createElement('div');
-            replyContent.className = 'message-reply';
-            // Здесь нужно добавить логику получения текста сообщения, на которое отвечают
-            messageContent.appendChild(replyContent);
-        }
-
-        // Создаем контейнер для текста сообщения
+    
+    // Если есть цитируемое сообщение, добавляем его
+    if (message.reply_to) {
+        const quotedMessage = document.createElement('div');
+        quotedMessage.className = 'quoted-message';
+        quotedMessage.innerHTML = `
+            <div class="reply-author">${message.reply_author || 'Пользователь'}</div>
+            <div class="reply-content">${message.reply_content || ''}</div>
+        `;
+        messageElement.appendChild(quotedMessage);
+    }
+    
+    // Добавляем текст сообщения, если он есть
+    if (message.content) {
         const messageText = document.createElement('div');
         messageText.className = 'message-text';
-        
-        // Обрабатываем текст сообщения через marked и DOMPurify
-        if (message.message) {
-            const sanitizedHtml = DOMPurify.sanitize(marked.parse(message.message));
-            messageText.innerHTML = sanitizedHtml;
-        }
-
-        messageContent.appendChild(messageText);
-        messageElement.appendChild(messageContent);
+        messageText.innerHTML = DOMPurify.sanitize(marked.parse(message.content));
+        messageElement.appendChild(messageText);
     }
-
+    
+    // Добавляем изображение, если оно есть
+    if (message.image_url) {
+        const imageContainer = document.createElement('div');
+        imageContainer.className = 'message-attachment';
+        
+        const image = document.createElement('img');
+        image.src = message.image_url;
+        image.alt = 'Изображение';
+        image.loading = 'lazy';
+        
+        // Добавляем обработчик для открытия изображения в модальном окне
+        image.addEventListener('click', () => {
+            openImageModal(message.image_url);
+        });
+        
+        imageContainer.appendChild(image);
+        messageElement.appendChild(imageContainer);
+    }
+    
     // Добавляем время отправки
     const timestamp = document.createElement('div');
     timestamp.className = 'message-timestamp';
-    timestamp.textContent = new Date(message.created_at).toLocaleTimeString([], { 
-        hour: '2-digit', 
-        minute: '2-digit' 
-    });
+    timestamp.textContent = new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     messageElement.appendChild(timestamp);
-
+    
     return messageElement;
+}
+
+// Функция для открытия изображения в модальном окне
+function openImageModal(imageUrl) {
+    const modal = document.querySelector('.image-modal');
+    const modalImage = document.getElementById('modalImage');
+    
+    if (modal && modalImage) {
+        modalImage.src = imageUrl;
+        modal.style.display = 'flex';
+        
+        // Закрытие модального окна при клике на крестик
+        const closeButton = modal.querySelector('.close-modal');
+        if (closeButton) {
+            closeButton.addEventListener('click', () => {
+                modal.style.display = 'none';
+            });
+        }
+        
+        // Закрытие модального окна при клике вне изображения
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    }
 }
 
 // Вспомогательная функция для форматирования времени
@@ -460,6 +391,7 @@ function isImageFile(url) {
 
 async function sendMessage() {
     const messageInput = document.getElementById('messageInput');
+    const fileInput = document.getElementById('fileInput');
     
     if (!messageInput || !currentChatPartner) {
         console.error('messageInput не найден или нет получателя');
@@ -467,7 +399,10 @@ async function sendMessage() {
     }
 
     const messageText = messageInput.value.trim();
-    if (!messageText) {
+    const hasFile = fileInput && fileInput.files && fileInput.files.length > 0;
+    
+    // Проверяем, есть ли текст или файл для отправки
+    if (!messageText && !hasFile) {
         return;
     }
 
@@ -475,35 +410,81 @@ async function sendMessage() {
         // Немедленно очищаем значение
         messageInput.value = '';
         
-        const response = await fetch('https://space-point.ru/api/messages/send', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                senderId: currentUser.id,
-                receiverId: currentChatPartner.id,
-                message: messageText,
-                replyToMessageId: replyToMessageId || null
-            })
-        });
-
-        const responseData = await response.json();
-
-        if (!response.ok) {
-            throw new Error(responseData.details || responseData.error || 'Ошибка при отправке сообщения');
-        }
-
-        if (responseData.success) {
-            if (replyToMessageId) {
-                cancelReply();
+        // Если есть файл, отправляем через FormData
+        if (hasFile) {
+            const formData = new FormData();
+            formData.append('image', fileInput.files[0]);
+            formData.append('senderId', currentUser.id);
+            formData.append('receiverId', currentChatPartner.id);
+            
+            if (messageText) {
+                formData.append('message', messageText);
             }
             
-            const messageElement = createMessageElement(responseData.message);
-            const messagesContainer = document.getElementById('messages');
-            if (messagesContainer) {
-                messagesContainer.appendChild(messageElement);
-                scrollToBottom();
+            if (replyToMessageId) {
+                formData.append('replyToMessageId', replyToMessageId);
+            }
+            
+            // Очищаем превью и инпут файла
+            const filePreview = document.getElementById('filePreview');
+            if (filePreview) filePreview.innerHTML = '';
+            fileInput.value = '';
+            
+            const response = await fetch('https://space-point.ru/api/messages/image', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const responseData = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(responseData.details || responseData.error || 'Ошибка при отправке сообщения');
+            }
+            
+            if (responseData.success) {
+                if (replyToMessageId) {
+                    cancelReply();
+                }
+                
+                const messageElement = createMessageElement(responseData.message);
+                const messagesContainer = document.getElementById('messages');
+                if (messagesContainer) {
+                    messagesContainer.appendChild(messageElement);
+                    scrollToBottom();
+                }
+            }
+        } else {
+            // Обычная отправка текстового сообщения (существующий код)
+            const response = await fetch('https://space-point.ru/api/messages/send', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    senderId: currentUser.id,
+                    receiverId: currentChatPartner.id,
+                    message: messageText,
+                    replyToMessageId: replyToMessageId || null
+                })
+            });
+
+            const responseData = await response.json();
+
+            if (!response.ok) {
+                throw new Error(responseData.details || responseData.error || 'Ошибка при отправке сообщения');
+            }
+
+            if (responseData.success) {
+                if (replyToMessageId) {
+                    cancelReply();
+                }
+                
+                const messageElement = createMessageElement(responseData.message);
+                const messagesContainer = document.getElementById('messages');
+                if (messagesContainer) {
+                    messagesContainer.appendChild(messageElement);
+                    scrollToBottom();
+                }
             }
         }
     } catch (error) {
@@ -583,6 +564,24 @@ function setupEventListeners() {
                     })
                 });
             }, 2000);
+        });
+    }
+
+    // Настройка модального окна для изображений
+    const modal = document.querySelector('.image-modal');
+    const closeButton = modal?.querySelector('.close-modal');
+    
+    if (closeButton) {
+        closeButton.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+    }
+    
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
         });
     }
 }
@@ -765,91 +764,74 @@ if(closeModalBtn){
 
 // Добавляем обработчики для прикрепления файлов
 function setupAttachmentHandlers() {
-    const attachButton = document.getElementById('attachButton');
-    const fileInput = document.getElementById('fileInput');
-    
-    if (!attachButton || !fileInput) {
-        console.error('Элементы прикрепления файлов не найдены');
+    const attachButton = document.querySelector('.attach-button');
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*';
+    fileInput.style.display = 'none';
+    fileInput.id = 'fileInput';
+    document.body.appendChild(fileInput);
+
+    // Обработчик клика по кнопке прикрепления
+    if (attachButton) {
+        attachButton.addEventListener('click', () => {
+            fileInput.click();
+        });
+    }
+
+    // Обработчик выбора файла
+    fileInput.addEventListener('change', handleFileSelect);
+}
+
+// Обработка выбора файла
+function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Проверка типа файла
+    if (!file.type.startsWith('image/')) {
+        alert('Пожалуйста, выберите изображение');
         return;
     }
-    
-    attachButton.addEventListener('click', () => {
-        fileInput.click();
-    });
-    
-    fileInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            if (file.size > 5 * 1024 * 1024) {
-                alert('Файл слишком большой (максимум 5MB)');
-                fileInput.value = '';
-                return;
-            }
-            selectedFile = file;
-            showFilePreview(file);
-        }
-    });
+
+    // Проверка размера файла (максимум 5 МБ)
+    if (file.size > 5 * 1024 * 1024) {
+        alert('Размер файла не должен превышать 5 МБ');
+        return;
+    }
+
+    // Создаем превью изображения
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const filePreviewContainer = document.getElementById('filePreview') || createFilePreviewContainer();
+        filePreviewContainer.innerHTML = `
+            <div class="file-preview">
+                <img src="${e.target.result}" class="file-preview-image" alt="Превью">
+                <div class="file-preview-info">
+                    <span>${file.name}</span>
+                    <button class="remove-file" id="removeFile">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        // Добавляем обработчик для удаления превью
+        document.getElementById('removeFile').addEventListener('click', () => {
+            filePreviewContainer.innerHTML = '';
+            document.getElementById('fileInput').value = '';
+        });
+    };
+    reader.readAsDataURL(file);
 }
 
-function showFilePreview(file) {
-    let previewContainer = document.getElementById('filePreview');
-    
-    // Есл контейнер не существует, создаем его
-    if (!previewContainer) {
-        previewContainer = document.createElement('div');
-        previewContainer.id = 'filePreview';
-        const inputArea = document.querySelector('.input-area');
-        if (inputArea) {
-            inputArea.insertBefore(previewContainer, inputArea.firstChild);
-        } else {
-            console.error('Элемент input-area не найден');
-            return;
-        }
-    }
-    
-    const isImage = file.type.startsWith('image/');
-    
-    // Создаем превью
-    const previewContent = document.createElement('div');
-    previewContent.className = 'file-preview';
-    previewContent.innerHTML = `
-        ${isImage ? `<img src="${URL.createObjectURL(file)}" class="file-preview-image" alt="Preview">` : ''}
-        <div class="file-preview-info">
-            <i class="fas ${isImage ? 'fa-image' : 'fa-file'}"></i>
-            <span class="file-name">${file.name}</span>
-            <button class="remove-file" type="button">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-    `;
-    
-     // чищаем предыдущее превью
-    while(previewContainer.firstChild) {
-        previewContainer.removeChild(previewContainer.firstChild);
-    }
-    previewContainer.appendChild(previewContent);
-    
-    // Добавляем обработчик для кнопки удаления
-    const removeButton = previewContent.querySelector('.remove-file');
-    if (removeButton) {
-        removeButton.addEventListener('click', removeFilePreview);
-    }
-}
-
-function removeFilePreview() {
-    const previewContainer = document.getElementById('filePreview');
-    if (previewContainer) {
-        while(previewContainer.firstChild) {
-        previewContainer.removeChild(previewContainer.firstChild);
-    }
-    }
-    selectedFile = null;
-    
-    // Очищаем input файла
-    const fileInput = document.getElementById('fileInput');
-    if (fileInput) {
-        fileInput.value = '';
-    }
+// Создание контейнера для превью файла
+function createFilePreviewContainer() {
+    const inputArea = document.querySelector('.input-area');
+    const filePreviewContainer = document.createElement('div');
+    filePreviewContainer.id = 'filePreview';
+    inputArea.insertBefore(filePreviewContainer, inputArea.firstChild);
+    return filePreviewContainer;
 }
 
 // Функция удаления сообщения
@@ -1530,37 +1512,6 @@ function cancelReply() {
     replyToMessageText = null;
     replyToMessageAuthor = null;
     document.getElementById('replyPreview').style.display = 'none';
-}
-
-// Обновляем функцию sendMessage для поддержки ответов
-async function sendMessage() {
-    // ... existing code ...
-
-    const messageData = {
-        senderId: currentUser.id,
-        receiverId: currentChatPartner.id,
-        message: messageInput.value.trim(),
-        replyToMessageId: replyToMessageId
-    };
-
-    try {
-        const response = await fetch('https://space-point.ru/api/messages/send', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            credentials: 'include',
-            body: JSON.stringify(messageData)
-        });
-
-        // ... rest of the existing code ...
-
-        if (replyToMessageId) {
-            cancelReply();
-        }
-    } catch (error) {
-        // ... error handling ...
-    }
 }
 
 // Добавляем обработчик контекстного меню
